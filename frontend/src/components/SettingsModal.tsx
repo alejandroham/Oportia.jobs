@@ -260,8 +260,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const currentModelInfo = PROVIDER_MODELS[provider].find(m => m.id === selectedModel);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-md animate-fade-in">
-      <div className="apple-glass apple-card max-w-lg w-full max-h-[92vh] overflow-y-auto p-6 space-y-5">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/40 backdrop-blur-md animate-fade-in">
+      <div className="apple-glass apple-card max-w-lg w-full max-h-[92vh] overflow-y-auto p-5 sm:p-6 space-y-4 sm:space-y-5 rounded-t-3xl sm:rounded-2xl">
         
         {/* Header */}
         <div className="flex items-center justify-between border-b border-black/5 dark:border-white/5 pb-4">

@@ -1069,8 +1069,8 @@ export const ProfileStudio: React.FC<ProfileStudioProps> = ({ profile, onProfile
             </button>
 
             {/* Sections Menu List */}
-            <div className="apple-glass apple-card p-2 space-y-1 text-xs font-semibold">
-              <span className="px-3 py-1.5 text-[10px] uppercase font-bold text-gray-400 tracking-wider block">
+            <div className="apple-glass apple-card p-1.5 sm:p-2 flex lg:flex-col gap-1 lg:space-y-1 text-xs font-semibold overflow-x-auto lg:overflow-x-visible scrollbar-none">
+              <span className="hidden lg:block px-3 py-1.5 text-[10px] uppercase font-bold text-gray-400 tracking-wider">
                 Secciones del Perfil
               </span>
 
@@ -1091,14 +1091,14 @@ export const ProfileStudio: React.FC<ProfileStudioProps> = ({ profile, onProfile
                   <button
                     key={sec.id}
                     onClick={() => setActiveSection(sec.id as SectionKey)}
-                    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition ${
+                    className={`flex items-center justify-between px-3 py-2 sm:py-2.5 rounded-xl transition whitespace-nowrap shrink-0 lg:shrink lg:w-full space-x-2 ${
                       isActive
                         ? 'bg-blue-600 text-white font-bold shadow-xs'
                         : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-zinc-800'
                     }`}
                   >
-                    <div className="flex items-center space-x-2.5 truncate">
-                      <IconComponent className={`w-4 h-4 ${isActive ? 'text-white' : 'text-gray-400'}`} />
+                    <div className="flex items-center space-x-2 truncate">
+                      <IconComponent className={`w-4 h-4 shrink-0 ${isActive ? 'text-white' : 'text-gray-400'}`} />
                       <span className="truncate">{sec.label}</span>
                     </div>
                     {sec.count && (

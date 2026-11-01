@@ -384,7 +384,7 @@ export const JobRadar: React.FC<JobRadarProps> = ({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
         <div>
           <div className="flex items-center space-x-2.5">
-            <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
               Radar de Empleo
             </h1>
             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 border border-blue-200/60 dark:border-blue-800/60">
@@ -478,14 +478,14 @@ export const JobRadar: React.FC<JobRadarProps> = ({
         {/* Filter Pill Controls */}
         <div className="flex items-center justify-between flex-wrap gap-2 pt-1 text-xs text-gray-600 dark:text-gray-400">
           {/* Scope Segmented Control */}
-          <div className="flex items-center space-x-1 bg-gray-100 dark:bg-zinc-800/80 p-0.5 rounded-xl">
+          <div className="flex items-center space-x-1 bg-gray-100 dark:bg-zinc-800/80 p-0.5 rounded-xl w-full sm:w-auto">
             <button
               type="button"
               onClick={() => {
                 setSearchScope('all');
                 localStorage.setItem('job_radar_scope', 'all');
               }}
-              className={`px-3 py-1 rounded-lg text-xs font-medium transition ${
+              className={`flex-1 sm:flex-none px-3 py-1 rounded-lg text-xs font-medium transition text-center ${
                 searchScope === 'all'
                   ? 'bg-white dark:bg-zinc-700 text-blue-600 dark:text-blue-400 shadow-2xs font-semibold'
                   : 'text-gray-600 dark:text-gray-400 hover:text-gray-900'
@@ -499,7 +499,7 @@ export const JobRadar: React.FC<JobRadarProps> = ({
                 setSearchScope('chile');
                 localStorage.setItem('job_radar_scope', 'chile');
               }}
-              className={`px-3 py-1 rounded-lg text-xs font-medium transition ${
+              className={`flex-1 sm:flex-none px-3 py-1 rounded-lg text-xs font-medium transition text-center ${
                 searchScope === 'chile'
                   ? 'bg-white dark:bg-zinc-700 text-blue-600 dark:text-blue-400 shadow-2xs font-semibold'
                   : 'text-gray-600 dark:text-gray-400 hover:text-gray-900'
@@ -513,7 +513,7 @@ export const JobRadar: React.FC<JobRadarProps> = ({
                 setSearchScope('global');
                 localStorage.setItem('job_radar_scope', 'global');
               }}
-              className={`px-3 py-1 rounded-lg text-xs font-medium transition ${
+              className={`flex-1 sm:flex-none px-3 py-1 rounded-lg text-xs font-medium transition text-center ${
                 searchScope === 'global'
                   ? 'bg-white dark:bg-zinc-700 text-blue-600 dark:text-blue-400 shadow-2xs font-semibold'
                   : 'text-gray-600 dark:text-gray-400 hover:text-gray-900'
@@ -1092,8 +1092,8 @@ export const JobRadar: React.FC<JobRadarProps> = ({
 
       {/* MANUAL IMPORT URL MODAL */}
       {showImportModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs animate-fade-in">
-          <div className="apple-glass apple-card max-w-md w-full p-6 space-y-4 bg-white/95 dark:bg-zinc-900/95 shadow-2xl">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/40 backdrop-blur-xs animate-fade-in">
+          <div className="apple-glass apple-card max-w-md w-full p-5 sm:p-6 space-y-4 bg-white/95 dark:bg-zinc-900/95 shadow-2xl rounded-t-3xl sm:rounded-2xl">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-bold text-gray-900 dark:text-white">Importar Oferta por URL</h3>
               <button onClick={() => setShowImportModal(false)} className="text-gray-400 hover:text-gray-600">
@@ -1135,8 +1135,8 @@ export const JobRadar: React.FC<JobRadarProps> = ({
 
       {/* CLEAR CONFIRM MODAL */}
       {showClearConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs animate-fade-in">
-          <div className="apple-glass apple-card max-w-sm w-full p-6 space-y-4 bg-white/95 dark:bg-zinc-900/95 shadow-2xl text-center">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/40 backdrop-blur-xs animate-fade-in">
+          <div className="apple-glass apple-card max-w-sm w-full p-5 sm:p-6 space-y-4 bg-white/95 dark:bg-zinc-900/95 shadow-2xl text-center rounded-t-3xl sm:rounded-2xl">
             <div className="w-10 h-10 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center mx-auto">
               <Trash2 className="w-5 h-5" />
             </div>
@@ -1166,11 +1166,11 @@ export const JobRadar: React.FC<JobRadarProps> = ({
 
       {/* FULL JOB DETAIL MODAL */}
       {selectedJobForDetail && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-fade-in">
-          <div className="apple-glass apple-card max-w-3xl w-full max-h-[90vh] flex flex-col overflow-hidden shadow-2xl bg-white/95 dark:bg-zinc-900/95">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/50 backdrop-blur-xs animate-fade-in">
+          <div className="apple-glass apple-card max-w-3xl w-full max-h-[92vh] sm:max-h-[90vh] flex flex-col overflow-hidden shadow-2xl bg-white/95 dark:bg-zinc-900/95 rounded-t-3xl sm:rounded-3xl">
             
             {/* Header */}
-            <div className="p-6 border-b border-black/5 dark:border-white/5 flex items-start justify-between gap-4">
+            <div className="p-4 sm:p-6 border-b border-black/5 dark:border-white/5 flex items-start justify-between gap-4">
               <div className="space-y-1">
                 <div className="flex items-center space-x-2 flex-wrap gap-y-1">
                   <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400">
@@ -1298,8 +1298,8 @@ export const JobRadar: React.FC<JobRadarProps> = ({
 
       {/* 5D FIT EVALUATION MODAL */}
       {selectedEvaluation && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs animate-fade-in">
-          <div className="apple-glass apple-card max-w-xl w-full max-h-[90vh] overflow-y-auto p-6 space-y-5 bg-white/95 dark:bg-zinc-900/95 shadow-2xl">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/40 backdrop-blur-xs animate-fade-in">
+          <div className="apple-glass apple-card max-w-xl w-full max-h-[92vh] sm:max-h-[90vh] overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-5 bg-white/95 dark:bg-zinc-900/95 shadow-2xl rounded-t-3xl sm:rounded-3xl">
             
             <div className="flex items-center justify-between border-b border-black/5 dark:border-white/5 pb-3">
               <div>

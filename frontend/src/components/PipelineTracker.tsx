@@ -32,6 +32,7 @@ import {
   Moon,
   AlignJustify,
   AlignLeft,
+  ArrowLeft,
   Star,
   Mic,
   Target
@@ -83,6 +84,9 @@ export const PipelineTracker: React.FC<PipelineTrackerProps> = ({
   }, [trackedJobs, selectedJobId]);
 
   const selectedJob = trackedJobs.find(j => j.id === selectedJobId) || null;
+
+  // Responsive mobile Master-Detail switcher ('list' shows applications catalog, 'detail' shows 360 view)
+  const [mobilePane, setMobilePane] = useState<'list' | 'detail'>('list');
 
   // Filter & Search states
   const [filterTab, setFilterTab] = useState<FilterTab>('all');
@@ -806,7 +810,7 @@ export const PipelineTracker: React.FC<PipelineTrackerProps> = ({
       {/* Header */}
       <div className="no-print flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
             Mis Postulaciones & Seguimiento
           </h1>
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
@@ -843,7 +847,7 @@ export const PipelineTracker: React.FC<PipelineTrackerProps> = ({
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
 
           {/* LEFT COLUMN: Clean List of Applications (Master) */}
-          <div className="no-print lg:col-span-4 space-y-3">
+          <div className={`no-print lg:col-span-4 space-y-3 ${mobilePane === 'detail' ? 'hidden lg:block' : 'block'}`}>
             
             {/* Search input in list */}
             <div className="relative">
@@ -916,7 +920,11 @@ export const PipelineTracker: React.FC<PipelineTrackerProps> = ({
                   return (
                     <button
                       key={job.id}
-                      onClick={() => setSelectedJobId(job.id)}
+                      onClick={() => {
+                        setSelectedJobId(job.id);
+                        setMobilePane('detail');
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      }}
                       className={`w-full text-left p-3.5 rounded-2xl transition-all duration-200 border flex flex-col justify-between space-y-2 ${
                         isSelected
                           ? 'bg-white dark:bg-zinc-800/90 border-blue-500/50 shadow-sm ring-1 ring-blue-500/20'
@@ -962,7 +970,25 @@ export const PipelineTracker: React.FC<PipelineTrackerProps> = ({
 
           {/* RIGHT COLUMN: Ficha Individual 360° (Detail) */}
           {selectedJob ? (
-            <div className="lg:col-span-8 space-y-4">
+            <div className={`lg:col-span-8 space-y-4 ${mobilePane === 'list' ? 'hidden lg:block' : 'block'}`}>
+
+              {/* Mobile Back to List Button (Visible only on screens < lg) */}
+              <div className="lg:hidden flex items-center justify-between pb-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMobilePane('list');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                  className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-gray-200/80 dark:bg-zinc-800 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-zinc-700 transition shadow-2xs"
+                >
+                  <ArrowLeft className="w-3.5 h-3.5" />
+                  <span>← Volver a postulaciones</span>
+                </button>
+                <span className="text-[11px] font-bold text-gray-500 truncate max-w-[140px]">
+                  {selectedJob.company}
+                </span>
+              </div>
 
               {/* CARD HEADER: Job Profile, Direct Status Selector, Links */}
               <div className="no-print apple-glass apple-card p-5 space-y-3">
@@ -1050,38 +1076,41 @@ export const PipelineTracker: React.FC<PipelineTrackerProps> = ({
               <div className="no-print flex items-center bg-gray-200/60 dark:bg-zinc-800/60 p-1 rounded-2xl border border-black/5 dark:border-white/5 space-x-1 text-xs font-semibold">
                 <button
                   onClick={() => setActiveSection('documents')}
-                  className={`flex-1 flex items-center justify-center space-x-2 py-2 rounded-xl transition ${
+                  className={`flex-1 flex items-center justify-center space-x-1.5 py-2 px-1 rounded-xl transition text-[11px] sm:text-xs font-semibold ${
                     activeSection === 'documents'
                       ? 'bg-white dark:bg-zinc-700 text-blue-600 dark:text-blue-400 shadow-2xs font-bold'
                       : 'text-gray-600 dark:text-gray-400 hover:text-gray-900'
                   }`}
                 >
-                  <FileText className="w-3.5 h-3.5" />
-                  <span>Documentos a Enviar (CV & Carta)</span>
+                  <FileText className="w-3.5 h-3.5 shrink-0" />
+                  <span className="hidden sm:inline">Documentos (CV & Carta)</span>
+                  <span className="sm:hidden">Documentos</span>
                 </button>
 
                 <button
                   onClick={() => setActiveSection('interview')}
-                  className={`flex-1 flex items-center justify-center space-x-2 py-2 rounded-xl transition ${
+                  className={`flex-1 flex items-center justify-center space-x-1.5 py-2 px-1 rounded-xl transition text-[11px] sm:text-xs font-semibold ${
                     activeSection === 'interview'
                       ? 'bg-white dark:bg-zinc-700 text-blue-600 dark:text-blue-400 shadow-2xs font-bold'
                       : 'text-gray-600 dark:text-gray-400 hover:text-gray-900'
                   }`}
                 >
-                  <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-                  <span>🎯 Coach & Simulador STAR</span>
+                  <Sparkles className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                  <span className="hidden sm:inline">🎯 Coach & Simulador STAR</span>
+                  <span className="sm:hidden">Coach STAR</span>
                 </button>
 
                 <button
                   onClick={() => setActiveSection('timeline')}
-                  className={`flex-1 flex items-center justify-center space-x-2 py-2 rounded-xl transition ${
+                  className={`flex-1 flex items-center justify-center space-x-1.5 py-2 px-1 rounded-xl transition text-[11px] sm:text-xs font-semibold ${
                     activeSection === 'timeline'
                       ? 'bg-white dark:bg-zinc-700 text-blue-600 dark:text-blue-400 shadow-2xs font-bold'
                       : 'text-gray-600 dark:text-gray-400 hover:text-gray-900'
                   }`}
                 >
-                  <Clock className="w-3.5 h-3.5" />
-                  <span>Bitácora & Notas</span>
+                  <Clock className="w-3.5 h-3.5 shrink-0" />
+                  <span className="hidden sm:inline">Bitácora & Notas</span>
+                  <span className="sm:hidden">Bitácora</span>
                 </button>
               </div>
 
@@ -1095,13 +1124,13 @@ export const PipelineTracker: React.FC<PipelineTrackerProps> = ({
                   <div className="no-print apple-glass apple-card p-4 space-y-3">
                     
                     {/* Top Row: Sub-tab switcher + Export actions */}
-                    <div className="flex flex-wrap items-center justify-between gap-3 border-b border-black/5 dark:border-white/5 pb-3">
+                    <div className="flex flex-wrap items-center justify-between gap-2.5 sm:gap-3 border-b border-black/5 dark:border-white/5 pb-3">
                       
                       {/* Sub tab: CV vs Cover letter */}
-                      <div className="flex bg-gray-100 dark:bg-zinc-800 p-0.5 rounded-xl text-xs space-x-1">
+                      <div className="flex bg-gray-100 dark:bg-zinc-800 p-0.5 rounded-xl text-xs space-x-1 w-full sm:w-auto">
                         <button
                           onClick={() => setDocSubTab('cv')}
-                          className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg transition ${
+                          className={`flex-1 sm:flex-none flex items-center justify-center space-x-1.5 px-3 py-1.5 rounded-lg transition ${
                             docSubTab === 'cv'
                               ? 'bg-white dark:bg-zinc-700 text-blue-600 dark:text-blue-400 shadow-2xs font-bold'
                               : 'text-gray-600 dark:text-gray-400'
@@ -1112,7 +1141,7 @@ export const PipelineTracker: React.FC<PipelineTrackerProps> = ({
                         </button>
                         <button
                           onClick={() => setDocSubTab('cover_letter')}
-                          className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg transition ${
+                          className={`flex-1 sm:flex-none flex items-center justify-center space-x-1.5 px-3 py-1.5 rounded-lg transition ${
                             docSubTab === 'cover_letter'
                               ? 'bg-white dark:bg-zinc-700 text-blue-600 dark:text-blue-400 shadow-2xs font-bold'
                               : 'text-gray-600 dark:text-gray-400'
@@ -1124,7 +1153,7 @@ export const PipelineTracker: React.FC<PipelineTrackerProps> = ({
                       </div>
 
                       {/* Export & Print Actions */}
-                      <div className="flex items-center space-x-2">
+                      <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 w-full sm:w-auto justify-end">
                         {/* Adapt with AI button */}
                         <button
                           onClick={handleGenerateDraft}
@@ -1341,7 +1370,7 @@ export const PipelineTracker: React.FC<PipelineTrackerProps> = ({
                       HIGH-FIDELITY PRINTABLE CONTAINER (A4 Executive Sheet)
                       ========================================================= */}
                   <div
-                    className={`printable-cv apple-card p-8 sm:p-12 max-w-4xl mx-auto min-h-[750px] shadow-2xl transition-colors duration-200 ${
+                    className={`printable-cv apple-card p-4 sm:p-8 md:p-12 max-w-4xl mx-auto min-h-[750px] shadow-2xl transition-colors duration-200 ${
                       paperTheme === 'dark'
                         ? 'paper-dark bg-zinc-900 text-zinc-100 border border-zinc-800'
                         : 'paper-white bg-white text-gray-900 border border-gray-200/90'
@@ -1368,7 +1397,7 @@ export const PipelineTracker: React.FC<PipelineTrackerProps> = ({
                           <div className={`border-b pb-5 space-y-1 ${paperTheme === 'dark' ? 'border-zinc-800' : 'border-gray-200'}`}>
                             <h1 className={`text-xl font-bold tracking-tight ${paperTheme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{profile?.name || 'Candidato'}</h1>
                             <p className={`text-xs ${paperTheme === 'dark' ? 'text-zinc-400' : 'text-gray-600'}`}>{profile?.headline} • {profile?.location || 'Chile'}</p>
-                            <div className={`flex space-x-3 text-[11px] pt-1 ${paperTheme === 'dark' ? 'text-zinc-400' : 'text-gray-500'}`}>
+                            <div className={`flex flex-wrap gap-2 sm:gap-3 text-[11px] pt-1 ${paperTheme === 'dark' ? 'text-zinc-400' : 'text-gray-500'}`}>
                               {profile?.email && <span>✉️ {profile.email}</span>}
                               {profile?.phone && <span>📞 {profile.phone}</span>}
                               {profile?.linkedin_url && <span>🔗 {profile.linkedin_url.replace('https://', '')}</span>}
