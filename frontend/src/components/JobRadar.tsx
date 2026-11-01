@@ -30,6 +30,7 @@ import {
   Plus,
   Check,
   SlidersHorizontal,
+  ChevronLeft,
   ChevronRight
 } from 'lucide-react';
 import type {
@@ -69,6 +70,12 @@ export const JobRadar: React.FC<JobRadarProps> = ({
   });
   const [viewMode, setViewMode] = useState<'grid3' | 'grid2' | 'list'>(() => {
     return (localStorage.getItem('job_radar_view_mode') as 'grid3' | 'grid2' | 'list') || 'grid3';
+  });
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(() => {
+    return Number(localStorage.getItem('job_radar_page_size')) || 12;
   });
 
   // Action states
@@ -377,6 +384,24 @@ export const JobRadar: React.FC<JobRadarProps> = ({
     return matchesTerm && matchesRemote;
   });
 
+  // Pagination calculations
+  const totalPages = Math.max(1, Math.ceil(filteredJobs.length / pageSize));
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = Math.min(startIndex + pageSize, filteredJobs.length);
+  const paginatedJobs = filteredJobs.slice(startIndex, endIndex);
+
+  // Reset to first page when search criteria or page size changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, remoteOnly, searchScope, pageSize]);
+
+  // Guard against out-of-bounds page index
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(1);
+    }
+  }, [totalPages, currentPage]);
+
   return (
     <div className="space-y-6">
 
@@ -581,7 +606,11 @@ export const JobRadar: React.FC<JobRadarProps> = ({
       {/* Results Header */}
       <div className="flex items-center justify-between px-1 text-xs text-gray-500">
         <span>
-          Mostrando <strong className="text-gray-900 dark:text-white">{filteredJobs.length}</strong> oportunidades
+          Mostrando{' '}
+          <strong className="text-gray-900 dark:text-white">
+            {filteredJobs.length === 0 ? 0 : startIndex + 1} - {endIndex}
+          </strong>{' '}
+          de <strong className="text-gray-900 dark:text-white">{filteredJobs.length}</strong> oportunidades
         </span>
         {searchTerm && (
           <button
@@ -607,16 +636,17 @@ export const JobRadar: React.FC<JobRadarProps> = ({
           </p>
         </div>
       ) : (
-        <div
-          className={
-            viewMode === 'grid3'
-              ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'
-              : viewMode === 'grid2'
-              ? 'grid grid-cols-1 md:grid-cols-2 gap-4'
-              : 'space-y-3'
-          }
-        >
-          {filteredJobs.map((job) => {
+        <>
+          <div
+            className={
+              viewMode === 'grid3'
+                ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'
+                : viewMode === 'grid2'
+                ? 'grid grid-cols-1 md:grid-cols-2 gap-4'
+                : 'space-y-3'
+            }
+          >
+            {paginatedJobs.map((job) => {
             const hasFit = job.fit_score !== null && job.fit_score !== undefined;
             const score = job.fit_score || 0;
             const isTopFit = score >= 85;
@@ -852,7 +882,94 @@ export const JobRadar: React.FC<JobRadarProps> = ({
             );
           })}
         </div>
-      )}
+
+        {/* Apple-styled Pagination Controls */}
+        <div className="apple-glass apple-card p-3 sm:p-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+          {/* Page Size Selector */}
+          <div className="flex items-center space-x-2 text-gray-500">
+            <span className="font-medium">Ofertas por página:</span>
+            <div className="inline-flex items-center bg-gray-100 dark:bg-zinc-800 p-0.5 rounded-xl border border-black/5 dark:border-white/5">
+              {[6, 12, 24].map((size) => (
+                <button
+                  key={size}
+                  onClick={() => {
+                    setPageSize(size);
+                    localStorage.setItem('job_radar_page_size', String(size));
+                    setCurrentPage(1);
+                  }}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition ${
+                    pageSize === size
+                      ? 'bg-white dark:bg-zinc-700 text-blue-600 dark:text-blue-400 shadow-xs'
+                      : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'
+                  }`}
+                >
+                  {size}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Page Navigation */}
+          {totalPages > 1 && (
+            <div className="flex items-center space-x-1.5">
+              <button
+                onClick={() => {
+                  setCurrentPage((p) => Math.max(1, p - 1));
+                  window.scrollTo({ top: 280, behavior: 'smooth' });
+                }}
+                disabled={currentPage === 1}
+                className="flex items-center space-x-1 px-3 py-1.5 rounded-xl font-medium border border-gray-200 dark:border-zinc-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed transition"
+              >
+                <ChevronLeft className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Anterior</span>
+              </button>
+
+              <div className="flex items-center space-x-1 px-1">
+                {Array.from({ length: totalPages }, (_, i) => i + 1)
+                  .filter((p) => {
+                    return p === 1 || p === totalPages || Math.abs(p - currentPage) <= 1;
+                  })
+                  .map((p, idx, arr) => {
+                    const prev = arr[idx - 1];
+                    return (
+                      <React.Fragment key={p}>
+                        {prev && p - prev > 1 && (
+                          <span className="text-gray-400 px-1 font-bold">...</span>
+                        )}
+                        <button
+                          onClick={() => {
+                            setCurrentPage(p);
+                            window.scrollTo({ top: 280, behavior: 'smooth' });
+                          }}
+                          className={`w-7 h-7 rounded-xl font-semibold flex items-center justify-center transition ${
+                            currentPage === p
+                              ? 'bg-blue-600 text-white shadow-xs'
+                              : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-zinc-800'
+                          }`}
+                        >
+                          {p}
+                        </button>
+                      </React.Fragment>
+                    );
+                  })}
+              </div>
+
+              <button
+                onClick={() => {
+                  setCurrentPage((p) => Math.min(totalPages, p + 1));
+                  window.scrollTo({ top: 280, behavior: 'smooth' });
+                }}
+                disabled={currentPage === totalPages}
+                className="flex items-center space-x-1 px-3 py-1.5 rounded-xl font-medium border border-gray-200 dark:border-zinc-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed transition"
+              >
+                <span className="hidden sm:inline">Siguiente</span>
+                <ChevronRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          )}
+        </div>
+      </>
+    )}
 
       {/* STRATEGY & ATS SLIDE-OVER DRAWER (Progressive Disclosure) */}
       {showStrategyDrawer && (
