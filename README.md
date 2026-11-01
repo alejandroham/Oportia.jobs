@@ -23,11 +23,12 @@ flowchart TD
         MemoryEngine["🧠 Cerebro Cognitivo Continuo\n(Aprendizaje transversal y consolidación)"]
     end
 
-    subgraph Presentacion ["3. Módulos de Usuario (Interfaz Cupertino)"]
-        RadarUI["🛰️ Radar de Empleo\n(Filtros, badges de vigencia y tarjetas compactas)"]
-        TrackerUI["🎯 Mis Postulaciones (360°)\n• Documentos (CV Adaptado vs Master / Carta)\n• Coach & Simulador STAR en Vivo\n• Bitácora e Historial Cronológico"]
-        ProfileUI["👤 Perfil & CV Studio\n(Editor, experiencia y habilidades)"]
+    subgraph Presentacion ["3. Módulos de Usuario (Interfaz Cupertino & Multi-Dispositivo)"]
+        RadarUI["🛰️ Radar de Empleo\n• Paginación Dinámica (6 / 12 / 24 por pág.)\n• Filtros de Alcance, Remoto y ATS Dorks\n• Cuadrícula Adaptable (3, 2 cols o Lista)"]
+        TrackerUI["🎯 Mis Postulaciones (360°)\n• Vista Master-Detail Fluida para Móvil/PC\n• Documentos (CV Adaptado vs Master / Carta)\n• Coach & Simulador STAR en Vivo\n• Bitácora e Historial Cronológico"]
+        ProfileUI["👤 Perfil & CV Studio\n(Editor, trayectoria y carrusel de habilidades)"]
         MemoryUI["💡 Memoria IA\n(ADN Profesional, Historias STAR, Reinicio)"]
+        MobileNav["📱 iOS Floating Tab Bar\n(Acceso ergonómico en móviles y tablets)"]
     end
 
     Chile --> RadarUI
@@ -149,6 +150,11 @@ sequenceDiagram
   - 🟡 **Modo Offline Heurístico:** Operatividad inmediata sin API Key (búsqueda de empleo, navegación, seguimiento y guardado local).
 
 ### 2. Radar de Ofertas Laborales & Motor Inteligente ATS
+- **Paginación Dinámica Anti-Fatiga (Estilo Apple):**
+  - **Selector de Tamaño de Página Segmentado:** Permite elegir al instante entre **6, 12 o 24 ofertas por página**, memorizando la preferencia en `localStorage`.
+  - **Distribución Ergonómica Optimizada:** 12 ofertas recomendadas en PC (múltiplo simétrico de 3 y 2 columnas) y 6 ofertas en móviles para evitar scrolls excesivos de pantalla.
+  - **Navegación Fluida con Auto-Scroll:** Controles de navegación `[ Anterior ]`, páginas numeradas con elipsis y `[ Siguiente ]` con desplazamiento suave hacia arriba automático al cambiar de página.
+  - **Contador Dinámico en Tiempo Real:** Visualización transparente del rango (`Mostrando 1 - 12 de 48 oportunidades`).
 - **Maximización del Mercado en Chile:** Conectores especializados para **Get on Board Chile, CompuTrabajo Chile, ChileTrabajos, Laborum Chile y LinkedIn Chile**.
 - **Portales Globales Remotos:** Integración simultánea con **RemoteOK, Arbeitnow, Remotive y LinkedIn Global**.
 - **Directorio de Empresas Corporativas y ATS (Chile & Global):** Base de datos categorizada con más de 100 empresas líderes en Chile e Internacionales, identificando su ATS corporativo (**Workday, Greenhouse, Lever, Ashby, SmartRecruiters, SuccessFactors, Taleo**).
@@ -177,15 +183,50 @@ sequenceDiagram
 - **Estrategia Salarial y Preguntas Capciosas**: Consejos tácticos sobre cómo plantear pretensiones de renta líquida y argumentar motivos de cambio de empleo.
 - **Preguntas Inteligentes**: Banco de preguntas estratégicas para que el candidato destaque haciéndole preguntas al entrevistador al final de la sesión.
 
+### 5. Experiencia Móvil & Adaptabilidad Total (Mobile First & Tablet UI)
+
+El sistema ha sido optimizado con un diseño de alta respuesta que permite realizar el **100% del ciclo de postulación directamente desde smartphones** (375px a 430px) y tablets sin perder funciones ni alterar la estética en PC de escritorio:
+
+```mermaid
+flowchart TD
+    subgraph Deteccion ["Detección de Dispositivo & Viewport"]
+        MobileView["📱 Smartphones (< 768px)\n(iPhone, Android, Pantallas Angostas)"]
+        TabletView["📟 Tablets & Laptops (768px - 1024px)\n(iPad, Surface, Portátiles)"]
+        DesktopView["🖥️ Monitores Desktop (> 1024px)\n(Full HD, 2K, Ultrawide)"]
+    end
+
+    subgraph PatronesUX ["Patrones Adaptativos Implementados"]
+        direction TB
+        P1["📱 iOS Floating Tab Bar\nBarra translúcida inferior al alcance del pulgar"]
+        P2["🔄 Master-Detail Pane Switcher\nEn 'Mis Postulaciones' alterna entre Listado\ny Detalle 360° con botón ergonómico '← Volver'"]
+        P3["📑 Bottom-Sheet Modals\nLos modales se anclan al borde inferior con bordes redondeados"]
+        P4["🛡️ Safe-Area Padding (pb-24)\nEvita colisiones con barras de navegación o gestos de SO"]
+    end
+
+    MobileView --> P1
+    MobileView --> P2
+    MobileView --> P3
+    MobileView --> P4
+
+    DesktopView --> D1["🖥️ Top Floating Navbar + Dual-Pane Colapsable + Grid 3-Cols"]
+```
+
+* **Barra de Navegación Flotante Inferior (iOS Floating Tab Bar)**: En móviles, la barra superior se transforma en una barra flotante en la parte inferior de la pantalla con efecto *apple-glass* y botones con respuesta táctil, situándose al alcance natural del pulgar.
+* **Arquitectura Master-Detail en Mis Postulaciones**: En smartphones, evita el aplastamiento de dos columnas simultáneas activando un alternador de panel:
+  - **Panel de Lista**: Explora tus empresas postuladas con badges de estado y compatibilidad.
+  - **Panel de Detalle 360°**: Al tocar una empresa, se abre en pantalla completa el detalle con sus documentos, Coach STAR y bitácora, acompañado de una barra superior con el botón ergonómico `← Volver a postulaciones`.
+* **Modales Tipo Bottom-Sheet**: En pantallas móviles, los modales de Configuración, Importar URL de Oferta y Detalle se anclan con suavidad al fondo de la pantalla con bordes superiores curvados (`rounded-t-3xl`), emulando las aplicaciones nativas de iOS/Android.
+* **Safe-Area Padding (`pb-24`)**: La vista principal cuenta con un margen inferior de seguridad de 96px (`pb-24`) en móviles, garantizando que los botones de acción (`Guardar`, `Postular`, `Evaluar`) nunca queden tapados por la barra de navegación ni por los gestos del sistema operativo.
+
 ---
 
 ## 🎨 Principios de Diseño Apple (Cupertino HIG)
 - **Glassmorphism Frosted:** Fondos translúcidos con desenfoque (`backdrop-filter: blur(20px)`), bordes hiperfinos y tipografía del sistema (`-apple-system`, `SF Pro Display`).
 - **Navegación Consolidada en 4 Pilares**:
-  1. **Radar de Empleo**: Descubrimiento y filtrado de vacantes.
-  2. **Mis Postulaciones**: Documentos adaptados, Coach & Simulador STAR y Bitácora de seguimiento.
-  3. **Perfil & CV**: Edición de trayectoria, habilidades y formación.
-  4. **Memoria IA**: Centro de mando cognitivo, ADN profesional e historias STAR.
+  1. **Radar de Empleo**: Descubrimiento, paginación inteligente `[ 6 | 12 | 24 ]` y filtrado de vacantes.
+  2. **Mis Postulaciones**: Master-detail responsivo, documentos adaptados, Coach & Simulador STAR y Bitácora de seguimiento.
+  3. **Perfil & CV**: Edición de trayectoria, habilidades y formación con carruseles responsivos.
+  4. **Memoria IA**: Centro de mando cognitivo, ADN profesional, historias STAR y reinicio seguro.
 
 ---
 
