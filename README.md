@@ -343,3 +343,36 @@ Agente busca empleo Gemini/
 - **Almacenamiento Local Estricto:** Tus datos personales, currículum vitae, notas de entrevistas y API keys residen únicamente en tu máquina local.
 - **Protección de Datos en Seguimiento:** La limpieza del Radar no toca las ofertas en Seguimiento; las fechas y el historial se preservan de forma definitiva.
 - **Cero Alucinaciones en CVs:** El pipeline Drafter-Reviewer reorganiza y resalta evidencia real de tu perfil, sin inventar ni exagerar competencias, apoyándose en tus historias STAR validadas.
+
+---
+
+## 🏰 Arquitectura Defendible & MOAT (Foso Competitivo)
+
+A diferencia de los *"wrappers"* superficiales de IA (simples llamadas de API sin retención de contexto), **NexusJob AI** está diseñado bajo los fundamentos de un **MOAT económico y tecnológico sostenible**:
+
+```mermaid
+flowchart TD
+    subgraph FosoDefensivo ["4 Pilares de MOAT en NexusJob AI"]
+        direction TB
+        F1["🧬 Data Moat & Altos Costes de Cambio\nLa Memoria Cognitiva acumula tu ADN profesional e Historias STAR validadas.\nAbandonar la plataforma significa perder el aprendizaje acumulado."]
+        F2["🔄 Workflow Lock-In Vertical\nCadena integrada: Radar ATS Dorks ➔ Evaluador 5D ➔ Adaptador Formal ➔ Coach STAR ➔ Bitácora.\nResuelve el problema de punta a punta sin alternar entre 5 SaaS dispersos."]
+        F3["🔌 Protocol Moat: Servidor MCP Nativo\nExpone herramientas estándar JSON-RPC utilizables directamente\npor Claude Desktop, Cursor y Gemini CLI como backend."]
+        F4["🛡️ Soberanía Local-First\nPrivacidad absoluta para profesionales y directivos que no suben su trayectoria\nni notas confidenciales a nubes de terceros."]
+    end
+```
+
+| Dimensión de MOAT | Implementación en NexusJob AI | Impacto Defensivo |
+| :--- | :--- | :--- |
+| **Data Moat (Memoria Continua)** | Motor `preference_learner` que extrae patrones implícitos, historias STAR exitosas y propuesta de valor única. | **Efecto de Red Personal**: la plataforma se vuelve exponencialmente más precisa y personalizada con el uso. |
+| **Costes de Cambio (*Switching Costs*)** | Historial de postulaciones 360°, bitácora de llamadas y biblioteca de logros cuantificados. | Migrar a otra herramienta genérica exige reentrenar y redactar todo desde cero. |
+| **Integración de Flujo Vertical** | Indexación limpia de portales ATS (Workday, Greenhouse, Ashby, Lever) + simulador diagnóstica STAR + maquetación formal `.formal-justify`. | Imposible de sustituir con un solo prompt de ChatGPT. |
+| **Interoperabilidad de Protocolo** | Soporte de primer nivel de **Model Context Protocol (MCP)**. | Se posiciona como la capa de infraestructura de datos de empleo para cualquier cliente de IA. |
+
+---
+
+## 📄 Licencia
+
+Este proyecto está bajo la Licencia **MIT** — consulta el archivo [LICENSE](file:///c:/Users/Alejandro%20Aguirre/OneDrive/Documentos/Agente%20busca%20empleo%20Gemini/LICENSE) para más detalles.
+
+Autor y Desarrollador: **Alejandro Aguirre** ([@alejandroham](https://github.com/alejandroham))
+
