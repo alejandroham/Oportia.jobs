@@ -50,6 +50,11 @@ import type {
 import { api } from '../api';
 import { useToast } from './Toast';
 import { CHILE_REGIONS } from '../utils/chileRegions';
+import {
+  generateConsentRecord,
+  downloadLegalConsentCertificate,
+  type ConsentRecord
+} from '../utils/legalConsent';
 
 interface ProfileStudioProps {
   profile: CandidateProfile;
@@ -141,6 +146,11 @@ export const ProfileStudio: React.FC<ProfileStudioProps> = ({ profile, onProfile
   }, [editableProfile]);
 
   // Modal States
+  const [showConsentModal, setShowConsentModal] = useState<boolean>(false);
+  const [pendingUploadFile, setPendingUploadFile] = useState<File | null>(null);
+  const [consentChecked, setConsentChecked] = useState<boolean>(false);
+  const [currentConsentRecord, setCurrentConsentRecord] = useState<ConsentRecord | null>(null);
+
   const [showImportModal, setShowImportModal] = useState(false);
   const [isExtractingPreview, setIsExtractingPreview] = useState(false);
   const [extractedPreview, setExtractedPreview] = useState<{ profile: CandidateProfile; filename: string } | null>(null);
@@ -326,10 +336,24 @@ export const ProfileStudio: React.FC<ProfileStudioProps> = ({ profile, onProfile
   // ==========================================
   // HANDLERS FOR IMPORT (Section 7 Guided Flow)
   // ==========================================
-  const handleSelectFileForPreview = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSelectFileForPreview = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Reset input value so the same file can be selected again if needed
+    e.target.value = '';
+
+    const rec = generateConsentRecord(file.name);
+    setPendingUploadFile(file);
+    setCurrentConsentRecord(rec);
+    setConsentChecked(false);
+    setShowConsentModal(true);
+  };
+
+  const handleProceedWithExtraction = async () => {
+    if (!pendingUploadFile) return;
+    const file = pendingUploadFile;
+    setShowConsentModal(false);
     setIsExtractingPreview(true);
     setShowImportModal(true);
     try {
@@ -338,12 +362,13 @@ export const ProfileStudio: React.FC<ProfileStudioProps> = ({ profile, onProfile
         profile: res.extracted_profile,
         filename: res.filename
       });
-      toast.success('Documento analizado. Revisa los datos antes de confirmar.');
+      toast.success('Documento analizado bajo la Ley 21.719. Revisa los datos antes de confirmar.');
     } catch (err: any) {
       toast.error('Error al analizar archivo: ' + (err?.message || err));
       setShowImportModal(false);
     } finally {
       setIsExtractingPreview(false);
+      setPendingUploadFile(null);
     }
   };
 
@@ -2292,6 +2317,129 @@ export const ProfileStudio: React.FC<ProfileStudioProps> = ({ profile, onProfile
 
           </div>
 
+        </div>
+      )}
+
+      {/* ========================================================
+          MODAL: LEGAL CONSENT & DISCLAIMER (Ley 21.719)
+          ======================================================== */}
+      {showConsentModal && pendingUploadFile && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fade-in text-xs">
+          <div className="apple-glass apple-card max-w-lg w-full p-6 space-y-4 bg-white/95 dark:bg-zinc-900/95 shadow-2xl border border-black/10 dark:border-white/10 rounded-2xl">
+            <div className="flex items-center justify-between border-b border-black/5 dark:border-white/5 pb-3">
+              <div className="flex items-center space-x-2">
+                <div className="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                  <ShieldCheck className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-gray-900 dark:text-white">
+                    Tratamiento Local y Protección de Datos
+                  </h3>
+                  <p className="text-[10px] text-gray-500">Conforme a la Ley N° 21.719 de Chile</p>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  setShowConsentModal(false);
+                  setPendingUploadFile(null);
+                }}
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Document badge */}
+            <div className="flex items-center space-x-2 p-2.5 rounded-xl bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900/50 text-blue-800 dark:text-blue-300">
+              <FileText className="w-4 h-4 shrink-0 text-blue-600" />
+              <div className="min-w-0 flex-1">
+                <p className="font-semibold text-xs truncate">{pendingUploadFile.name}</p>
+                <p className="text-[10px] opacity-80">{(pendingUploadFile.size / 1024).toFixed(1)} KB • Preparado para análisis determinista</p>
+              </div>
+            </div>
+
+            {/* Key Clauses Box */}
+            <div className="space-y-2.5 max-h-60 overflow-y-auto pr-1 text-[11px] text-gray-600 dark:text-gray-300">
+              <div className="p-2.5 rounded-lg bg-gray-50 dark:bg-zinc-800/60 border border-black/5">
+                <strong className="block font-semibold text-gray-900 dark:text-white mb-0.5">
+                  1. Soberanía Local (Zero-Knowledge / Art. 12 Ley 21.719)
+                </strong>
+                Tu currículum vitae se procesa transitoriamente en tu equipo local. NexusJob AI no transfiere tus antecedentes a servidores centrales ni vende tus datos a terceros.
+              </div>
+
+              <div className="p-2.5 rounded-lg bg-gray-50 dark:bg-zinc-800/60 border border-black/5">
+                <strong className="block font-semibold text-gray-900 dark:text-white mb-0.5">
+                  2. Asistencia Determinista Sin Alucinaciones
+                </strong>
+                El motor extrae tus antecedentes reales para el radar de empleos sin inventar títulos académicos, empresas ni cargos que no consten en tu currículum.
+              </div>
+
+              <div className="p-2.5 rounded-lg bg-gray-50 dark:bg-zinc-800/60 border border-black/5">
+                <strong className="block font-semibold text-gray-900 dark:text-white mb-0.5">
+                  3. Exclusión de Responsabilidad y Veracidad
+                </strong>
+                Eres el único y exclusivo responsable por la veracidad de la información postulada ante reclutadores. NexusJob AI es una herramienta de asistencia técnica y no garantiza contratación.
+              </div>
+
+              <div className="p-2.5 rounded-lg bg-gray-50 dark:bg-zinc-800/60 border border-black/5">
+                <strong className="block font-semibold text-gray-900 dark:text-white mb-0.5">
+                  4. Declaración de Capacidad Legal
+                </strong>
+                Declaras contar con al menos 16 años de edad para el uso de esta plataforma de empleabilidad (Art. 14 Ley 21.719).
+              </div>
+            </div>
+
+            {/* Certificate download shortcut */}
+            {currentConsentRecord && (
+              <div className="flex items-center justify-between pt-1 pb-1">
+                <span className="text-[10px] text-gray-400">Ref: {currentConsentRecord.referenceId}</span>
+                <button
+                  type="button"
+                  onClick={() => downloadLegalConsentCertificate(currentConsentRecord)}
+                  className="flex items-center space-x-1 text-[11px] text-emerald-600 dark:text-emerald-400 hover:underline font-medium"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>Descargar Certificado Legal (.txt)</span>
+                </button>
+              </div>
+            )}
+
+            {/* Checkbox agreement */}
+            <label className="flex items-start space-x-2.5 pt-2 border-t border-black/5 dark:border-white/5 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={consentChecked}
+                onChange={(e) => setConsentChecked(e.target.checked)}
+                className="mt-0.5 w-4 h-4 rounded text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-zinc-700"
+              />
+              <span className="text-[11px] text-gray-700 dark:text-gray-200 leading-tight">
+                He leído, comprendo y acepto los <strong>Términos de Tratamiento Local y Exclusión de Responsabilidad</strong> de conformidad con la Ley N° 21.719.
+              </span>
+            </label>
+
+            {/* Actions */}
+            <div className="flex items-center justify-end space-x-2 pt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowConsentModal(false);
+                  setPendingUploadFile(null);
+                }}
+                className="px-3.5 py-1.5 rounded-xl border border-gray-200 dark:border-zinc-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-zinc-800 font-medium"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                disabled={!consentChecked}
+                onClick={handleProceedWithExtraction}
+                className="px-4 py-1.5 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed transition flex items-center space-x-1.5"
+              >
+                <ShieldCheck className="w-4 h-4" />
+                <span>Aceptar y Analizar CV</span>
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
