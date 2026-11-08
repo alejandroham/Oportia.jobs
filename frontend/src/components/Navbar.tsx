@@ -1,5 +1,5 @@
 import React from 'react';
-import { Radar, Settings as SettingsIcon, Sun, Moon, Briefcase, User, Brain } from 'lucide-react';
+import { Radar, Settings as SettingsIcon, Sun, Moon, Briefcase, User, Brain, Shield } from 'lucide-react';
 import type { LLMSettings } from '../types';
 
 interface NavbarProps {
@@ -8,6 +8,7 @@ interface NavbarProps {
   darkMode: boolean;
   setDarkMode: (val: boolean) => void;
   openSettings: () => void;
+  openPrivacyModal: () => void;
   llmSettings: LLMSettings;
 }
 
@@ -17,6 +18,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   darkMode,
   setDarkMode,
   openSettings,
+  openPrivacyModal,
   llmSettings
 }) => {
   // Clean, spacious Apple navigation (Applications & Interview Coach unified inside Tracker)
@@ -85,6 +87,16 @@ export const Navbar: React.FC<NavbarProps> = ({
               <span className={`w-2 h-2 rounded-full shrink-0 ${dotColor} ${!hasKey ? 'animate-pulse' : ''}`}></span>
               <span className="font-medium truncate">{statusLabel}</span>
               <SettingsIcon className="w-3.5 h-3.5 text-gray-400 shrink-0 ml-0.5" />
+            </button>
+
+            {/* Privacy & Session Sovereign Storage Button */}
+            <button
+              onClick={openPrivacyModal}
+              className="flex items-center space-x-1 sm:space-x-1.5 px-2.5 sm:px-3 py-1.5 rounded-full text-[11px] sm:text-xs font-medium bg-blue-50/90 dark:bg-blue-950/40 hover:bg-blue-100 dark:hover:bg-blue-900/60 text-blue-700 dark:text-blue-300 border border-blue-200/60 dark:border-blue-800/60 transition shadow-sm"
+              title="Gestión de Privacidad, Respaldo y Cierre de Sesión"
+            >
+              <Shield className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
+              <span className="hidden sm:inline font-medium">Datos & Salir</span>
             </button>
 
             {/* Dark / Light Toggle */}

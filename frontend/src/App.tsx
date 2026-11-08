@@ -6,6 +6,7 @@ import { ProfileStudio } from './components/ProfileStudio';
 import { ApplicationStudio } from './components/ApplicationStudio';
 import { PreferencesCenter } from './components/PreferencesCenter';
 import { SettingsModal } from './components/SettingsModal';
+import { SessionPrivacyModal } from './components/SessionPrivacyModal';
 import { useToast } from './components/Toast';
 import type {
   CandidateProfile,
@@ -15,6 +16,11 @@ import type {
   LLMSettings
 } from './types';
 import { api } from './api';
+import {
+  saveClientStore,
+  getClientStore,
+  clearClientStore
+} from './utils/storage';
 
 // Error Boundary to prevent any unhandled render errors from causing a black screen
 class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean; error: any }> {
@@ -65,6 +71,7 @@ export function App() {
   const [activeTab, setActiveTab] = useState<string>('radar');
   const [darkMode, setDarkMode] = useState<boolean>(true);
   const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
+  const [isPrivacyOpen, setIsPrivacyOpen] = useState<boolean>(false);
 
   // Core state
   const [profile, setProfile] = useState<CandidateProfile | null>(null);
@@ -91,21 +98,47 @@ export function App() {
     }
   }, [darkMode]);
 
-  // Initial load
+  // Initial load: Check client-side IndexedDB first (Zero-Knowledge Sovereign Storage)
   const loadData = async () => {
     try {
-      const [p, prefs, j, apps, s] = await Promise.all([
-        api.getProfile(),
-        api.getPreferences(),
-        api.getJobs(),
-        api.getApplications(),
-        api.getSettings()
-      ]);
-      setProfile(p);
-      setPreferences(prefs);
-      setJobs(j);
-      setApplications(apps);
+      // 1. Always load server settings for LLM connectivity
+      const s = await api.getSettings().catch(() => settings);
       setSettings(s);
+
+      // 2. Check local browser storage (IndexedDB)
+      const [cachedProfile, cachedPrefs, cachedJobs, cachedApps] = await Promise.all([
+        getClientStore<CandidateProfile>('profile'),
+        getClientStore<UserPreferences>('preferences'),
+        getClientStore<JobPosting[]>('jobs'),
+        getClientStore<ApplicationDraft[]>('applications')
+      ]);
+
+      if (cachedProfile || cachedJobs || cachedApps) {
+        // Use sovereign client storage
+        setProfile(cachedProfile);
+        setPreferences(cachedPrefs);
+        setJobs(cachedJobs || []);
+        setApplications(cachedApps || []);
+      } else {
+        // First session on this device: fallback to server-seed
+        const [p, prefs, j, apps] = await Promise.all([
+          api.getProfile().catch(() => null),
+          api.getPreferences().catch(() => null),
+          api.getJobs().catch(() => []),
+          api.getApplications().catch(() => [])
+        ]);
+
+        setProfile(p);
+        setPreferences(prefs);
+        setJobs(j || []);
+        setApplications(apps || []);
+
+        // Seed client store
+        if (p) saveClientStore('profile', p);
+        if (prefs) saveClientStore('preferences', prefs);
+        if (j) saveClientStore('jobs', j);
+        if (apps) saveClientStore('applications', apps);
+      }
     } catch (e) {
       console.error('Error loading initial data:', e);
     } finally {
@@ -117,19 +150,101 @@ export function App() {
     loadData();
   }, []);
 
+  // Auto-sync state changes to client-side IndexedDB
+  useEffect(() => {
+    if (profile && !loading) {
+      saveClientStore('profile', profile);
+    }
+  }, [profile, loading]);
+
+  useEffect(() => {
+    if (preferences && !loading) {
+      saveClientStore('preferences', preferences);
+    }
+  }, [preferences, loading]);
+
+  useEffect(() => {
+    if (!loading) {
+      saveClientStore('jobs', jobs);
+    }
+  }, [jobs, loading]);
+
+  useEffect(() => {
+    if (!loading) {
+      saveClientStore('applications', applications);
+    }
+  }, [applications, loading]);
+
   const toast = useToast();
 
   const handleApplyToJob = async (job: JobPosting) => {
     try {
       setActiveTab('tracker');
       const draft = await api.applyJob(job.id);
-      setApplications(prev => [draft, ...prev.filter(a => a.job_id !== job.id)]);
+      const updatedApps = [draft, ...applications.filter(a => a.job_id !== job.id)];
+      setApplications(updatedApps);
+      saveClientStore('applications', updatedApps);
+
       const updatedJobs = await api.getJobs();
       setJobs(updatedJobs);
+      saveClientStore('jobs', updatedJobs);
+
       toast.success('CV y carta adaptados exitosamente', job.title);
     } catch (e: any) {
       toast.error('Error al adaptar CV: ' + (e?.message || e));
     }
+  };
+
+  const handleRestoreData = async (bundle: {
+    profile: CandidateProfile | null;
+    preferences: UserPreferences | null;
+    jobs: JobPosting[];
+    applications: ApplicationDraft[];
+  }) => {
+    setProfile(bundle.profile);
+    setPreferences(bundle.preferences);
+    setJobs(bundle.jobs);
+    setApplications(bundle.applications);
+
+    await Promise.all([
+      saveClientStore('profile', bundle.profile),
+      saveClientStore('preferences', bundle.preferences),
+      saveClientStore('jobs', bundle.jobs),
+      saveClientStore('applications', bundle.applications)
+    ]);
+
+    // Sync to backend so LLM pipelines have context
+    if (bundle.profile) {
+      try {
+        await api.updateProfile(bundle.profile);
+      } catch (err) {
+        console.warn('Backend profile sync error:', err);
+      }
+    }
+    if (bundle.preferences) {
+      try {
+        await api.updatePreferences(bundle.preferences);
+      } catch (err) {
+        console.warn('Backend preferences sync error:', err);
+      }
+    }
+  };
+
+  const handlePurgeData = () => {
+    setProfile({
+      name: '',
+      years_of_experience: 0,
+      technical_skills: [],
+      soft_skills: [],
+      languages: {},
+      experiences: [],
+      education: [],
+      certifications: []
+    });
+    setPreferences(null);
+    setJobs([]);
+    setApplications([]);
+    clearClientStore();
   };
 
   return (
@@ -142,6 +257,7 @@ export function App() {
         darkMode={darkMode}
         setDarkMode={setDarkMode}
         openSettings={() => setIsSettingsOpen(true)}
+        openPrivacyModal={() => setIsPrivacyOpen(true)}
         llmSettings={settings}
       />
 
@@ -213,6 +329,18 @@ export function App() {
         onClose={() => setIsSettingsOpen(false)}
         settings={settings}
         onSettingsUpdated={(s) => setSettings(s)}
+      />
+
+      {/* Sovereign Session & Privacy Exit Modal */}
+      <SessionPrivacyModal
+        isOpen={isPrivacyOpen}
+        onClose={() => setIsPrivacyOpen(false)}
+        profile={profile}
+        preferences={preferences}
+        jobs={jobs}
+        applications={applications}
+        onRestoreData={handleRestoreData}
+        onPurgeData={handlePurgeData}
       />
 
     </div>
