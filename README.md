@@ -377,5 +377,5 @@ flowchart TD
 
 Este proyecto está bajo la Licencia **MIT** — consulta el archivo [LICENSE](LICENSE) para más detalles.
 
-Autor y Desarrollador: **Alejandro Aguirre** ([@alejandroham](https://github.com/alejandroham))
+Desarrollado con arquitectura agéntica de IA y privacidad local por el equipo de **NexusJob AI**.
 
