@@ -52,4 +52,7 @@ data/*.txt
 data/uploads/*
 !data/uploads/.gitkeep
 !data/.gitkeep
+backups/
+*.zip
+.tools/
 test_clean_parse.py

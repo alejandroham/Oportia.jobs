@@ -232,13 +232,16 @@ flowchart TD
 
 ## 🚀 Inicio Rápido
 
-### Opción A: Lanzador en 1 Clic (Windows)
-Haz doble clic sobre:
-```bash
-start_app.bat
-```
-*(O ejecuta `./start_app.ps1` en PowerShell).*  
-Instala automáticamente el entorno virtual, levanta el backend FastAPI y abre la aplicación en tu navegador.
+### Opción A: Lanzador en 1 Clic (macOS / Linux / Windows)
+
+- **macOS / Linux:**
+  ```bash
+  ./start_app.sh
+  ```
+- **Windows:**
+  Haz doble clic sobre `start_app.bat` (o ejecuta `./start_app.ps1` en PowerShell).
+
+Instala automáticamente el entorno virtual, compila el frontend, levanta el backend FastAPI y abre la aplicación en tu navegador en `http://localhost:8000`.
 
 ### Opción B: Ejecución Manual
 
@@ -273,7 +276,7 @@ Agrega a tu configuración MCP (`claude_desktop_config.json` o settings de tu en
     "nexusjob-ai": {
       "command": "python",
       "args": ["run_mcp.py"],
-      "cwd": "C:/Users/.../Agente busca empleo Gemini",
+      "cwd": "/ruta/a/Job-Search-All-IA",
       "env": {
         "GEMINI_API_KEY": "tu_clave_de_gemini"
       }
@@ -372,7 +375,7 @@ flowchart TD
 
 ## 📄 Licencia
 
-Este proyecto está bajo la Licencia **MIT** — consulta el archivo [LICENSE](file:///c:/Users/Alejandro%20Aguirre/OneDrive/Documentos/Agente%20busca%20empleo%20Gemini/LICENSE) para más detalles.
+Este proyecto está bajo la Licencia **MIT** — consulta el archivo [LICENSE](LICENSE) para más detalles.
 
 Autor y Desarrollador: **Alejandro Aguirre** ([@alejandroham](https://github.com/alejandroham))
 

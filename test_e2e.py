@@ -41,9 +41,9 @@ def test_pipeline():
     # TEST 1: CV Parsing & Profile Extraction
     print("[TEST 1/7] Probando Extracción de Perfil de CV...")
     sample_cv = """
-    Alejandro Aguirre
+    Alex Dev
     Senior AI & Full Stack Engineer | Santiago, Chile (Disponible Remoto Global)
-    Email: alejandro@example.com | LinkedIn: linkedin.com/in/alejandro
+    Email: alex.dev@example.com | LinkedIn: linkedin.com/in/alexdev
     
     Perfil Profesional:
     Ingeniero de Software con más de 7 años de experiencia construyendo arquitecturas distribuidas, 
@@ -70,7 +70,7 @@ def test_pipeline():
     Ingeniería en Informática — Universidad (2018)
     """
 
-    profile = analyze_cv_content(sample_cv)
+    profile = analyze_cv_content(sample_cv, save_to_db=False)
     print(f"  ✓ Perfil procesado para: {profile.name}")
     print(f"  ✓ Titular: {profile.headline}")
     print(f"  ✓ Habilidades detectadas ({len(profile.technical_skills)}): {profile.technical_skills[:6]}")
