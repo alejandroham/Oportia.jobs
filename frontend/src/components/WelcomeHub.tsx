@@ -181,7 +181,7 @@ export const WelcomeHub: React.FC<WelcomeHubProps> = ({
         </div>
       </div>
 
-      {/* Section 3: Privacidad, Seguridad y Cumplimiento Legal (Ley 19.628 de Chile & RGPD) */}
+      {/* Section 3: Privacidad, Seguridad y Cumplimiento Legal (Ley 21.719 y Ley 19.628 de Chile) */}
       <div className="rounded-3xl bg-gradient-to-br from-emerald-950/30 via-zinc-900/40 to-blue-950/30 border border-emerald-500/30 p-6 sm:p-8 space-y-5 backdrop-blur-xl shadow-xl">
         <div className="flex items-center space-x-3 border-b border-white/10 pb-4">
           <div className="w-11 h-11 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-500/40">
@@ -191,11 +191,11 @@ export const WelcomeHub: React.FC<WelcomeHubProps> = ({
             <h3 className="text-base font-bold text-white flex items-center gap-2">
               <span>Compromiso de Seguridad, Soberanía y Cumplimiento Legal</span>
               <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
-                Ley N° 19.628 (Chile)
+                Ley N° 21.719 & 19.628 (Chile)
               </span>
             </h3>
             <p className="text-xs text-gray-400">
-              Garantía de protección de la vida privada, soberanía de datos personales y estándar internacional de privacidad.
+              Garantía de protección de datos personales, privacidad desde el diseño y por defecto (Privacy by Design), y consentimiento informado verificable.
             </p>
           </div>
         </div>
@@ -208,7 +208,7 @@ export const WelcomeHub: React.FC<WelcomeHubProps> = ({
               <span>Almacenamiento Local Soberano (Zero-Knowledge)</span>
             </div>
             <p className="text-gray-400 text-[11px] leading-relaxed">
-              Tus datos de contacto, historial laboral y postulaciones residen exclusivamente en la base de datos local de tu navegador (IndexedDB). No existen bases de datos centrales en la nube recopilando tu información personal.
+              Tus datos de contacto, historial laboral y postulaciones residen exclusivamente en la base de datos local de tu navegador (IndexedDB). No existen bases de datos centrales en la nube recopilando tu información personal ni custodia de terceros (Art. 12 Ley 21.719).
             </p>
           </div>
 
@@ -235,10 +235,10 @@ export const WelcomeHub: React.FC<WelcomeHubProps> = ({
           <div className="p-4 rounded-2xl bg-black/30 border border-white/5 space-y-1.5">
             <div className="font-semibold text-emerald-300 flex items-center space-x-1.5">
               <HeartHandshake className="w-4 h-4 text-emerald-400" />
-              <span>Derecho al Olvido Efectivo (Cancelación Total)</span>
+              <span>Derecho al Olvido y Supresión Efectiva (Art. 17 Ley 21.719)</span>
             </div>
             <p className="text-gray-400 text-[11px] leading-relaxed">
-              En pleno cumplimiento de los derechos de acceso, rectificación, cancelación y oposición de la <strong>Ley N° 19.628</strong>, el botón de purgado elimina el 100% de tu información personal, historial y credenciales con un solo clic.
+              En pleno cumplimiento de los derechos ARCO de la <strong>Ley N° 21.719</strong> y Ley 19.628, el botón de purgado elimina el 100% de tu información personal, historial y credenciales con un solo clic de forma irreversible.
             </p>
           </div>
 
