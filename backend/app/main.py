@@ -573,6 +573,19 @@ def update_llm_settings(config: LLMConfig):
         settings.save_persisted_llm_settings()
     return {"message": "Configuración de IA actualizada y guardada localmente"}
 
+@app.post("/api/settings/purge")
+def purge_settings_and_keys():
+    """Wipes all API keys and removes stored credentials from memory and disk."""
+    llm.reset_provider()
+    return {"message": "Claves de API y configuración eliminadas completamente"}
+
+@app.post("/api/purge-all")
+def purge_all_data():
+    """Wipes all candidate profiles, preferences, jobs, applications, and API keys."""
+    llm.reset_provider()
+    db.purge_all_data()
+    return {"message": "Todos los datos y claves han sido purgados exitosamente"}
+
 # Serve frontend build if present
 FRONTEND_DIST = settings.BASE_DIR / "frontend" / "dist"
 if FRONTEND_DIST.exists():

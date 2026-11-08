@@ -7,6 +7,7 @@ import { ApplicationStudio } from './components/ApplicationStudio';
 import { PreferencesCenter } from './components/PreferencesCenter';
 import { SettingsModal } from './components/SettingsModal';
 import { SessionPrivacyModal } from './components/SessionPrivacyModal';
+import { WelcomeHub } from './components/WelcomeHub';
 import { useToast } from './components/Toast';
 import type {
   CandidateProfile,
@@ -230,7 +231,13 @@ export function App() {
     }
   };
 
-  const handlePurgeData = () => {
+  const handlePurgeData = async () => {
+    try {
+      await api.purgeSettings().catch(() => {});
+      await api.purgeAllServerData().catch(() => {});
+    } catch (e) {
+      console.warn('Error purging backend:', e);
+    }
     setProfile({
       name: '',
       years_of_experience: 0,
@@ -244,7 +251,18 @@ export function App() {
     setPreferences(null);
     setJobs([]);
     setApplications([]);
-    clearClientStore();
+    setSettings({
+      provider: 'gemini',
+      has_gemini_key: false,
+      has_openai_key: false,
+      has_claude_key: false,
+      gemini_model: 'gemini-3.5-flash',
+      openai_model: 'gpt-4o',
+      claude_model: 'claude-3-5-sonnet-20241022'
+    });
+    await clearClientStore();
+    setActiveTab('welcome');
+    setIsPrivacyOpen(false);
   };
 
   return (
@@ -271,6 +289,17 @@ export function App() {
         ) : (
           <ErrorBoundary>
             <div className="animate-fade-in">
+              {activeTab === 'welcome' && (
+                <WelcomeHub
+                  profile={profile}
+                  llmSettings={settings}
+                  onNavigateToTab={(tab) => setActiveTab(tab)}
+                  onOpenPrivacyModal={() => setIsPrivacyOpen(true)}
+                  onOpenSettings={() => setIsSettingsOpen(true)}
+                  onUploadCVClick={() => setActiveTab('profile')}
+                />
+              )}
+
               {activeTab === 'radar' && (
                 <JobRadar
                   jobs={jobs}
@@ -341,6 +370,7 @@ export function App() {
         applications={applications}
         onRestoreData={handleRestoreData}
         onPurgeData={handlePurgeData}
+        onGoToWelcome={() => setActiveTab('welcome')}
       />
 
     </div>

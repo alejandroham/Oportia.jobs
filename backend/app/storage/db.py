@@ -441,4 +441,24 @@ class Database:
             self.save_role_recommendations(recs)
         return target
 
+    def purge_all_data(self):
+        """Wipes all local candidate data, preferences, jobs, and history."""
+        empty_profile = CandidateProfile(
+            name="Candidato",
+            years_of_experience=0.0,
+            technical_skills=[],
+            soft_skills=[],
+            languages={},
+            experiences=[],
+            education=[],
+            certifications=[]
+        )
+        self.save_profile(empty_profile)
+        self.save_preferences(UserPreferences())
+        self._write_json(settings.JOBS_FILE, [])
+        self._write_json(settings.APPLICATIONS_FILE, [])
+        self._write_json(settings.FEEDBACK_FILE, [])
+        if hasattr(settings, 'ROLE_RECOMMENDATIONS_FILE') and settings.ROLE_RECOMMENDATIONS_FILE.exists():
+            self._write_json(settings.ROLE_RECOMMENDATIONS_FILE, [])
+
 db = Database()

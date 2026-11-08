@@ -328,7 +328,7 @@ export const api = {
     return res.json();
   },
 
-  // Settings
+  // Settings & Security Purge
   getSettings: async (): Promise<LLMSettings> => {
     const res = await fetch(`${API_BASE}/settings`);
     return res.json();
@@ -338,6 +338,18 @@ export const api = {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
+    });
+    return res.json();
+  },
+  purgeSettings: async () => {
+    const res = await fetch(`${API_BASE}/settings/purge`, {
+      method: 'POST'
+    });
+    return res.json();
+  },
+  purgeAllServerData: async () => {
+    const res = await fetch(`${API_BASE}/purge-all`, {
+      method: 'POST'
     });
     return res.json();
   }

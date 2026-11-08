@@ -41,6 +41,11 @@ class UnifiedLLMProvider:
         settings.DEFAULT_PROVIDER = provider
         settings.save_persisted_llm_settings()
 
+    def reset_provider(self):
+        """Wipes active API clients and memory instances."""
+        self._gemini_client = None
+        settings.purge_keys()
+
     def generate_text(self, prompt: str, system_instruction: Optional[str] = None, provider: Optional[str] = None) -> str:
         prov = provider or settings.DEFAULT_PROVIDER
         

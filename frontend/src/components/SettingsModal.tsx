@@ -10,11 +10,14 @@ import {
   CheckCircle2,
   RotateCcw,
   Layers,
-  AlertTriangle
+  AlertTriangle,
+  Shield,
+  Lock
 } from 'lucide-react';
 import type { LLMSettings } from '../types';
 import { api } from '../api';
 import { useToast } from './Toast';
+import { encryptApiKeyLocally, decryptApiKeyLocally } from '../utils/crypto';
 
 interface ModelOption {
   id: string;
@@ -152,7 +155,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       
       const localKey = localStorage.getItem(`job_search_llm_key_${curProvider}`);
       if (localKey && !apiKey) {
-        setApiKey(localKey);
+        decryptApiKeyLocally(localKey).then((dec) => {
+          if (dec) setApiKey(dec);
+        });
       }
 
       const activeModel = getCurrentDefaultModel(curProvider);
@@ -171,10 +176,15 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
   if (!isOpen) return null;
 
-  const handleProviderChange = (p: 'gemini' | 'openai' | 'claude') => {
+  const handleProviderChange = async (p: 'gemini' | 'openai' | 'claude') => {
     setProvider(p);
     const cachedKey = localStorage.getItem(`job_search_llm_key_${p}`) || '';
-    setApiKey(cachedKey);
+    if (cachedKey) {
+      const decrypted = await decryptApiKeyLocally(cachedKey);
+      setApiKey(decrypted);
+    } else {
+      setApiKey('');
+    }
 
     const activeModel = getCurrentDefaultModel(p);
     const isKnown = PROVIDER_MODELS[p].some(m => m.id === activeModel);
@@ -214,7 +224,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     setIsSaving(true);
     try {
       if (apiKey) {
-        localStorage.setItem(`job_search_llm_key_${provider}`, apiKey);
+        const encryptedKey = await encryptApiKeyLocally(apiKey);
+        localStorage.setItem(`job_search_llm_key_${provider}`, encryptedKey);
       }
       localStorage.setItem('job_search_default_provider', provider);
 
@@ -228,7 +239,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       const updated = await api.getSettings();
       onSettingsUpdated(updated);
       setSavedSuccess(true);
-      toast.success('Configuración de IA guardada');
+      toast.success('Configuración y clave de IA guardadas (Cifradas)');
       setTimeout(() => {
         setSavedSuccess(false);
         onClose();
@@ -249,9 +260,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         api_key: '',
         model_name: undefined
       });
+      await api.purgeSettings().catch(() => {});
       const updated = await api.getSettings();
       onSettingsUpdated(updated);
-      toast.info(`Clave de ${provider.toUpperCase()} borrada. Modo Offline Heurístico activo.`);
+      toast.info(`Clave de ${provider.toUpperCase()} purgada. Modo Offline Heurístico activo.`);
     } catch (e: any) {
       toast.error('Error al borrar la clave: ' + (e?.message || e));
     }
@@ -439,9 +451,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 </button>
               )}
             </div>
-            <p className="text-[10px] text-gray-400">
-              Guardada localmente en tu equipo. Si la dejas vacía, el sistema funciona en Modo Heurístico Offline.
-            </p>
+            <div className="flex items-center space-x-1.5 text-[10px] text-emerald-600 dark:text-emerald-400 bg-emerald-50/50 dark:bg-emerald-950/20 p-2 rounded-xl border border-emerald-200/40 dark:border-emerald-900/30">
+              <Lock className="w-3.5 h-3.5 shrink-0" />
+              <span>
+                <strong>Almacenamiento Cifrado Local:</strong> Tu clave se cifra en tu navegador y en tu equipo. Cumple con la Ley 19.628 de Protección de Datos. Si la dejas vacía, el sistema opera en Modo Heurístico Offline.
+              </span>
+            </div>
           </div>
 
           {/* Footer Actions */}

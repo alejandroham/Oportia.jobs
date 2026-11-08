@@ -10,6 +10,12 @@ import type {
   JobPosting,
   ApplicationDraft
 } from '../types';
+import {
+  encryptText,
+  decryptPackage,
+  clearDeviceCryptoSeed,
+  type EncryptedPackage
+} from './crypto';
 
 const DB_NAME = 'NexusJob_SovereignDB';
 const DB_VERSION = 1;
@@ -106,16 +112,22 @@ export async function clearClientStore(): Promise<void> {
     console.warn('[Storage] Error al limpiar IndexedDB:', e);
   }
 
-  // Clear localStorage keys related to NexusJob
+  // Clear ALL localStorage keys related to NexusJob including API keys and encryption seed
   try {
     const keysToRemove = [
       'nexusjob_profile',
       'nexusjob_preferences',
       'nexusjob_jobs',
       'nexusjob_applications',
-      'nexusjob_radar_pageSize'
+      'nexusjob_radar_pageSize',
+      'job_search_llm_key_gemini',
+      'job_search_llm_key_openai',
+      'job_search_llm_key_claude',
+      'job_search_default_provider',
+      'nexusjob_sec_seed_v1'
     ];
     keysToRemove.forEach((k) => localStorage.removeItem(k));
+    clearDeviceCryptoSeed();
   } catch {
     // ignore
   }
@@ -123,12 +135,14 @@ export async function clearClientStore(): Promise<void> {
 
 // ── Export / Import Backup Helpers ────────────────────────────────────────
 
-export function exportSessionBackupFile(
+export async function exportSessionBackupFile(
   profile: CandidateProfile | null,
   preferences: UserPreferences | null,
   jobs: JobPosting[],
-  applications: ApplicationDraft[]
-): void {
+  applications: ApplicationDraft[],
+  passphrase?: string,
+  hint?: string
+): Promise<void> {
   const dateStr = new Date().toISOString().split('T')[0];
   const bundle: SessionBackupBundle = {
     app: 'NexusJob AI',
@@ -143,16 +157,27 @@ export function exportSessionBackupFile(
     }
   };
 
-  const jsonStr = JSON.stringify(bundle, null, 2);
-  const blob = new Blob([jsonStr], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-
   const cleanName = (profile?.name || 'candidato')
     .toLowerCase()
     .replace(/[^a-z0-9]/g, '_')
     .replace(/_+/g, '_');
 
-  const filename = `nexusjob_backup_${cleanName}_${dateStr}.json`;
+  let fileContent: string;
+  let filename: string;
+
+  if (passphrase && passphrase.trim().length > 0) {
+    // Military Grade AES-GCM 256-bit encryption
+    const rawJson = JSON.stringify(bundle);
+    const encryptedPkg = await encryptText(rawJson, passphrase, hint);
+    fileContent = JSON.stringify(encryptedPkg, null, 2);
+    filename = `nexusjob_cifrado_${cleanName}_${dateStr}.nexusjob`;
+  } else {
+    fileContent = JSON.stringify(bundle, null, 2);
+    filename = `nexusjob_backup_${cleanName}_${dateStr}.json`;
+  }
+
+  const blob = new Blob([fileContent], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
 
   const link = document.createElement('a');
   link.href = url;
@@ -163,13 +188,33 @@ export function exportSessionBackupFile(
   URL.revokeObjectURL(url);
 }
 
-export async function parseSessionBackupFile(file: File): Promise<SessionBackupBundle['payload']> {
+export async function parseSessionBackupFile(
+  file: File,
+  passphrase?: string
+): Promise<SessionBackupBundle['payload']> {
   const text = await file.text();
   let parsed: any;
   try {
     parsed = JSON.parse(text);
   } catch {
-    throw new Error('El archivo seleccionado no es un JSON válido.');
+    throw new Error('El archivo seleccionado no tiene un formato válido.');
+  }
+
+  // Handle AES-GCM 256-bit encrypted packages
+  if (parsed.encrypted === true || parsed.format_version === '2.0-encrypted') {
+    if (!passphrase) {
+      const err: any = new Error('El archivo de respaldo está cifrado con contraseña.');
+      err.isEncrypted = true;
+      err.hint = parsed.hint;
+      throw err;
+    }
+
+    const decryptedText = await decryptPackage(parsed as EncryptedPackage, passphrase);
+    try {
+      parsed = JSON.parse(decryptedText);
+    } catch {
+      throw new Error('El contenido descifrado está dañado o no es válido.');
+    }
   }
 
   // Validate format
@@ -182,7 +227,7 @@ export async function parseSessionBackupFile(file: File): Promise<SessionBackupB
     };
   }
 
-  // Fallback for direct profile or raw export
+  // Fallback for direct profile or raw legacy export
   if (parsed.name && parsed.experiences) {
     return {
       profile: parsed as CandidateProfile,

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Radar, Settings as SettingsIcon, Sun, Moon, Briefcase, User, Brain, Shield } from 'lucide-react';
+import { Radar, Settings as SettingsIcon, Sun, Moon, Briefcase, User, Brain, Shield, Info, Sparkles } from 'lucide-react';
 import type { LLMSettings } from '../types';
 
 interface NavbarProps {
@@ -21,8 +21,9 @@ export const Navbar: React.FC<NavbarProps> = ({
   openPrivacyModal,
   llmSettings
 }) => {
-  // Clean, spacious Apple navigation (Applications & Interview Coach unified inside Tracker)
+  // Clean, spacious Apple navigation
   const tabs = [
+    { id: 'welcome', label: 'Conoce NexusJob', shortLabel: 'Inicio', icon: Info },
     { id: 'radar', label: 'Radar de Empleo', shortLabel: 'Radar', icon: Radar },
     { id: 'tracker', label: 'Mis Postulaciones', shortLabel: 'Postulaciones', icon: Briefcase },
     { id: 'profile', label: 'Perfil & CV', shortLabel: 'Perfil', icon: User },
@@ -41,8 +42,12 @@ export const Navbar: React.FC<NavbarProps> = ({
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           
           {/* Brand / Logo */}
-          <div className="flex items-center space-x-2.5 sm:space-x-3">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-sky-400 flex items-center justify-center shadow-md shadow-blue-500/20 shrink-0">
+          <button
+            onClick={() => setActiveTab('welcome')}
+            className="flex items-center space-x-2.5 sm:space-x-3 text-left hover:opacity-85 transition group focus:outline-none"
+            title="Ir a Inicio & Conoce NexusJob"
+          >
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-sky-400 flex items-center justify-center shadow-md shadow-blue-500/20 shrink-0 group-hover:scale-105 transition">
               <Radar className="w-4 h-4 text-white" />
             </div>
             <div>
@@ -53,7 +58,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </span>
               </div>
             </div>
-          </div>
+          </button>
 
           {/* Clean Apple Segmented Navigation without icons (Desktop / Tablet Landscape) */}
           <nav className="hidden md:flex items-center bg-gray-200/50 dark:bg-zinc-800/60 p-1 rounded-full border border-black/5 dark:border-white/5 space-x-1">
