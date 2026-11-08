@@ -43,7 +43,7 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
       id: 'welcome',
       role: 'assistant',
       content:
-        '¡Hola! Soy tu Coach de Memoria Cognitiva. Cuéntame sobre tus logros más destacados, los proyectos donde tuviste mayor impacto o qué tipo de roles y cultura buscas. Yo me encargo de extraer automáticamente tus casos de éxito en formato STAR y afinar tus preferencias de postulación.',
+        '¡Hola! Soy Nexus, tu asistente de perfil profesional y búsqueda de empleo. Mi objetivo es estructurar con precisión tus mayores logros laborales en formato STAR, calibrar tus condiciones ideales de trabajo y ayudarte a consultar las mejores ofertas de tu Radar. ¿Qué proyecto reciente te gustaría registrar o qué vacantes deseas consultar?',
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     }
   ]);
@@ -117,10 +117,10 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
   };
 
   const promptSuggestions = [
-    'Quiero registrar un proyecto donde reduje costos u optimicé infraestructura',
+    '¿Qué ofertas laborales remotas tengo en el Radar?',
+    'Quiero registrar un proyecto donde optimicé costos o infraestructura',
     'Solo busco empresas con trabajo 100% remoto y stack moderno',
-    'Descarto cualquier rol presencial o en el sector manufacturero tradicional',
-    'Hazme una pregunta de entrevista técnica para extraer un logro STAR'
+    'Descarto ofertas presenciales o en sectores tradicionales'
   ];
 
   return (
@@ -129,27 +129,27 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
       {/* Chat Header */}
       <div className="px-5 py-4 border-b border-black/5 dark:border-white/5 bg-gray-50/60 dark:bg-zinc-900/60 flex items-center justify-between">
         <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-indigo-600 via-blue-600 to-sky-400 flex items-center justify-center text-white shadow-md shadow-indigo-500/20">
+          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-sky-400 flex items-center justify-center text-white shadow-md shadow-blue-500/20">
             <Brain className="w-5 h-5" />
           </div>
           <div>
             <div className="flex items-center space-x-2">
               <h3 className="font-bold text-sm text-gray-900 dark:text-white">
-                Coach Conversacional de Memoria
+                Nexus — Asistente de Perfil Profesional
               </h3>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
-                Memoria Continua
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                Nexus AI
               </span>
             </div>
             <p className="text-[11px] text-gray-500 dark:text-gray-400">
-              Conversa naturalmente; la IA extraerá tus casos STAR y afinidades en tiempo real.
+              Estructura logros STAR, define preferencias y consulta vacantes reales del Radar con precisión.
             </p>
           </div>
         </div>
 
         <div className="text-right hidden sm:block">
           <span className="text-[11px] font-medium text-gray-400">Madurez del Modelo:</span>
-          <span className="ml-1.5 font-bold text-indigo-600 dark:text-indigo-400 text-xs">
+          <span className="ml-1.5 font-bold text-blue-600 dark:text-blue-400 text-xs">
             {preferences.memory_stats?.maturity_percentage || 0}%
           </span>
         </div>
@@ -235,8 +235,8 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
 
         {isLoading && (
           <div className="flex items-center space-x-2 text-gray-400 text-xs py-2">
-            <div className="w-4 h-4 rounded-full border-2 border-indigo-600 border-t-transparent animate-spin" />
-            <span>El Coach de Memoria está analizando y abstrayendo patrones...</span>
+            <div className="w-4 h-4 rounded-full border-2 border-blue-600 border-t-transparent animate-spin" />
+            <span>Nexus está analizando y respondiendo de forma concisa...</span>
           </div>
         )}
 
@@ -253,7 +253,7 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
             key={i}
             onClick={() => handleSend(sugg)}
             disabled={isLoading}
-            className="px-2.5 py-1 rounded-full text-[11px] bg-white dark:bg-zinc-800 border border-black/5 dark:border-white/5 hover:border-indigo-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition whitespace-nowrap shrink-0 shadow-xs disabled:opacity-50"
+            className="px-2.5 py-1 rounded-full text-[11px] bg-white dark:bg-zinc-800 border border-black/5 dark:border-white/5 hover:border-blue-400 hover:text-blue-600 dark:hover:text-blue-400 transition whitespace-nowrap shrink-0 shadow-xs disabled:opacity-50"
           >
             {sugg}
           </button>
@@ -271,17 +271,17 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
               handleSend();
             }
           }}
-          placeholder="Escribe un logro, proyecto o preferencia laboral... (Enter para enviar)"
+          placeholder="Escribe a Nexus: consulta ofertas del Radar, comparte un logro o define condiciones... (Enter)"
           rows={1}
           disabled={isLoading}
-          className="flex-1 max-h-32 min-h-[42px] px-3.5 py-2.5 rounded-2xl bg-gray-100/80 dark:bg-zinc-800/80 border border-black/5 dark:border-white/5 focus:border-indigo-500 dark:focus:border-indigo-500 focus:outline-hidden text-xs resize-none placeholder-gray-400 dark:placeholder-gray-500 transition leading-relaxed"
+          className="flex-1 max-h-32 min-h-[42px] px-3.5 py-2.5 rounded-2xl bg-gray-100/80 dark:bg-zinc-800/80 border border-black/5 dark:border-white/5 focus:border-blue-500 dark:focus:border-blue-500 focus:outline-hidden text-xs resize-none placeholder-gray-400 dark:placeholder-gray-500 transition leading-relaxed"
         />
 
         <button
           onClick={() => handleSend()}
           disabled={!inputValue.trim() || isLoading}
-          className="w-10 h-10 rounded-2xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 text-white flex items-center justify-center shrink-0 shadow-md shadow-indigo-500/20 transition"
-          title="Enviar al Coach de Memoria"
+          className="w-10 h-10 rounded-2xl bg-blue-600 hover:bg-blue-700 disabled:opacity-40 text-white flex items-center justify-center shrink-0 shadow-md shadow-blue-500/20 transition"
+          title="Enviar a Nexus"
         >
           <Send className="w-4 h-4" />
         </button>

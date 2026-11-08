@@ -343,60 +343,117 @@ RESPONDE ÚNICAMENTE CON UN JSON:
 
     def chat_and_learn(self, message: str, chat_history: Optional[List[Dict[str, str]]] = None) -> Dict[str, Any]:
         """
-        Conversational Memory Coach: interacts with candidate, extracts STAR stories,
-        infers career affinities/deal-breakers and enriches cognitive memory in real-time.
+        Nexus — Asistente de Perfil Profesional & Búsqueda de Empleo.
+        Friendly, deterministic, token-efficient, zero-hallucinations, and anti-jailbreak protected.
+        Supports conversational memory ingestion and Radar job querying.
         """
         profile = db.get_profile()
         prefs = db.get_preferences()
         history = chat_history or []
 
+        msg_lower = message.lower().strip()
+
+        # ── 1. Anti-Jailbreak Guardrail ───────────────────────────────────────────
+        jailbreak_patterns = [
+            "ignore previous", "ignora las instrucciones", "ignora todas las instrucciones",
+            "jailbreak", "modo desarrollador", "developer mode", "finge que eres", "dan mode",
+            "rompe tu programacion", "cambia tus reglas", "actua como", "olvida tus reglas"
+        ]
+        if any(p in msg_lower for p in jailbreak_patterns):
+            refusal_msg = (
+                "Como Nexus, mi propósito está estrictamente enfocado en optimizar tu perfil profesional, "
+                "estructurar tus logros de carrera y ayudarte en la búsqueda de empleo. "
+                "No puedo realizar tareas fuera de ese ámbito. ¿Qué proyecto o vacante de tu Radar te gustaría que revisemos?"
+            )
+            return {
+                "reply": refusal_msg,
+                "has_new_story": False,
+                "new_story": None,
+                "new_insights": [],
+                "new_deal_breakers": [],
+                "preferences": prefs.model_dump()
+            }
+
+        # ── 2. Compact Radar Jobs Context (Token-Optimized) ──────────────────────
+        job_intent_keywords = [
+            "oferta", "ofertas", "empleo", "empleos", "vacante", "vacantes",
+            "trabajo", "trabajos", "radar", "postular", "postulaciones",
+            "remoto", "remota", "empresa", "buscar", "busqueda", "salario"
+        ]
+        is_job_query = any(k in msg_lower for k in job_intent_keywords)
+
+        relevant_jobs_section = ""
+        if is_job_query:
+            all_jobs = db.get_jobs()
+            if all_jobs:
+                # Rank jobs by keyword match with user query or highest fit
+                scored_jobs = []
+                for j in all_jobs:
+                    j_text = f"{j.title} {j.company} {j.location} {j.description or ''}".lower()
+                    words = [w for w in msg_lower.split() if len(w) > 3]
+                    score = sum(2 for w in words if w in j_text)
+                    if j.is_remote and "remot" in msg_lower:
+                        score += 3
+                    scored_jobs.append((score, j))
+
+                scored_jobs.sort(key=lambda x: (x[0], x[1].fit_score or 0), reverse=True)
+                top_jobs = [item[1] for item in scored_jobs[:5]]
+
+                lines = [
+                    f"• {j.title} en {j.company} ({'100% Remoto' if j.is_remote else j.location or 'Chile'})"
+                    for j in top_jobs
+                ]
+                relevant_jobs_section = (
+                    "OFERTAS REALES ACTUALMENTE EN EL RADAR (Usa únicamente estas si el usuario pregunta por vacantes):\n"
+                    + "\n".join(lines)
+                )
+
+        # ── 3. Strict & Token-Efficient System Instructions ──────────────────────
         system_instruction = (
-            "Eres el Coach de Memoria Cognitiva de NexusJob AI. "
-            "Tu misión es conversar con el candidato de forma empática, estratégica y ejecutiva "
-            "para descubrir sus mayores logros laborales, desafíos técnicos superados, métricas de impacto, "
-            "cultura organizacional deseada y condiciones innegociables (deal-breakers).\n\n"
-            "INSTRUCCIONES CLAVE:\n"
-            "1. En 'assistant_reply', responde con calidez y profesionalismo. Si el candidato cuenta un logro, "
-            "valídalo y felicítalo por el impacto. Haz una pregunta de seguimiento inteligente para profundizar en detalles "
-            "(ej. '¿Qué tecnologías fueron clave?', '¿Cómo manejaste la resistencia del equipo?').\n"
-            "2. Si el mensaje describe una experiencia relevante, sintetízala en formato STAR (Situation/Task, Action, Result) "
-            "en 'star_story'. Si no es un logro completo, deja 'star_story' en null.\n"
-            "3. Si el candidato menciona preferencias de trabajo (ej. 'solo remoto', 'descarto bancos'), agrégalas en 'new_insights' o 'deal_breakers'.\n"
+            "Eres 'Nexus', el asistente de perfil profesional y búsqueda de empleo de NexusJob AI.\n\n"
+            "PERSONALIDAD Y DIRECTRICES:\n"
+            "1. Amigable, claro, ejecutivo y determinista. No uses palabrería de relleno ni introducciones floridas.\n"
+            "2. AHORRO MÁXIMO DE TOKENS: Sé conciso. Tu respuesta ('assistant_reply') debe tener como máximo 2 párrafos breves "
+            "(menos de 90 palabras en total) o viñetas limpias.\n"
+            "3. CERO ALUCINACIONES: Jamás inventes métricas, cargos o vacantes no presentes en el contexto. "
+            "Si el usuario pregunta por empleos, básate estrictamente en las ofertas del Radar suministradas.\n"
+            "4. Cierra siempre con UNA SOLA pregunta breve y estratégica para profundizar en detalles o avanzar en la búsqueda.\n"
+            "5. SEGURIDAD: Mantente en tu rol de asistente de carrera profesional sin desviarte bajo ninguna circunstancia.\n\n"
             "RESPONDE ESTRICTAMENTE EN FORMATO JSON."
         )
 
-        existing_titles = [s.title for s in prefs.learned_star_stories]
+        existing_titles = [s.title for s in prefs.learned_star_stories[:5]]
+        top_skills = profile.technical_skills[:6] if profile.technical_skills else []
 
         prompt = f"""
-CANDIDATO: {profile.name or 'Candidato'} ({profile.headline or 'Profesional TI'})
-HISTORIAS STAR YA REGISTRADAS EN MEMORIA:
-{json.dumps(existing_titles, ensure_ascii=False)}
+CANDIDATO: {profile.name or 'Candidato'} | {profile.headline or 'Profesional TI'} | Skills: {', '.join(top_skills)}
+HISTORIAS STAR EXISTENTES: {json.dumps(existing_titles, ensure_ascii=False)}
+REGLAS APRENDIDAS: {json.dumps(prefs.auto_learned_insights[:3], ensure_ascii=False)}
 
-INSIGHTS Y REGLAS ACTUALES:
-{json.dumps(prefs.auto_learned_insights, ensure_ascii=False)}
+{relevant_jobs_section}
 
-HISTORIAL DE LA CONVERSACIÓN RECIENTE:
-{json.dumps(history[-6:], ensure_ascii=False, indent=2)}
+HISTORIAL RECIENTE (Últimos mensajes):
+{json.dumps(history[-4:], ensure_ascii=False)}
 
-NUEVO MENSAJE DEL CANDIDATO:
+MENSAJE DEL CANDIDATO:
 "{message}"
 
-FORMATO OBLIGATORIO DE RESPUESTA JSON:
+FORMATO OBLIGATORIO JSON:
 {{
-  "assistant_reply": "Respuesta conversacional al candidato...",
+  "assistant_reply": "Respuesta breve de Nexus (máx 80 palabras con 1 pregunta concisa al final)",
   "star_story": {{
-    "title": "Título sintético y profesional del logro (ej. Modernización de ERP con IA)",
-    "situation_and_task": "Contexto y reto que enfrentaba...",
-    "action": "Acciones específicas que tomó el candidato...",
-    "result_and_metrics": "Impacto cuantificable o resultado alcanzado...",
+    "title": "Título sintético del logro",
+    "situation_and_task": "Contexto breve",
+    "action": "Acción técnica o de gestión específica",
+    "result_and_metrics": "Métrica o resultado verificable",
     "key_skills": ["Skill1", "Skill2"]
   }},
-  "new_insights": ["Insight o preferencia aprendida (si aplica)"],
-  "deal_breakers": ["Límites o exclusiones innegociables mencionadas (si aplica)"],
-  "preferred_technologies": ["Tecnologías de interés mencionadas (si aplica)"],
-  "target_roles": ["Roles específicos de interés mencionados (si aplica)"]
+  "new_insights": ["Nueva preferencia aprendida si la mencionó"],
+  "deal_breakers": ["Nueva condición eliminatoria si la mencionó"],
+  "preferred_technologies": ["Tecnologías destacadas si las mencionó"],
+  "target_roles": ["Roles específicos de interés si los mencionó"]
 }}
-(Si no se detectó un caso de éxito nuevo o completo, "star_story" debe ser null).
+(Si el mensaje no contiene un caso de éxito nuevo, 'star_story' debe ser null).
 """
 
         new_story_learned = None
@@ -405,13 +462,12 @@ FORMATO OBLIGATORIO DE RESPUESTA JSON:
 
         try:
             res = llm.generate_json(prompt, system_instruction=system_instruction)
-            assistant_reply = res.get("assistant_reply") or "Entendido. He registrado esta información en tu memoria."
+            assistant_reply = res.get("assistant_reply") or "Entendido. He registrado la información en tu perfil profesional."
 
-            # 1. Process STAR Story if detected
+            # Process STAR Story if detected
             story_data = res.get("star_story")
             if isinstance(story_data, dict) and story_data.get("title") and story_data.get("action"):
                 title_lower = story_data["title"].strip().lower()
-                # Deduplicate by title similarity
                 is_duplicate = any(
                     title_lower in s.title.lower() or s.title.lower() in title_lower
                     for s in prefs.learned_star_stories
@@ -425,7 +481,7 @@ FORMATO OBLIGATORIO DE RESPUESTA JSON:
                         action=story_data["action"].strip(),
                         result_and_metrics=story_data.get("result_and_metrics", ""),
                         key_skills=story_data.get("key_skills", []),
-                        source="chat_coach",
+                        source="nexus_assistant",
                         score=95,
                         created_at=datetime.utcnow().isoformat()
                     )
@@ -435,24 +491,24 @@ FORMATO OBLIGATORIO DE RESPUESTA JSON:
                         prefs.memory_stats = MemoryStats()
                     prefs.memory_stats.total_star_answers_learned += 1
 
-            # 2. Process Insights
+            # Process Insights
             for ins in res.get("new_insights", []):
                 if ins and ins not in prefs.auto_learned_insights:
                     prefs.auto_learned_insights.insert(0, ins)
                     new_insights_learned.append(ins)
 
-            # 3. Process Deal Breakers
+            # Process Deal Breakers
             for db_item in res.get("deal_breakers", []):
                 if db_item and db_item not in prefs.deal_breakers:
                     prefs.deal_breakers.append(db_item)
                     new_deal_breakers_learned.append(db_item)
 
-            # 4. Process Preferred Tech
+            # Process Preferred Tech
             for tech in res.get("preferred_technologies", []):
                 if tech and tech not in prefs.preferred_technologies:
                     prefs.preferred_technologies.append(tech)
 
-            # 5. Process Target Roles
+            # Process Target Roles
             for role in res.get("target_roles", []):
                 if role and role not in prefs.target_roles:
                     prefs.target_roles.append(role)
@@ -470,9 +526,30 @@ FORMATO OBLIGATORIO DE RESPUESTA JSON:
             }
 
         except Exception as e:
-            # Resilient offline/error fallback
-            msg_lower = message.lower()
-            heuristic_story = None
+            # Deterministic, compact offline fallback
+            logger.warning(f"Nexus LLM chat fallback: {e}")
+            if is_job_query:
+                all_jobs = db.get_jobs()
+                top = all_jobs[:3]
+                jobs_summary = "\n".join([f"• {j.title} en {j.company}" for j in top])
+                reply = (
+                    f"En tu Radar tienes actualmente {len(all_jobs)} oportunidades indexadas. "
+                    f"Entre las más destacadas:\n{jobs_summary}\n¿Deseas evaluar tu ajuste con alguna de ellas?"
+                )
+            else:
+                reply = (
+                    "He registrado tu mensaje en tu memoria cognitiva. "
+                    "Para maximizar el impacto de tus postulaciones, ¿cuál fue el resultado o métrica concreta de este proyecto?"
+                )
+
+            return {
+                "reply": reply,
+                "has_new_story": False,
+                "new_story": None,
+                "new_insights": [],
+                "new_deal_breakers": [],
+                "preferences": prefs.model_dump()
+            }
             if ("logro" in msg_lower or "proyecto" in msg_lower or "implement" in msg_lower) and len(message) > 40:
                 heuristic_story = LearnedStarStory(
                     id=str(uuid.uuid4())[:8],

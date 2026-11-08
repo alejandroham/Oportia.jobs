@@ -354,7 +354,7 @@ export const PreferencesCenter: React.FC<PreferencesCenterProps> = ({
           }`}
         >
           <MessageSquare className="w-3.5 h-3.5" />
-          <span>Coach Conversacional (Chat)</span>
+          <span>Nexus — Asistente de Perfil</span>
         </button>
 
         <button
