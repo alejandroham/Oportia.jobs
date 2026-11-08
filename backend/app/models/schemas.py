@@ -109,7 +109,7 @@ class JobPosting(BaseModel):
     salary_range: Optional[str] = None
     description: str
     url: Optional[str] = None
-    source: str = "direct" # "remoteok", "arbeitnow", "remotive", "freehire", "linkedin", "manual", "getonbrd", "chiletrabajos", "computrabajo", "laborum"
+    source: str = "direct" # "remoteok", "arbeitnow", "remotive", "freehire", "linkedin", "manual", "getonbrd", "chiletrabajos", "computrabajo", "laborum", "empleospublicos"
     tags: List[str] = []
 
     # Dates

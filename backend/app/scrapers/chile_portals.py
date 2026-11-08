@@ -8,6 +8,7 @@ Portales integrados con sus estrategias específicas:
 3. CompuTrabajo CL → HTML scraper con BeautifulSoup
 4. ChileTrabajos   → HTML scraper ligero (paginado)
 5. Laborum.cl      → HTML scraper con BeautifulSoup
+6. EmpleosPúblicos → API REST oficial de convocatorias del Estado (empleospublicos.cl)
 
 Principios de diseño:
 - Preferir APIs públicas oficiales sobre HTML scraping cuando estén disponibles.
@@ -619,6 +620,227 @@ class LaborumScraper(BaseScraper):
 
 
 # ---------------------------------------------------------------------------
+# 6. Empleos Públicos Chile (empleospublicos.cl) — Official Government Portal
+# ---------------------------------------------------------------------------
+
+class EmpleosPublicosScraper(BaseScraper):
+    """
+    Scraper oficial para Empleos Públicos de Chile (https://www.empleospublicos.cl/).
+    Consume la API REST interna /apiConvocatorias.ashx del Estado de Chile.
+    Aplica filtros de alta precisión para extraer exclusivamente ofertas del sector TI,
+    desarrollo de software, análisis de datos, ciberseguridad, infraestructura y transformación digital,
+    evitando homónimos del sector público (e.g. pools de talento médico que usan el prefijo 'BBDD').
+    """
+    API_URL = "https://www.empleospublicos.cl/apiConvocatorias.ashx"
+
+    # Professions to reject even if they mention technology or an IT department
+    REJECT_ROLES = re.compile(
+        r'\b(secretari[oa]s?|recepcionista|chofer|conductor|auxiliar|m[eé]dic[oa]s?|enfermer[oa]s?|'
+        r'tens\b|param[eé]dic[oa]s?|terapeuta|psic[oó]log[oa]s?|psiquiatra|abogad[oa]s?|'
+        r'matron[a]?|odont[oó]log[oa]s?|kinesi[oó]log[oa]s?|trabajador(a)? social|asistente social|'
+        r'prevencionista|guardaparques|educador(a)?|p[aá]rvul[oa]s?)\b',
+        re.IGNORECASE
+    )
+
+    # Specific non-IT context keywords
+    REJECT_CONTEXTS = re.compile(
+        r'\b(contra incendios|incendio|sistemas de turno|sistema cuarto turno|cuarto turno|'
+        r'atenci[oó]n intersectorial|el[eé]ctricos de potencia|hospital digital)\b',
+        re.IGNORECASE
+    )
+
+    # Positive IT and tech patterns
+    IT_PATTERNS = re.compile(
+        r'\b('
+        r'inform[aá]tic[oa]s?|'
+        r'software|'
+        r'desarrollador[a-z]*|programador[a-z]*|developer|fullstack|frontend|backend|devops|qa\b|tester|'
+        r'computaci[oó]n|computacional|'
+        r'ciberseguridad|seguridad de la informaci[oó]n|aseguramiento de la informaci[oó]n|'
+        r'redes y telecomunicaciones|soporte computacional|infraestructura ti|'
+        r'sistemas inform[aá]ticos|'
+        r'ciencias? de datos|data science|ingenier[oí]a de datos|gestor[a-z]* de datos|analista de datos|'
+        r'transformaci[oó]n digital|tecnolog[ií]as de la informaci[oó]n|'
+        r'plataformas digitales|centro tecnol[oó]gico|transferencia tecnol[oó]gica|'
+        r'ingenier[oí]a civil inform[aá]tica|ingeniero civil inform[aá]tico|ingeniero inform[aá]tico'
+        r')\b',
+        re.IGNORECASE
+    )
+
+    @property
+    def name(self) -> str:
+        return "empleospublicos"
+
+    @staticmethod
+    def _normalize_role_text(text: str) -> str:
+        """Strip gender parentheses like (a), (o) and civil service talent pool prefixes."""
+        cleaned = re.sub(r'\(?\b(base de datos|bbdd)\b\)?\s*[:\-]?', '', text or '', flags=re.IGNORECASE).strip()
+        cleaned = re.sub(r'\([a-zA-Z/]+\)', '', cleaned)
+        return cleaned
+
+    @classmethod
+    def _is_it_role(cls, cargo: str, area: str) -> bool:
+        """Determines if a civil service posting is genuinely an IT/Tech position."""
+        cargo_norm = cls._normalize_role_text(cargo)
+        area_norm = cls._normalize_role_text(area)
+
+        # Reject explicitly non-IT professions
+        if cls.REJECT_ROLES.search(cargo_norm):
+            return False
+
+        # Reject non-IT system contexts unless explicitly an IT role
+        if cls.REJECT_CONTEXTS.search(cargo_norm) and not re.search(r'\binform[aá]tic[oa]s?\b', cargo_norm, re.IGNORECASE):
+            return False
+
+        # Match IT domain
+        return bool(cls.IT_PATTERNS.search(cargo_norm) or cls.IT_PATTERNS.search(area_norm))
+
+    @staticmethod
+    def _parse_chile_date_to_iso(date_str: Optional[str]) -> Optional[str]:
+        """Convert 'DD/MM/YYYY HH:MM:SS' into ISO-8601 'YYYY-MM-DDTHH:MM:SS'."""
+        if not date_str:
+            return None
+        try:
+            parts = date_str.strip().split()
+            d_parts = parts[0].split("/")
+            if len(d_parts) == 3:
+                day, month, year = d_parts
+                time_part = parts[1] if len(parts) > 1 else "00:00:00"
+                return f"{year}-{month.zfill(2)}-{day.zfill(2)}T{time_part}"
+        except Exception:
+            pass
+        return date_str
+
+    def search(self, keywords: str = "", remote_only: bool = False, limit: int = 20) -> List[JobPosting]:
+        jobs: List[JobPosting] = []
+
+        headers = {
+            "User-Agent": (
+                "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+                "AppleWebKit/537.36 (KHTML, like Gecko) "
+                "Chrome/124.0.0.0 Safari/537.36"
+            ),
+            "Accept": "application/json, text/javascript, */*; q=0.01",
+            "Referer": "https://www.empleospublicos.cl/",
+        }
+
+        try:
+            params = {
+                "status": "Abierta",
+                "pageSize": 500,
+            }
+
+            with httpx.Client(timeout=15.0, follow_redirects=True) as client:
+                resp = client.get(self.API_URL, params=params, headers=headers)
+                if resp.status_code != 200:
+                    logger.warning(f"[EmpleosPublicos] API returned status {resp.status_code}")
+                    return jobs
+
+                payload = resp.json()
+                raw_items = payload.get("data", [])
+
+                for item in raw_items:
+                    cargo = (item.get("Cargo") or "").strip()
+                    area = (item.get("Área de Trabajo") or "").strip()
+                    if not cargo:
+                        continue
+
+                    # Filter strictly for IT and related technical fields
+                    if not self._is_it_role(cargo, area):
+                        continue
+
+                    institucion = (item.get("Institución / Entidad") or "").strip().rstrip("/").strip()
+                    ministerio = (item.get("Ministerio") or "").strip()
+                    region = (item.get("Región") or "").strip()
+                    ciudad = (item.get("Ciudad") or "").strip()
+                    tipo_vacante = (item.get("Tipo de Vacante") or "").strip()
+                    vacantes = item.get("Nº de Vacantes") or "1"
+                    url = item.get("url") or "https://www.empleospublicos.cl/"
+                    raw_renta = item.get("Renta Bruta", "0")
+                    fecha_inicio = item.get("Fecha Inicio")
+                    fecha_cierre = item.get("Fecha Cierre Convocatoria")
+
+                    # Location
+                    loc_parts = [p for p in [ciudad, region] if p]
+                    location = ", ".join(loc_parts) if loc_parts else "Chile"
+
+                    # Modality
+                    is_remote = any(
+                        k in f"{cargo} {tipo_vacante} {area}".lower()
+                        for k in ["remoto", "teletrabajo", "remote"]
+                    )
+                    if remote_only and not is_remote:
+                        continue
+
+                    # Keyword match if user provided specific search term
+                    full_text = f"{cargo} {institucion} {ministerio} {area}"
+                    if keywords and not _keyword_match(full_text, keywords):
+                        continue
+
+                    # Format salary (CLP)
+                    salary_range = None
+                    try:
+                        clean_num = raw_renta.replace(".", "").replace(",", ".")
+                        renta_float = float(clean_num)
+                        if renta_float > 0:
+                            formatted_val = f"${renta_float:,.0f}".replace(",", ".")
+                            salary_range = f"{formatted_val} CLP (Renta Bruta)"
+                    except Exception:
+                        if raw_renta and raw_renta != "0,00":
+                            salary_range = f"${raw_renta} CLP"
+
+                    # Company label
+                    if institucion and ministerio and ministerio.lower() not in institucion.lower():
+                        company = f"{institucion} ({ministerio})"
+                    else:
+                        company = institucion or ministerio or "Estado de Chile"
+
+                    # ISO timestamps for publication and closing deadline
+                    deadline_iso = self._parse_chile_date_to_iso(fecha_cierre)
+                    posted_iso = self._parse_chile_date_to_iso(fecha_inicio)
+
+                    # Description
+                    desc_parts = [
+                        f"Convocatoria pública del Estado de Chile para el cargo de {cargo} en {company}.",
+                        f"Modalidad / Vacante: {tipo_vacante or 'Contrata / Planta'} (Nº de vacantes: {vacantes}).",
+                        f"Ubicación: {location}.",
+                    ]
+                    if salary_range:
+                        desc_parts.append(f"Renta: {salary_range}.")
+                    if fecha_cierre:
+                        desc_parts.append(f"Fecha límite de postulación: {fecha_cierre}.")
+                    desc_parts.append(f"Postulación oficial a través del portal Empleos Públicos: {url}")
+                    description = "\n".join(desc_parts)
+
+                    tags = ["Chile", "Sector Público", "Gobierno", "Empleos Públicos"]
+                    if area:
+                        tags.append(area)
+
+                    jobs.append(JobPosting(
+                        title=cargo,
+                        company=company,
+                        location=location,
+                        is_remote=is_remote,
+                        salary_range=salary_range,
+                        description=description,
+                        url=url,
+                        source="empleospublicos",
+                        tags=tags,
+                        posted_at=posted_iso,
+                        deadline=deadline_iso,
+                    ))
+
+                    if len(jobs) >= limit:
+                        break
+
+        except Exception as e:
+            logger.warning(f"[EmpleosPublicos] Scraper error: {e}")
+
+        logger.info(f"[EmpleosPublicos] Retrieved {len(jobs)} IT jobs for '{keywords}'")
+        return jobs
+
+
+# ---------------------------------------------------------------------------
 # Unified Chile Scraper — combines all Chilean portals
 # ---------------------------------------------------------------------------
 
@@ -631,6 +853,7 @@ class ChilePortalsScraper(BaseScraper):
       - CompuTrabajo Chile (HTML)
       - ChileTrabajos (HTML)
       - Laborum (HTML)
+      - Empleos Públicos CL (API oficial de convocatorias del Estado de Chile)
     """
 
     @property
@@ -639,7 +862,7 @@ class ChilePortalsScraper(BaseScraper):
 
     def search(self, keywords: str = "", remote_only: bool = False, limit: int = 40) -> List[JobPosting]:
         all_jobs: List[JobPosting] = []
-        per_source = max(8, limit // 5)
+        per_source = max(6, limit // 6)
 
         scrapers = [
             GetOnBoardScraper(),
@@ -647,6 +870,7 @@ class ChilePortalsScraper(BaseScraper):
             CompuTrabajoCLScraper(),
             ChileTrabajosСraper(),
             LaborumScraper(),
+            EmpleosPublicosScraper(),
         ]
 
         for scraper in scrapers:

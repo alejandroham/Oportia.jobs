@@ -206,6 +206,7 @@ export const JobRadar: React.FC<JobRadarProps> = ({
       computrabajo: 'CompuTrabajo',
       chiletrabajos: 'ChileTrabajos',
       laborum: 'Laborum',
+      empleospublicos: 'Empleos Públicos CL',
       ats_greenhouse: 'Greenhouse',
       ats_lever: 'Lever',
       ats_ashby: 'Ashby',
