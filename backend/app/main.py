@@ -390,12 +390,14 @@ def batch_rank_jobs():
     prefs = db.get_preferences()
 
     evaluated_count = 0
-    for job in jobs[:15]: # rank top 15 in batch
-        if job.fit_score is None:
-            fit_evaluator.evaluate(job, profile, prefs)
-            evaluated_count += 1
+    # Evaluate unevaluated jobs first (or top batch)
+    unevaluated = [j for j in jobs if j.fit_score is None]
+    target_jobs = unevaluated if unevaluated else jobs
+    for job in target_jobs[:20]:
+        fit_evaluator.evaluate(job, profile, prefs)
+        evaluated_count += 1
 
-    return {"message": f"{evaluated_count} ofertas evaluadas y ordenadas por ajuste."}
+    return {"message": f"{evaluated_count} ofertas evaluadas con IA y ordenadas por Fit Score (de mayor a menor porcentaje)."}
 
 @app.post("/api/jobs/{job_id}/track", response_model=JobPosting)
 def track_job_endpoint(job_id: str):

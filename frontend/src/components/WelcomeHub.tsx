@@ -181,6 +181,55 @@ export const WelcomeHub: React.FC<WelcomeHubProps> = ({
         </div>
       </div>
 
+      {/* Section 2.5: ¿Cómo funciona la postulación? Copiloto Humano vs Bots */}
+      <div className="apple-glass apple-card p-6 sm:p-8 space-y-5 border-blue-500/20 bg-gradient-to-br from-blue-50/50 via-white/40 to-indigo-50/40 dark:from-blue-950/20 dark:via-zinc-900/40 dark:to-indigo-950/20">
+        <div className="flex items-center space-x-3 border-b border-black/5 dark:border-white/5 pb-3">
+          <div className="w-10 h-10 rounded-2xl bg-blue-600/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+            <Sparkles className="w-5 h-5" />
+          </div>
+          <div>
+            <h3 className="text-sm font-bold text-gray-900 dark:text-white">
+              ¿Cómo funciona la postulación? Copiloto de Alto Rendimiento vs. Bots a Ciegas
+            </h3>
+            <p className="text-xs text-gray-500">
+              NexusJob AI asume el 95% del esfuerzo técnico y te entrega el control soberano final en 1 clic.
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+          <div className="p-4 rounded-2xl bg-white/70 dark:bg-zinc-800/60 border border-black/5 dark:border-white/5 space-y-2">
+            <div className="font-semibold text-rose-600 dark:text-rose-400 flex items-center space-x-1.5">
+              <span className="text-base">🚫</span>
+              <span>Por qué NO usamos bots automáticos</span>
+            </div>
+            <p className="text-[11px] text-gray-600 dark:text-gray-300 leading-relaxed">
+              Los portales de empleo (LinkedIn, Computrabajo, Trabajando.com) bloquean y banean cuentas que usan scripts automáticos. Sitios estatales como <em>Empleos Públicos</em> exigen autenticación obligatoria con <strong>ClaveÚnica</strong>. Además, la Ley N° 21.719 exige tu consentimiento expreso y veracidad en cada antecedente entregado.
+            </p>
+          </div>
+
+          <div className="p-4 rounded-2xl bg-white/70 dark:bg-zinc-800/60 border border-black/5 dark:border-white/5 space-y-2">
+            <div className="font-semibold text-blue-600 dark:text-blue-400 flex items-center space-x-1.5">
+              <span className="text-base">⚡</span>
+              <span>Qué hace la IA por ti (95% del trabajo)</span>
+            </div>
+            <p className="text-[11px] text-gray-600 dark:text-gray-300 leading-relaxed">
+              Rastrea y consolida múltiples fuentes, calcula el <strong>Fit Score de compatibilidad (ordenando de mayor a menor porcentaje)</strong>, redacta un CV a la medida destacando tus logros STAR reales, genera la carta de presentación y audita la compatibilidad ATS.
+            </p>
+          </div>
+
+          <div className="p-4 rounded-2xl bg-white/70 dark:bg-zinc-800/60 border border-black/5 dark:border-white/5 space-y-2">
+            <div className="font-semibold text-emerald-600 dark:text-emerald-400 flex items-center space-x-1.5">
+              <CheckCircle2 className="w-4 h-4" />
+              <span>Tú en Control Soberano (1 Clic)</span>
+            </div>
+            <p className="text-[11px] text-gray-600 dark:text-gray-300 leading-relaxed">
+              Revisas tus materiales adaptados, los descargas en PDF o los copias, y haces clic en el enlace oficial de la vacante para postular directamente en la empresa con una candidatura auténtica, protegida y con la más alta tasa de respuesta.
+            </p>
+          </div>
+        </div>
+      </div>
+
       {/* Section 3: Privacidad, Seguridad y Cumplimiento Legal (Ley 21.719 y Ley 19.628 de Chile) */}
       <div className="rounded-3xl bg-gradient-to-br from-emerald-950/30 via-zinc-900/40 to-blue-950/30 border border-emerald-500/30 p-6 sm:p-8 space-y-5 backdrop-blur-xl shadow-xl">
         <div className="flex items-center space-x-3 border-b border-white/10 pb-4">

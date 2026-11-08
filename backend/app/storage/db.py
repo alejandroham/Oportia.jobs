@@ -77,7 +77,7 @@ class Database:
         jobs = [JobPosting(**item) for item in raw]
         if status:
             jobs = [j for j in jobs if j.status == status]
-        return sorted(jobs, key=lambda x: (x.fit_score or 0), reverse=True)
+        return sorted(jobs, key=lambda x: (x.fit_score if x.fit_score is not None else -1), reverse=True)
 
     def get_job_by_id(self, job_id: str) -> Optional[JobPosting]:
         jobs = self.get_jobs()

@@ -118,6 +118,16 @@ export const ApplicationStudio: React.FC<ApplicationStudioProps> = ({ applicatio
           {selectedApp && (
             <div className="lg:col-span-8 space-y-4">
               
+              {/* Copilot Guidance Banner */}
+              <div className="no-print p-3 rounded-2xl bg-blue-50/70 dark:bg-blue-950/30 border border-blue-200/60 dark:border-blue-800/40 text-xs flex items-center justify-between gap-3 shadow-2xs">
+                <div className="flex items-center space-x-2 text-blue-900 dark:text-blue-200">
+                  <ShieldCheck className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
+                  <span className="text-[11px]">
+                    <strong>Copiloto Activo:</strong> Tus materiales adaptados han sido auditados contra la vacante. Revisa, descarga en PDF o copia el contenido y postula de forma segura con tu propia identidad en el portal oficial.
+                  </span>
+                </div>
+              </div>
+
               {/* Document Actions Bar */}
               <div className="no-print apple-glass apple-card p-4 flex flex-wrap items-center justify-between gap-3">
                 {/* Sub tabs: CV vs Cover Letter */}

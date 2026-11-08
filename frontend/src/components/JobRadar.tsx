@@ -5,6 +5,7 @@ import {
   Sparkles,
   ExternalLink,
   ShieldAlert,
+  ShieldCheck,
   FileText,
   Briefcase,
   DollarSign,
@@ -80,7 +81,7 @@ export const JobRadar: React.FC<JobRadarProps> = ({
   const [geographicScopeFilter, setGeographicScopeFilter] = useState<'all' | 'regional_only'>('all');
   const [modalityFilter, setModalityFilter] = useState<'all' | 'Presencial' | 'Híbrido' | 'Remoto'>('all');
   const [contractTypeFilter, setContractTypeFilter] = useState<'all' | 'Contrata' | 'Planta' | 'Honorarios' | 'Indefinido'>('all');
-  const [sortBy, setSortBy] = useState<'compatibility' | 'recent' | 'salary'>('compatibility');
+  const [sortBy, setSortBy] = useState<'fit_desc' | 'compatibility' | 'recent' | 'salary'>('fit_desc');
   const [showAdvancedFilters, setShowAdvancedFilters] = useState<boolean>(false);
   const [viewMode, setViewMode] = useState<'grid3' | 'grid2' | 'list'>(() => {
     return (localStorage.getItem('job_radar_view_mode') as 'grid3' | 'grid2' | 'list') || 'grid3';
@@ -276,8 +277,9 @@ export const JobRadar: React.FC<JobRadarProps> = ({
   const handleBatchRank = async () => {
     setIsBatchRanking(true);
     try {
-      await api.batchRank();
-      toast.success('Oportunidades clasificadas con IA');
+      const res = await api.batchRank();
+      setSortBy('fit_desc');
+      toast.success(res?.message || 'Oportunidades clasificadas con IA (mayor porcentaje primero)');
       onRefresh();
     } catch (e: any) {
       toast.error('Error al clasificar: ' + (e?.message || e));
@@ -308,6 +310,8 @@ export const JobRadar: React.FC<JobRadarProps> = ({
     try {
       const evaluation = await api.evaluateJob(job.id);
       setSelectedEvaluation(evaluation);
+      setSortBy('fit_desc');
+      toast.success(`Ajuste evaluado: ${evaluation.overall_score}% (${evaluation.verdict})`);
       onRefresh();
     } catch (e: any) {
       toast.error('Error evaluando ajuste: ' + (e?.message || e));
@@ -443,6 +447,16 @@ export const JobRadar: React.FC<JobRadarProps> = ({
 
     // 5. Ranking and Prioritization (Section 4 Rules)
     result.sort((a, b) => {
+      // 1. Pure Fit Score (Mayor % primero → Menor % al final)
+      if (sortBy === 'fit_desc') {
+        const scoreA = (a.fit_score !== undefined && a.fit_score !== null) ? a.fit_score : -1;
+        const scoreB = (b.fit_score !== undefined && b.fit_score !== null) ? b.fit_score : -1;
+        if (scoreB !== scoreA) {
+          return scoreB - scoreA;
+        }
+        return (b.posted_at || b.discovered_at).localeCompare(a.posted_at || a.discovered_at);
+      }
+
       if (sortBy === 'recent') {
         const dateA = a.posted_at || a.discovered_at;
         const dateB = b.posted_at || b.discovered_at;
@@ -459,18 +473,31 @@ export const JobRadar: React.FC<JobRadarProps> = ({
       }
 
       // Default: Professional Compatibility with Regional Proximity Priority
+      const hasFitA = a.fit_score !== undefined && a.fit_score !== null;
+      const hasFitB = b.fit_score !== undefined && b.fit_score !== null;
+
+      // Evaluated jobs always rank above unevaluated jobs
+      if (hasFitA && !hasFitB) return -1;
+      if (!hasFitA && hasFitB) return 1;
+
+      const baseFitA = a.fit_score ?? -1;
+      const baseFitB = b.fit_score ?? -1;
+
+      // If both evaluated, fit score is the dominant ranking factor.
+      // If fit scores differ by more than 5 points, higher fit strictly wins.
+      if (hasFitA && hasFitB && Math.abs(baseFitB - baseFitA) > 5) {
+        return baseFitB - baseFitA;
+      }
+
       const geoA = getGeographicBadge(a.location, userRegion);
       const geoB = getGeographicBadge(b.location, userRegion);
-
-      const baseFitA = a.fit_score ?? 60;
-      const baseFitB = b.fit_score ?? 60;
 
       // Regional bonus (+14 for user region, +4 for remote in Chile)
       const boostA = geoA.type === 'user_region' ? 14 : (geoA.type === 'remote' ? 4 : 0);
       const boostB = geoB.type === 'user_region' ? 14 : (geoB.type === 'remote' ? 4 : 0);
 
-      const totalScoreA = baseFitA + boostA;
-      const totalScoreB = baseFitB + boostB;
+      const totalScoreA = (baseFitA >= 0 ? baseFitA : 50) + boostA;
+      const totalScoreB = (baseFitB >= 0 ? baseFitB : 50) + boostB;
 
       if (totalScoreB !== totalScoreA) {
         return totalScoreB - totalScoreA;
@@ -552,11 +579,11 @@ export const JobRadar: React.FC<JobRadarProps> = ({
           <button
             onClick={handleBatchRank}
             disabled={isBatchRanking || filteredJobs.length === 0}
-            className="flex items-center space-x-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-300 border border-purple-200/60 dark:border-purple-800/40 hover:bg-purple-100/80 dark:hover:bg-purple-900/40 transition disabled:opacity-50 shadow-2xs"
-            title="Evaluar ajuste de compatibilidad en lote con Inteligencia Artificial"
+            className="flex items-center space-x-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white transition disabled:opacity-50 shadow-xs"
+            title="Evaluar ajuste de compatibilidad en lote con Inteligencia Artificial (ordena de mayor a menor porcentaje)"
           >
             <Sparkles className={`w-3.5 h-3.5 ${isBatchRanking ? 'animate-spin' : ''}`} />
-            <span>{isBatchRanking ? 'Evaluando...' : 'Evaluar con IA'}</span>
+            <span>{isBatchRanking ? 'Evaluando...' : '⚡ Evaluar Fit IA (Mayor a Menor)'}</span>
           </button>
 
           {/* Import URL Button */}
@@ -579,6 +606,28 @@ export const JobRadar: React.FC<JobRadarProps> = ({
               <Trash2 className="w-3.5 h-3.5" />
             </button>
           )}
+        </div>
+      </div>
+
+      {/* Copilot vs. Bots Info Banner */}
+      <div className="apple-glass apple-card p-3.5 rounded-2xl border border-blue-500/20 bg-blue-50/60 dark:bg-blue-950/20 text-xs flex items-start justify-between gap-3 shadow-2xs">
+        <div className="flex items-start space-x-3">
+          <div className="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 mt-0.5">
+            <ShieldCheck className="w-4 h-4" />
+          </div>
+          <div className="space-y-1">
+            <div className="flex items-center space-x-2">
+              <span className="font-bold text-gray-900 dark:text-white text-xs">
+                Copiloto de Empleabilidad Soberano (Control Humano 100%)
+              </span>
+              <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border border-emerald-300/40">
+                Anti-Bloqueo & Ley 21.719
+              </span>
+            </div>
+            <p className="text-[11px] text-gray-600 dark:text-gray-300 leading-relaxed">
+              <strong>¿Cómo postulas?</strong> NexusJob AI rastrea y evalúa las vacantes clasificándolas por <strong>Fit Score (mayor % primero)</strong> y genera tu CV adaptado y carta de presentación a la medida. <strong>No postula automáticamente a ciegas</strong> para evitar que tu cuenta sea bloqueada por los portales, permitir la autenticación con ClaveÚnica (Empleos Públicos) y garantizar que tú valides tus antecedentes bajo la Ley N° 21.719. Tú revisas tus materiales y postulas en 1 clic en el enlace oficial.
+            </p>
+          </div>
         </div>
       </div>
 
@@ -817,8 +866,9 @@ export const JobRadar: React.FC<JobRadarProps> = ({
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as any)}
-                className="w-full text-xs px-2.5 py-1.5 rounded-xl bg-gray-50 dark:bg-zinc-800 border border-black/10 dark:border-white/10 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full text-xs px-2.5 py-1.5 rounded-xl bg-gray-50 dark:bg-zinc-800 border border-black/10 dark:border-white/10 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-1 focus:ring-blue-500 font-medium"
               >
+                <option value="fit_desc">🎯 Mayor Fit Score IA (Mayor % primero → Menor % al final)</option>
                 <option value="compatibility">✨ Compatibilidad CV + Prioridad Regional</option>
                 <option value="recent">🕒 Más recientes</option>
                 <option value="salary">💰 Mayor remuneración</option>
