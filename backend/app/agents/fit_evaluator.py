@@ -3,6 +3,7 @@ from typing import Dict, Any, List
 from app.models.schemas import CandidateProfile, UserPreferences, JobPosting, FitEvaluation, FitDimensionScore
 from app.agents.llm_provider import llm
 from app.storage.db import db
+from app.utils.chile_regions import calculate_geographic_priority
 import logging
 
 logger = logging.getLogger(__name__)
@@ -16,9 +17,9 @@ class FitEvaluator:
 
         # Prepare context for LLM evaluation
         system_instruction = (
-            "Eres un evaluador implacable y objetivo de ajuste laboral (Fit Evaluator) para talento tecnológico de alto nivel. "
+            "Eres un evaluador profesional y objetivo de ajuste laboral (Fit Evaluator) universal para cualquier profesión, especialidad u oficio. "
             "Tu deber es calificar con honestidad radical el ajuste entre el perfil del candidato y la vacante en 5 dimensiones. "
-            "No infles calificaciones. Si hay brechas tecnológicas o faltan requisitos, márcalos con claridad."
+            "No infles calificaciones. Si hay brechas formativas o faltan requisitos críticos, márcalos con claridad."
         )
 
         profile_summary = {
@@ -120,8 +121,21 @@ RESPONDE ÚNICAMENTE CON UN JSON CON ESTA ESTRUCTURA EXACTA:
             recommendation_summary=res.get("recommendation_summary", "Se recomienda revisar los detalles específicos antes de postular.")
         )
 
-        # Update the job with the score in the database
+        # Geographic priority identification
+        pref_comm = preferences.preferred_communes[0] if preferences.preferred_communes else None
+        geo_cat, boost, reg, comm = calculate_geographic_priority(
+            job.location,
+            user_region=preferences.preferred_region or "Región del Biobío",
+            user_commune=pref_comm
+        )
+        job.region = reg
+        job.commune = comm
+        job.is_user_region = (geo_cat == "user_region")
+        job.modality = "Remoto" if job.is_remote else "Presencial"
+
+        # Update the job with the score and geographic metadata in the database
         db.update_job_status(job.id, status=job.status, fit_score=overall)
+        db.save_jobs([job])
 
         return evaluation
 

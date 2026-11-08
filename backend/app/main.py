@@ -29,6 +29,7 @@ from app.scrapers.url_parser import extract_job_from_url
 from app.scrapers.chile_portals import ChilePortalsScraper
 from app.scrapers.ats_scraper import ats_scraper
 from app.agents.role_recommender import role_recommender
+from app.utils.chile_regions import calculate_geographic_priority, detect_region_and_commune, get_all_regions_list
 from app.models.schemas import (
     CompanyDirectoryItem, RoleRecommendation, GeneratedATSQuery
 )
@@ -234,25 +235,56 @@ def scrape_custom_query(data: dict):
 
 # --- Jobs & Radar Endpoints ---
 
+@app.get("/api/regions")
+def list_regions():
+    """Returns official list of all 16 Chilean regions and communes for filters."""
+    return get_all_regions_list()
+
 @app.get("/api/jobs", response_model=List[JobPosting])
 def list_jobs(status: Optional[str] = None):
-    return db.get_jobs(status=status)
+    jobs = db.get_jobs(status=status)
+    prefs = db.get_preferences()
+    user_reg = prefs.preferred_region or "Región del Biobío"
+    user_comm = prefs.preferred_communes[0] if prefs.preferred_communes else None
+
+    # Dynamically annotate region and geographic priority according to user's active preferences
+    for j in jobs:
+        geo_cat, _, reg, comm = calculate_geographic_priority(
+            j.location,
+            user_region=user_reg,
+            user_commune=user_comm
+        )
+        if reg and not j.region:
+            j.region = reg
+        if comm and not j.commune:
+            j.commune = comm
+        j.is_user_region = (geo_cat == "user_region")
+        if not j.modality:
+            j.modality = "Remoto" if j.is_remote else "Presencial"
+
+    return jobs
 
 @app.post("/api/jobs/scrape")
-def trigger_scrape(keywords: Optional[str] = None, remote_only: bool = True, scope: str = "global"):
+def trigger_scrape(keywords: Optional[str] = None, remote_only: bool = False, scope: str = "chile"):
     """
-    Scrape job postings from multiple sources.
+    Scrape job postings from multiple sources dynamically based on candidate profession.
     
     Params:
-      - keywords: role or technology to search for
-      - remote_only: filter only remote positions
+      - keywords: role, profession or specialty to search for (inferred from CV if empty)
+      - remote_only: filter only remote positions (default False to cover presencial/hibrido in Chile)
       - scope: "global" | "chile" | "all"
           global  → remote-friendly international boards (Arbeitnow, Remotive, RemoteOK, LinkedIn Global)
-          chile   → Chilean portals (GetOnBoard, LinkedIn Chile, CompuTrabajo, ChileTrabajos, Laborum)
+          chile   → Chilean portals (GetOnBoard, LinkedIn Chile, CompuTrabajo, ChileTrabajos, Laborum, Empleos Públicos)
           all     → both international + Chilean portals
     """
     prefs = db.get_preferences()
-    kw = keywords or (prefs.target_roles[0] if prefs.target_roles else "Software Engineer")
+    profile = db.get_profile()
+
+    # Dynamic search keyword: prefer user keyword, then profile primary profession, then target_roles
+    kw = keywords or (profile.primary_profession or (prefs.target_roles[0] if prefs.target_roles else ""))
+    user_reg = prefs.preferred_region or profile.region or "Región del Biobío"
+    user_comm = (prefs.preferred_communes[0] if prefs.preferred_communes else (profile.commune or "Concepción"))
+
     jobs: list = []
 
     # ── International / Global remote boards ────────────────────────────────
@@ -275,9 +307,7 @@ def trigger_scrape(keywords: Optional[str] = None, remote_only: bool = True, sco
     if scope in ("chile", "all"):
         try:
             chile_scraper = ChilePortalsScraper()
-            # For Chilean portals, remote_only=False by default to include presential/hybrid
-            chile_remote = remote_only if scope == "chile" else False
-            chile_jobs = chile_scraper.search(keywords=kw, remote_only=chile_remote, limit=40)
+            chile_jobs = chile_scraper.search(keywords=kw, remote_only=remote_only, limit=40)
             jobs.extend(chile_jobs)
         except Exception as e:
             import logging; logging.getLogger(__name__).warning(f"Chile portals error: {e}")
@@ -289,17 +319,33 @@ def trigger_scrape(keywords: Optional[str] = None, remote_only: bool = True, sco
     except Exception as e:
         import logging; logging.getLogger(__name__).warning(f"ATS direct error: {e}")
 
+    # Annotate all scraped jobs with geographic categorization & modality
+    for j in jobs:
+        geo_cat, _, reg, comm = calculate_geographic_priority(
+            j.location,
+            user_region=user_reg,
+            user_commune=user_comm
+        )
+        if reg and not j.region:
+            j.region = reg
+        if comm and not j.commune:
+            j.commune = comm
+        j.is_user_region = (geo_cat == "user_region")
+        if not j.modality:
+            j.modality = "Remoto" if j.is_remote else "Presencial"
+
     added = db.save_jobs(jobs)
     scope_labels = {
         "global": "portales internacionales remotos + ATS",
-        "chile": "portales chilenos + ATS Corporativo",
+        "chile": "portales chilenos (nacional + regional) + ATS",
         "all": "portales globales + chilenos + ATS Corporativo"
     }
     return {
-        "message": f"Radar actualizado — {scope_labels.get(scope, scope)}: {len(jobs)} vacantes encontradas ({added} nuevas).",
+        "message": f"Radar actualizado ({kw or 'búsqueda general'}) — {scope_labels.get(scope, scope)}: {len(jobs)} vacantes encontradas ({added} nuevas).",
         "total_fetched": len(jobs),
         "new_added": added,
         "scope": scope,
+        "user_region": user_reg,
         "sources": list({j.source for j in jobs})
     }
 

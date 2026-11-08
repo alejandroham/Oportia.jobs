@@ -84,7 +84,7 @@ def handle_tool_call(name: str, arguments: Dict[str, Any]) -> Any:
     prefs = db.get_preferences()
 
     if name == "search_remote_jobs":
-        kw = arguments.get("keywords", "Software Engineer")
+        kw = arguments.get("keywords", "")
         remote_only = arguments.get("remote_only", True)
         limit = arguments.get("limit", 10)
         

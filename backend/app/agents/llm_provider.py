@@ -184,62 +184,9 @@ class UnifiedLLMProvider:
         """
         prompt_lower = prompt.lower()
 
-        # 1. Parsing CV
+        # 1. Parsing CV - return empty dict to let deterministic_cv_parser handle true candidate content
         if "texto de currículum" in prompt_lower or "candidato" in prompt_lower and "technical_skills" in prompt_lower:
-            return json.dumps({
-                "name": "Alejandro Aguirre",
-                "email": "alejandro@example.com",
-                "phone": "+56 9 1234 5678",
-                "location": "Santiago, Chile / Remoto Global",
-                "linkedin_url": "https://linkedin.com/in/alejandro",
-                "github_url": "https://github.com/alejandroham",
-                "portfolio_url": None,
-                "headline": "Senior AI & Full Stack Engineer",
-                "summary": "Ingeniero de Software senior con más de 7 años de experiencia construyendo arquitecturas distribuidas, agentes autónomos y aplicaciones full stack de alto impacto.",
-                "years_of_experience": 7.0,
-                "technical_skills": ["Python", "FastAPI", "TypeScript", "React", "Docker", "Kubernetes", "Google Cloud", "PostgreSQL", "Gemini API"],
-                "soft_skills": ["Liderazgo Técnico", "Comunicación Asíncrona", "Resolución de Problemas Complejos"],
-                "languages": {"Español": "Nativo", "Inglés": "C1 Profesional"},
-                "experiences": [
-                    {
-                        "company": "TechGlobal Inc",
-                        "role": "Lead AI Engineer",
-                        "start_date": "2022",
-                        "end_date": "Presente",
-                        "location": "Remoto",
-                        "is_remote": True,
-                        "description": "Liderazgo de desarrollo de agentes autónomos y plataformas cloud.",
-                        "technologies": ["Python", "React", "FastAPI", "Docker", "GCP"],
-                        "bullet_achievements": [
-                            "Diseñó e implementó agentes autónomos reduciendo tiempos de procesamiento en 45%",
-                            "Lideró equipo distribuido de 6 ingenieros full stack en entornos 100% remotos"
-                        ]
-                    },
-                    {
-                        "company": "CloudSolutions",
-                        "role": "Senior Software Engineer",
-                        "start_date": "2019",
-                        "end_date": "2022",
-                        "location": "Remoto",
-                        "is_remote": True,
-                        "description": "Migración de monolitos a microservicios distribuidos.",
-                        "technologies": ["Python", "Docker", "PostgreSQL", "AWS"],
-                        "bullet_achievements": [
-                            "Elevó la disponibilidad de los microservicios a 99.98%",
-                            "Diseñó APIs RESTful y pipelines automatizados de CI/CD"
-                        ]
-                    }
-                ],
-                "education": [
-                    {
-                        "institution": "Universidad",
-                        "degree": "Ingeniería en Informática",
-                        "field_of_study": "Ciencias de la Computación",
-                        "graduation_year": "2018"
-                    }
-                ],
-                "certifications": ["Google Cloud Certified Professional Cloud Architect"]
-            })
+            return "{}"
 
         # 2. Fit Evaluation
         elif "evaluar ajuste" in prompt_lower or "fit" in prompt_lower or "overall_score" in prompt_lower:

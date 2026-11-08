@@ -76,50 +76,43 @@ Responde ÚNICAMENTE en formato JSON con la siguiente estructura (sin texto ante
 
     def _heuristic_roles(self, profile: CandidateProfile, prefs: UserPreferences) -> List[RoleRecommendation]:
         recs = []
-        tech_set = {s.lower() for s in profile.technical_skills}
+        primary = profile.primary_profession or (prefs.target_roles[0] if prefs.target_roles else (profile.headline or "Profesional"))
+        sector = profile.economic_sectors[0] if profile.economic_sectors else "Área Profesional"
+        eq_titles = profile.equivalent_roles or [primary]
+        related_titles = profile.related_roles or [f"Coordinador/a de {primary}", f"Especialista en {primary}"]
 
-        # 1. Direct role from headline or target roles
-        target = prefs.target_roles[0] if prefs.target_roles else (profile.headline or "Ingeniero de Software")
+        # 1. Direct role from CV profession
         recs.append(RoleRecommendation(
-            role_family="Desarrollo de Software & Arquitectura",
-            suggested_titles=[target, f"{target} Senior", "Full Stack Engineer"],
+            role_family=f"{primary} & Especialidad",
+            suggested_titles=eq_titles[:3] if eq_titles else [primary, f"{primary} Senior"],
             recommendation_type="direct",
-            reasoning=f"Alineado directamente con la trayectoria declarada ({profile.years_of_experience} años de experiencia) y habilidades centrales.",
+            reasoning=f"Alineado directamente con la profesión identificada ({primary}), trayectoria declarada ({profile.years_of_experience} años) y competencias centrales.",
             matching_skills=profile.technical_skills[:5],
-            seniority="Senior" if profile.years_of_experience >= 5 else "Semi-Senior"
+            seniority="Senior / Especialista" if profile.years_of_experience >= 5 else "Profesional / Técnico"
         ))
 
-        # 2. Liderazgo o Gestión TI si tiene experiencia o seniority
-        if profile.years_of_experience >= 4 or any(k in " ".join(profile.technical_skills).lower() for k in ["lead", "agile", "scrum", "gestión", "liderazgo"]):
-            recs.append(RoleRecommendation(
-                role_family="Liderazgo & Coordinación Técnica",
-                suggested_titles=["Tech Lead", "Líder Técnico", "Engineering Manager", "Jefe de TI"],
-                recommendation_type="transferable",
-                reasoning="Capacidad demostrada para coordinar desarrollo, aplicar buenas prácticas y liderar entregas técnicas complejas.",
-                matching_skills=["Arquitectura de Software", "Code Review", "Metodologías Ágiles", "Gestión de Proyectos"],
-                identified_gaps=["Liderazgo formal de personas si no ha sido People Manager"],
-                seniority="Lead / Manager"
-            ))
+        # 2. Transferable skills role
+        transferable_titles = related_titles[:3] if related_titles else [f"Supervisor/a de {primary}", f"Encargado/a de Operaciones"]
+        recs.append(RoleRecommendation(
+            role_family=f"Coordinación y Supervisión en {sector}",
+            suggested_titles=transferable_titles,
+            recommendation_type="transferable",
+            reasoning=f"Aprovecha sus competencias transferibles en {sector}, capacidad resolutiva y dominio de procesos técnicos demostrados en el currículum.",
+            matching_skills=(profile.soft_skills + profile.technical_skills)[:4],
+            identified_gaps=["Validar requisitos o acreditaciones específicas solicitadas por cada institución"],
+            seniority="Coordinación / Jefatura" if profile.years_of_experience >= 4 else "Especialista"
+        ))
 
-        # 3. Cloud & DevOps o IA & Soluciones
-        if any(c in tech_set for c in ["aws", "azure", "docker", "gcp", "kubernetes", "cloud", "linux"]):
-            recs.append(RoleRecommendation(
-                role_family="Cloud, DevOps e Infraestructura",
-                suggested_titles=["Cloud Engineer", "DevOps Engineer", "Infraestructura & Nube"],
-                recommendation_type="transferable",
-                reasoning="Manejo de entornos de despliegue, contenedores y servicios en la nube verificados en el perfil.",
-                matching_skills=[s for s in profile.technical_skills if any(k in s.lower() for k in ["aws", "cloud", "docker", "linux", "azure"])][:4],
-                seniority="Senior"
-            ))
-        else:
-            recs.append(RoleRecommendation(
-                role_family="Soluciones Digitales & Automatización",
-                suggested_titles=["Software Solutions Engineer", "Consultor Tecnológico", "Integration Specialist"],
-                recommendation_type="exploratory",
-                reasoning="Oportunidad exploratoria para diseñar integraciones y optimizar flujos empresariales aplicando lógica de desarrollo.",
-                matching_skills=profile.technical_skills[:4],
-                seniority="Senior"
-            ))
+        # 3. Exploratory role
+        recs.append(RoleRecommendation(
+            role_family=f"Consultoría y Planificación en {sector}",
+            suggested_titles=[f"Consultor/a en {primary}", f"Gestor/a de Proyectos en {sector}", f"Auditor/a Técnico/a"],
+            recommendation_type="exploratory",
+            reasoning=f"Oportunidad de ampliación profesional en {sector} aplicando visión técnica y experiencia práctica acumulada.",
+            matching_skills=profile.technical_skills[:4],
+            identified_gaps=["Desarrollo de competencias de formulación y gestión integral de proyectos"],
+            seniority="Senior / Consultor"
+        ))
 
         return recs
 

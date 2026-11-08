@@ -13,7 +13,7 @@ class LinkedInGuestScraper(BaseScraper):
     def name(self) -> str:
         return "linkedin_guest"
 
-    def search(self, keywords: str = "Software Engineer", remote_only: bool = True, limit: int = 15) -> List[JobPosting]:
+    def search(self, keywords: str = "", remote_only: bool = True, limit: int = 15) -> List[JobPosting]:
         jobs: List[JobPosting] = []
         base_url = "https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search"
         

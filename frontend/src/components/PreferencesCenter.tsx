@@ -17,12 +17,15 @@ import {
   ChevronUp,
   Cpu,
   Target,
-  MessageSquare
+  MessageSquare,
+  MapPin,
+  Compass
 } from 'lucide-react';
 import type { UserPreferences, LearnedStarStory } from '../types';
 import { api } from '../api';
 import { useToast } from './Toast';
 import { MemoryChat } from './MemoryChat';
+import { CHILE_REGIONS } from '../utils/chileRegions';
 
 interface PreferencesCenterProps {
   preferences: UserPreferences;
@@ -720,6 +723,112 @@ export const PreferencesCenter: React.FC<PreferencesCenterProps> = ({
           Criterios Explícitos & Parámetros Directos
         </h3>
 
+        {/* Geographic & Regional Radar Settings (Chile) */}
+        <div className="p-4 rounded-xl bg-blue-50/60 dark:bg-blue-950/20 border border-blue-200/50 dark:border-blue-900/40 space-y-3.5">
+          <div className="flex items-center space-x-2">
+            <Compass className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+            <h4 className="font-bold text-xs text-blue-900 dark:text-blue-200">
+              Radar Geográfico y Región Prioritaria (Chile)
+            </h4>
+          </div>
+          <p className="text-[11px] text-gray-600 dark:text-gray-400">
+            Define tu región y comunas para priorizar visualmente las oportunidades locales, manteniendo la cobertura de empleos en todo Chile.
+          </p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+            <div>
+              <label className="block text-[10px] font-bold uppercase tracking-wider text-gray-500 mb-1 flex items-center space-x-1">
+                <MapPin className="w-3 h-3 text-rose-500" />
+                <span>Región de Residencia</span>
+              </label>
+              <select
+                value={formData.preferred_region || 'Región del Biobío'}
+                onChange={(e) => {
+                  const regName = e.target.value;
+                  const regObj = CHILE_REGIONS.find(r => r.name === regName);
+                  const firstCommune = regObj?.communes?.[0] || '';
+                  setFormData({
+                    ...formData,
+                    preferred_region: regName,
+                    preferred_communes: firstCommune ? [firstCommune] : []
+                  });
+                }}
+                className="w-full text-xs px-3 py-2 rounded-xl bg-white dark:bg-zinc-800 border border-black/10 dark:border-white/10 text-gray-900 dark:text-white font-medium focus:ring-1 focus:ring-blue-500"
+              >
+                {CHILE_REGIONS.map((r) => (
+                  <option key={r.id} value={r.name}>
+                    {r.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-[10px] font-bold uppercase tracking-wider text-gray-500 mb-1">
+                Comuna Principal
+              </label>
+              <select
+                value={formData.preferred_communes?.[0] || ''}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setFormData({
+                    ...formData,
+                    preferred_communes: val ? [val] : []
+                  });
+                }}
+                className="w-full text-xs px-3 py-2 rounded-xl bg-white dark:bg-zinc-800 border border-black/10 dark:border-white/10 text-gray-900 dark:text-white font-medium focus:ring-1 focus:ring-blue-500"
+              >
+                <option value="">(Cualquier comuna de la región)</option>
+                {(CHILE_REGIONS.find(r => r.name === (formData.preferred_region || 'Región del Biobío'))?.communes || []).map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="pt-1">
+            <label className="block text-[10px] font-bold uppercase tracking-wider text-gray-500 mb-1.5">
+              Alcance Geográfico del Radar
+            </label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+              <button
+                type="button"
+                onClick={() => setFormData({ ...formData, geographic_scope: 'all' })}
+                className={`p-2.5 rounded-xl border text-left transition ${
+                  (formData.geographic_scope || 'all') === 'all'
+                    ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
+                    : 'bg-white dark:bg-zinc-800 border-black/10 dark:border-white/10 text-gray-700 dark:text-gray-300 hover:bg-gray-100'
+                }`}
+              >
+                <div className="font-bold flex items-center space-x-1.5">
+                  <span>🇨🇱 Cobertura Nacional</span>
+                  <span className="text-[10px] uppercase px-1.5 py-0.5 rounded bg-black/10 dark:bg-white/10">Recomendado</span>
+                </div>
+                <div className={`text-[10px] mt-0.5 ${(formData.geographic_scope || 'all') === 'all' ? 'text-blue-100' : 'text-gray-500'}`}>
+                  Prioriza ofertas de tu región sin ocultar vacantes de otras regiones o remotas.
+                </div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setFormData({ ...formData, geographic_scope: 'regional' })}
+                className={`p-2.5 rounded-xl border text-left transition ${
+                  formData.geographic_scope === 'regional'
+                    ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
+                    : 'bg-white dark:bg-zinc-800 border-black/10 dark:border-white/10 text-gray-700 dark:text-gray-300 hover:bg-gray-100'
+                }`}
+              >
+                <div className="font-bold">📍 Exclusivamente Mi Región</div>
+                <div className={`text-[10px] mt-0.5 ${formData.geographic_scope === 'regional' ? 'text-blue-100' : 'text-gray-500'}`}>
+                  Filtra de forma estricta únicamente ofertas en {formData.preferred_region || 'tu región'}.
+                </div>
+              </button>
+            </div>
+          </div>
+        </div>
+
         {/* Remote & Location */}
         <div className="flex items-center justify-between p-3.5 rounded-xl bg-gray-50 dark:bg-zinc-800/50">
           <div>
@@ -768,7 +877,7 @@ export const PreferencesCenter: React.FC<PreferencesCenterProps> = ({
           <div className="flex items-center space-x-2 pt-1">
             <input
               type="text"
-              placeholder="Agregar nuevo rol (ej. Lead AI Engineer)..."
+              placeholder="Agregar nuevo rol (ej. Técnico en Enfermería, Arquitecto, Analista, Ingeniero)..."
               value={newRole}
               onChange={(e) => setNewRole(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addRole())}

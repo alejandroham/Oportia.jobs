@@ -36,7 +36,9 @@ import {
   SlidersHorizontal,
   BookmarkCheck,
   Sun,
-  Moon
+  Moon,
+  MapPin,
+  Compass
 } from 'lucide-react';
 import type {
   CandidateProfile,
@@ -47,6 +49,7 @@ import type {
 } from '../types';
 import { api } from '../api';
 import { useToast } from './Toast';
+import { CHILE_REGIONS } from '../utils/chileRegions';
 
 interface ProfileStudioProps {
   profile: CandidateProfile;
@@ -272,34 +275,46 @@ export const ProfileStudio: React.FC<ProfileStudioProps> = ({ profile, onProfile
   const diagnostic = calculateProfileDiagnostic();
 
   // ==========================================
-  // SKILLS CATEGORIZATION
+  // SKILLS CATEGORIZATION (Universal: Health, Construction, Law, Education, Tech, Business)
   // ==========================================
   const categorizeSkills = () => {
     const categories: Record<string, string[]> = {
-      'Lenguajes & Paradigmas': [],
-      'Frameworks & Web': [],
-      'Bases de Datos & SQL': [],
-      'Cloud, DevOps & Infra': [],
-      'Inteligencia Artificial & Datos': [],
-      'Gestión TI & Metodologías': []
+      'Salud & Procedimientos Clínicos': [],
+      'Construcción, Arquitectura & Obras': [],
+      'Leyes, Regulación & Jurídico': [],
+      'Educación, Formación & Pedagogía': [],
+      'Lenguajes & Programación': [],
+      'Frameworks & Desarrollo Web': [],
+      'Bases de Datos, Cloud & Sistemas': [],
+      'Inteligencia Artificial & Analítica': [],
+      'Software & Herramientas Especializadas': [],
+      'Gestión, Metodologías & Habilidades Clave': []
     };
 
     const techLower = editableProfile.technical_skills || [];
 
     techLower.forEach(skill => {
       const s = skill.toLowerCase();
-      if (/python|javascript|typescript|java|c#|golang|rust|php|ruby|c\+\+|bash/i.test(s)) {
-        categories['Lenguajes & Paradigmas'].push(skill);
-      } else if (/react|node|angular|vue|next|express|django|fastapi|spring|\.net|laravel|tailwind/i.test(s)) {
-        categories['Frameworks & Web'].push(skill);
-      } else if (/sql|postgres|mysql|oracle|mongo|redis|database|bigquery/i.test(s)) {
-        categories['Bases de Datos & SQL'].push(skill);
-      } else if (/azure|aws|cloud|docker|kubernetes|linux|server|git|ci\/cd|devops/i.test(s)) {
-        categories['Cloud, DevOps & Infra'].push(skill);
-      } else if (/gemini|claude|chatgpt|gpt|copilot|ai|ollama|n8n|langchain|machine learning|ia/i.test(s)) {
-        categories['Inteligencia Artificial & Datos'].push(skill);
+      if (/tens|enfermer|medic|salud|clinica|signos vitales|farmac|rpc|paciente|urgencia|hospital|reanimacion|eeg|ecg|aislamiento|asepsia|primeros auxilios/i.test(s)) {
+        categories['Salud & Procedimientos Clínicos'].push(skill);
+      } else if (/autocad|revit|bim|oguc|obra|faena|hormigon|cubicacion|topografia|edificacion|plano|estructur|arquitect/i.test(s)) {
+        categories['Construcción, Arquitectura & Obras'].push(skill);
+      } else if (/litigio|demanda|audiencia|derecho|corte|contrato|laboral|penal|tributario|redaccion juridica|ley|normativa legal/i.test(s)) {
+        categories['Leyes, Regulación & Jurídico'].push(skill);
+      } else if (/docencia|pedagog|aula|evaluacion|curricul|didactic|aprendizaje|clase|escolar|mineduc/i.test(s)) {
+        categories['Educación, Formación & Pedagogía'].push(skill);
+      } else if (/python|javascript|typescript|java|c#|golang|rust|php|ruby|c\+\+|bash/i.test(s)) {
+        categories['Lenguajes & Programación'].push(skill);
+      } else if (/react|node|angular|vue|next|express|django|fastapi|spring|\.net|laravel|tailwind|html|css/i.test(s)) {
+        categories['Frameworks & Desarrollo Web'].push(skill);
+      } else if (/sql|postgres|mysql|oracle|mongo|redis|database|bigquery|azure|aws|cloud|docker|kubernetes|linux|server|git|ci\/cd|devops/i.test(s)) {
+        categories['Bases de Datos, Cloud & Sistemas'].push(skill);
+      } else if (/gemini|claude|chatgpt|gpt|copilot|ai|ollama|n8n|langchain|machine learning|ia|power bi|excel|tableau|analytics/i.test(s)) {
+        categories['Inteligencia Artificial & Analítica'].push(skill);
+      } else if (/jira|trello|slack|notion|sap|erp|crm|photoshop|figma|illustrator|office|word/i.test(s)) {
+        categories['Software & Herramientas Especializadas'].push(skill);
       } else {
-        categories['Gestión TI & Metodologías'].push(skill);
+        categories['Gestión, Metodologías & Habilidades Clave'].push(skill);
       }
     });
 
@@ -1261,6 +1276,145 @@ export const ProfileStudio: React.FC<ProfileStudioProps> = ({ profile, onProfile
                       onChange={(e) => setEditableProfile({ ...editableProfile, portfolio_url: e.target.value })}
                       className="w-full px-3 py-2 rounded-xl bg-gray-50 dark:bg-zinc-800 border border-black/10 dark:border-white/10 focus:ring-1 focus:ring-blue-500"
                     />
+                  </div>
+                </div>
+
+                {/* Regional & Chilean Geography Section */}
+                <div className="pt-4 border-t border-black/5 dark:border-white/5 space-y-3">
+                  <div className="flex items-center space-x-2">
+                    <MapPin className="w-4 h-4 text-rose-500" />
+                    <h3 className="font-bold text-xs text-gray-900 dark:text-white uppercase tracking-wider">
+                      Ubicación Regional y Radar de Chile
+                    </h3>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="font-semibold text-gray-700 dark:text-gray-300 block mb-1">Región de Chile *</label>
+                      <select
+                        value={editableProfile.region || 'Región del Biobío'}
+                        onChange={(e) => {
+                          const reg = e.target.value;
+                          const regObj = CHILE_REGIONS.find(r => r.name === reg);
+                          setEditableProfile({
+                            ...editableProfile,
+                            region: reg,
+                            commune: regObj?.communes?.[0] || editableProfile.commune || ''
+                          });
+                        }}
+                        className="w-full px-3 py-2 rounded-xl bg-gray-50 dark:bg-zinc-800 border border-black/10 dark:border-white/10 focus:ring-1 focus:ring-blue-500 font-medium"
+                      >
+                        {CHILE_REGIONS.map((r) => (
+                          <option key={r.id} value={r.name}>
+                            {r.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="font-semibold text-gray-700 dark:text-gray-300 block mb-1">Comuna *</label>
+                      <select
+                        value={editableProfile.commune || 'Concepción'}
+                        onChange={(e) => setEditableProfile({ ...editableProfile, commune: e.target.value })}
+                        className="w-full px-3 py-2 rounded-xl bg-gray-50 dark:bg-zinc-800 border border-black/10 dark:border-white/10 focus:ring-1 focus:ring-blue-500 font-medium"
+                      >
+                        {(CHILE_REGIONS.find(r => r.name === (editableProfile.region || 'Región del Biobío'))?.communes || []).map((c) => (
+                          <option key={c} value={c}>
+                            {c}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Universal Profession Identification Section */}
+                <div className="pt-4 border-t border-black/5 dark:border-white/5 space-y-3">
+                  <div className="flex items-center space-x-2">
+                    <Compass className="w-4 h-4 text-blue-600" />
+                    <h3 className="font-bold text-xs text-gray-900 dark:text-white uppercase tracking-wider">
+                      Identificación Profesional Universal (Deducida por IA)
+                    </h3>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="font-semibold text-gray-700 dark:text-gray-300 block mb-1">
+                        Profesión Principal
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="Ej. Técnico en Enfermería, Arquitecto, Abogado..."
+                        value={editableProfile.primary_profession || ''}
+                        onChange={(e) => setEditableProfile({ ...editableProfile, primary_profession: e.target.value })}
+                        className="w-full px-3 py-2 rounded-xl bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200/50 dark:border-blue-900/40 text-blue-900 dark:text-blue-100 font-bold focus:ring-1 focus:ring-blue-500"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="font-semibold text-gray-700 dark:text-gray-300 block mb-1">
+                        Nivel de Experiencia / Seniority
+                      </label>
+                      <select
+                        value={editableProfile.seniority_level || 'Semisenior'}
+                        onChange={(e) => setEditableProfile({ ...editableProfile, seniority_level: e.target.value })}
+                        className="w-full px-3 py-2 rounded-xl bg-gray-50 dark:bg-zinc-800 border border-black/10 dark:border-white/10 focus:ring-1 focus:ring-blue-500 font-medium"
+                      >
+                        <option value="Trainee">Trainee / Práctica Profesional</option>
+                        <option value="Junior">Junior (0 - 2 años)</option>
+                        <option value="Semisenior">Semisenior (2 - 5 años)</option>
+                        <option value="Senior">Senior (5+ años)</option>
+                        <option value="Liderazgo">Liderazgo / Jefatura / Coordinador</option>
+                        <option value="Especialista">Especialista / Consultor</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Equivalent Roles & Synonyms */}
+                  <div className="space-y-1.5 pt-1">
+                    <label className="font-semibold text-gray-700 dark:text-gray-300 block text-[11px]">
+                      Denominaciones Equivalentes y Sinónimos en Portales (ATS):
+                    </label>
+                    <div className="flex flex-wrap gap-1.5">
+                      {(editableProfile.equivalent_roles || []).map((eq, idx) => (
+                        <span
+                          key={idx}
+                          className="px-2.5 py-1 rounded-lg text-xs bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-gray-300 border border-black/5 flex items-center space-x-1"
+                        >
+                          <span>{eq}</span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEditableProfile({
+                                ...editableProfile,
+                                equivalent_roles: (editableProfile.equivalent_roles || []).filter((_, i) => i !== idx)
+                              });
+                            }}
+                            className="hover:text-red-500 text-gray-400"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Economic Sectors */}
+                  <div className="space-y-1.5 pt-1">
+                    <label className="font-semibold text-gray-700 dark:text-gray-300 block text-[11px]">
+                      Sectores Económicos Habilitados:
+                    </label>
+                    <div className="flex flex-wrap gap-1.5">
+                      {(editableProfile.economic_sectors || []).map((sec, idx) => (
+                        <span
+                          key={idx}
+                          className="px-2.5 py-1 rounded-lg text-xs bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300 border border-emerald-200/50"
+                        >
+                          {sec}
+                        </span>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>

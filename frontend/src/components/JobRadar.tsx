@@ -31,7 +31,9 @@ import {
   Check,
   SlidersHorizontal,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  MapPin,
+  Filter
 } from 'lucide-react';
 import type {
   JobPosting,
@@ -43,6 +45,7 @@ import type {
 } from '../types';
 import { api } from '../api';
 import { formatDisplayDate, getOfferExpirationBadge } from '../utils/dateUtils';
+import { CHILE_REGIONS, detectJobRegionAndCommune, getGeographicBadge } from '../utils/chileRegions';
 import { useToast } from './Toast';
 
 interface JobRadarProps {
@@ -62,12 +65,23 @@ export const JobRadar: React.FC<JobRadarProps> = ({
 }) => {
   const toast = useToast();
 
+  // Geographic & Regional Configuration (Section 3, 4, 5)
+  const userRegion = profile?.region || 'Región del Biobío';
+  const userCommune = profile?.commune || 'Concepción';
+
   // Search & Filter state
   const [searchTerm, setSearchTerm] = useState('');
   const [remoteOnly, setRemoteOnly] = useState(false);
   const [searchScope, setSearchScope] = useState<'global' | 'chile' | 'all'>(() => {
-    return (localStorage.getItem('job_radar_scope') as 'global' | 'chile' | 'all') || 'all';
+    return (localStorage.getItem('job_radar_scope') as 'global' | 'chile' | 'all') || 'chile';
   });
+  const [selectedRegion, setSelectedRegion] = useState<string>('all');
+  const [selectedCommune, setSelectedCommune] = useState<string>('all');
+  const [geographicScopeFilter, setGeographicScopeFilter] = useState<'all' | 'regional_only'>('all');
+  const [modalityFilter, setModalityFilter] = useState<'all' | 'Presencial' | 'Híbrido' | 'Remoto'>('all');
+  const [contractTypeFilter, setContractTypeFilter] = useState<'all' | 'Contrata' | 'Planta' | 'Honorarios' | 'Indefinido'>('all');
+  const [sortBy, setSortBy] = useState<'compatibility' | 'recent' | 'salary'>('compatibility');
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState<boolean>(false);
   const [viewMode, setViewMode] = useState<'grid3' | 'grid2' | 'list'>(() => {
     return (localStorage.getItem('job_radar_view_mode') as 'grid3' | 'grid2' | 'list') || 'grid3';
   });
@@ -248,7 +262,8 @@ export const JobRadar: React.FC<JobRadarProps> = ({
   const handleScrape = async () => {
     setIsScraping(true);
     try {
-      await api.scrapeJobs(searchTerm, remoteOnly, searchScope);
+      const searchKw = searchTerm.trim() || (profile?.primary_profession || (profile?.target_roles?.[0] || ''));
+      await api.scrapeJobs(searchKw, remoteOnly, searchScope);
       toast.success('Búsqueda completada con éxito');
       onRefresh();
     } catch (e: any) {
@@ -372,18 +387,111 @@ export const JobRadar: React.FC<JobRadarProps> = ({
     }
   };
 
-  // Filter jobs
+  // Filter & Prioritize jobs (Section 3, 4, 5)
   const radarJobs = jobs.filter(j => j.in_radar !== false);
-  const filteredJobs = radarJobs.filter(j => {
-    const term = searchTerm.toLowerCase();
-    const matchesTerm =
-      !term ||
-      j.title.toLowerCase().includes(term) ||
-      j.company.toLowerCase().includes(term) ||
-      (j.tags && j.tags.some(t => t.toLowerCase().includes(term)));
-    const matchesRemote = !remoteOnly || j.is_remote;
-    return matchesTerm && matchesRemote;
-  });
+  const filteredJobs = React.useMemo(() => {
+    const result = radarJobs.filter(j => {
+      // 1. Text Search (title, company, description, tags)
+      const term = searchTerm.toLowerCase().trim();
+      const matchesTerm =
+        !term ||
+        j.title.toLowerCase().includes(term) ||
+        j.company.toLowerCase().includes(term) ||
+        (j.description && j.description.toLowerCase().includes(term)) ||
+        (j.tags && j.tags.some(t => t.toLowerCase().includes(term)));
+      if (!matchesTerm) return false;
+
+      // 2. Modality Filter
+      if (remoteOnly && !j.is_remote) return false;
+      if (modalityFilter !== 'all') {
+        const mod = (j.modality || (j.is_remote ? 'Remoto' : 'Presencial')).toLowerCase();
+        if (modalityFilter === 'Remoto' && !j.is_remote && !mod.includes('remoto')) return false;
+        if (modalityFilter === 'Presencial' && j.is_remote) return false;
+        if (modalityFilter === 'Híbrido' && !mod.includes('híbrido') && !mod.includes('hibrido')) return false;
+      }
+
+      // 3. Geographic & Regional Filters
+      const geo = getGeographicBadge(j.location, userRegion);
+
+      // Exclusive region filter
+      if (geographicScopeFilter === 'regional_only' && geo.type !== 'user_region') {
+        return false;
+      }
+
+      // Region selector
+      if (selectedRegion !== 'all') {
+        if (!geo.detectedRegion || geo.detectedRegion !== selectedRegion) {
+          return false;
+        }
+      }
+
+      // Commune selector
+      if (selectedCommune !== 'all') {
+        if (!geo.detectedCommune || geo.detectedCommune !== selectedCommune) {
+          return false;
+        }
+      }
+
+      // 4. Contract Type filter
+      if (contractTypeFilter !== 'all') {
+        const cType = (j.contract_type || '').toLowerCase();
+        if (!cType.includes(contractTypeFilter.toLowerCase())) return false;
+      }
+
+      return true;
+    });
+
+    // 5. Ranking and Prioritization (Section 4 Rules)
+    result.sort((a, b) => {
+      if (sortBy === 'recent') {
+        const dateA = a.posted_at || a.discovered_at;
+        const dateB = b.posted_at || b.discovered_at;
+        return dateB.localeCompare(dateA);
+      }
+
+      if (sortBy === 'salary') {
+        const extractNum = (s?: string) => {
+          if (!s) return 0;
+          const clean = s.replace(/[^0-9]/g, '');
+          return Number(clean) || 0;
+        };
+        return extractNum(b.salary_range) - extractNum(a.salary_range);
+      }
+
+      // Default: Professional Compatibility with Regional Proximity Priority
+      const geoA = getGeographicBadge(a.location, userRegion);
+      const geoB = getGeographicBadge(b.location, userRegion);
+
+      const baseFitA = a.fit_score ?? 60;
+      const baseFitB = b.fit_score ?? 60;
+
+      // Regional bonus (+14 for user region, +4 for remote in Chile)
+      const boostA = geoA.type === 'user_region' ? 14 : (geoA.type === 'remote' ? 4 : 0);
+      const boostB = geoB.type === 'user_region' ? 14 : (geoB.type === 'remote' ? 4 : 0);
+
+      const totalScoreA = baseFitA + boostA;
+      const totalScoreB = baseFitB + boostB;
+
+      if (totalScoreB !== totalScoreA) {
+        return totalScoreB - totalScoreA;
+      }
+
+      return (b.posted_at || b.discovered_at).localeCompare(a.posted_at || a.discovered_at);
+    });
+
+    return result;
+  }, [
+    radarJobs,
+    searchTerm,
+    remoteOnly,
+    modalityFilter,
+    geographicScopeFilter,
+    selectedRegion,
+    selectedCommune,
+    contractTypeFilter,
+    sortBy,
+    userRegion
+  ]);
 
   // Pagination calculations
   const totalPages = Math.max(1, Math.ceil(filteredJobs.length / pageSize));
@@ -394,7 +502,7 @@ export const JobRadar: React.FC<JobRadarProps> = ({
   // Reset to first page when search criteria or page size changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, remoteOnly, searchScope, pageSize]);
+  }, [searchTerm, remoteOnly, searchScope, pageSize, selectedRegion, selectedCommune, modalityFilter, contractTypeFilter, geographicScopeFilter, sortBy]);
 
   // Guard against out-of-bounds page index
   useEffect(() => {
@@ -474,6 +582,26 @@ export const JobRadar: React.FC<JobRadarProps> = ({
         </div>
       </div>
 
+      {/* Regional Priority Banner (Section 3 & 4) */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-4 py-2.5 rounded-2xl bg-gradient-to-r from-blue-50/90 via-indigo-50/70 to-purple-50/80 dark:from-blue-950/40 dark:via-indigo-950/30 dark:to-purple-950/30 border border-blue-200/60 dark:border-blue-800/40 text-xs shadow-2xs">
+        <div className="flex items-center space-x-2 text-blue-900 dark:text-blue-200">
+          <MapPin className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
+          <span>
+            Prioridad regional activa: <strong className="font-bold text-blue-700 dark:text-blue-300">{userRegion}</strong> {userCommune && `(${userCommune})`} • Cobertura: <strong>Chile Completo</strong>
+          </span>
+        </div>
+        <div className="flex items-center space-x-2 self-end sm:self-auto">
+          <button
+            type="button"
+            onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+            className="px-2.5 py-1 rounded-lg bg-white/90 dark:bg-zinc-800 text-blue-600 dark:text-blue-400 border border-blue-200/80 dark:border-blue-700 font-semibold text-[11px] hover:bg-white transition flex items-center space-x-1"
+          >
+            <SlidersHorizontal className="w-3 h-3" />
+            <span>{showAdvancedFilters ? 'Ocultar filtros' : 'Filtros avanzados & Región'}</span>
+          </button>
+        </div>
+      </div>
+
       {/* Apple-grade Search & Filters Bar */}
       <div className="apple-glass apple-card p-4 space-y-3">
         <div className="flex flex-col md:flex-row gap-2.5">
@@ -482,7 +610,7 @@ export const JobRadar: React.FC<JobRadarProps> = ({
             <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
               type="text"
-              placeholder="Buscar por cargo, tecnología o empresa (ej: Senior Python, React, Data Engineer)..."
+              placeholder="Buscar por profesión, cargo, especialidad o empresa (ej: TENS, Arquitecto, Abogado, Profesor, TI)..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleScrape()}
@@ -508,20 +636,6 @@ export const JobRadar: React.FC<JobRadarProps> = ({
             <button
               type="button"
               onClick={() => {
-                setSearchScope('all');
-                localStorage.setItem('job_radar_scope', 'all');
-              }}
-              className={`flex-1 sm:flex-none px-3 py-1 rounded-lg text-xs font-medium transition text-center ${
-                searchScope === 'all'
-                  ? 'bg-white dark:bg-zinc-700 text-blue-600 dark:text-blue-400 shadow-2xs font-semibold'
-                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900'
-              }`}
-            >
-              🌐 Todos
-            </button>
-            <button
-              type="button"
-              onClick={() => {
                 setSearchScope('chile');
                 localStorage.setItem('job_radar_scope', 'chile');
               }}
@@ -531,7 +645,21 @@ export const JobRadar: React.FC<JobRadarProps> = ({
                   : 'text-gray-600 dark:text-gray-400 hover:text-gray-900'
               }`}
             >
-              🇨🇱 Solo Chile
+              🇨🇱 Chile (Nacional + Regional)
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setSearchScope('all');
+                localStorage.setItem('job_radar_scope', 'all');
+              }}
+              className={`flex-1 sm:flex-none px-3 py-1 rounded-lg text-xs font-medium transition text-center ${
+                searchScope === 'all'
+                  ? 'bg-white dark:bg-zinc-700 text-blue-600 dark:text-blue-400 shadow-2xs font-semibold'
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900'
+              }`}
+            >
+              🌐 Todos (+ Globales)
             </button>
             <button
               type="button"
@@ -545,7 +673,7 @@ export const JobRadar: React.FC<JobRadarProps> = ({
                   : 'text-gray-600 dark:text-gray-400 hover:text-gray-900'
               }`}
             >
-              🌍 Remoto Global
+              🌍 Solo Internacional
             </button>
           </div>
 
@@ -602,6 +730,102 @@ export const JobRadar: React.FC<JobRadarProps> = ({
             </div>
           </div>
         </div>
+
+        {/* Section 5 Advanced Geographic & Multi-Profession Filters */}
+        {showAdvancedFilters && (
+          <div className="pt-3 border-t border-black/5 dark:border-white/5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 animate-fade-in text-xs">
+            {/* Region selector */}
+            <div>
+              <label className="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1">
+                Región de Chile
+              </label>
+              <select
+                value={selectedRegion}
+                onChange={(e) => {
+                  setSelectedRegion(e.target.value);
+                  setSelectedCommune('all');
+                }}
+                className="w-full text-xs px-2.5 py-1.5 rounded-xl bg-gray-50 dark:bg-zinc-800 border border-black/10 dark:border-white/10 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              >
+                <option value="all">🇨🇱 Todas las regiones</option>
+                {CHILE_REGIONS.map((r) => (
+                  <option key={r.id} value={r.id}>
+                    {r.shortName}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Commune selector */}
+            <div>
+              <label className="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1">
+                Comuna
+              </label>
+              <select
+                value={selectedCommune}
+                onChange={(e) => setSelectedCommune(e.target.value)}
+                disabled={selectedRegion === 'all'}
+                className="w-full text-xs px-2.5 py-1.5 rounded-xl bg-gray-50 dark:bg-zinc-800 border border-black/10 dark:border-white/10 text-gray-800 dark:text-gray-200 disabled:opacity-40 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              >
+                <option value="all">📍 Todas las comunas</option>
+                {selectedRegion !== 'all' &&
+                  (CHILE_REGIONS.find((r) => r.id === selectedRegion)?.communes || []).map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+              </select>
+            </div>
+
+            {/* Geographic Scope */}
+            <div>
+              <label className="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1">
+                Alcance Geográfico
+              </label>
+              <select
+                value={geographicScopeFilter}
+                onChange={(e) => setGeographicScopeFilter(e.target.value as any)}
+                className="w-full text-xs px-2.5 py-1.5 rounded-xl bg-gray-50 dark:bg-zinc-800 border border-black/10 dark:border-white/10 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              >
+                <option value="all">🇨🇱 Nacional (prioridad mi región)</option>
+                <option value="regional_only">📍 Solo mi región ({userRegion.replace('Región del ', '').replace('Región de ', '')})</option>
+              </select>
+            </div>
+
+            {/* Modality Filter */}
+            <div>
+              <label className="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1">
+                Modalidad
+              </label>
+              <select
+                value={modalityFilter}
+                onChange={(e) => setModalityFilter(e.target.value as any)}
+                className="w-full text-xs px-2.5 py-1.5 rounded-xl bg-gray-50 dark:bg-zinc-800 border border-black/10 dark:border-white/10 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              >
+                <option value="all">🏢 Todas las modalidades</option>
+                <option value="Presencial">Presencial</option>
+                <option value="Híbrido">Híbrido</option>
+                <option value="Remoto">100% Remoto</option>
+              </select>
+            </div>
+
+            {/* Sort by */}
+            <div>
+              <label className="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1">
+                Ordenar por
+              </label>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as any)}
+                className="w-full text-xs px-2.5 py-1.5 rounded-xl bg-gray-50 dark:bg-zinc-800 border border-black/10 dark:border-white/10 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              >
+                <option value="compatibility">✨ Compatibilidad CV + Prioridad Regional</option>
+                <option value="recent">🕒 Más recientes</option>
+                <option value="salary">💰 Mayor remuneración</option>
+              </select>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Results Header */}
@@ -656,28 +880,38 @@ export const JobRadar: React.FC<JobRadarProps> = ({
             const tracked = isTracked(job);
             const expirationBadge = getOfferExpirationBadge(job.deadline);
             const isMenuOpen = activeMenuJobId === job.id;
+            const geoBadge = getGeographicBadge(job.location, userRegion);
 
             return (
               <div
                 key={job.id}
-                className="apple-glass apple-card hover:border-blue-500/30 dark:hover:border-blue-500/30 transition-all duration-200 group flex flex-col justify-between p-5 space-y-3 relative"
+                className={`apple-glass apple-card hover:border-blue-500/30 dark:hover:border-blue-500/30 transition-all duration-200 group flex flex-col justify-between p-5 space-y-3 relative ${
+                  geoBadge.type === 'user_region' ? 'ring-1 ring-blue-500/20 dark:ring-blue-400/20' : ''
+                }`}
               >
                 {/* Content Top */}
                 <div className="space-y-2 flex-1">
                   
                   {/* Meta Row: Company + Location and Fit Score Pill */}
                   <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0 pr-1">
+                    <div className="min-w-0 pr-1 space-y-1">
                       <span className="font-semibold text-xs text-gray-900 dark:text-white block truncate">
                         {job.company}
                       </span>
-                      <div className="flex items-center space-x-1.5 text-[11px] text-gray-500 dark:text-gray-400">
-                        <span className="truncate max-w-[140px]">{job.location}</span>
-                        {job.is_remote && (
-                          <>
-                            <span>•</span>
-                            <span className="text-emerald-600 dark:text-emerald-400 font-medium">Remoto</span>
-                          </>
+                      <div className="flex items-center space-x-1.5 text-[11px] text-gray-500 dark:text-gray-400 flex-wrap gap-y-1">
+                        {/* Geographic Priority Badge */}
+                        <span className={`text-[10px] px-2 py-0.5 rounded-md font-semibold ${geoBadge.badgeClass}`}>
+                          {geoBadge.label}
+                        </span>
+                        {job.modality && (
+                          <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-gray-400">
+                            {job.modality}
+                          </span>
+                        )}
+                        {job.contract_type && (
+                          <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 border border-purple-200/50">
+                            {job.contract_type}
+                          </span>
                         )}
                       </div>
                     </div>

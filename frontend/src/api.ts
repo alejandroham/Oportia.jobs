@@ -219,7 +219,11 @@ export const api = {
     });
     return res.json();
   },
-  scrapeJobs: async (keywords?: string, remote_only: boolean = true, scope: string = 'global') => {
+  getRegions: async (): Promise<Array<{ id: string; name: string; short_name: string; communes: string[] }>> => {
+    const res = await fetch(`${API_BASE}/regions`);
+    return res.json();
+  },
+  scrapeJobs: async (keywords?: string, remote_only: boolean = false, scope: string = 'chile') => {
     const params = new URLSearchParams();
     params.set('remote_only', String(remote_only));
     params.set('scope', scope);

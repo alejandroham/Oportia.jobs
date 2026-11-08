@@ -50,6 +50,19 @@ export interface CandidateProfile {
   headline?: string;
   summary?: string;
   years_of_experience: number;
+
+  // Clasificación Profesional Dinámica
+  primary_profession?: string;
+  secondary_professions?: string[];
+  equivalent_roles?: string[];
+  related_roles?: string[];
+  economic_sectors?: string[];
+  seniority_level?: string;
+
+  // Ubicación regional chilena
+  region?: string;
+  commune?: string;
+
   technical_skills: string[];
   soft_skills: string[];
   languages: Record<string, string>;
@@ -125,7 +138,11 @@ export interface MemoryStats {
 export interface UserPreferences {
   target_roles: string[];
   preferred_locations: string[];
+  preferred_region?: string;
+  preferred_communes?: string[];
+  geographic_scope?: 'all' | 'regional';
   remote_only: boolean;
+  min_salary_clp?: number;
   min_salary_usd?: number;
   preferred_technologies: string[];
   deal_breakers: string[];
@@ -170,6 +187,15 @@ export interface JobPosting {
   url?: string;
   source: string;
   tags: string[];
+
+  // Clasificación Geográfica Chilena
+  region?: string | null;
+  commune?: string | null;
+  is_user_region?: boolean;
+  modality?: 'Presencial' | 'Híbrido' | 'Remoto' | string;
+  contract_type?: string | null;
+  experience_required?: string | null;
+  profession_category?: string | null;
   
   // Dates
   posted_at?: string;

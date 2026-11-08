@@ -26,6 +26,7 @@ from typing import List, Optional
 from bs4 import BeautifulSoup
 from app.models.schemas import JobPosting
 from app.scrapers.base import BaseScraper
+from app.utils.chile_regions import detect_region_and_commune
 
 logger = logging.getLogger(__name__)
 
@@ -745,14 +746,10 @@ class EmpleosPublicosScraper(BaseScraper):
                     if not cargo:
                         continue
 
-                    # Filter strictly for IT and related technical fields
-                    if not self._is_it_role(cargo, area):
-                        continue
-
                     institucion = (item.get("Institución / Entidad") or "").strip().rstrip("/").strip()
                     ministerio = (item.get("Ministerio") or "").strip()
-                    region = (item.get("Región") or "").strip()
-                    ciudad = (item.get("Ciudad") or "").strip()
+                    region_raw = (item.get("Región") or "").strip()
+                    ciudad_raw = (item.get("Ciudad") or "").strip()
                     tipo_vacante = (item.get("Tipo de Vacante") or "").strip()
                     vacantes = item.get("Nº de Vacantes") or "1"
                     url = item.get("url") or "https://www.empleospublicos.cl/"
@@ -760,32 +757,41 @@ class EmpleosPublicosScraper(BaseScraper):
                     fecha_inicio = item.get("Fecha Inicio")
                     fecha_cierre = item.get("Fecha Cierre Convocatoria")
 
-                    # Location
-                    loc_parts = [p for p in [ciudad, region] if p]
+                    # Location & Regional Identification
+                    loc_parts = [p for p in [ciudad_raw, region_raw] if p]
                     location = ", ".join(loc_parts) if loc_parts else "Chile"
+                    job_region, job_commune, is_loc_remote = detect_region_and_commune(location)
 
                     # Modality
-                    is_remote = any(
+                    is_remote = is_loc_remote or any(
                         k in f"{cargo} {tipo_vacante} {area}".lower()
                         for k in ["remoto", "teletrabajo", "remote"]
                     )
                     if remote_only and not is_remote:
                         continue
 
-                    # Keyword match if user provided specific search term
-                    full_text = f"{cargo} {institucion} {ministerio} {area}".lower()
+                    # Universal keyword matching across any profession or trade
+                    full_text = f"{cargo} {institucion} {ministerio} {area} {location}".lower()
                     if keywords:
                         kw_lower = keywords.lower().strip()
-                        generic_tech_terms = {
-                            "software", "engineer", "ingeniero", "ingenieria", "developer",
-                            "desarrollador", "programador", "ti", "it", "tech", "tecnologia",
-                            "tecnología", "computacion", "computación", "informatico", "informático",
-                            "informatica", "informática", "sistemas"
-                        }
-                        user_terms = set(re.findall(r'\b\w+\b', kw_lower))
-                        is_generic_tech_query = bool(user_terms & generic_tech_terms)
+                        # Cross-synonym expansion for Chilean job markets
+                        is_match = False
+                        if "tens" in kw_lower or "enferm" in kw_lower:
+                            is_match = any(k in full_text for k in ["tens", "enferm", "paramedico", "paramédico", "salud", "clinico", "clínico"])
+                        elif "arquitect" in kw_lower or "construc" in kw_lower:
+                            is_match = any(k in full_text for k in ["arquitect", "construc", "obras", "bim", "edific", "proyectista"])
+                        elif "abogad" in kw_lower or "derecho" in kw_lower or "jurid" in kw_lower:
+                            is_match = any(k in full_text for k in ["abogad", "juridic", "jurídic", "legal", "ley"])
+                        elif "profesor" in kw_lower or "docent" in kw_lower or "educa" in kw_lower:
+                            is_match = any(k in full_text for k in ["profesor", "docent", "educa", "pedagog", "parvul", "párvul"])
+                        elif any(t in kw_lower for t in ["software", "inform", "developer", "ti\b", "comput", "programad"]):
+                            is_match = any(k in full_text for k in ["informátic", "informatic", "software", "programador", "sistemas informátic", "ciberseguridad", "datos", "tecnolog"])
+                        elif any(t in kw_lower for t in ["contad", "auditor", "administra", "comercial"]):
+                            is_match = any(k in full_text for k in ["contador", "auditor", "administra", "comercial", "finanzas", "presupuesto"])
+                        else:
+                            is_match = _keyword_match(full_text, keywords)
 
-                        if not is_generic_tech_query and not _keyword_match(full_text, keywords):
+                        if not is_match:
                             continue
 
                     # Format salary (CLP)
@@ -831,7 +837,11 @@ class EmpleosPublicosScraper(BaseScraper):
                         title=cargo,
                         company=company,
                         location=location,
+                        region=job_region,
+                        commune=job_commune,
                         is_remote=is_remote,
+                        modality="Remoto" if is_remote else "Presencial",
+                        contract_type=tipo_vacante or "Contrata / Planta",
                         salary_range=salary_range,
                         description=description,
                         url=url,
@@ -847,7 +857,7 @@ class EmpleosPublicosScraper(BaseScraper):
         except Exception as e:
             logger.warning(f"[EmpleosPublicos] Scraper error: {e}")
 
-        logger.info(f"[EmpleosPublicos] Retrieved {len(jobs)} IT jobs for '{keywords}'")
+        logger.info(f"[EmpleosPublicos] Retrieved {len(jobs)} jobs for '{keywords}'")
         return jobs
 
 
@@ -892,6 +902,18 @@ class ChilePortalsScraper(BaseScraper):
                     remote_only=remote_only,
                     limit=per_source
                 )
+                for j in source_jobs:
+                    if not j.region or not j.commune:
+                        reg, comm, is_rem = detect_region_and_commune(j.location)
+                        if reg and not j.region:
+                            j.region = reg
+                        if comm and not j.commune:
+                            j.commune = comm
+                        if is_rem:
+                            j.is_remote = True
+                            j.modality = "Remoto"
+                        elif not j.modality:
+                            j.modality = "Presencial"
                 all_jobs.extend(source_jobs)
                 # Gentle rate limit between portals
                 time.sleep(0.8)

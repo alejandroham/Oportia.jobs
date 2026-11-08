@@ -25,13 +25,26 @@ class CandidateProfile(BaseModel):
     name: str = "Candidato"
     email: Optional[str] = None
     phone: Optional[str] = None
-    location: Optional[str] = "Remoto / Global"
+    location: Optional[str] = "Chile"
     linkedin_url: Optional[str] = None
     github_url: Optional[str] = None
     portfolio_url: Optional[str] = None
-    headline: Optional[str] = "Profesional Tecnológico"
+    headline: Optional[str] = "Profesional"
     summary: Optional[str] = ""
     years_of_experience: float = 0.0
+
+    # Clasificación Profesional Dinámica (Universal para cualquier área)
+    primary_profession: Optional[str] = None
+    secondary_professions: List[str] = []
+    equivalent_roles: List[str] = []   # Sinónimos y denominaciones usadas en portales de empleo
+    related_roles: List[str] = []      # Oportunidades por transferencia de habilidades
+    economic_sectors: List[str] = []   # Sectores: Salud, Construcción, Educación, Administración, TI, etc.
+    seniority_level: Optional[str] = None
+
+    # Ubicación geográfica chilena
+    region: Optional[str] = "Región del Biobío"
+    commune: Optional[str] = "Concepción"
+
     technical_skills: List[str] = []
     soft_skills: List[str] = []
     languages: Dict[str, str] = {} # e.g. {"Español": "Nativo", "Inglés": "C1 Avanzado"}
@@ -44,14 +57,14 @@ class CandidateProfile(BaseModel):
     updated_at: str = Field(default_factory=lambda: datetime.utcnow().isoformat())
 
 class ProfileDNA(BaseModel):
-    summary: str = "Profesional de tecnología enfocado en soluciones escalables e ingeniería de software moderna."
-    seniority_level: str = "Senior / Lead"
+    summary: str = "Profesional con sólida trayectoria y competencias demostrables."
+    seniority_level: str = "Profesional"
     core_strengths: List[str] = [
-        "Arquitectura de software y backend resiliente",
-        "Integración de modelos de Inteligencia Artificial",
-        "Liderazgo técnico y entrega ágil"
+        "Desempeño riguroso y especializado en su área",
+        "Capacidad de adaptación y resolución de problemas",
+        "Trabajo colaborativo y comunicación efectiva"
     ]
-    communication_tone: str = "Técnico-ejecutivo con orientación a resultados medibles"
+    communication_tone: str = "Profesional, claro y orientado a resultados"
 
 class LearnedStarStory(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
@@ -72,15 +85,18 @@ class MemoryStats(BaseModel):
     last_consolidated_at: Optional[str] = None
 
 class UserPreferences(BaseModel):
-    target_roles: List[str] = ["Software Engineer", "AI Engineer", "Full Stack Developer", "Data Scientist"]
-    preferred_locations: List[str] = ["Remote", "Worldwide", "LatAm", "US", "Europe"]
-    remote_only: bool = True
-    min_salary_usd: Optional[int] = 50000
+    target_roles: List[str] = [] # Dinámico: poblado automáticamente a partir del CV del usuario
+    preferred_locations: List[str] = ["Chile", "Región del Biobío"]
+    preferred_region: Optional[str] = "Región del Biobío"
+    preferred_communes: List[str] = ["Concepción"]
+    geographic_scope: str = "all" # "all" (cobertura nacional con prioridad regional) | "regional" (solo mi región)
+    remote_only: bool = False     # False por defecto para no excluir ofertas presenciales/híbridas locales
+    min_salary_clp: Optional[int] = None
+    min_salary_usd: Optional[int] = None
     preferred_technologies: List[str] = []
     deal_breakers: List[str] = [
-        "100% presencial obligatorio",
         "Disponibilidad 24/7 sin compensación",
-        "Empresas de apuestas no reguladas o esquemas dudosos"
+        "Empresas con esquemas dudosos o sin contrato formal"
     ]
     auto_learned_insights: List[str] = []
     
@@ -104,13 +120,22 @@ class JobPosting(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     title: str
     company: str
-    location: str = "Remote"
-    is_remote: bool = True
+    location: str = "Chile"
+    is_remote: bool = False
     salary_range: Optional[str] = None
     description: str
     url: Optional[str] = None
     source: str = "direct" # "remoteok", "arbeitnow", "remotive", "freehire", "linkedin", "manual", "getonbrd", "chiletrabajos", "computrabajo", "laborum", "empleospublicos"
     tags: List[str] = []
+
+    # Clasificación Geográfica Chilena
+    region: Optional[str] = None       # e.g. "Región del Biobío"
+    commune: Optional[str] = None      # e.g. "Concepción"
+    is_user_region: bool = False       # Flag prioritario: coincide con la región de residencia del usuario
+    modality: Optional[str] = "Presencial" # "Presencial" | "Híbrido" | "Remoto"
+    contract_type: Optional[str] = None # "Contrata", "Planta", "Honorarios", "Indefinido", "Plazo Fijo"
+    experience_required: Optional[str] = None
+    profession_category: Optional[str] = None
 
     # Dates
     posted_at: Optional[str] = None          # Fecha de publicación
