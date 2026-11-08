@@ -68,8 +68,32 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { has
   }
 }
 
+const DEFAULT_EMPTY_PROFILE: CandidateProfile = {
+  name: '',
+  years_of_experience: 0,
+  technical_skills: [],
+  soft_skills: [],
+  languages: {},
+  experiences: [],
+  education: [],
+  certifications: []
+};
+
+const DEFAULT_EMPTY_PREFERENCES: UserPreferences = {
+  preferred_region: 'Región del Biobío',
+  preferred_communes: ['Concepción'],
+  geographic_scope: 'all',
+  remote_only: false,
+  target_roles: [],
+  min_salary_usd: 0,
+  deal_breakers: [],
+  learned_preferences: [],
+  learned_stories: [],
+  market_insights: []
+};
+
 export function App() {
-  const [activeTab, setActiveTab] = useState<string>('radar');
+  const [activeTab, setActiveTab] = useState<string>('welcome');
   const [darkMode, setDarkMode] = useState<boolean>(true);
   const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
   const [isPrivacyOpen, setIsPrivacyOpen] = useState<boolean>(false);
@@ -114,12 +138,23 @@ export function App() {
         getClientStore<ApplicationDraft[]>('applications')
       ]);
 
+      const hasCachedData = Boolean(
+        (cachedProfile?.name && cachedProfile.name.trim() !== '' && cachedProfile.name !== 'Candidato' && ((cachedProfile.experiences && cachedProfile.experiences.length > 0) || (cachedProfile.technical_skills && cachedProfile.technical_skills.length > 0))) ||
+        (cachedJobs && cachedJobs.length > 0) ||
+        (cachedApps && cachedApps.length > 0)
+      );
+
       if (cachedProfile || cachedJobs || cachedApps) {
         // Use sovereign client storage
         setProfile(cachedProfile);
         setPreferences(cachedPrefs);
         setJobs(cachedJobs || []);
         setApplications(cachedApps || []);
+        if (hasCachedData) {
+          setActiveTab('radar');
+        } else {
+          setActiveTab('welcome');
+        }
       } else {
         // First session on this device: fallback to server-seed
         const [p, prefs, j, apps] = await Promise.all([
@@ -133,6 +168,18 @@ export function App() {
         setPreferences(prefs);
         setJobs(j || []);
         setApplications(apps || []);
+
+        const hasServerData = Boolean(
+          (p?.name && p.name.trim() !== '' && p.name !== 'Candidato' && ((p.experiences && p.experiences.length > 0) || (p.technical_skills && p.technical_skills.length > 0))) ||
+          (j && j.length > 0) ||
+          (apps && apps.length > 0)
+        );
+
+        if (hasServerData) {
+          setActiveTab('radar');
+        } else {
+          setActiveTab('welcome');
+        }
 
         // Seed client store
         if (p) saveClientStore('profile', p);
@@ -330,9 +377,9 @@ export function App() {
                 />
               )}
 
-              {activeTab === 'profile' && profile && (
+              {activeTab === 'profile' && (
                 <ProfileStudio
-                  profile={profile}
+                  profile={profile || DEFAULT_EMPTY_PROFILE}
                   onProfileUpdated={(p) => setProfile(p)}
                 />
               )}
@@ -341,10 +388,10 @@ export function App() {
                 <ApplicationStudio applications={applications} />
               )}
 
-              {activeTab === 'preferences' && preferences && (
+              {activeTab === 'preferences' && (
                 <PreferencesCenter
                   onPreferencesUpdated={(p) => setPreferences(p)}
-                  preferences={preferences}
+                  preferences={preferences || DEFAULT_EMPTY_PREFERENCES}
                 />
               )}
             </div>
