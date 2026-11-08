@@ -773,9 +773,20 @@ class EmpleosPublicosScraper(BaseScraper):
                         continue
 
                     # Keyword match if user provided specific search term
-                    full_text = f"{cargo} {institucion} {ministerio} {area}"
-                    if keywords and not _keyword_match(full_text, keywords):
-                        continue
+                    full_text = f"{cargo} {institucion} {ministerio} {area}".lower()
+                    if keywords:
+                        kw_lower = keywords.lower().strip()
+                        generic_tech_terms = {
+                            "software", "engineer", "ingeniero", "ingenieria", "developer",
+                            "desarrollador", "programador", "ti", "it", "tech", "tecnologia",
+                            "tecnología", "computacion", "computación", "informatico", "informático",
+                            "informatica", "informática", "sistemas"
+                        }
+                        user_terms = set(re.findall(r'\b\w+\b', kw_lower))
+                        is_generic_tech_query = bool(user_terms & generic_tech_terms)
+
+                        if not is_generic_tech_query and not _keyword_match(full_text, keywords):
+                            continue
 
                     # Format salary (CLP)
                     salary_range = None
