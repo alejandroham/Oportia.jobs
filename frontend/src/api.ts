@@ -125,6 +125,25 @@ export const api = {
     if (!res.ok) throw new Error('Error al reiniciar la memoria IA');
     return res.json();
   },
+  chatMemory: async (message: string, history?: Array<{ role: 'user' | 'assistant'; content: string }>): Promise<{
+    reply: string;
+    has_new_story: boolean;
+    new_story?: any;
+    new_insights: string[];
+    new_deal_breakers: string[];
+    preferences: UserPreferences;
+  }> => {
+    const res = await fetch(`${API_BASE}/memory/chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message, history: history || [] })
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || 'Error al comunicarse con el Coach de Memoria');
+    }
+    return res.json();
+  },
   sendFeedback: async (job_id: string, action: 'like' | 'dislike' | 'apply' | 'reject', notes?: string) => {
     const res = await fetch(`${API_BASE}/feedback`, {
       method: 'POST',

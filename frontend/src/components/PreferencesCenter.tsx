@@ -16,11 +16,13 @@ import {
   ChevronDown,
   ChevronUp,
   Cpu,
-  Target
+  Target,
+  MessageSquare
 } from 'lucide-react';
 import type { UserPreferences, LearnedStarStory } from '../types';
 import { api } from '../api';
 import { useToast } from './Toast';
+import { MemoryChat } from './MemoryChat';
 
 interface PreferencesCenterProps {
   preferences: UserPreferences;
@@ -32,6 +34,7 @@ export const PreferencesCenter: React.FC<PreferencesCenterProps> = ({
   onPreferencesUpdated
 }) => {
   const toast = useToast();
+  const [activeSubTab, setActiveSubTab] = useState<'chat' | 'library' | 'radar_rules'>('chat');
   const [formData, setFormData] = useState<UserPreferences>(preferences);
   const [newRole, setNewRole] = useState('');
   const [newDealBreaker, setNewDealBreaker] = useState('');
@@ -339,8 +342,64 @@ export const PreferencesCenter: React.FC<PreferencesCenterProps> = ({
         </div>
       </div>
 
-      {/* ADN Profesional & Propuesta de Valor (ProfileDNA) */}
-      <div className="apple-glass apple-card p-5 space-y-3.5">
+      {/* Segmented Sub-Navigation Bar */}
+      <div className="flex items-center justify-center sm:justify-start bg-gray-200/60 dark:bg-zinc-800/60 p-1 rounded-2xl border border-black/5 dark:border-white/5 space-x-1">
+        <button
+          type="button"
+          onClick={() => setActiveSubTab('chat')}
+          className={`flex items-center space-x-1.5 px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
+            activeSubTab === 'chat'
+              ? 'bg-white dark:bg-zinc-700 text-indigo-600 dark:text-indigo-300 shadow-sm'
+              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+          }`}
+        >
+          <MessageSquare className="w-3.5 h-3.5" />
+          <span>Coach Conversacional (Chat)</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveSubTab('library')}
+          className={`flex items-center space-x-1.5 px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
+            activeSubTab === 'library'
+              ? 'bg-white dark:bg-zinc-700 text-indigo-600 dark:text-indigo-300 shadow-sm'
+              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+          }`}
+        >
+          <Star className="w-3.5 h-3.5" />
+          <span>Biblioteca STAR & ADN ({formData.learned_star_stories?.length || 0})</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveSubTab('radar_rules')}
+          className={`flex items-center space-x-1.5 px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
+            activeSubTab === 'radar_rules'
+              ? 'bg-white dark:bg-zinc-700 text-indigo-600 dark:text-indigo-300 shadow-sm'
+              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+          }`}
+        >
+          <Target className="w-3.5 h-3.5" />
+          <span>Reglas del Radar & Filtros</span>
+        </button>
+      </div>
+
+      {/* Sub-tab 1: Conversational Memory Chat */}
+      {activeSubTab === 'chat' && (
+        <MemoryChat
+          preferences={formData}
+          onPreferencesUpdated={(updated) => {
+            setFormData(updated);
+            onPreferencesUpdated(updated);
+          }}
+        />
+      )}
+
+      {/* Sub-tab 2: ADN Profesional & Biblioteca STAR */}
+      {activeSubTab === 'library' && (
+        <div className="space-y-6 animate-fade-in">
+          {/* ADN Profesional & Propuesta de Valor (ProfileDNA) */}
+          <div className="apple-glass apple-card p-5 space-y-3.5">
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-black/5 dark:border-white/5 pb-2.5">
           <div className="flex items-center space-x-2">
             <Target className="w-4 h-4 text-blue-600 dark:text-blue-400" />
@@ -584,9 +643,14 @@ export const PreferencesCenter: React.FC<PreferencesCenterProps> = ({
           </div>
         )}
       </div>
+      </div>
+      )}
 
-      {/* Reglas Aprendidas Autónomamente & Patrones de Industria */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* Sub-tab 3: Reglas Aprendidas Autónomamente & Filtros del Radar */}
+      {activeSubTab === 'radar_rules' && (
+        <div className="space-y-6 animate-fade-in">
+          {/* Reglas Aprendidas Autónomamente & Patrones de Industria */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         
         {/* Radar Insights */}
         <div className="apple-glass apple-card p-5 space-y-3">
@@ -786,6 +850,8 @@ export const PreferencesCenter: React.FC<PreferencesCenterProps> = ({
         </div>
 
       </div>
+      </div>
+      )}
 
     </div>
   );

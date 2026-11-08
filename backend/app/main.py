@@ -167,6 +167,16 @@ def delete_learned_star_story(story_id: str):
     db.save_preferences(prefs)
     return prefs
 
+@app.post("/api/memory/chat")
+def memory_chat(payload: dict):
+    """Conversational Memory Coach to feed and enrich AI cognitive memory in real-time"""
+    message = payload.get("message", "").strip()
+    history = payload.get("history", [])
+    if not message:
+        raise HTTPException(status_code=400, detail="El mensaje no puede estar vacío.")
+    result = preference_learner.chat_and_learn(message, history)
+    return result
+
 @app.post("/api/feedback")
 def record_feedback(event: FeedbackAction):
     updated_prefs = preference_learner.process_feedback(event)

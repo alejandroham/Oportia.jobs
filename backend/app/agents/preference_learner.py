@@ -341,4 +341,161 @@ RESPONDE ÚNICAMENTE CON UN JSON:
             prefs.memory_stats = MemoryStats()
         prefs.memory_stats.maturity_percentage = min(100, score)
 
+    def chat_and_learn(self, message: str, chat_history: Optional[List[Dict[str, str]]] = None) -> Dict[str, Any]:
+        """
+        Conversational Memory Coach: interacts with candidate, extracts STAR stories,
+        infers career affinities/deal-breakers and enriches cognitive memory in real-time.
+        """
+        profile = db.get_profile()
+        prefs = db.get_preferences()
+        history = chat_history or []
+
+        system_instruction = (
+            "Eres el Coach de Memoria Cognitiva de NexusJob AI. "
+            "Tu misión es conversar con el candidato de forma empática, estratégica y ejecutiva "
+            "para descubrir sus mayores logros laborales, desafíos técnicos superados, métricas de impacto, "
+            "cultura organizacional deseada y condiciones innegociables (deal-breakers).\n\n"
+            "INSTRUCCIONES CLAVE:\n"
+            "1. En 'assistant_reply', responde con calidez y profesionalismo. Si el candidato cuenta un logro, "
+            "valídalo y felicítalo por el impacto. Haz una pregunta de seguimiento inteligente para profundizar en detalles "
+            "(ej. '¿Qué tecnologías fueron clave?', '¿Cómo manejaste la resistencia del equipo?').\n"
+            "2. Si el mensaje describe una experiencia relevante, sintetízala en formato STAR (Situation/Task, Action, Result) "
+            "en 'star_story'. Si no es un logro completo, deja 'star_story' en null.\n"
+            "3. Si el candidato menciona preferencias de trabajo (ej. 'solo remoto', 'descarto bancos'), agrégalas en 'new_insights' o 'deal_breakers'.\n"
+            "RESPONDE ESTRICTAMENTE EN FORMATO JSON."
+        )
+
+        existing_titles = [s.title for s in prefs.learned_star_stories]
+
+        prompt = f"""
+CANDIDATO: {profile.name or 'Candidato'} ({profile.headline or 'Profesional TI'})
+HISTORIAS STAR YA REGISTRADAS EN MEMORIA:
+{json.dumps(existing_titles, ensure_ascii=False)}
+
+INSIGHTS Y REGLAS ACTUALES:
+{json.dumps(prefs.auto_learned_insights, ensure_ascii=False)}
+
+HISTORIAL DE LA CONVERSACIÓN RECIENTE:
+{json.dumps(history[-6:], ensure_ascii=False, indent=2)}
+
+NUEVO MENSAJE DEL CANDIDATO:
+"{message}"
+
+FORMATO OBLIGATORIO DE RESPUESTA JSON:
+{{
+  "assistant_reply": "Respuesta conversacional al candidato...",
+  "star_story": {{
+    "title": "Título sintético y profesional del logro (ej. Modernización de ERP con IA)",
+    "situation_and_task": "Contexto y reto que enfrentaba...",
+    "action": "Acciones específicas que tomó el candidato...",
+    "result_and_metrics": "Impacto cuantificable o resultado alcanzado...",
+    "key_skills": ["Skill1", "Skill2"]
+  }},
+  "new_insights": ["Insight o preferencia aprendida (si aplica)"],
+  "deal_breakers": ["Límites o exclusiones innegociables mencionadas (si aplica)"],
+  "preferred_technologies": ["Tecnologías de interés mencionadas (si aplica)"],
+  "target_roles": ["Roles específicos de interés mencionados (si aplica)"]
+}}
+(Si no se detectó un caso de éxito nuevo o completo, "star_story" debe ser null).
+"""
+
+        new_story_learned = None
+        new_insights_learned = []
+        new_deal_breakers_learned = []
+
+        try:
+            res = llm.generate_json(prompt, system_instruction=system_instruction)
+            assistant_reply = res.get("assistant_reply") or "Entendido. He registrado esta información en tu memoria."
+
+            # 1. Process STAR Story if detected
+            story_data = res.get("star_story")
+            if isinstance(story_data, dict) and story_data.get("title") and story_data.get("action"):
+                title_lower = story_data["title"].strip().lower()
+                # Deduplicate by title similarity
+                is_duplicate = any(
+                    title_lower in s.title.lower() or s.title.lower() in title_lower
+                    for s in prefs.learned_star_stories
+                )
+
+                if not is_duplicate:
+                    new_story = LearnedStarStory(
+                        id=str(uuid.uuid4())[:8],
+                        title=story_data["title"].strip(),
+                        situation_and_task=story_data.get("situation_and_task", ""),
+                        action=story_data["action"].strip(),
+                        result_and_metrics=story_data.get("result_and_metrics", ""),
+                        key_skills=story_data.get("key_skills", []),
+                        source="chat_coach",
+                        score=95,
+                        created_at=datetime.utcnow().isoformat()
+                    )
+                    prefs.learned_star_stories.insert(0, new_story)
+                    new_story_learned = new_story.model_dump()
+                    if not prefs.memory_stats:
+                        prefs.memory_stats = MemoryStats()
+                    prefs.memory_stats.total_star_answers_learned += 1
+
+            # 2. Process Insights
+            for ins in res.get("new_insights", []):
+                if ins and ins not in prefs.auto_learned_insights:
+                    prefs.auto_learned_insights.insert(0, ins)
+                    new_insights_learned.append(ins)
+
+            # 3. Process Deal Breakers
+            for db_item in res.get("deal_breakers", []):
+                if db_item and db_item not in prefs.deal_breakers:
+                    prefs.deal_breakers.append(db_item)
+                    new_deal_breakers_learned.append(db_item)
+
+            # 4. Process Preferred Tech
+            for tech in res.get("preferred_technologies", []):
+                if tech and tech not in prefs.preferred_technologies:
+                    prefs.preferred_technologies.append(tech)
+
+            # 5. Process Target Roles
+            for role in res.get("target_roles", []):
+                if role and role not in prefs.target_roles:
+                    prefs.target_roles.append(role)
+
+            self._update_maturity(prefs)
+            db.save_preferences(prefs)
+
+            return {
+                "reply": assistant_reply,
+                "has_new_story": bool(new_story_learned),
+                "new_story": new_story_learned,
+                "new_insights": new_insights_learned,
+                "new_deal_breakers": new_deal_breakers_learned,
+                "preferences": prefs.model_dump()
+            }
+
+        except Exception as e:
+            # Resilient offline/error fallback
+            msg_lower = message.lower()
+            heuristic_story = None
+            if ("logro" in msg_lower or "proyecto" in msg_lower or "implement" in msg_lower) and len(message) > 40:
+                heuristic_story = LearnedStarStory(
+                    id=str(uuid.uuid4())[:8],
+                    title=f"Experiencia: {message[:35]}...",
+                    situation_and_task="Registro mediante conversación interactiva",
+                    action=message,
+                    result_and_metrics="Pendiente de métricas detalladas",
+                    key_skills=["Liderazgo", "Desarrollo"],
+                    source="chat_coach",
+                    score=85,
+                    created_at=datetime.utcnow().isoformat()
+                )
+                prefs.learned_star_stories.insert(0, heuristic_story)
+                self._update_maturity(prefs)
+                db.save_preferences(prefs)
+
+            return {
+                "reply": f"He registrado tu mensaje en la memoria cognitiva. {('¡Detecté y guardé una nueva historia de éxito!' if heuristic_story else '¿Te gustaría agregar métricas específicas sobre este desafío?')}",
+                "has_new_story": bool(heuristic_story),
+                "new_story": heuristic_story.model_dump() if heuristic_story else None,
+                "new_insights": [],
+                "new_deal_breakers": [],
+                "preferences": prefs.model_dump()
+            }
+
 preference_learner = PreferenceLearner()
