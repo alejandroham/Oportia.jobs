@@ -189,12 +189,22 @@ def record_feedback(event: FeedbackAction):
 def list_companies(country: Optional[str] = None, industry: Optional[str] = None):
     return db.get_companies(country=country, industry=industry)
 
+def _has_analyzed_cv(profile: Optional[CandidateProfile]) -> bool:
+    """Verifies that a real CV has been uploaded and analyzed before allowing AI evaluations."""
+    if not profile or not profile.name or profile.name.strip().lower() == "candidato":
+        return False
+    return bool(profile.experiences or profile.technical_skills or profile.headline or profile.primary_profession)
+
 @app.get("/api/roles/recommendations", response_model=List[RoleRecommendation])
 def get_role_recommendations(force_refresh: bool = False):
+    profile = db.get_profile()
+    if not _has_analyzed_cv(profile):
+        return []
+
     existing = db.get_role_recommendations()
     if existing and not force_refresh:
         return existing
-    profile = db.get_profile()
+
     prefs = db.get_preferences()
     recs = role_recommender.recommend_roles(profile, prefs)
     db.save_role_recommendations(recs)
@@ -211,6 +221,9 @@ def update_role_rec_status(rec_id: str, data: dict):
 @app.get("/api/roles/ats-queries", response_model=List[GeneratedATSQuery])
 def get_ats_queries():
     profile = db.get_profile()
+    if not _has_analyzed_cv(profile):
+        return []
+
     prefs = db.get_preferences()
     recs = db.get_role_recommendations()
     if not recs:
@@ -244,8 +257,9 @@ def list_regions():
 def list_jobs(status: Optional[str] = None):
     jobs = db.get_jobs(status=status)
     prefs = db.get_preferences()
-    user_reg = prefs.preferred_region or "Región del Biobío"
-    user_comm = prefs.preferred_communes[0] if prefs.preferred_communes else None
+    profile = db.get_profile()
+    user_reg = prefs.preferred_region or profile.region or None
+    user_comm = prefs.preferred_communes[0] if prefs.preferred_communes else (profile.commune or None)
 
     # Dynamically annotate region and geographic priority according to user's active preferences
     for j in jobs:
@@ -268,22 +282,14 @@ def list_jobs(status: Optional[str] = None):
 def trigger_scrape(keywords: Optional[str] = None, remote_only: bool = False, scope: str = "chile"):
     """
     Scrape job postings from multiple sources dynamically based on candidate profession.
-    
-    Params:
-      - keywords: role, profession or specialty to search for (inferred from CV if empty)
-      - remote_only: filter only remote positions (default False to cover presencial/hibrido in Chile)
-      - scope: "global" | "chile" | "all"
-          global  → remote-friendly international boards (Arbeitnow, Remotive, RemoteOK, LinkedIn Global)
-          chile   → Chilean portals (GetOnBoard, LinkedIn Chile, CompuTrabajo, ChileTrabajos, Laborum, Empleos Públicos)
-          all     → both international + Chilean portals
     """
     prefs = db.get_preferences()
     profile = db.get_profile()
 
     # Dynamic search keyword: prefer user keyword, then profile primary profession, then target_roles
     kw = keywords or (profile.primary_profession or (prefs.target_roles[0] if prefs.target_roles else ""))
-    user_reg = prefs.preferred_region or profile.region or "Región del Biobío"
-    user_comm = (prefs.preferred_communes[0] if prefs.preferred_communes else (profile.commune or "Concepción"))
+    user_reg = prefs.preferred_region or profile.region or None
+    user_comm = prefs.preferred_communes[0] if prefs.preferred_communes else (profile.commune or None)
 
     jobs: list = []
 
@@ -374,19 +380,31 @@ def import_job_from_url(data: dict):
 
 @app.post("/api/jobs/{job_id}/evaluate", response_model=FitEvaluation)
 def evaluate_job(job_id: str):
+    profile = db.get_profile()
+    if not _has_analyzed_cv(profile):
+        raise HTTPException(
+            status_code=400,
+            detail="Para evaluar el Fit Score con IA primero debes cargar y analizar tu currículum vitae en 'Perfil & CV'."
+        )
+
     job = db.get_job_by_id(job_id)
     if not job:
         raise HTTPException(status_code=404, detail="Empleo no encontrado")
     
-    profile = db.get_profile()
     prefs = db.get_preferences()
     evaluation = fit_evaluator.evaluate(job, profile, prefs)
     return evaluation
 
 @app.post("/api/jobs/batch-rank")
 def batch_rank_jobs():
-    jobs = db.get_jobs()
     profile = db.get_profile()
+    if not _has_analyzed_cv(profile):
+        raise HTTPException(
+            status_code=400,
+            detail="No se puede evaluar el Fit Score sin un currículum cargado y analizado. Carga tu CV primero en 'Perfil & CV'."
+        )
+
+    jobs = db.get_jobs()
     prefs = db.get_preferences()
 
     evaluated_count = 0

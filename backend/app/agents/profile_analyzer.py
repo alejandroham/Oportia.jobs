@@ -192,10 +192,10 @@ def deterministic_cv_parser(text: str) -> CandidateProfile:
     loc_match = re.search(r'Ubicaci[oó]n:\s*([^\n|]+)', text, re.I)
     loc = loc_match.group(1).strip() if loc_match else "Chile"
 
-    # Detect region and commune
+    # Detect region and commune dynamically from CV
     detected_reg, detected_comm, _ = detect_region_and_commune(f"{loc} {text[:800]}")
-    user_region = detected_reg or "Región del Biobío"
-    user_commune = detected_comm or "Concepción"
+    user_region = detected_reg
+    user_commune = detected_comm
 
     linkedin_match = re.search(r'https?://[^\s|]*linkedin[^\s|]*', text, re.I)
     linkedin = linkedin_match.group(0) if linkedin_match else None
@@ -429,8 +429,8 @@ TEXTO DEL CURRÍCULUM:
                 det_comm = result.get("detected_commune")
                 if not det_reg or not det_comm:
                     r, c, _ = detect_region_and_commune(f"{loc} {raw_text[:800]}")
-                    det_reg = det_reg or r or "Región del Biobío"
-                    det_comm = det_comm or c or "Concepción"
+                    det_reg = det_reg or r
+                    det_comm = det_comm or c
 
                 profile = CandidateProfile(
                     name=result.get("name", "Candidato"),

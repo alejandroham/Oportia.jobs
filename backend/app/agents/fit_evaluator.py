@@ -121,11 +121,12 @@ RESPONDE ÚNICAMENTE CON UN JSON CON ESTA ESTRUCTURA EXACTA:
             recommendation_summary=res.get("recommendation_summary", "Se recomienda revisar los detalles específicos antes de postular.")
         )
 
-        # Geographic priority identification
-        pref_comm = preferences.preferred_communes[0] if preferences.preferred_communes else None
+        # Geographic priority identification (obtained dynamically from CV or preferences)
+        user_reg = preferences.preferred_region or profile.region or None
+        pref_comm = preferences.preferred_communes[0] if preferences.preferred_communes else (profile.commune or None)
         geo_cat, boost, reg, comm = calculate_geographic_priority(
             job.location,
-            user_region=preferences.preferred_region or "Región del Biobío",
+            user_region=user_reg,
             user_commune=pref_comm
         )
         job.region = reg

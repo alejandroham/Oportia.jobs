@@ -6,6 +6,8 @@ import {
   ExternalLink,
   ShieldAlert,
   ShieldCheck,
+  AlertCircle,
+  Upload,
   FileText,
   Briefcase,
   DollarSign,
@@ -55,6 +57,7 @@ interface JobRadarProps {
   onRefresh: () => void;
   onApply: (job: JobPosting) => void;
   onNavigateToTracker?: () => void;
+  onNavigateToTab?: (tab: string) => void;
 }
 
 export const JobRadar: React.FC<JobRadarProps> = ({
@@ -62,13 +65,28 @@ export const JobRadar: React.FC<JobRadarProps> = ({
   profile,
   onRefresh,
   onApply,
-  onNavigateToTracker
+  onNavigateToTracker,
+  onNavigateToTab
 }) => {
   const toast = useToast();
 
-  // Geographic & Regional Configuration (Section 3, 4, 5)
-  const userRegion = profile?.region || 'Región del Biobío';
-  const userCommune = profile?.commune || 'Concepción';
+  // Geographic & Regional Configuration: Obtained dynamically from CV, no default Biobío bias
+  const userRegion = profile?.region || '';
+  const userCommune = profile?.commune || '';
+
+  // CV Verification: Fit score calculation strictly requires an analyzed CV
+  const hasAnalyzedCV = Boolean(
+    profile &&
+    profile.name &&
+    profile.name.trim() !== '' &&
+    profile.name.trim().toLowerCase() !== 'candidato' &&
+    ((profile.experiences && profile.experiences.length > 0) ||
+     (profile.technical_skills && profile.technical_skills.length > 0) ||
+     (profile.headline && profile.headline.trim() !== '') ||
+     (profile.primary_profession && profile.primary_profession.trim() !== ''))
+  );
+
+  const [showNoCVModal, setShowNoCVModal] = useState<boolean>(false);
 
   // Search & Filter state
   const [searchTerm, setSearchTerm] = useState('');
@@ -158,6 +176,10 @@ export const JobRadar: React.FC<JobRadarProps> = ({
   }, []);
 
   const handleRefreshRecommendations = async () => {
+    if (!hasAnalyzedCV) {
+      setShowNoCVModal(true);
+      return;
+    }
     setIsLoadingRecs(true);
     try {
       const recs = await api.getRoleRecommendations(true);
@@ -275,6 +297,10 @@ export const JobRadar: React.FC<JobRadarProps> = ({
   };
 
   const handleBatchRank = async () => {
+    if (!hasAnalyzedCV) {
+      setShowNoCVModal(true);
+      return;
+    }
     setIsBatchRanking(true);
     try {
       const res = await api.batchRank();
@@ -306,6 +332,10 @@ export const JobRadar: React.FC<JobRadarProps> = ({
   };
 
   const handleEvaluate = async (job: JobPosting) => {
+    if (!hasAnalyzedCV) {
+      setShowNoCVModal(true);
+      return;
+    }
     setEvaluatingJobId(job.id);
     try {
       const evaluation = await api.evaluateJob(job.id);
@@ -636,7 +666,15 @@ export const JobRadar: React.FC<JobRadarProps> = ({
         <div className="flex items-center space-x-2 text-blue-900 dark:text-blue-200">
           <MapPin className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
           <span>
-            Prioridad regional activa: <strong className="font-bold text-blue-700 dark:text-blue-300">{userRegion}</strong> {userCommune && `(${userCommune})`} • Cobertura: <strong>Chile Completo</strong>
+            {userRegion ? (
+              <>
+                Prioridad regional activa: <strong className="font-bold text-blue-700 dark:text-blue-300">{userRegion}</strong> {userCommune && `(${userCommune})`} • Cobertura: <strong>Chile Completo</strong>
+              </>
+            ) : (
+              <>
+                Cobertura activa: <strong className="font-bold text-blue-700 dark:text-blue-300">Chile Completo (Nacional)</strong> • Sin sesgo regional predefinido (se deduce de tu CV)
+              </>
+            )}
           </span>
         </div>
         <div className="flex items-center space-x-2 self-end sm:self-auto">
@@ -650,6 +688,35 @@ export const JobRadar: React.FC<JobRadarProps> = ({
           </button>
         </div>
       </div>
+
+      {/* Invitation banner to upload CV if not analyzed */}
+      {!hasAnalyzedCV && (
+        <div className="apple-glass apple-card p-4 rounded-2xl border border-amber-300/80 dark:border-amber-700/60 bg-amber-50/80 dark:bg-amber-950/30 text-amber-900 dark:text-amber-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs animate-fade-in">
+          <div className="flex items-start space-x-3">
+            <div className="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 mt-0.5">
+              <FileText className="w-5 h-5" />
+            </div>
+            <div className="space-y-0.5">
+              <h4 className="font-bold text-xs text-amber-950 dark:text-amber-100 flex items-center gap-1.5">
+                <span>Modo Búsqueda Libre en Radar</span>
+                <span className="text-[10px] px-2 py-0.2 rounded-full font-bold bg-amber-200/60 dark:bg-amber-900/60 text-amber-800 dark:text-amber-200">
+                  CV Requerido para Fit
+                </span>
+              </h4>
+              <p className="text-[11px] text-amber-800 dark:text-amber-300 leading-relaxed">
+                Puedes buscar y explorar vacantes libremente por cargo o palabras clave. Para calcular tu <strong>Fit Score de compatibilidad (100% a 0%)</strong>, detectar tu región y deducir tu estrategia de búsqueda sin sesgos, primero debes cargar tu currículum.
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => onNavigateToTab ? onNavigateToTab('profile') : null}
+            className="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow-xs transition shrink-0 flex items-center space-x-1.5 self-start sm:self-auto cursor-pointer"
+          >
+            <Upload className="w-3.5 h-3.5" />
+            <span>Cargar mi CV en Perfil</span>
+          </button>
+        </div>
+      )}
 
       {/* Apple-grade Search & Filters Bar */}
       <div className="apple-glass apple-card p-4 space-y-3">
@@ -982,6 +1049,15 @@ export const JobRadar: React.FC<JobRadarProps> = ({
                         <Sparkles className="w-3 h-3" />
                         <span>{score}% Match</span>
                       </button>
+                    ) : !hasAnalyzedCV ? (
+                      <button
+                        onClick={() => setShowNoCVModal(true)}
+                        className="shrink-0 text-[10px] px-2.5 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800/40 hover:bg-amber-100 transition flex items-center space-x-1"
+                        title="Carga tu CV para calcular tu porcentaje de ajuste con IA"
+                      >
+                        <Sparkles className="w-2.5 h-2.5 text-amber-500" />
+                        <span>Cargar CV para Fit</span>
+                      </button>
                     ) : (
                       <button
                         onClick={() => handleEvaluate(job)}
@@ -1312,116 +1388,142 @@ export const JobRadar: React.FC<JobRadarProps> = ({
               {/* TAB 1: ROLES & ATS DORKS */}
               {strategyTab === 'roles' && (
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <p className="text-gray-600 dark:text-gray-300 text-xs">
-                      Roles inferidos con Inteligencia Artificial a partir de la evidencia demostrable en tu CV:
-                    </p>
-                    <button
-                      onClick={handleRefreshRecommendations}
-                      disabled={isLoadingRecs}
-                      className="flex items-center space-x-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-blue-50 dark:bg-blue-950/40 text-blue-600 hover:bg-blue-100 transition shrink-0"
-                    >
-                      <RefreshCw className={`w-3 h-3 ${isLoadingRecs ? 'animate-spin' : ''}`} />
-                      <span>{isLoadingRecs ? 'Analizando...' : 'Recalcular'}</span>
-                    </button>
-                  </div>
-
-                  {/* Role Cards */}
-                  <div className="space-y-2.5">
-                    {roleRecs.map((rec) => {
-                      const isApproved = rec.approved_by_user !== false;
-                      const typeBadge = {
-                        direct: { label: 'Coincidencia Directa', class: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
-                        transferable: { label: 'Habilidad Transferible', class: 'bg-blue-50 text-blue-700 border-blue-200' },
-                        exploratory: { label: 'Exploratoria', class: 'bg-purple-50 text-purple-700 border-purple-200' }
-                      }[rec.recommendation_type] || { label: rec.recommendation_type, class: 'bg-gray-100 text-gray-700 border-gray-200' };
-
-                      return (
-                        <div
-                          key={rec.id}
-                          className={`p-3.5 rounded-xl border transition ${
-                            isApproved
-                              ? 'bg-white dark:bg-zinc-800/80 border-blue-200 dark:border-blue-900 shadow-2xs'
-                              : 'bg-gray-50/50 dark:bg-zinc-900/40 border-gray-200 opacity-60'
-                          }`}
+                  {!hasAnalyzedCV || roleRecs.length === 0 ? (
+                    <div className="p-8 text-center space-y-3 apple-glass apple-card rounded-2xl border border-black/5 dark:border-white/5">
+                      <div className="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex items-center justify-center mx-auto">
+                        <SlidersHorizontal className="w-6 h-6" />
+                      </div>
+                      <h3 className="font-bold text-sm text-gray-900 dark:text-white">
+                        Estrategia Personalizada No Generada Aún
+                      </h3>
+                      <p className="text-xs text-gray-500 max-w-sm mx-auto leading-relaxed">
+                        Para que Nexus deduzca tus familias de roles equivalentes, sinónimos ATS y consultas optimizadas para portales a partir de tu perfil real (sin datos genéricos predefinidos), primero debes cargar tu currículum en <strong>Perfil & CV</strong>.
+                      </p>
+                      <button
+                        onClick={() => {
+                          setShowStrategyDrawer(false);
+                          if (onNavigateToTab) onNavigateToTab('profile');
+                        }}
+                        className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs shadow-xs transition inline-flex items-center space-x-1.5"
+                      >
+                        <Upload className="w-3.5 h-3.5" />
+                        <span>Cargar mi CV para Generar Estrategia</span>
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="flex items-center justify-between">
+                        <p className="text-gray-600 dark:text-gray-300 text-xs">
+                          Roles inferidos con Inteligencia Artificial a partir de la evidencia demostrable en tu CV:
+                        </p>
+                        <button
+                          onClick={handleRefreshRecommendations}
+                          disabled={isLoadingRecs}
+                          className="flex items-center space-x-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-blue-50 dark:bg-blue-950/40 text-blue-600 hover:bg-blue-100 transition shrink-0"
                         >
-                          <div className="flex items-center justify-between">
-                            <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold border ${typeBadge.class}`}>
-                              {typeBadge.label}
-                            </span>
-                            <span className="text-[10px] text-gray-400 font-medium">{rec.seniority}</span>
-                          </div>
+                          <RefreshCw className={`w-3 h-3 ${isLoadingRecs ? 'animate-spin' : ''}`} />
+                          <span>{isLoadingRecs ? 'Analizando...' : 'Recalcular'}</span>
+                        </button>
+                      </div>
 
-                          <h4 className="font-bold text-gray-900 dark:text-white text-xs mt-1.5">
-                            {rec.role_family}
-                          </h4>
+                      {/* Role Cards */}
+                      <div className="space-y-2.5">
+                        {roleRecs.map((rec) => {
+                          const isApproved = rec.approved_by_user !== false;
+                          const typeBadge = {
+                            direct: { label: 'Coincidencia Directa', class: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+                            transferable: { label: 'Habilidad Transferible', class: 'bg-blue-50 text-blue-700 border-blue-200' },
+                            exploratory: { label: 'Exploratoria', class: 'bg-purple-50 text-purple-700 border-purple-200' }
+                          }[rec.recommendation_type] || { label: rec.recommendation_type, class: 'bg-gray-100 text-gray-700 border-gray-200' };
 
-                          <div className="flex flex-wrap gap-1 mt-1">
-                            {rec.suggested_titles.map((t, idx) => (
-                              <span key={idx} className="text-[10px] px-1.5 py-0.2 rounded bg-gray-100 dark:bg-zinc-700 text-gray-700 dark:text-gray-300">
-                                {t}
-                              </span>
-                            ))}
-                          </div>
-
-                          <p className="text-[11px] text-gray-600 dark:text-gray-300 leading-snug pt-1.5">
-                            {rec.reasoning}
-                          </p>
-
-                          <div className="pt-2 mt-2 border-t border-black/5 dark:border-white/5 flex items-center justify-between text-[11px]">
-                            <span className="text-gray-500">
-                              {isApproved ? '✓ Incluida en búsquedas' : '✗ Descartada'}
-                            </span>
-                            <button
-                              onClick={() => handleToggleRecStatus(rec.id, rec.approved_by_user)}
-                              className={`px-2 py-0.5 rounded-lg font-semibold transition ${
-                                isApproved ? 'text-rose-600 hover:bg-rose-50' : 'text-blue-600 hover:bg-blue-50'
+                          return (
+                            <div
+                              key={rec.id}
+                              className={`p-3.5 rounded-xl border transition ${
+                                isApproved
+                                  ? 'bg-white dark:bg-zinc-800/80 border-blue-200 dark:border-blue-900 shadow-2xs'
+                                  : 'bg-gray-50/50 dark:bg-zinc-900/40 border-gray-200 opacity-60'
                               }`}
                             >
-                              {isApproved ? 'Descartar' : 'Activar'}
-                            </button>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
+                              <div className="flex items-center justify-between">
+                                <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold border ${typeBadge.class}`}>
+                                  {typeBadge.label}
+                                </span>
+                                <span className="text-[10px] text-gray-400 font-medium">{rec.seniority}</span>
+                              </div>
 
-                  {/* ATS Dorks Section */}
-                  <div className="pt-3 border-t border-black/5 dark:border-white/5 space-y-2">
-                    <span className="text-[10px] uppercase font-bold tracking-wider text-gray-400 block">
-                      Consultas Booleanas ATS Generadas (Google / DuckDuckGo Dorks)
-                    </span>
+                              <h4 className="font-bold text-gray-900 dark:text-white text-xs mt-1.5">
+                                {rec.role_family}
+                              </h4>
 
-                    <div className="space-y-2">
-                      {atsQueries.map((q) => (
-                        <div
-                          key={q.id}
-                          className="p-2.5 rounded-xl bg-gray-50 dark:bg-zinc-800/60 border border-black/5 flex items-center justify-between gap-2"
-                        >
-                          <div className="space-y-0.5 overflow-hidden">
-                            <div className="flex items-center space-x-1.5">
-                              <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400">
-                                {q.target_platform}
-                              </span>
-                              <span className="text-[10px] text-gray-400">• {q.role_family}</span>
+                              <div className="flex flex-wrap gap-1 mt-1">
+                                {rec.suggested_titles.map((t, idx) => (
+                                  <span key={idx} className="text-[10px] px-1.5 py-0.2 rounded bg-gray-100 dark:bg-zinc-700 text-gray-700 dark:text-gray-300">
+                                    {t}
+                                  </span>
+                                ))}
+                              </div>
+
+                              <p className="text-[11px] text-gray-600 dark:text-gray-300 leading-snug pt-1.5">
+                                {rec.reasoning}
+                              </p>
+
+                              <div className="pt-2 mt-2 border-t border-black/5 dark:border-white/5 flex items-center justify-between text-[11px]">
+                                <span className="text-gray-500">
+                                  {isApproved ? '✓ Incluida en búsquedas' : '✗ Descartada'}
+                                </span>
+                                <button
+                                  onClick={() => handleToggleRecStatus(rec.id, rec.approved_by_user)}
+                                  className={`px-2 py-0.5 rounded-lg font-semibold transition ${
+                                    isApproved ? 'text-rose-600 hover:bg-rose-50' : 'text-blue-600 hover:bg-blue-50'
+                                  }`}
+                                >
+                                  {isApproved ? 'Descartar' : 'Activar'}
+                                </button>
+                              </div>
                             </div>
-                            <p className="font-mono text-[10px] text-gray-600 dark:text-gray-300 truncate" title={q.query_text}>
-                              {q.query_text}
-                            </p>
-                          </div>
+                          );
+                        })}
+                      </div>
 
-                          <button
-                            onClick={() => handleRunATSQuery(q.query_text)}
-                            disabled={isExecutingATSQuery === q.query_text}
-                            className="px-2.5 py-1 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold text-[10px] flex items-center space-x-1 shrink-0 transition disabled:opacity-50"
-                          >
-                            <Play className="w-2.5 h-2.5" />
-                            <span>{isExecutingATSQuery === q.query_text ? 'Buscando...' : 'Buscar'}</span>
-                          </button>
+                      {/* ATS Dorks Section */}
+                      <div className="pt-3 border-t border-black/5 dark:border-white/5 space-y-2">
+                        <span className="text-[10px] uppercase font-bold tracking-wider text-gray-400 block">
+                          Consultas Booleanas ATS Generadas (Google / DuckDuckGo Dorks)
+                        </span>
+
+                        <div className="space-y-2">
+                          {atsQueries.map((q) => (
+                            <div
+                              key={q.id}
+                              className="p-2.5 rounded-xl bg-gray-50 dark:bg-zinc-800/60 border border-black/5 flex items-center justify-between gap-2"
+                            >
+                              <div className="space-y-0.5 overflow-hidden">
+                                <div className="flex items-center space-x-1.5">
+                                  <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400">
+                                    {q.target_platform}
+                                  </span>
+                                  <span className="text-[10px] text-gray-400">• {q.role_family}</span>
+                                </div>
+                                <p className="font-mono text-[10px] text-gray-600 dark:text-gray-300 truncate" title={q.query_text}>
+                                  {q.query_text}
+                                </p>
+                              </div>
+
+                              <button
+                                onClick={() => handleRunATSQuery(q.query_text)}
+                                disabled={isExecutingATSQuery === q.query_text}
+                                className="px-2.5 py-1 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold text-[10px] flex items-center space-x-1 shrink-0 transition disabled:opacity-50"
+                              >
+                                <Play className="w-2.5 h-2.5" />
+                                <span>{isExecutingATSQuery === q.query_text ? 'Buscando...' : 'Buscar'}</span>
+                              </button>
+                            </div>
+                          ))}
                         </div>
-                      ))}
-                    </div>
-                  </div>
+                      </div>
+                    </>
+                  )}
                 </div>
               )}
 
@@ -1761,6 +1863,57 @@ export const JobRadar: React.FC<JobRadarProps> = ({
                 className="px-4 py-2 rounded-xl text-xs font-medium bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 transition"
               >
                 Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* NO CV MODAL (Invitation to upload CV for Fit Score) */}
+      {showNoCVModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fade-in text-xs">
+          <div className="apple-glass apple-card max-w-md w-full p-6 space-y-4 bg-white/95 dark:bg-zinc-900/95 shadow-2xl rounded-2xl border border-black/10 dark:border-white/10">
+            <div className="flex items-center justify-between border-b border-black/5 dark:border-white/5 pb-3">
+              <div className="flex items-center space-x-2">
+                <div className="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+                  <AlertCircle className="w-5 h-5" />
+                </div>
+                <h3 className="text-sm font-bold text-gray-900 dark:text-white">
+                  Se requiere Currículum Vitae
+                </h3>
+              </div>
+              <button
+                onClick={() => setShowNoCVModal(false)}
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed">
+              Para evaluar el <strong>Fit Score</strong> de una vacante y ordenarla de mayor a menor porcentaje, la IA necesita conocer tus antecedentes laborales, formación académica y competencias reales.
+            </p>
+
+            <p className="text-[11px] text-gray-500 dark:text-gray-400">
+              Carga tu documento (PDF, Word) en la pestaña <strong>"Perfil & CV"</strong>. NexusJob procesará tu CV de forma 100% local (Zero-Knowledge, Ley N° 21.719) y activará el motor de compatibilidad sin sesgos.
+            </p>
+
+            <div className="flex items-center justify-end space-x-2 pt-2 border-t border-black/5 dark:border-white/5">
+              <button
+                onClick={() => setShowNoCVModal(false)}
+                className="px-3.5 py-1.5 rounded-xl border border-gray-200 dark:border-zinc-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-zinc-800 font-medium"
+              >
+                Seguir buscando sin Fit Score
+              </button>
+              <button
+                onClick={() => {
+                  setShowNoCVModal(false);
+                  if (onNavigateToTab) onNavigateToTab('profile');
+                }}
+                className="px-4 py-1.5 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700 transition flex items-center space-x-1.5"
+              >
+                <Upload className="w-3.5 h-3.5" />
+                <span>Ir a Cargar mi CV</span>
               </button>
             </div>
           </div>

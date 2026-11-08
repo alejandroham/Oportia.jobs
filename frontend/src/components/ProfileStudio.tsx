@@ -1315,20 +1315,21 @@ export const ProfileStudio: React.FC<ProfileStudioProps> = ({ profile, onProfile
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="font-semibold text-gray-700 dark:text-gray-300 block mb-1">Región de Chile *</label>
+                      <label className="font-semibold text-gray-700 dark:text-gray-300 block mb-1">Región de Chile</label>
                       <select
-                        value={editableProfile.region || 'Región del Biobío'}
+                        value={editableProfile.region || ''}
                         onChange={(e) => {
                           const reg = e.target.value;
                           const regObj = CHILE_REGIONS.find(r => r.name === reg);
                           setEditableProfile({
                             ...editableProfile,
                             region: reg,
-                            commune: regObj?.communes?.[0] || editableProfile.commune || ''
+                            commune: regObj?.communes?.[0] || ''
                           });
                         }}
                         className="w-full px-3 py-2 rounded-xl bg-gray-50 dark:bg-zinc-800 border border-black/10 dark:border-white/10 focus:ring-1 focus:ring-blue-500 font-medium"
                       >
+                        <option value="">Selecciona tu región (obtenida del CV)...</option>
                         {CHILE_REGIONS.map((r) => (
                           <option key={r.id} value={r.name}>
                             {r.name}
@@ -1338,13 +1339,15 @@ export const ProfileStudio: React.FC<ProfileStudioProps> = ({ profile, onProfile
                     </div>
 
                     <div>
-                      <label className="font-semibold text-gray-700 dark:text-gray-300 block mb-1">Comuna *</label>
+                      <label className="font-semibold text-gray-700 dark:text-gray-300 block mb-1">Comuna</label>
                       <select
-                        value={editableProfile.commune || 'Concepción'}
+                        value={editableProfile.commune || ''}
                         onChange={(e) => setEditableProfile({ ...editableProfile, commune: e.target.value })}
-                        className="w-full px-3 py-2 rounded-xl bg-gray-50 dark:bg-zinc-800 border border-black/10 dark:border-white/10 focus:ring-1 focus:ring-blue-500 font-medium"
+                        disabled={!editableProfile.region}
+                        className="w-full px-3 py-2 rounded-xl bg-gray-50 dark:bg-zinc-800 border border-black/10 dark:border-white/10 focus:ring-1 focus:ring-blue-500 font-medium disabled:opacity-40"
                       >
-                        {(CHILE_REGIONS.find(r => r.name === (editableProfile.region || 'Región del Biobío'))?.communes || []).map((c) => (
+                        <option value="">Selecciona tu comuna...</option>
+                        {(CHILE_REGIONS.find(r => r.name === editableProfile.region)?.communes || []).map((c) => (
                           <option key={c} value={c}>
                             {c}
                           </option>

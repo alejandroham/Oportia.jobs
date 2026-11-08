@@ -742,19 +742,20 @@ export const PreferencesCenter: React.FC<PreferencesCenterProps> = ({
                 <span>Región de Residencia</span>
               </label>
               <select
-                value={formData.preferred_region || 'Región del Biobío'}
+                value={formData.preferred_region || ''}
                 onChange={(e) => {
                   const regName = e.target.value;
                   const regObj = CHILE_REGIONS.find(r => r.name === regName);
                   const firstCommune = regObj?.communes?.[0] || '';
                   setFormData({
                     ...formData,
-                    preferred_region: regName,
+                    preferred_region: regName || undefined,
                     preferred_communes: firstCommune ? [firstCommune] : []
                   });
                 }}
                 className="w-full text-xs px-3 py-2 rounded-xl bg-white dark:bg-zinc-800 border border-black/10 dark:border-white/10 text-gray-900 dark:text-white font-medium focus:ring-1 focus:ring-blue-500"
               >
+                <option value="">(Sin sesgo regional / Cobertura Nacional)</option>
                 {CHILE_REGIONS.map((r) => (
                   <option key={r.id} value={r.name}>
                     {r.name}
@@ -769,6 +770,7 @@ export const PreferencesCenter: React.FC<PreferencesCenterProps> = ({
               </label>
               <select
                 value={formData.preferred_communes?.[0] || ''}
+                disabled={!formData.preferred_region}
                 onChange={(e) => {
                   const val = e.target.value;
                   setFormData({
@@ -776,10 +778,10 @@ export const PreferencesCenter: React.FC<PreferencesCenterProps> = ({
                     preferred_communes: val ? [val] : []
                   });
                 }}
-                className="w-full text-xs px-3 py-2 rounded-xl bg-white dark:bg-zinc-800 border border-black/10 dark:border-white/10 text-gray-900 dark:text-white font-medium focus:ring-1 focus:ring-blue-500"
+                className="w-full text-xs px-3 py-2 rounded-xl bg-white dark:bg-zinc-800 border border-black/10 dark:border-white/10 text-gray-900 dark:text-white font-medium focus:ring-1 focus:ring-blue-500 disabled:opacity-40"
               >
                 <option value="">(Cualquier comuna de la región)</option>
-                {(CHILE_REGIONS.find(r => r.name === (formData.preferred_region || 'Región del Biobío'))?.communes || []).map((c) => (
+                {(CHILE_REGIONS.find(r => r.name === formData.preferred_region)?.communes || []).map((c) => (
                   <option key={c} value={c}>
                     {c}
                   </option>

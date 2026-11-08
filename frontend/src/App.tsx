@@ -8,6 +8,8 @@ import { PreferencesCenter } from './components/PreferencesCenter';
 import { SettingsModal } from './components/SettingsModal';
 import { SessionPrivacyModal } from './components/SessionPrivacyModal';
 import { WelcomeHub } from './components/WelcomeHub';
+import { MemoryChat } from './components/MemoryChat';
+import { Brain, X } from 'lucide-react';
 import { useToast } from './components/Toast';
 import type {
   CandidateProfile,
@@ -80,8 +82,8 @@ const DEFAULT_EMPTY_PROFILE: CandidateProfile = {
 };
 
 const DEFAULT_EMPTY_PREFERENCES: UserPreferences = {
-  preferred_region: 'Región del Biobío',
-  preferred_communes: ['Concepción'],
+  preferred_region: undefined,
+  preferred_communes: [],
   geographic_scope: 'all',
   remote_only: false,
   target_roles: [],
@@ -97,6 +99,7 @@ export function App() {
   const [darkMode, setDarkMode] = useState<boolean>(true);
   const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
   const [isPrivacyOpen, setIsPrivacyOpen] = useState<boolean>(false);
+  const [isNexusChatOpen, setIsNexusChatOpen] = useState<boolean>(false);
 
   // Core state
   const [profile, setProfile] = useState<CandidateProfile | null>(null);
@@ -359,6 +362,7 @@ export function App() {
                   }}
                   onApply={handleApplyToJob}
                   onNavigateToTracker={() => setActiveTab('tracker')}
+                  onNavigateToTab={(t) => setActiveTab(t)}
                 />
               )}
 
@@ -419,6 +423,57 @@ export function App() {
         onPurgeData={handlePurgeData}
         onGoToWelcome={() => setActiveTab('welcome')}
       />
+
+      {/* Floating Nexus Coach Button */}
+      <div className="no-print fixed bottom-6 right-6 z-40">
+        <button
+          onClick={() => setIsNexusChatOpen(!isNexusChatOpen)}
+          className="flex items-center space-x-2 px-4 py-2.5 rounded-full bg-gradient-to-tr from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold text-xs shadow-xl hover:shadow-2xl hover:scale-105 transition duration-200 border border-white/20 cursor-pointer"
+          title="Abrir chat con Nexus para mejorar tu CV o consultar ofertas"
+        >
+          <Brain className="w-4 h-4 animate-pulse" />
+          <span>Nexus Asistente</span>
+        </button>
+      </div>
+
+      {/* Global Nexus Chat Slide-over Drawer */}
+      {isNexusChatOpen && (
+        <div className="fixed inset-0 z-50 flex justify-end bg-black/40 backdrop-blur-xs animate-fade-in no-print">
+          <div className="w-full max-w-xl h-full apple-glass bg-white/95 dark:bg-zinc-900/95 shadow-2xl flex flex-col border-l border-black/10 dark:border-white/10 overflow-hidden">
+            <div className="p-4 border-b border-black/5 dark:border-white/5 flex items-center justify-between bg-gray-50/50 dark:bg-zinc-800/50">
+              <div className="flex items-center space-x-2.5">
+                <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-sky-400 flex items-center justify-center text-white shadow-xs">
+                  <Brain className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-sm text-gray-900 dark:text-white">
+                    Nexus — Asistente de Perfil Profesional
+                  </h3>
+                  <p className="text-[10px] text-gray-500">
+                    Pregúntale cómo mejorar tu CV para subir tu Fit Score o consultar vacantes
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsNexusChatOpen(false)}
+                className="p-1.5 rounded-full text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-zinc-800 transition cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="flex-1 p-3 overflow-hidden flex flex-col">
+              <MemoryChat
+                preferences={preferences || DEFAULT_EMPTY_PREFERENCES}
+                onPreferencesUpdated={(updated) => {
+                  setPreferences(updated);
+                  saveClientStore('preferences', updated);
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );

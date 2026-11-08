@@ -181,7 +181,7 @@ def detect_region_and_commune(location_str: Optional[str]) -> Tuple[Optional[str
 
 def calculate_geographic_priority(
     job_location: Optional[str],
-    user_region: Optional[str] = "Región del Biobío",
+    user_region: Optional[str] = None,
     user_commune: Optional[Any] = None
 ) -> Tuple[str, int, Optional[str], Optional[str]]:
     """

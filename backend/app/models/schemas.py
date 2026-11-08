@@ -41,9 +41,9 @@ class CandidateProfile(BaseModel):
     economic_sectors: List[str] = []   # Sectores: Salud, Construcción, Educación, Administración, TI, etc.
     seniority_level: Optional[str] = None
 
-    # Ubicación geográfica chilena
-    region: Optional[str] = "Región del Biobío"
-    commune: Optional[str] = "Concepción"
+    # Ubicación geográfica chilena (obtenida dinámicamente del CV)
+    region: Optional[str] = None
+    commune: Optional[str] = None
 
     technical_skills: List[str] = []
     soft_skills: List[str] = []
@@ -78,17 +78,17 @@ class LearnedStarStory(BaseModel):
     created_at: str = Field(default_factory=lambda: datetime.utcnow().isoformat())
 
 class MemoryStats(BaseModel):
-    cv_analyzed: bool = True
+    cv_analyzed: bool = False
     total_applications_learned: int = 0
     total_star_answers_learned: int = 0
-    maturity_percentage: int = 65
+    maturity_percentage: int = 0
     last_consolidated_at: Optional[str] = None
 
 class UserPreferences(BaseModel):
     target_roles: List[str] = [] # Dinámico: poblado automáticamente a partir del CV del usuario
-    preferred_locations: List[str] = ["Chile", "Región del Biobío"]
-    preferred_region: Optional[str] = "Región del Biobío"
-    preferred_communes: List[str] = ["Concepción"]
+    preferred_locations: List[str] = ["Chile"]
+    preferred_region: Optional[str] = None # Obtenida dinámicamente del CV o seleccionada por el usuario
+    preferred_communes: List[str] = []
     geographic_scope: str = "all" # "all" (cobertura nacional con prioridad regional) | "regional" (solo mi región)
     remote_only: bool = False     # False por defecto para no excluir ofertas presenciales/híbridas locales
     min_salary_clp: Optional[int] = None

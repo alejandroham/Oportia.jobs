@@ -43,7 +43,7 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
       id: 'welcome',
       role: 'assistant',
       content:
-        '¡Hola! Soy Nexus, tu asistente de perfil profesional y búsqueda de empleo. Mi objetivo es estructurar con precisión tus mayores logros laborales en formato STAR, calibrar tus condiciones ideales de trabajo y ayudarte a consultar las mejores ofertas de tu Radar. ¿Qué proyecto reciente te gustaría registrar o qué vacantes deseas consultar?',
+        '¡Hola! Soy Nexus, tu asistente de perfil profesional y búsqueda de empleo. Mi objetivo es ayudarte a mejorar tu currículum al máximo para lograr postulaciones más certeras con un Fit Score superior al 90%, estructurar tus logros laborales en formato STAR con métricas verificables y orientarte en las mejores vacantes del Radar. ¿Qué parte de tu CV te gustaría potenciar o qué preguntas deseas que te haga sobre tu experiencia?',
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     }
   ]);
@@ -117,10 +117,10 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
   };
 
   const promptSuggestions = [
-    '¿Qué ofertas laborales remotas tengo en el Radar?',
-    'Quiero registrar un proyecto donde optimicé costos o infraestructura',
-    'Solo busco empresas con trabajo 100% remoto y stack moderno',
-    'Descarto ofertas presenciales o en sectores tradicionales'
+    'Hazme preguntas sobre mi experiencia para extraer logros STAR con métricas y mejorar mi CV',
+    '¿Cómo puedo mejorar la redacción de mis logros para superar el 90% de Fit Score en el Radar?',
+    '¿Qué palabras clave y competencias técnicas debería añadir a mi CV?',
+    '¿Qué ofertas laborales de mi Radar tienen mayor compatibilidad conmigo?'
   ];
 
   return (
