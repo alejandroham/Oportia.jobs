@@ -588,18 +588,18 @@ export const JobRadar: React.FC<JobRadarProps> = ({
           </p>
         </div>
 
-        {/* Action Pills */}
+        {/* Action Pills (Cupertino 44px Touch Targets) */}
         <div className="flex items-center space-x-2 flex-wrap gap-y-2">
           {/* Strategy Drawer Trigger */}
           <button
             onClick={() => setShowStrategyDrawer(true)}
-            className="flex items-center space-x-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-white dark:bg-zinc-800 text-gray-800 dark:text-gray-200 border border-black/5 dark:border-white/5 hover:bg-gray-50 dark:hover:bg-zinc-700/80 transition shadow-2xs"
+            className="flex items-center space-x-2 min-h-[44px] px-4 py-2.5 rounded-2xl text-xs font-semibold bg-white dark:bg-zinc-800 text-[#1D1D1F] dark:text-[#F5F5F7] border border-black/6 dark:border-white/8 hover:bg-gray-50 dark:hover:bg-zinc-700/80 transition shadow-2xs cursor-pointer active:scale-95"
             title="Estrategia de roles sugeridos y directorio de empresas"
           >
-            <SlidersHorizontal className="w-3.5 h-3.5 text-blue-500" />
+            <SlidersHorizontal className="w-4 h-4 text-blue-500" />
             <span>Estrategia & ATS</span>
             {roleRecs.length > 0 && (
-              <span className="ml-1 px-1.5 py-0.2 rounded-full text-[10px] bg-blue-100 dark:bg-blue-900/60 text-blue-600 dark:text-blue-300 font-bold">
+              <span className="ml-1 px-1.5 py-0.5 rounded-full text-[10px] bg-blue-100 dark:bg-blue-900/60 text-blue-600 dark:text-blue-300 font-bold">
                 {roleRecs.length}
               </span>
             )}
@@ -609,20 +609,20 @@ export const JobRadar: React.FC<JobRadarProps> = ({
           <button
             onClick={handleBatchRank}
             disabled={isBatchRanking || filteredJobs.length === 0}
-            className="flex items-center space-x-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white transition disabled:opacity-50 shadow-xs"
+            className="flex items-center space-x-2 min-h-[44px] px-4 py-2.5 rounded-2xl text-xs font-semibold bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white transition disabled:opacity-50 shadow-xs cursor-pointer active:scale-95"
             title="Evaluar ajuste de compatibilidad en lote con Inteligencia Artificial (ordena de mayor a menor porcentaje)"
           >
-            <Sparkles className={`w-3.5 h-3.5 ${isBatchRanking ? 'animate-spin' : ''}`} />
+            <Sparkles className={`w-4 h-4 ${isBatchRanking ? 'animate-spin' : ''}`} />
             <span>{isBatchRanking ? 'Evaluando...' : '⚡ Evaluar Fit IA (Mayor a Menor)'}</span>
           </button>
 
           {/* Import URL Button */}
           <button
             onClick={() => setShowImportModal(true)}
-            className="flex items-center space-x-1 px-3 py-2 rounded-xl text-xs font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-zinc-800 transition"
+            className="flex items-center space-x-1.5 min-h-[44px] px-4 py-2.5 rounded-2xl text-xs font-medium text-[#1D1D1F] dark:text-[#F5F5F7] hover:bg-gray-100 dark:hover:bg-zinc-800 border border-black/6 dark:border-white/8 transition cursor-pointer active:scale-95"
             title="Importar una oferta específica mediante su enlace"
           >
-            <Plus className="w-3.5 h-3.5" />
+            <Plus className="w-4 h-4" />
             <span className="hidden sm:inline">Importar URL</span>
           </button>
 
@@ -630,10 +630,10 @@ export const JobRadar: React.FC<JobRadarProps> = ({
           {filteredJobs.length > 0 && (
             <button
               onClick={() => setShowClearConfirm(true)}
-              className="p-2 rounded-xl text-gray-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-zinc-800 transition"
+              className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-2xl text-gray-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-zinc-800 transition cursor-pointer active:scale-95"
               title="Vaciar ofertas del radar"
             >
-              <Trash2 className="w-3.5 h-3.5" />
+              <Trash2 className="w-4 h-4" />
             </button>
           )}
         </div>
@@ -734,13 +734,13 @@ export const JobRadar: React.FC<JobRadarProps> = ({
             />
           </div>
 
-          {/* Primary Scan Button */}
+          {/* Primary Scan Button (Cupertino 44px Touch Target) */}
           <button
             onClick={handleScrape}
             disabled={isScraping}
-            className="flex items-center justify-center space-x-2 px-5 py-2.5 rounded-xl text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white shadow-sm transition disabled:opacity-50 shrink-0"
+            className="flex items-center justify-center space-x-2 min-h-[44px] px-6 py-2.5 rounded-2xl text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white shadow-sm transition disabled:opacity-50 shrink-0 cursor-pointer active:scale-95"
           >
-            <Globe className={`w-3.5 h-3.5 ${isScraping ? 'animate-spin' : ''}`} />
+            <Globe className={`w-4 h-4 ${isScraping ? 'animate-spin' : ''}`} />
             <span>{isScraping ? 'Rastreando portales...' : 'Escanear Radar'}</span>
           </button>
         </div>
@@ -1123,11 +1123,11 @@ export const JobRadar: React.FC<JobRadarProps> = ({
                 {/* Apple HIG Clean Action Bar: 1 Dominant Action, 1 Secondary, 1 Overflow Menu */}
                 <div className="border-t border-black/5 dark:border-white/5 pt-3 flex items-center justify-between gap-2 mt-auto">
                   
-                  {/* Left: Secondary Action (+ Seguimiento / En Seguimiento) */}
+                  {/* Left: Secondary Action (+ Seguimiento / En Seguimiento) — Cupertino 44px Touch Target */}
                   <button
                     onClick={() => handleTrackJob(job)}
                     disabled={trackingJobId === job.id}
-                    className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition ${
+                    className={`flex items-center space-x-1.5 min-h-[44px] px-3.5 py-2 rounded-2xl text-xs font-medium transition cursor-pointer active:scale-95 ${
                       tracked
                         ? 'bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800/40'
                         : 'border border-gray-200 dark:border-zinc-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-zinc-800'
@@ -1136,12 +1136,12 @@ export const JobRadar: React.FC<JobRadarProps> = ({
                   >
                     {tracked ? (
                       <>
-                        <BookmarkCheck className="w-3.5 h-3.5 text-blue-600" />
+                        <BookmarkCheck className="w-4 h-4 text-blue-600" />
                         <span>Guardada</span>
                       </>
                     ) : (
                       <>
-                        <BookmarkPlus className="w-3.5 h-3.5 text-gray-400" />
+                        <BookmarkPlus className="w-4 h-4 text-gray-400" />
                         <span>Guardar</span>
                       </>
                     )}
@@ -1150,21 +1150,21 @@ export const JobRadar: React.FC<JobRadarProps> = ({
                   {/* Right Actions: Primary Action + Overflow Context Menu */}
                   <div className="flex items-center space-x-1.5">
                     
-                    {/* Primary Action Button (Apple Blue) */}
+                    {/* Primary Action Button (Apple Blue — Cupertino 44px Touch Target) */}
                     <button
                       onClick={() => handleOneClickApply(job)}
-                      className="flex items-center space-x-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white shadow-xs transition"
+                      className="flex items-center space-x-1.5 min-h-[44px] px-4 py-2 rounded-2xl text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white shadow-xs transition cursor-pointer active:scale-95"
                       title={contactEmail ? `Enviar correo a ${contactEmail}` : 'Abrir portal de postulación'}
                     >
                       {contactEmail ? (
                         <>
-                          <Mail className="w-3 h-3" />
+                          <Mail className="w-3.5 h-3.5" />
                           <span>Email</span>
                         </>
                       ) : (
                         <>
                           <span>Postular</span>
-                          <ExternalLink className="w-3 h-3" />
+                          <ExternalLink className="w-3.5 h-3.5" />
                         </>
                       )}
                     </button>
@@ -1173,7 +1173,7 @@ export const JobRadar: React.FC<JobRadarProps> = ({
                     <div className="relative">
                       <button
                         onClick={() => setActiveMenuJobId(isMenuOpen ? null : job.id)}
-                        className="p-1.5 rounded-xl text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-zinc-800 transition"
+                        className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-2xl text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-zinc-800 transition cursor-pointer active:scale-95"
                         title="Más opciones"
                       >
                         <MoreHorizontal className="w-4 h-4" />

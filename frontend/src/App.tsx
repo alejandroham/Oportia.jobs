@@ -431,11 +431,11 @@ export function App() {
         onGoToWelcome={() => setActiveTab('welcome')}
       />
 
-      {/* Floating Nexus Coach Button */}
-      <div className="no-print fixed bottom-6 right-6 z-40">
+      {/* Floating Nexus Coach Button (Ergonomic Cupertino Placement above iOS tab bar) */}
+      <div className="no-print fixed bottom-20 right-4 sm:bottom-6 sm:right-6 z-40">
         <button
           onClick={() => setIsNexusChatOpen(!isNexusChatOpen)}
-          className="flex items-center space-x-2 px-4 py-2.5 rounded-full bg-gradient-to-tr from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold text-xs shadow-xl hover:shadow-2xl hover:scale-105 transition duration-200 border border-white/20 cursor-pointer"
+          className="flex items-center space-x-2 px-4 py-2.5 min-h-[44px] rounded-full bg-gradient-to-tr from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold text-xs shadow-xl hover:shadow-2xl hover:scale-105 active:scale-95 transition duration-200 border border-white/20 cursor-pointer"
           title="Abrir chat con Nexus para mejorar tu CV o consultar ofertas"
         >
           <Brain className="w-4 h-4 animate-pulse" />

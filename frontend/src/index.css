@@ -4,12 +4,15 @@
 
 @layer base {
   body {
-    @apply bg-[#FBFBFD] dark:bg-[#000000] text-[#1D1D1F] dark:text-[#F5F5F7] font-sans antialiased selection:bg-blue-500/20;
+    @apply bg-[#FBFBFD] dark:bg-[#000000] text-[#1D1D1F] dark:text-[#F5F5F7] font-sans selection:bg-blue-500/20;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 }
 
-/* Apple Cupertino Glassmorphism */
+/* Apple Cupertino Glassmorphism (Section 4 Manual Maestro) */
 .apple-glass {
   background: rgba(255, 255, 255, 0.72);
   backdrop-filter: blur(20px);
@@ -22,6 +25,24 @@
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Cupertino Hairline Borders (1px, 6% light / 8% dark) */
+.hairline-border {
+  border-width: 1px;
+  border-color: rgba(0, 0, 0, 0.06);
+}
+.dark .hairline-border {
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+/* Cupertino Touch Targets (Minimum 44px for iOS Safari Touch Ergonomics) */
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .apple-card {

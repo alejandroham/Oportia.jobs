@@ -253,15 +253,15 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
             key={i}
             onClick={() => handleSend(sugg)}
             disabled={isLoading}
-            className="px-2.5 py-1 rounded-full text-[11px] bg-white dark:bg-zinc-800 border border-black/5 dark:border-white/5 hover:border-blue-400 hover:text-blue-600 dark:hover:text-blue-400 transition whitespace-nowrap shrink-0 shadow-xs disabled:opacity-50"
+            className="min-h-[34px] px-3 py-1.5 rounded-full text-[11px] bg-white dark:bg-zinc-800 border border-black/6 dark:border-white/8 hover:border-blue-400 hover:text-blue-600 dark:hover:text-blue-400 transition whitespace-nowrap shrink-0 shadow-xs disabled:opacity-50 active:scale-95 cursor-pointer"
           >
             {sugg}
           </button>
         ))}
       </div>
 
-      {/* Input Box */}
-      <div className="p-3.5 sm:p-4 border-t border-black/5 dark:border-white/5 bg-white dark:bg-zinc-900 flex items-end space-x-2">
+      {/* Input Box (Cupertino 44px Touch Targets) */}
+      <div className="p-3.5 sm:p-4 border-t border-black/6 dark:border-white/8 bg-white/95 dark:bg-zinc-900/95 flex items-end space-x-2">
         <textarea
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
@@ -274,13 +274,13 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
           placeholder="Escribe a Nexus: consulta ofertas del Radar, comparte un logro o define condiciones... (Enter)"
           rows={1}
           disabled={isLoading}
-          className="flex-1 max-h-32 min-h-[42px] px-3.5 py-2.5 rounded-2xl bg-gray-100/80 dark:bg-zinc-800/80 border border-black/5 dark:border-white/5 focus:border-blue-500 dark:focus:border-blue-500 focus:outline-hidden text-xs resize-none placeholder-gray-400 dark:placeholder-gray-500 transition leading-relaxed"
+          className="flex-1 max-h-32 min-h-[44px] px-4 py-2.5 rounded-2xl bg-gray-100/80 dark:bg-zinc-800/80 border border-black/6 dark:border-white/8 focus:border-blue-500 dark:focus:border-blue-500 focus:outline-hidden text-xs resize-none placeholder-gray-400 dark:placeholder-gray-500 transition leading-relaxed text-[#1D1D1F] dark:text-[#F5F5F7]"
         />
 
         <button
           onClick={() => handleSend()}
           disabled={!inputValue.trim() || isLoading}
-          className="w-10 h-10 rounded-2xl bg-blue-600 hover:bg-blue-700 disabled:opacity-40 text-white flex items-center justify-center shrink-0 shadow-md shadow-blue-500/20 transition"
+          className="min-h-[44px] min-w-[44px] rounded-2xl bg-blue-600 hover:bg-blue-700 disabled:opacity-40 text-white flex items-center justify-center shrink-0 shadow-md shadow-blue-500/20 transition cursor-pointer active:scale-95"
           title="Enviar a Nexus"
         >
           <Send className="w-4 h-4" />
