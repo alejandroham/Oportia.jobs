@@ -12,6 +12,26 @@ import type {
 
 const API_BASE = '/api';
 
+export async function handleResponse<T = any>(res: Response, defaultError = 'Error en la petición'): Promise<T> {
+  const text = await res.text();
+  let parsed: any = null;
+  try {
+    parsed = text ? JSON.parse(text) : {};
+  } catch {
+    if (!res.ok) {
+      throw new Error(`Error del servidor (${res.status}): ${text.slice(0, 150) || res.statusText || defaultError}`);
+    }
+    throw new Error(`Respuesta no válida del servidor (${res.status}): ${text.slice(0, 100)}`);
+  }
+
+  if (!res.ok) {
+    const detail = parsed?.detail || parsed?.message || defaultError;
+    throw new Error(detail);
+  }
+
+  return parsed as T;
+}
+
 export const api = {
   // Profile
   getProfile: async (): Promise<CandidateProfile> => {
@@ -331,7 +351,7 @@ export const api = {
   // Settings & Security Purge
   getSettings: async (): Promise<LLMSettings> => {
     const res = await fetch(`${API_BASE}/settings`);
-    return res.json();
+    return handleResponse<LLMSettings>(res, 'Error al obtener la configuración de IA');
   },
   updateSettings: async (payload: { provider: string; api_key?: string; model_name?: string }) => {
     const res = await fetch(`${API_BASE}/settings`, {
@@ -339,18 +359,18 @@ export const api = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     });
-    return res.json();
+    return handleResponse(res, 'Error al actualizar la configuración de IA');
   },
   purgeSettings: async () => {
     const res = await fetch(`${API_BASE}/settings/purge`, {
       method: 'POST'
     });
-    return res.json();
+    return handleResponse(res, 'Error al eliminar configuración');
   },
   purgeAllServerData: async () => {
     const res = await fetch(`${API_BASE}/purge-all`, {
       method: 'POST'
     });
-    return res.json();
+    return handleResponse(res, 'Error al purgar datos del servidor');
   }
 };
