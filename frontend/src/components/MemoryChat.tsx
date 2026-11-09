@@ -1,16 +1,20 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {
   Send,
-  Brain,
   Sparkles,
   Star,
   ShieldAlert,
   Lightbulb,
   CheckCircle2,
-  RefreshCw,
-  MessageSquare
+  Briefcase,
+  TrendingUp,
+  KeyRound,
+  ShieldCheck,
+  Lock,
+  ExternalLink,
+  Bot
 } from 'lucide-react';
-import type { UserPreferences } from '../types';
+import type { UserPreferences, LLMSettings } from '../types';
 import { api } from '../api';
 import { useToast } from './Toast';
 
@@ -31,25 +35,60 @@ interface ChatMessage {
 interface MemoryChatProps {
   preferences: UserPreferences;
   onPreferencesUpdated: (p: UserPreferences) => void;
+  llmSettings?: LLMSettings | null;
+  onOpenSettings?: () => void;
 }
+
+const ACTIONABLE_SUGGESTIONS = [
+  {
+    icon: Star,
+    label: 'Extraer logros STAR',
+    prompt: 'Hazme preguntas sobre mi mayor desafío o proyecto laboral para redactar un caso de éxito con métricas verificables bajo el método STAR.'
+  },
+  {
+    icon: TrendingUp,
+    label: 'Subir Fit Score al 90%',
+    prompt: '¿Cómo puedo adaptar y redactar mejor mis experiencias laborales para alcanzar un Fit Score superior al 90% en las ofertas del Radar?'
+  },
+  {
+    icon: Sparkles,
+    label: 'Palabras clave ATS',
+    prompt: '¿Qué competencias técnicas, verbos de acción y palabras clave críticas debería añadir a mi CV para superar los filtros ATS de los empleadores?'
+  },
+  {
+    icon: Briefcase,
+    label: 'Ofertas top del Radar',
+    prompt: '¿Cuáles son las vacantes laborales actualmente indexadas en mi Radar que presentan mayor afinidad con mi experiencia y perfil?'
+  },
+  {
+    icon: Lightbulb,
+    label: 'Mejorar resumen profesional',
+    prompt: 'Ayúdame a redactar un resumen ejecutivo de 3 líneas con alto impacto, enfoque en resultados y métricas para el encabezado de mi currículum.'
+  }
+];
 
 export const MemoryChat: React.FC<MemoryChatProps> = ({
   preferences,
-  onPreferencesUpdated
+  onPreferencesUpdated,
+  llmSettings,
+  onOpenSettings
 }) => {
   const toast = useToast();
+  const hasKey = Boolean(llmSettings?.has_active_key);
+
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: 'welcome',
       role: 'assistant',
       content:
-        '¡Hola! Soy Nexus, tu asistente de perfil profesional y búsqueda de empleo. Mi objetivo es ayudarte a mejorar tu currículum al máximo para lograr postulaciones más certeras con un Fit Score superior al 90%, estructurar tus logros laborales en formato STAR con métricas verificables y orientarte en las mejores vacantes del Radar. ¿Qué parte de tu CV te gustaría potenciar o qué preguntas deseas que te haga sobre tu experiencia?',
+        '¡Hola! Soy Nexus, tu asistente de perfil profesional y búsqueda de empleo. Mi misión es ayudarte a maximizar tu empleabilidad: estructurar tus logros en formato STAR con métricas comprobables, optimizar tus palabras clave para superar filtros ATS y orientarte hacia las vacantes más compatibles de tu Radar. ¿Qué desafío o vacante te gustaría que analicemos hoy?',
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     }
   ]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -57,9 +96,15 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages, isLoading]);
+  }, [messages, isLoading, hasKey]);
 
   const handleSend = async (textToSend?: string) => {
+    if (!hasKey) {
+      if (onOpenSettings) onOpenSettings();
+      toast.error('Nexus requiere una clave de API activa para interactuar en vivo.');
+      return;
+    }
+
     const text = (textToSend || inputValue).trim();
     if (!text || isLoading) return;
 
@@ -72,6 +117,9 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
 
     setMessages((prev) => [...prev, userMsg]);
     setInputValue('');
+    if (textareaRef.current) {
+      textareaRef.current.style.height = '44px';
+    }
     setIsLoading(true);
 
     try {
@@ -110,181 +158,274 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
         toast.success('Preferencia registrada en tu memoria IA');
       }
     } catch (e: any) {
-      toast.error('Error al procesar mensaje: ' + (e?.message || e));
+      toast.error('Error al comunicarse con Nexus: ' + (e?.message || e));
     } finally {
       setIsLoading(false);
     }
   };
 
-  const promptSuggestions = [
-    'Hazme preguntas sobre mi experiencia para extraer logros STAR con métricas y mejorar mi CV',
-    '¿Cómo puedo mejorar la redacción de mis logros para superar el 90% de Fit Score en el Radar?',
-    '¿Qué palabras clave y competencias técnicas debería añadir a mi CV?',
-    '¿Qué ofertas laborales de mi Radar tienen mayor compatibilidad conmigo?'
-  ];
-
   return (
-    <div className="flex flex-col h-[650px] max-h-[75vh] rounded-3xl bg-white/80 dark:bg-zinc-900/80 border border-black/5 dark:border-white/5 shadow-xl backdrop-blur-md overflow-hidden">
+    <div className="flex flex-col h-full flex-1 min-h-[520px] rounded-3xl bg-white/85 dark:bg-zinc-900/85 border border-black/6 dark:border-white/8 shadow-xl backdrop-blur-xl overflow-hidden">
       
       {/* Chat Header */}
-      <div className="px-5 py-4 border-b border-black/5 dark:border-white/5 bg-gray-50/60 dark:bg-zinc-900/60 flex items-center justify-between">
+      <div className="px-4 sm:px-5 py-3.5 border-b border-black/6 dark:border-white/8 bg-gray-50/70 dark:bg-zinc-900/70 flex items-center justify-between shrink-0">
         <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-sky-400 flex items-center justify-center text-white shadow-md shadow-blue-500/20">
-            <Brain className="w-5 h-5" />
-          </div>
+          <img
+            src="/nexusjob-icon.png"
+            alt="Nexus.Job"
+            className="w-9 h-9 rounded-xl object-contain shadow-xs shrink-0"
+          />
           <div>
             <div className="flex items-center space-x-2">
-              <h3 className="font-bold text-sm text-gray-900 dark:text-white">
-                Nexus — Asistente de Perfil Profesional
+              <h3 className="font-bold text-sm text-[#1D1D1F] dark:text-[#F5F5F7]">
+                Nexus — Asistente de Perfil
               </h3>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
-                Nexus AI
-              </span>
+              {hasKey ? (
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-300/60 dark:border-emerald-800/60 flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  <span>{llmSettings?.provider?.toUpperCase() || 'IA Activa'}</span>
+                </span>
+              ) : (
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-300/60 dark:border-amber-800/60 flex items-center gap-1">
+                  <Lock className="w-2.5 h-2.5" />
+                  <span>Clave Requerida</span>
+                </span>
+              )}
             </div>
-            <p className="text-[11px] text-gray-500 dark:text-gray-400">
-              Estructura logros STAR, define preferencias y consulta vacantes reales del Radar con precisión.
+            <p className="text-[11px] text-[#86868B] dark:text-[#A1A1A6] truncate max-w-[280px] sm:max-w-md">
+              Estructura logros STAR, optimiza tu CV y orienta postulaciones del Radar.
             </p>
           </div>
         </div>
 
-        <div className="text-right hidden sm:block">
-          <span className="text-[11px] font-medium text-gray-400">Madurez del Modelo:</span>
+        <div className="text-right hidden sm:block shrink-0">
+          <span className="text-[11px] font-medium text-[#86868B] dark:text-[#A1A1A6]">Madurez Memoria:</span>
           <span className="ml-1.5 font-bold text-blue-600 dark:text-blue-400 text-xs">
             {preferences.memory_stats?.maturity_percentage || 0}%
           </span>
         </div>
       </div>
 
-      {/* Messages Scroll Area */}
-      <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4">
-        {messages.map((msg) => {
-          const isUser = msg.role === 'user';
-          return (
-            <div
-              key={msg.id}
-              className={`flex flex-col ${isUser ? 'items-end' : 'items-start'} space-y-1.5`}
+      {/* Main Content Area (Messages OR API Key Lock Screen) */}
+      {!hasKey ? (
+        /* GATED LOCK SCREEN: Active API Key Required + Zero-Knowledge Guarantee */
+        <div className="flex-1 flex flex-col items-center justify-center p-6 text-center space-y-4 my-auto animate-fade-in max-w-md mx-auto">
+          <div className="relative">
+            <div className="w-16 h-16 rounded-3xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shadow-inner">
+              <KeyRound className="w-8 h-8" />
+            </div>
+            <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-amber-500 text-white flex items-center justify-center shadow-md">
+              <Lock className="w-3.5 h-3.5" />
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <h4 className="text-base font-bold text-[#1D1D1F] dark:text-[#F5F5F7]">
+              Nexus Asistente requiere una Clave de API
+            </h4>
+            <p className="text-xs text-[#86868B] dark:text-[#A1A1A6] leading-relaxed">
+              Para conversar en vivo, extraer logros STAR con métricas y analizar tu perfil, el asistente necesita estar conectado a un motor de inteligencia artificial.
+            </p>
+          </div>
+
+          {/* Security & Sovereign Storage Guarantee Box */}
+          <div className="w-full text-left p-4 rounded-2xl bg-blue-50/80 dark:bg-blue-950/40 border border-blue-200/80 dark:border-blue-900/60 space-y-2 text-xs text-blue-950 dark:text-blue-200">
+            <div className="flex items-center space-x-2 font-bold text-blue-700 dark:text-blue-300">
+              <ShieldCheck className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
+              <span>Privacidad Soberana & Zero-Knowledge</span>
+            </div>
+            <p className="text-[11px] text-blue-900/90 dark:text-blue-200/90 leading-relaxed">
+              <strong>Tu clave de API NO es guardada por la aplicación en servidores externos</strong> ni transferida a terceros. Se mantiene 100% cifrada y segura exclusivamente en tu propio equipo local.
+            </p>
+          </div>
+
+          {/* Actions */}
+          <div className="w-full space-y-2.5 pt-1">
+            <button
+              onClick={onOpenSettings}
+              className="w-full min-h-[44px] px-5 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs shadow-md shadow-blue-500/20 transition active:scale-95 flex items-center justify-center space-x-2 cursor-pointer"
             >
+              <KeyRound className="w-4 h-4" />
+              <span>Conectar Clave de API Segura</span>
+            </button>
+
+            <a
+              href="https://aistudio.google.com/app/apikey"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center space-x-1.5 text-[11px] font-medium text-blue-600 dark:text-blue-400 hover:underline pt-1"
+            >
+              <span>Obtener clave gratis en Google AI Studio (Gemini)</span>
+              <ExternalLink className="w-3 h-3" />
+            </a>
+          </div>
+        </div>
+      ) : (
+        /* ACTIVE MESSAGES SCROLL AREA */
+        <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 min-h-0">
+          {messages.map((msg) => {
+            const isUser = msg.role === 'user';
+            return (
               <div
-                className={`max-w-[85%] sm:max-w-[78%] rounded-2xl px-4 py-3 text-xs leading-relaxed shadow-xs transition ${
-                  isUser
-                    ? 'bg-blue-600 text-white rounded-tr-none'
-                    : 'bg-gray-100/90 dark:bg-zinc-800/90 text-gray-900 dark:text-gray-100 rounded-tl-none border border-black/5 dark:border-white/5'
-                }`}
+                key={msg.id}
+                className={`flex flex-col ${isUser ? 'items-end' : 'items-start'} space-y-1.5`}
               >
-                <div className="whitespace-pre-wrap">{msg.content}</div>
                 <div
-                  className={`text-[9px] mt-1.5 text-right ${
-                    isUser ? 'text-blue-200' : 'text-gray-400'
+                  className={`max-w-[88%] sm:max-w-[80%] rounded-2xl px-4 py-3 text-xs leading-relaxed shadow-xs transition ${
+                    isUser
+                      ? 'bg-blue-600 text-white rounded-tr-none'
+                      : 'bg-gray-100/95 dark:bg-zinc-800/95 text-[#1D1D1F] dark:text-[#F5F5F7] rounded-tl-none border border-black/6 dark:border-white/8'
                   }`}
                 >
-                  {msg.timestamp}
+                  <div className="whitespace-pre-wrap">{msg.content}</div>
+                  <div
+                    className={`text-[9px] mt-1.5 text-right ${
+                      isUser ? 'text-blue-200' : 'text-[#86868B] dark:text-[#A1A1A6]'
+                    }`}
+                  >
+                    {msg.timestamp}
+                  </div>
                 </div>
+
+                {/* Detected STAR Story Badge Card */}
+                {msg.learnedStory && (
+                  <div className="w-full max-w-[88%] sm:max-w-[80%] rounded-2xl p-3.5 bg-amber-50/90 dark:bg-amber-950/30 border border-amber-200/80 dark:border-amber-800/60 text-xs text-amber-900 dark:text-amber-200 space-y-1.5 animate-fade-in shadow-xs">
+                    <div className="flex items-center space-x-1.5 font-bold text-[11px] text-amber-700 dark:text-amber-300">
+                      <Star className="w-4 h-4 fill-amber-500 text-amber-500 shrink-0" />
+                      <span>¡Caso de éxito extraído y guardado en memoria!</span>
+                    </div>
+                    <div className="font-semibold text-gray-900 dark:text-white text-xs">
+                      {msg.learnedStory.title}
+                    </div>
+                    {msg.learnedStory.result_and_metrics && (
+                      <p className="text-[11px] text-gray-700 dark:text-gray-300">
+                        <strong className="text-amber-600 dark:text-amber-400 font-semibold">Métrica: </strong>
+                        {msg.learnedStory.result_and_metrics}
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {/* Detected Insights Badge */}
+                {msg.learnedInsights && msg.learnedInsights.length > 0 && (
+                  <div className="w-full max-w-[88%] sm:max-w-[80%] rounded-2xl p-3 bg-indigo-50/90 dark:bg-indigo-950/30 border border-indigo-200/60 dark:border-indigo-800/60 text-[11px] text-indigo-900 dark:text-indigo-200 space-y-1 animate-fade-in">
+                    <div className="flex items-center space-x-1.5 font-bold text-indigo-700 dark:text-indigo-300">
+                      <Lightbulb className="w-3.5 h-3.5 text-indigo-500" />
+                      <span>Regla de afinidad aprendida:</span>
+                    </div>
+                    {msg.learnedInsights.map((ins, i) => (
+                      <div key={i} className="text-gray-700 dark:text-gray-300 ml-4 list-disc">
+                        • {ins}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Detected Deal-Breakers Badge */}
+                {msg.learnedDealBreakers && msg.learnedDealBreakers.length > 0 && (
+                  <div className="w-full max-w-[88%] sm:max-w-[80%] rounded-2xl p-3 bg-rose-50/90 dark:bg-rose-950/30 border border-rose-200/60 dark:border-rose-800/60 text-[11px] text-rose-900 dark:text-rose-200 space-y-1 animate-fade-in">
+                    <div className="flex items-center space-x-1.5 font-bold text-rose-700 dark:text-rose-300">
+                      <ShieldAlert className="w-3.5 h-3.5 text-rose-500" />
+                      <span>Límite / Deal-Breaker innegociable registrado:</span>
+                    </div>
+                    {msg.learnedDealBreakers.map((db_item, i) => (
+                      <div key={i} className="text-gray-700 dark:text-gray-300 ml-4 list-disc">
+                        • {db_item}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
+            );
+          })}
 
-              {/* Detected STAR Story Badge Card */}
-              {msg.learnedStory && (
-                <div className="w-full max-w-[85%] sm:max-w-[78%] rounded-2xl p-3 bg-amber-50/90 dark:bg-amber-950/30 border border-amber-200/80 dark:border-amber-800/60 text-xs text-amber-900 dark:text-amber-200 space-y-1 animate-fade-in shadow-xs">
-                  <div className="flex items-center space-x-1.5 font-bold text-[11px] text-amber-700 dark:text-amber-300">
-                    <Star className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
-                    <span>¡Caso de éxito extraído y guardado en tu memoria!</span>
-                  </div>
-                  <div className="font-semibold text-gray-900 dark:text-white">
-                    {msg.learnedStory.title}
-                  </div>
-                  {msg.learnedStory.result_and_metrics && (
-                    <p className="text-[11px] text-gray-600 dark:text-gray-300">
-                      <span className="font-medium text-amber-600 dark:text-amber-400">Métrica: </span>
-                      {msg.learnedStory.result_and_metrics}
-                    </p>
-                  )}
-                </div>
-              )}
-
-              {/* Detected Insights Badge */}
-              {msg.learnedInsights && msg.learnedInsights.length > 0 && (
-                <div className="w-full max-w-[85%] sm:max-w-[78%] rounded-2xl p-2.5 bg-indigo-50/80 dark:bg-indigo-950/30 border border-indigo-200/60 dark:border-indigo-800/60 text-[11px] text-indigo-900 dark:text-indigo-200 space-y-1 animate-fade-in">
-                  <div className="flex items-center space-x-1.5 font-bold text-indigo-700 dark:text-indigo-300">
-                    <Lightbulb className="w-3.5 h-3.5 text-indigo-500" />
-                    <span>Regla de afinidad aprendida:</span>
-                  </div>
-                  {msg.learnedInsights.map((ins, i) => (
-                    <div key={i} className="text-gray-700 dark:text-gray-300 ml-4 list-disc">
-                      • {ins}
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Detected Deal-Breakers Badge */}
-              {msg.learnedDealBreakers && msg.learnedDealBreakers.length > 0 && (
-                <div className="w-full max-w-[85%] sm:max-w-[78%] rounded-2xl p-2.5 bg-rose-50/80 dark:bg-rose-950/30 border border-rose-200/60 dark:border-rose-800/60 text-[11px] text-rose-900 dark:text-rose-200 space-y-1 animate-fade-in">
-                  <div className="flex items-center space-x-1.5 font-bold text-rose-700 dark:text-rose-300">
-                    <ShieldAlert className="w-3.5 h-3.5 text-rose-500" />
-                    <span>Límite / Deal-Breaker innegociable registrado:</span>
-                  </div>
-                  {msg.learnedDealBreakers.map((db_item, i) => (
-                    <div key={i} className="text-gray-700 dark:text-gray-300 ml-4 list-disc">
-                      • {db_item}
-                    </div>
-                  ))}
-                </div>
-              )}
+          {isLoading && (
+            <div className="flex items-center space-x-2 text-[#86868B] dark:text-[#A1A1A6] text-xs py-2 animate-pulse">
+              <div className="w-4 h-4 rounded-full border-2 border-blue-600 border-t-transparent animate-spin" />
+              <span>Nexus está analizando tu perfil y respondiendo...</span>
             </div>
-          );
-        })}
+          )}
 
-        {isLoading && (
-          <div className="flex items-center space-x-2 text-gray-400 text-xs py-2">
-            <div className="w-4 h-4 rounded-full border-2 border-blue-600 border-t-transparent animate-spin" />
-            <span>Nexus está analizando y respondiendo de forma concisa...</span>
+          <div ref={messagesEndRef} />
+        </div>
+      )}
+
+      {/* Suggested Prompt Pills (Only active when key is configured) */}
+      {hasKey && (
+        <div className="px-3.5 sm:px-4 py-2 border-t border-black/6 dark:border-white/8 bg-gray-50/60 dark:bg-zinc-900/60 overflow-x-auto no-scrollbar flex items-center space-x-2 shrink-0">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-[#86868B] dark:text-[#A1A1A6] shrink-0 flex items-center gap-1">
+            <Sparkles className="w-3 h-3 text-blue-500" />
+            <span>Sugerencias:</span>
+          </span>
+          {ACTIONABLE_SUGGESTIONS.map((item, i) => {
+            const IconComp = item.icon;
+            return (
+              <button
+                key={i}
+                onClick={() => handleSend(item.prompt)}
+                disabled={isLoading}
+                className="min-h-[36px] px-3.5 py-1.5 rounded-full text-xs font-medium bg-white dark:bg-zinc-800 text-[#1D1D1F] dark:text-[#F5F5F7] border border-black/6 dark:border-white/8 hover:border-blue-500 hover:text-blue-600 dark:hover:text-blue-400 transition whitespace-nowrap shrink-0 shadow-2xs disabled:opacity-50 active:scale-95 cursor-pointer flex items-center space-x-1.5"
+                title={item.prompt}
+              >
+                <IconComp className="w-3.5 h-3.5 text-blue-500 shrink-0" />
+                <span>{item.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Chat Input Box */}
+      <div className="p-3 sm:p-4 border-t border-black/6 dark:border-white/8 bg-white/95 dark:bg-zinc-900/95 shrink-0">
+        {!hasKey ? (
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-2 p-2.5 rounded-2xl bg-gray-100/70 dark:bg-zinc-800/60 border border-black/6 dark:border-white/8 text-xs text-[#86868B] dark:text-[#A1A1A6]">
+            <div className="flex items-center space-x-2">
+              <Lock className="w-4 h-4 text-amber-500 shrink-0" />
+              <span>Chat en pausa. Conecta tu API key para habilitar la conversación interactiva.</span>
+            </div>
+            <button
+              onClick={onOpenSettings}
+              className="min-h-[36px] px-4 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs shadow-xs transition shrink-0 cursor-pointer active:scale-95"
+            >
+              Conectar Clave
+            </button>
+          </div>
+        ) : (
+          <div className="flex items-end space-x-2">
+            <div className="relative flex-1">
+              <textarea
+                ref={textareaRef}
+                value={inputValue}
+                onChange={(e) => {
+                  setInputValue(e.target.value);
+                  if (textareaRef.current) {
+                    textareaRef.current.style.height = 'auto';
+                    textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 120)}px`;
+                  }
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSend();
+                  }
+                }}
+                placeholder="Escribe a Nexus: consulta ofertas, comparte un logro o define condiciones... (Enter para enviar)"
+                rows={1}
+                disabled={isLoading}
+                className="w-full max-h-32 min-h-[44px] px-4 py-3 rounded-2xl bg-gray-100/90 dark:bg-zinc-800/90 border border-black/6 dark:border-white/8 focus:border-blue-500 dark:focus:border-blue-500 focus:outline-hidden text-xs resize-none placeholder-[#86868B] dark:placeholder-[#A1A1A6] transition leading-relaxed text-[#1D1D1F] dark:text-[#F5F5F7]"
+              />
+            </div>
+
+            <button
+              onClick={() => handleSend()}
+              disabled={!inputValue.trim() || isLoading}
+              className="min-h-[44px] min-w-[44px] rounded-2xl bg-blue-600 hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed text-white flex items-center justify-center shrink-0 shadow-md shadow-blue-500/20 transition cursor-pointer active:scale-95"
+              title="Enviar mensaje a Nexus"
+            >
+              <Send className="w-4 h-4" />
+            </button>
           </div>
         )}
-
-        <div ref={messagesEndRef} />
-      </div>
-
-      {/* Suggested Prompt Pills */}
-      <div className="px-4 py-2 border-t border-black/5 dark:border-white/5 bg-gray-50/40 dark:bg-zinc-900/40 overflow-x-auto no-scrollbar flex items-center space-x-2">
-        <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400 shrink-0">
-          Sugerencias:
-        </span>
-        {promptSuggestions.map((sugg, i) => (
-          <button
-            key={i}
-            onClick={() => handleSend(sugg)}
-            disabled={isLoading}
-            className="min-h-[34px] px-3 py-1.5 rounded-full text-[11px] bg-white dark:bg-zinc-800 border border-black/6 dark:border-white/8 hover:border-blue-400 hover:text-blue-600 dark:hover:text-blue-400 transition whitespace-nowrap shrink-0 shadow-xs disabled:opacity-50 active:scale-95 cursor-pointer"
-          >
-            {sugg}
-          </button>
-        ))}
-      </div>
-
-      {/* Input Box (Cupertino 44px Touch Targets) */}
-      <div className="p-3.5 sm:p-4 border-t border-black/6 dark:border-white/8 bg-white/95 dark:bg-zinc-900/95 flex items-end space-x-2">
-        <textarea
-          value={inputValue}
-          onChange={(e) => setInputValue(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-              e.preventDefault();
-              handleSend();
-            }
-          }}
-          placeholder="Escribe a Nexus: consulta ofertas del Radar, comparte un logro o define condiciones... (Enter)"
-          rows={1}
-          disabled={isLoading}
-          className="flex-1 max-h-32 min-h-[44px] px-4 py-2.5 rounded-2xl bg-gray-100/80 dark:bg-zinc-800/80 border border-black/6 dark:border-white/8 focus:border-blue-500 dark:focus:border-blue-500 focus:outline-hidden text-xs resize-none placeholder-gray-400 dark:placeholder-gray-500 transition leading-relaxed text-[#1D1D1F] dark:text-[#F5F5F7]"
-        />
-
-        <button
-          onClick={() => handleSend()}
-          disabled={!inputValue.trim() || isLoading}
-          className="min-h-[44px] min-w-[44px] rounded-2xl bg-blue-600 hover:bg-blue-700 disabled:opacity-40 text-white flex items-center justify-center shrink-0 shadow-md shadow-blue-500/20 transition cursor-pointer active:scale-95"
-          title="Enviar a Nexus"
-        >
-          <Send className="w-4 h-4" />
-        </button>
       </div>
 
     </div>

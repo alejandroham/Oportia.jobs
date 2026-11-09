@@ -21,7 +21,7 @@ import {
   MapPin,
   Compass
 } from 'lucide-react';
-import type { UserPreferences, LearnedStarStory } from '../types';
+import type { UserPreferences, LearnedStarStory, LLMSettings } from '../types';
 import { api } from '../api';
 import { useToast } from './Toast';
 import { MemoryChat } from './MemoryChat';
@@ -30,11 +30,15 @@ import { CHILE_REGIONS } from '../utils/chileRegions';
 interface PreferencesCenterProps {
   preferences: UserPreferences;
   onPreferencesUpdated: (p: UserPreferences) => void;
+  llmSettings?: LLMSettings | null;
+  onOpenSettings?: () => void;
 }
 
 export const PreferencesCenter: React.FC<PreferencesCenterProps> = ({
   preferences,
-  onPreferencesUpdated
+  onPreferencesUpdated,
+  llmSettings,
+  onOpenSettings
 }) => {
   const toast = useToast();
   const [activeSubTab, setActiveSubTab] = useState<'chat' | 'library' | 'radar_rules'>('chat');
@@ -395,6 +399,8 @@ export const PreferencesCenter: React.FC<PreferencesCenterProps> = ({
             setFormData(updated);
             onPreferencesUpdated(updated);
           }}
+          llmSettings={llmSettings}
+          onOpenSettings={onOpenSettings}
         />
       )}
 

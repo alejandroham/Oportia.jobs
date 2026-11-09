@@ -175,6 +175,26 @@ def memory_chat(payload: dict):
     history = payload.get("history", [])
     if not message:
         raise HTTPException(status_code=400, detail="El mensaje no puede estar vacío.")
+
+    # Nexus Asistente requires an active API key
+    provider = settings.DEFAULT_PROVIDER
+    has_key = False
+    if provider == "gemini":
+        has_key = bool(settings.GEMINI_API_KEY)
+    elif provider == "openai":
+        has_key = bool(settings.OPENAI_API_KEY)
+    elif provider == "claude":
+        has_key = bool(settings.ANTHROPIC_API_KEY)
+
+    if not has_key:
+        raise HTTPException(
+            status_code=403,
+            detail=(
+                "Nexus Asistente requiere una clave de API activa (Google Gemini, OpenAI o Claude) para interactuar en vivo. "
+                "La clave no es guardada por la aplicación en servidores externos y se mantiene 100% segura y cifrada en tu propio equipo."
+            )
+        )
+
     result = preference_learner.chat_and_learn(message, history)
     return result
 

@@ -403,6 +403,8 @@ export function App() {
                 <PreferencesCenter
                   onPreferencesUpdated={(p) => setPreferences(p)}
                   preferences={preferences || DEFAULT_EMPTY_PREFERENCES}
+                  llmSettings={settings}
+                  onOpenSettings={() => setIsSettingsOpen(true)}
                 />
               )}
             </div>
@@ -478,6 +480,8 @@ export function App() {
                   setPreferences(updated);
                   saveClientStore('preferences', updated);
                 }}
+                llmSettings={settings}
+                onOpenSettings={() => setIsSettingsOpen(true)}
               />
             </div>
           </div>
