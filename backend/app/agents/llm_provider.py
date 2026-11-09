@@ -275,6 +275,22 @@ class UnifiedLLMProvider:
                 ]
             })
 
+        # 7. Conversational Chat Assistant (Nexus Offline Heuristic)
+        elif "asistente de perfil profesional" in prompt_lower or "mensaje del candidato" in prompt_lower:
+            if any(k in prompt_lower for k in ["oferta", "ofertas", "empleo", "empleos", "vacante", "vacantes", "trabajo", "radar", "remot"]):
+                reply = "He consultado las vacantes de tu Radar local. Puedes filtrar y explorar las mejores opciones en la pestaña 'Radar de Empleo', o indicarme qué cargo buscas para evaluar coincidencias."
+            elif any(k in prompt_lower for k in ["cv", "curriculum", "perfil", "mejorar", "experiencia", "logro"]):
+                reply = "Para maximizar tu Fit Score, te aconsejo redactar tus experiencias bajo el método STAR (Situación, Tarea, Acción y Resultado). ¿Cuál fue el logro o métrica cuantificable más relevante de tu último trabajo?"
+            else:
+                reply = "He registrado tus comentarios en tu memoria cognitiva local. ¿Qué aspectos de tu búsqueda laboral (por ejemplo: modalidad 100% remota, banda salarial o tecnologías) te gustaría priorizar hoy?"
+
+            return json.dumps({
+                "assistant_reply": reply,
+                "star_story": None,
+                "new_insights": [],
+                "deal_breakers": []
+            })
+
         # Default fallback
         return json.dumps({
             "message": "Operación simulada del sistema de búsqueda de empleo (Modo sin API Key configurada)."
