@@ -10,12 +10,25 @@
 
 ## 1. Filosofía de Diseño e Identidad Visual
 
-NexusJob AI implementa las directrices de interfaz de usuario de **Apple (Cupertino Human Interface Guidelines - HIG)**, priorizando:
+Nexus.Job AI implementa las directrices de interfaz de usuario de **Apple (Cupertino Human Interface Guidelines - HIG)**, priorizando:
 
 1. **Claridad sobre el adorno:** El contenido profesional (currículum vitae, ofertas laborales y análisis dimensional) es el protagonista.
 2. **Vidrio Esmerilado (*Cupertino Glassmorphism*):** Uso de superficies translúcidas con desenfoque Gaussiano en tiempo real (`backdrop-filter: blur(20px)`), permitiendo una sensación de profundidad y ligereza espacial.
 3. **Líneas capilares (*Hairline Borders*):** Delimitación precisa de tarjetas y paneles mediante bordes de `1px` con opacidades sutiles (del 6% al 12%), eliminando bordes toscos o pesados.
 4. **Soporte Nativo Dual (Light / Dark Mode):** Transición automática y fluida entre un entorno luminoso y un Modo Oscuro profundo basado en negros absolutos OLED (`#000000`).
+
+### 1.1. Identidad Gráfica y Logotipo Oficial (`Nexus.Job`)
+
+El nuevo logotipo oficial de la plataforma sintetiza la arquitectura de red y la conexión inteligente de carreras y oportunidades:
+
+* **Isotipo (Squircle Icon):** Superelipse con curvatura continua estilo iOS en azul primario (`#0071E3`). En su interior exhibe una red continua de datos blanca con nodos de conmutación: nodo base en blanco (`#FFFFFF`) y dos nodos de activación en naranja Apple (`#FF9F0A`), simbolizando la convergencia entre el candidato y el ecosistema laboral.
+* **Logotipo Tipográfico (Wordmark):**
+  * **`Nexus`**: Tipografía geométrica en peso *Bold* (`#1D1D1F` en Modo Claro y `#FFFFFF` en Modo Oscuro) con tracking ajustado.
+  * **`.Job`**: Tipografía de acento en azul vibrante (`#0071E3`), integrando el punto (.) para proyectar identidad moderna y dominio tecnológico.
+* **Activos Centralizados en el Proyecto:**
+  * `frontend/public/nexusjob-logo.png`: Versión horizontal completa para fondos claros.
+  * `frontend/public/nexusjob-logo-dark.png`: Versión horizontal adaptada de alto contraste para Modo Oscuro y pantallas OLED.
+  * `frontend/public/nexusjob-icon.png`: Isotipo de 150x150 píxeles utilizado para Favicon web, Apple Touch Icon en pantalla de inicio de iPhone y splash de carga.
 
 ---
 

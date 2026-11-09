@@ -44,20 +44,24 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Brand / Logo */}
           <button
             onClick={() => setActiveTab('welcome')}
-            className="flex items-center space-x-2.5 sm:space-x-3 text-left hover:opacity-85 transition group focus:outline-none"
-            title="Ir a Inicio & Conoce NexusJob"
+            className="flex items-center space-x-2 text-left hover:opacity-90 transition group focus:outline-none shrink-0"
+            title="Ir a Inicio & Conoce Nexus.Job AI"
           >
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-sky-400 flex items-center justify-center shadow-md shadow-blue-500/20 shrink-0 group-hover:scale-105 transition">
-              <Radar className="w-4 h-4 text-white" />
-            </div>
-            <div>
-              <div className="flex items-center space-x-1.5">
-                <span className="font-semibold text-sm tracking-tight text-gray-900 dark:text-white">NexusJob</span>
-                <span className="text-[10px] font-medium tracking-wide uppercase px-1.5 py-0.2 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 border border-blue-200/60 dark:border-blue-800/60">
-                  AI
-                </span>
-              </div>
-            </div>
+            {/* Light Mode Logo */}
+            <img
+              src="/nexusjob-logo.png"
+              alt="Nexus.Job"
+              className="h-7 sm:h-8 w-auto object-contain dark:hidden group-hover:scale-[1.02] transition"
+            />
+            {/* Dark Mode Logo */}
+            <img
+              src="/nexusjob-logo-dark.png"
+              alt="Nexus.Job"
+              className="h-7 sm:h-8 w-auto object-contain hidden dark:block group-hover:scale-[1.02] transition"
+            />
+            <span className="text-[10px] font-bold tracking-wider uppercase px-1.5 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 border border-blue-200/60 dark:border-blue-800/60 shrink-0">
+              AI
+            </span>
           </button>
 
           {/* Clean Apple Segmented Navigation without icons (Desktop / Tablet Landscape) */}

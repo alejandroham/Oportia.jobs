@@ -46,14 +46,28 @@ export const WelcomeHub: React.FC<WelcomeHubProps> = ({
       {/* Hero Banner (Apple Glass Hero) */}
       <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-blue-900/20 via-indigo-900/10 to-transparent border border-blue-500/20 p-6 sm:p-10 backdrop-blur-xl shadow-2xl">
         <div className="relative z-10 space-y-4 max-w-3xl">
-          <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300 border border-blue-300/60 dark:border-blue-800/60 shadow-xs">
-            <ShieldCheck className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
-            <span>Soberanía Digital & Privacidad Local Certificada</span>
+          <div className="flex flex-wrap items-center gap-2.5">
+            <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300 border border-blue-300/60 dark:border-blue-800/60 shadow-xs">
+              <ShieldCheck className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+              <span>Soberanía Digital & Privacidad Local Certificada</span>
+            </div>
           </div>
 
-          <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-gray-900 dark:text-white leading-tight">
-            Bienvenido a <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-sky-400">NexusJob AI</span>
-          </h1>
+          <div className="flex items-center space-x-3 pt-1">
+            <img
+              src="/nexusjob-logo.png"
+              alt="Nexus.Job"
+              className="h-9 sm:h-12 w-auto object-contain dark:hidden"
+            />
+            <img
+              src="/nexusjob-logo-dark.png"
+              alt="Nexus.Job"
+              className="h-9 sm:h-12 w-auto object-contain hidden dark:block"
+            />
+            <span className="text-xs font-bold tracking-wider uppercase px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 border border-blue-200/60 dark:border-blue-800/60">
+              AI
+            </span>
+          </div>
 
           <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300 leading-relaxed font-normal">
             El ecosistema autónomo e inteligente de búsqueda de empleo, radar geográfico y preparación profesional para <strong>cualquier carrera, especialidad u oficio</strong>, con arquitectura soberana <em>Zero-Knowledge</em> y cumplimiento estricto de la legislación de protección de datos personales.

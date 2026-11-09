@@ -37,7 +37,7 @@ Referencia Legal: ${record.referenceId}
 Fecha y Hora de Emisión (Chile): ${record.timestamp}
 Fecha ISO UTC: ${record.isoDate}
 Documento Analizado: ${record.filename}
-Plataforma: NexusJob AI — Motor de Empleabilidad Soberano & Radar Geográfico
+Plataforma: Nexus.Job AI — Motor de Empleabilidad Soberano & Radar Geográfico
 
 --------------------------------------------------------------------------------
 1. DECLARACIONES Y BASES DE LICITUD (ART. 12 Y 13 LEY N° 21.719)
@@ -53,7 +53,7 @@ vacantes en el Radar de Empleos.
 Se deja constancia expresa de que:
 a) El documento suministrado se procesa de forma transitoria en la memoria local
    del navegador del usuario.
-b) Los datos personales jamás se transfieren a servidores centrales de NexusJob AI
+b) Los datos personales jamás se transfieren a servidores centrales de Nexus.Job AI
    ni se comparten con terceros para entrenamiento de modelos públicos.
 c) Toda la información puede ser purgada de inmediato mediante la función de borrado
    total ("Derecho de Supresión / Olvido", Art. 17 Ley N° 21.719).
@@ -61,12 +61,12 @@ c) Toda la información puede ser purgada de inmediato mediante la función de b
 --------------------------------------------------------------------------------
 3. EXCLUSIÓN DE RESPONSABILIDAD Y FIDELIDAD DE DATOS (NO-ALUCINACIÓN)
 --------------------------------------------------------------------------------
-a) NexusJob AI es una herramienta tecnológica de asistencia técnica determinista.
+a) Nexus.Job AI es una herramienta tecnológica de asistencia técnica determinista.
    El sistema NO inventa credenciales, títulos académicos, experiencia laboral
    ni competencias que no consten en el documento analizado.
 b) El candidato es el único y exclusivo responsable de la veracidad, exactitud y
    legalidad de los antecedentes que decida postular ante terceros o empleadores.
-c) NexusJob AI no garantiza la obtención de empleo ni asume responsabilidad por
+c) Nexus.Job AI no garantiza la obtención de empleo ni asume responsabilidad por
    las decisiones de selección, contratación o descarte tomadas por reclutadores
    o empresas empleadoras.
 

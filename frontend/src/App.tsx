@@ -332,9 +332,16 @@ export function App() {
       {/* Main Content Area */}
       <main className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8 pb-24 md:pb-8">
         {loading ? (
-          <div className="flex flex-col items-center justify-center min-h-[50vh] space-y-3">
-            <div className="w-8 h-8 rounded-full border-2 border-blue-600 border-t-transparent animate-spin" />
-            <p className="text-xs text-gray-400">Iniciando Agente Autónomo NexusJob AI...</p>
+          <div className="flex flex-col items-center justify-center min-h-[50vh] space-y-4">
+            <img
+              src="/nexusjob-icon.png"
+              alt="Nexus.Job"
+              className="w-14 h-14 rounded-2xl shadow-xl shadow-blue-500/25 animate-pulse object-contain"
+            />
+            <div className="flex items-center space-x-2">
+              <div className="w-4 h-4 rounded-full border-2 border-blue-600 border-t-transparent animate-spin" />
+              <p className="text-xs font-medium text-gray-500 dark:text-gray-400">Iniciando Agente Autónomo Nexus.Job AI...</p>
+            </div>
           </div>
         ) : (
           <ErrorBoundary>
@@ -442,12 +449,14 @@ export function App() {
           <div className="w-full max-w-xl h-full apple-glass bg-white/95 dark:bg-zinc-900/95 shadow-2xl flex flex-col border-l border-black/10 dark:border-white/10 overflow-hidden">
             <div className="p-4 border-b border-black/5 dark:border-white/5 flex items-center justify-between bg-gray-50/50 dark:bg-zinc-800/50">
               <div className="flex items-center space-x-2.5">
-                <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-sky-400 flex items-center justify-center text-white shadow-xs">
-                  <Brain className="w-4 h-4" />
-                </div>
+                <img
+                  src="/nexusjob-icon.png"
+                  alt="Nexus.Job"
+                  className="w-8 h-8 rounded-xl object-contain shadow-xs shrink-0"
+                />
                 <div>
                   <h3 className="font-bold text-sm text-gray-900 dark:text-white">
-                    Nexus — Asistente de Perfil Profesional
+                    Nexus.Job — Asistente de Perfil Profesional
                   </h3>
                   <p className="text-[10px] text-gray-500">
                     Pregúntale cómo mejorar tu CV para subir tu Fit Score o consultar vacantes

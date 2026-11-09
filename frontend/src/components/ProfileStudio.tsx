@@ -2367,7 +2367,7 @@ export const ProfileStudio: React.FC<ProfileStudioProps> = ({ profile, onProfile
                 <strong className="block font-semibold text-gray-900 dark:text-white mb-0.5">
                   1. Soberanía Local (Zero-Knowledge / Art. 12 Ley 21.719)
                 </strong>
-                Tu currículum vitae se procesa transitoriamente en tu equipo local. NexusJob AI no transfiere tus antecedentes a servidores centrales ni vende tus datos a terceros.
+                Tu currículum vitae se procesa transitoriamente en tu equipo local. Nexus.Job AI no transfiere tus antecedentes a servidores centrales ni vende tus datos a terceros.
               </div>
 
               <div className="p-2.5 rounded-lg bg-gray-50 dark:bg-zinc-800/60 border border-black/5">
@@ -2381,7 +2381,7 @@ export const ProfileStudio: React.FC<ProfileStudioProps> = ({ profile, onProfile
                 <strong className="block font-semibold text-gray-900 dark:text-white mb-0.5">
                   3. Exclusión de Responsabilidad y Veracidad
                 </strong>
-                Eres el único y exclusivo responsable por la veracidad de la información postulada ante reclutadores. NexusJob AI es una herramienta de asistencia técnica y no garantiza contratación.
+                Eres el único y exclusivo responsable por la veracidad de la información postulada ante reclutadores. Nexus.Job AI es una herramienta de asistencia técnica y no garantiza contratación.
               </div>
 
               <div className="p-2.5 rounded-lg bg-gray-50 dark:bg-zinc-800/60 border border-black/5">
