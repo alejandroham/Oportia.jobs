@@ -208,11 +208,51 @@ class FitDimensionScore(BaseModel):
     score: int # 0-100
     reasoning: str
 
+# Modelos del Comité de Evaluación IA (Nexus.Job)
+class EvaluatorRoleScore(BaseModel):
+    role_id: str # "rrhh", "hiring_manager", "technical", "ats", "career_consultant"
+    role_name: str # "Reclutador RR. HH.", "Jefe Contratante", "Evaluador Técnico", "Especialista ATS", "Consultor Estratégico"
+    score: int # 0-100
+    weight_percentage: int # 25, 25, 25, 15, 10
+    justification: str
+    strengths: List[str] = []
+    gaps: List[str] = []
+    key_question: str
+    question_verdict: str
+
+class RequirementEvidenceItem(BaseModel):
+    requirement: str
+    cv_evidence: str
+    status: str = "cumplido" # "cumplido", "parcial", "pendiente", "no_cumplido"
+    competency_status: str = "demostrada" # "demostrada", "declarada_sin_evidencia", "transferible", "no_identificada", "confirmada_ausente"
+    importance: str = "general" # "excluyente", "deseable", "general"
+
+class PotentialFitProjection(BaseModel):
+    potential_score: int # 0-100
+    score_delta: int = 0 # ej: +9
+    target_competencies: List[str] = []
+    required_evidence: List[str] = []
+    estimated_effort: str = "1 a 3 semanas"
+    reasoning: str = ""
+
+class DirectorSynthesis(BaseModel):
+    summary: str
+    contradictions_detected: List[str] = []
+    critical_deal_breakers: List[str] = []
+    missing_evidence_vs_real_gaps: str = ""
+    final_recommendation: str # "Postulación prioritaria", "Recomendable postular", "Revisar brechas y adaptar CV", "Evaluar si conviene invertir tiempo", "En principio, no priorizar"
+    suggested_actions: List[str] = []
+
 class FitEvaluation(BaseModel):
     job_id: str
-    overall_score: int # 0-100
-    verdict: str # "Altamente Recomendado", "Buen Ajuste", "Ajuste Moderado", "No Recomendado"
-    dimension_scores: List[FitDimensionScore] = []
+    overall_score: int # 0-100 (Fit Score Ponderado: RRHH 25% + HM 25% + Tech 25% + ATS 15% + Estratégico 10%)
+    potential_fit_score: Optional[int] = None # Proyección condicionada si se acreditan brechas
+    potential_projection: Optional[PotentialFitProjection] = None
+    verdict: str # "Postulación prioritaria", "Recomendable postular", "Revisar brechas y adaptar CV", "Evaluar si conviene invertir tiempo", "En principio, no priorizar"
+    committee_evaluations: List[EvaluatorRoleScore] = []
+    director_synthesis: Optional[DirectorSynthesis] = None
+    requirements_matrix: List[RequirementEvidenceItem] = []
+    dimension_scores: List[FitDimensionScore] = [] # Compatibilidad retroactiva
     strengths: List[str] = []
     missing_skills: List[str] = []
     deal_breakers_found: List[str] = []
@@ -272,3 +312,70 @@ class LLMConfig(BaseModel):
     provider: str = "gemini" # "gemini", "openai", "claude"
     api_key: Optional[str] = None
     model_name: Optional[str] = None
+
+# Modelos del Coach IA (Desarrollo y Crecimiento Profesional)
+class CompetencyDiagnosticItem(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str
+    category: str = "Técnica" # "Técnica", "Gestión", "Metodológica", "Transversal"
+    declared_level: str = "Intermedio" # "Básico", "Intermedio", "Avanzado", "Experto"
+    estimated_level: str = "Intermedio"
+    validation_status: str = "en_aprendizaje" # "en_aprendizaje", "completado", "validada"
+    evidences: List[str] = []
+    source_job_gaps: List[str] = []
+    updated_at: str = Field(default_factory=lambda: datetime.utcnow().isoformat())
+
+class LearningCourseResource(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    title: str
+    platform: str # "Microsoft Learn", "Google Skillshop", "AWS Skill Builder", "Cisco Networking Academy", "Coursera", "edX", "SENCE", "YouTube", "Documentación Oficial"
+    url: str
+    competency: str
+    level: str = "Intermedio" # "Básico", "Intermedio", "Avanzado"
+    duration: str = "4 a 6 horas"
+    language: str = "Español"
+    cost: str = "Gratuito" # "Gratuito", "Pagado", "Suscripción", "No confirmado"
+    has_certificate: bool = True
+    verified: bool = True
+    relevance_score: int = 90
+    description: str = ""
+
+class LearningPathMilestone(BaseModel):
+    step_number: int
+    title: str
+    objective: str
+    competencies_targeted: List[str] = []
+    resources: List[LearningCourseResource] = []
+    practical_activity: str
+    evaluation_challenge: str
+    status: str = "pending" # "pending", "in_progress", "completed"
+    evidence_logged: Optional[str] = None
+
+class LearningPath(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    title: str
+    target_role: str
+    overview: str
+    estimated_weeks: int = 3
+    milestones: List[LearningPathMilestone] = []
+    progress_percentage: int = 0
+    created_at: str = Field(default_factory=lambda: datetime.utcnow().isoformat())
+
+class TutorPracticeChallenge(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    competency: str
+    scenario_title: str
+    scenario_context: str
+    problem_statement: str
+    evaluation_rubric: List[str] = []
+    difficulty: str = "Intermedio"
+
+class TutorEvaluationResult(BaseModel):
+    challenge_id: str
+    score: int # 0-100
+    technical_correctness: str
+    feedback: str
+    strengths: List[str] = []
+    areas_for_improvement: List[str] = []
+    competency_validated: bool = False
+    evidence_generated: Optional[str] = None

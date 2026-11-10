@@ -29,6 +29,7 @@ from app.agents.fit_evaluator import fit_evaluator
 from app.agents.drafter_reviewer import drafter_reviewer
 from app.agents.preference_learner import preference_learner
 from app.agents.interview_coach import interview_coach
+from app.agents.career_coach import career_coach
 from app.scrapers.remote_boards import RemoteBoardsScraper
 from app.scrapers.url_parser import sanitize_job_text
 from app.mcp_server import handle_tool_call, TOOLS_DEFINITION
@@ -145,6 +146,21 @@ def test_pipeline():
     # MCP Tool execution test
     mcp_res = handle_tool_call("get_candidate_profile", {})
     print(f"  ✓ Herramienta MCP 'get_candidate_profile' invocada exitosamente. Candidato: {mcp_res['profile']['name']}")
+
+    # TEST 8: Coach IA (Capacidades A, B, C y D)
+    print("\n[TEST 8/8] Probando Coach IA (Diagnóstico, Cursos Verificados, Rutas & Tutor)...")
+    diagnostic = career_coach.generate_or_get_diagnostic(profile)
+    print(f"  ✓ Competencias en Diagnóstico: {len(diagnostic)}")
+    verified_courses = career_coach.search_verified_courses(competency="Ciberseguridad")
+    print(f"  ✓ Cursos verificados de Ciberseguridad encontrados: {len(verified_courses)}")
+    if verified_courses:
+        print(f"     - Recurso oficial: {verified_courses[0].title} ({verified_courses[0].platform}) -> {verified_courses[0].url}")
+    learning_path = career_coach.generate_learning_path("Lead Cloud & AI Engineer", ["Kubernetes", "Ciberseguridad"], profile)
+    print(f"  ✓ Ruta de Aprendizaje generada: '{learning_path.title}' con {len(learning_path.milestones)} hitos")
+    challenge = career_coach.generate_practice_challenge("Kubernetes", seniority="Senior")
+    print(f"  ✓ Desafío planteado por el Tutor: '{challenge.scenario_title}'")
+    eval_res = career_coach.evaluate_tutor_response(challenge, "Implementaría clústeres multi-región con ArgoCD para GitOps, políticas de red con Calico y copias de seguridad de etcd automatizadas.")
+    print(f"  ✓ Evaluación del Tutor: {eval_res.score}/100 (Validada: {eval_res.competency_validated})")
 
     print("\n=======================================================")
     print("      ¡TODAS LAS PRUEBAS COMPLETADAS CON ÉXITO!        ")

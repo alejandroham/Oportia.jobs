@@ -1,12 +1,17 @@
 import json
+import logging
 import re
 from pathlib import Path
 from typing import List, Optional, Dict, Any
+
+logger = logging.getLogger(__name__)
 from app.config import settings
 from app.models.schemas import (
     CandidateProfile, UserPreferences, JobPosting, 
     FitEvaluation, ApplicationDraft, FeedbackAction, TrackingHistoryEvent,
-    CompanyDirectoryItem, RoleRecommendation, GeneratedATSQuery
+    CompanyDirectoryItem, RoleRecommendation, GeneratedATSQuery,
+    CompetencyDiagnosticItem, LearningPath, LearningCourseResource,
+    TutorPracticeChallenge, TutorEvaluationResult
 )
 from app.storage.companies_seed import COMPANIES_SEED
 
@@ -37,6 +42,16 @@ class Database:
 
         if not settings.ROLE_RECOMMENDATIONS_FILE.exists():
             self._write_json(settings.ROLE_RECOMMENDATIONS_FILE, [])
+
+        if hasattr(settings, 'EVALUATIONS_FILE') and not settings.EVALUATIONS_FILE.exists():
+            self._write_json(settings.EVALUATIONS_FILE, {})
+
+        if hasattr(settings, 'COACH_DATA_FILE') and not settings.COACH_DATA_FILE.exists():
+            self._write_json(settings.COACH_DATA_FILE, {
+                "competencies": [],
+                "learning_paths": [],
+                "completed_challenges": []
+            })
 
     def _read_json(self, path: Path) -> Any:
         try:
@@ -408,6 +423,85 @@ class Database:
     def get_feedback_history(self) -> List[Dict[str, Any]]:
         return self._read_json(settings.FEEDBACK_FILE) or []
 
+    # Evaluations (Comité de Evaluación IA)
+    def get_evaluation(self, job_id: str) -> Optional[FitEvaluation]:
+        data = self._read_json(settings.EVALUATIONS_FILE) or {}
+        if job_id in data:
+            try:
+                return FitEvaluation(**data[job_id])
+            except Exception as e:
+                logger.error(f"Error parsing evaluation for job {job_id}: {e}")
+                return None
+        return None
+
+    def save_evaluation(self, evaluation: FitEvaluation):
+        data = self._read_json(settings.EVALUATIONS_FILE) or {}
+        data[evaluation.job_id] = evaluation.model_dump()
+        self._write_json(settings.EVALUATIONS_FILE, data)
+
+    def get_all_evaluations(self) -> Dict[str, Any]:
+        return self._read_json(settings.EVALUATIONS_FILE) or {}
+
+    # Coach IA (Desarrollo y Crecimiento Profesional)
+    def get_coach_data(self) -> Dict[str, Any]:
+        return self._read_json(settings.COACH_DATA_FILE) or {
+            "competencies": [],
+            "learning_paths": [],
+            "completed_challenges": []
+        }
+
+    def save_coach_data(self, data: Dict[str, Any]):
+        self._write_json(settings.COACH_DATA_FILE, data)
+
+    def get_competencies(self) -> List[CompetencyDiagnosticItem]:
+        data = self.get_coach_data()
+        return [CompetencyDiagnosticItem(**item) for item in data.get("competencies", [])]
+
+    def save_competency(self, comp: CompetencyDiagnosticItem):
+        data = self.get_coach_data()
+        comps = [c for c in data.get("competencies", []) if c.get("id") != comp.id and c.get("name", "").lower() != comp.name.lower()]
+        comps.append(comp.model_dump())
+        data["competencies"] = comps
+        self.save_coach_data(data)
+
+    def save_competencies(self, new_comps: List[CompetencyDiagnosticItem]):
+        data = self.get_coach_data()
+        existing = {c.get("name", "").lower(): c for c in data.get("competencies", [])}
+        for nc in new_comps:
+            existing[nc.name.lower()] = nc.model_dump()
+        data["competencies"] = list(existing.values())
+        self.save_coach_data(data)
+
+    def get_learning_paths(self) -> List[LearningPath]:
+        data = self.get_coach_data()
+        return [LearningPath(**item) for item in data.get("learning_paths", [])]
+
+    def save_learning_path(self, path: LearningPath):
+        data = self.get_coach_data()
+        paths = [p for p in data.get("learning_paths", []) if p.get("id") != path.id]
+        paths.append(path.model_dump())
+        data["learning_paths"] = paths
+        self.save_coach_data(data)
+
+    def update_milestone_status(self, path_id: str, step_number: int, status: str, evidence: Optional[str] = None) -> Optional[LearningPath]:
+        paths = self.get_learning_paths()
+        target = None
+        for p in paths:
+            if p.id == path_id:
+                for m in p.milestones:
+                    if m.step_number == step_number:
+                        m.status = status
+                        if evidence:
+                            m.evidence_logged = evidence
+                # Recalculate progress
+                completed_count = sum(1 for m in p.milestones if m.status == "completed")
+                p.progress_percentage = int((completed_count / len(p.milestones)) * 100) if p.milestones else 0
+                target = p
+                break
+        if target:
+            self.save_learning_path(target)
+        return target
+
     # Companies Directory
     def get_companies(self, country: Optional[str] = None, industry: Optional[str] = None) -> List[CompanyDirectoryItem]:
         raw = self._read_json(settings.COMPANIES_FILE) or []
@@ -458,6 +552,10 @@ class Database:
         self._write_json(settings.JOBS_FILE, [])
         self._write_json(settings.APPLICATIONS_FILE, [])
         self._write_json(settings.FEEDBACK_FILE, [])
+        if hasattr(settings, 'EVALUATIONS_FILE') and settings.EVALUATIONS_FILE.exists():
+            self._write_json(settings.EVALUATIONS_FILE, {})
+        if hasattr(settings, 'COACH_DATA_FILE') and settings.COACH_DATA_FILE.exists():
+            self._write_json(settings.COACH_DATA_FILE, {"competencies": [], "learning_paths": [], "completed_challenges": []})
         if hasattr(settings, 'ROLE_RECOMMENDATIONS_FILE') and settings.ROLE_RECOMMENDATIONS_FILE.exists():
             self._write_json(settings.ROLE_RECOMMENDATIONS_FILE, [])
 

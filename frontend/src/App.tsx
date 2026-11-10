@@ -5,6 +5,8 @@ import { PipelineTracker } from './components/PipelineTracker';
 import { ProfileStudio } from './components/ProfileStudio';
 import { ApplicationStudio } from './components/ApplicationStudio';
 import { PreferencesCenter } from './components/PreferencesCenter';
+import { CoachStudio } from './components/CoachStudio';
+import { Footer } from './components/Footer';
 import { SettingsModal } from './components/SettingsModal';
 import { SessionPrivacyModal } from './components/SessionPrivacyModal';
 import { WelcomeHub } from './components/WelcomeHub';
@@ -390,6 +392,16 @@ export function App() {
                 />
               )}
 
+              {activeTab === 'coach' && (
+                <CoachStudio
+                  profile={profile}
+                  jobs={jobs}
+                  llmSettings={settings}
+                  onOpenSettings={() => setIsSettingsOpen(true)}
+                  onNavigateToTab={(t) => setActiveTab(t)}
+                />
+              )}
+
               {activeTab === 'profile' && (
                 <ProfileStudio
                   profile={profile || DEFAULT_EMPTY_PROFILE}
@@ -413,6 +425,9 @@ export function App() {
           </ErrorBoundary>
         )}
       </main>
+
+      {/* Global Apple-styled Footer with Instagram & Sponsor CTA */}
+      <Footer onNavigateToTab={(tab) => setActiveTab(tab)} />
 
       {/* Settings Modal */}
       <SettingsModal

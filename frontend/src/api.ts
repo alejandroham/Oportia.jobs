@@ -7,7 +7,12 @@ import type {
   LLMSettings,
   CompanyDirectoryItem,
   RoleRecommendation,
-  GeneratedATSQuery
+  GeneratedATSQuery,
+  CompetencyDiagnosticItem,
+  LearningCourseResource,
+  LearningPath,
+  TutorPracticeChallenge,
+  TutorEvaluationResult
 } from './types';
 
 const API_BASE = '/api';
@@ -286,6 +291,15 @@ export const api = {
     });
     return res.json();
   },
+  getJobEvaluation: async (job_id: string): Promise<FitEvaluation | null> => {
+    try {
+      const res = await fetch(`${API_BASE}/jobs/${job_id}/evaluation`);
+      if (!res.ok) return null;
+      return res.json();
+    } catch {
+      return null;
+    }
+  },
   batchRank: async () => {
     const res = await fetch(`${API_BASE}/jobs/batch-rank`, {
       method: 'POST'
@@ -361,6 +375,78 @@ export const api = {
       body: JSON.stringify({ question, answer, company })
     });
     return res.json();
+  },
+
+  // Coach IA (Desarrollo y Crecimiento Profesional)
+  getCoachDiagnostic: async (): Promise<CompetencyDiagnosticItem[]> => {
+    const res = await fetch(`${API_BASE}/coach/diagnostic`);
+    return handleResponse<CompetencyDiagnosticItem[]>(res, 'Error al obtener diagnóstico de competencias');
+  },
+  updateCoachCompetency: async (compId: string, data: Partial<CompetencyDiagnosticItem>): Promise<CompetencyDiagnosticItem> => {
+    const res = await fetch(`${API_BASE}/coach/competencies/${compId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    return handleResponse<CompetencyDiagnosticItem>(res, 'Error al actualizar competencia');
+  },
+  syncGapsFromJob: async (jobId: string): Promise<CompetencyDiagnosticItem[]> => {
+    const res = await fetch(`${API_BASE}/coach/sync-gaps/${jobId}`, {
+      method: 'POST'
+    });
+    return handleResponse<CompetencyDiagnosticItem[]>(res, 'Error al transferir brechas al Coach IA');
+  },
+  searchCoachCourses: async (params?: { query?: string; competency?: string; cost?: string }): Promise<LearningCourseResource[]> => {
+    const sp = new URLSearchParams();
+    if (params?.query) sp.set('query', params.query);
+    if (params?.competency) sp.set('competency', params.competency);
+    if (params?.cost) sp.set('cost', params.cost);
+    const res = await fetch(`${API_BASE}/coach/courses?${sp.toString()}`);
+    return handleResponse<LearningCourseResource[]>(res, 'Error al buscar cursos verificados');
+  },
+  generateLearningPath: async (targetRole: string, gaps: string[]): Promise<LearningPath> => {
+    const res = await fetch(`${API_BASE}/coach/learning-path`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ target_role: targetRole, gaps })
+    });
+    return handleResponse<LearningPath>(res, 'Error al generar ruta de aprendizaje');
+  },
+  getLearningPaths: async (): Promise<LearningPath[]> => {
+    const res = await fetch(`${API_BASE}/coach/learning-paths`);
+    return handleResponse<LearningPath[]>(res, 'Error al obtener rutas de aprendizaje');
+  },
+  updateMilestoneStatus: async (pathId: string, stepNumber: number, status: string, evidence?: string): Promise<LearningPath> => {
+    const res = await fetch(`${API_BASE}/coach/learning-paths/${pathId}/milestones/${stepNumber}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status, evidence })
+    });
+    return handleResponse<LearningPath>(res, 'Error al actualizar avance de hito');
+  },
+  generateTutorChallenge: async (competency: string, seniority: string = 'Intermedio'): Promise<TutorPracticeChallenge> => {
+    const res = await fetch(`${API_BASE}/coach/tutor/challenge`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ competency, seniority })
+    });
+    return handleResponse<TutorPracticeChallenge>(res, 'Error al generar desafío práctico');
+  },
+  evaluateTutorSolution: async (challenge: TutorPracticeChallenge, solution: string): Promise<TutorEvaluationResult> => {
+    const res = await fetch(`${API_BASE}/coach/tutor/evaluate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ challenge, solution })
+    });
+    return handleResponse<TutorEvaluationResult>(res, 'Error al evaluar solución técnica');
+  },
+  getTargetedInterviewPrep: async (jobId: string, interviewerRole: string = 'all'): Promise<any> => {
+    const res = await fetch(`${API_BASE}/coach/interview-prep`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ job_id: jobId, interviewer_role: interviewerRole })
+    });
+    return handleResponse(res, 'Error al generar preparación de entrevista');
   },
 
   // Settings & Security Purge

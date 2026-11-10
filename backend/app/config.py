@@ -43,6 +43,8 @@ class Settings:
     LLM_SETTINGS_FILE: Path = DATA_DIR / "llm_settings.json"
     COMPANIES_FILE: Path = DATA_DIR / "companies.json"
     ROLE_RECOMMENDATIONS_FILE: Path = DATA_DIR / "role_recommendations.json"
+    EVALUATIONS_FILE: Path = DATA_DIR / "evaluations.json"
+    COACH_DATA_FILE: Path = DATA_DIR / "coach_data.json"
     UPLOADS_DIR: Path = DATA_DIR / "uploads"
 
     # LLM Keys

@@ -294,15 +294,59 @@ export interface FitDimensionScore {
   reasoning: string;
 }
 
+export interface EvaluatorRoleScore {
+  role_id: string; // "rrhh" | "hiring_manager" | "technical" | "ats" | "career_consultant"
+  role_name: string;
+  score: number;
+  weight_percentage: number;
+  justification: string;
+  strengths: string[];
+  gaps: string[];
+  key_question: string;
+  question_verdict: string;
+}
+
+export interface RequirementEvidenceItem {
+  requirement: string;
+  cv_evidence: string;
+  status: 'cumplido' | 'parcial' | 'pendiente' | 'no_cumplido' | string;
+  competency_status: 'demostrada' | 'declarada_sin_evidencia' | 'transferible' | 'no_identificada' | 'confirmada_ausente' | string;
+  importance: 'excluyente' | 'deseable' | 'general' | string;
+}
+
+export interface PotentialFitProjection {
+  potential_score: number;
+  score_delta: number;
+  target_competencies: string[];
+  required_evidence: string[];
+  estimated_effort: string;
+  reasoning: string;
+}
+
+export interface DirectorSynthesis {
+  summary: string;
+  contradictions_detected: string[];
+  critical_deal_breakers: string[];
+  missing_evidence_vs_real_gaps: string;
+  final_recommendation: string;
+  suggested_actions: string[];
+}
+
 export interface FitEvaluation {
   job_id: string;
   overall_score: number;
+  potential_fit_score?: number;
+  potential_projection?: PotentialFitProjection;
   verdict: string;
+  committee_evaluations?: EvaluatorRoleScore[];
+  director_synthesis?: DirectorSynthesis;
+  requirements_matrix?: RequirementEvidenceItem[];
   dimension_scores: FitDimensionScore[];
   strengths: string[];
   missing_skills: string[];
   deal_breakers_found: string[];
   recommendation_summary: string;
+  evaluated_at?: string;
 }
 
 export interface ApplicationDraft {
@@ -331,4 +375,77 @@ export interface LLMSettings {
   gemini_model: string;
   openai_model: string;
   claude_model: string;
+}
+
+// Modelos del Coach IA (Desarrollo y Crecimiento Profesional)
+export interface CompetencyDiagnosticItem {
+  id: string;
+  name: string;
+  category: 'Técnica' | 'Gestión' | 'Metodológica' | 'Transversal' | string;
+  declared_level: 'Básico' | 'Intermedio' | 'Avanzado' | 'Experto' | string;
+  estimated_level: string;
+  validation_status: 'en_aprendizaje' | 'completado' | 'validada';
+  evidences: string[];
+  source_job_gaps: string[];
+  updated_at: string;
+}
+
+export interface LearningCourseResource {
+  id: string;
+  title: string;
+  platform: string;
+  url: string;
+  competency: string;
+  level: string;
+  duration: string;
+  language: string;
+  cost: string;
+  has_certificate: boolean;
+  verified: boolean;
+  relevance_score: number;
+  description: string;
+}
+
+export interface LearningPathMilestone {
+  step_number: number;
+  title: string;
+  objective: string;
+  competencies_targeted: string[];
+  resources: LearningCourseResource[];
+  practical_activity: string;
+  evaluation_challenge: string;
+  status: 'pending' | 'in_progress' | 'completed';
+  evidence_logged?: string | null;
+}
+
+export interface LearningPath {
+  id: string;
+  title: string;
+  target_role: string;
+  overview: string;
+  estimated_weeks: number;
+  milestones: LearningPathMilestone[];
+  progress_percentage: number;
+  created_at: string;
+}
+
+export interface TutorPracticeChallenge {
+  id: string;
+  competency: string;
+  scenario_title: string;
+  scenario_context: string;
+  problem_statement: string;
+  evaluation_rubric: string[];
+  difficulty: string;
+}
+
+export interface TutorEvaluationResult {
+  challenge_id: string;
+  score: number;
+  technical_correctness: string;
+  feedback: string;
+  strengths: string[];
+  areas_for_improvement: string[];
+  competency_validated: boolean;
+  evidence_generated?: string | null;
 }

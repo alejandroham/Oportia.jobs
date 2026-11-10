@@ -1,274 +1,183 @@
-# NexusJob AI — Plataforma Autónoma de Búsqueda de Empleo, Memoria Cognitiva & Preparación de Entrevistas
+# NexusJob AI — Ecosistema Autónomo de Empleabilidad, Comité de Selección IA & Coach Profesional
 
-> Un ecosistema inteligente y autónomo diseñado para transformar la búsqueda de empleo en una experiencia de alta precisión. Potenciado por modelos **Google Gemini**, **ChatGPT** y **Claude**, con cobertura exhaustiva para **mercados laborales en Chile y remotos globales**, provisto de una interfaz inspirada en el **diseño de Apple (Cupertino HIG)**, un **Cerebro Cognitivo de Memoria Continua** y un servidor **Model Context Protocol (MCP)** estándar.
+<div align="center">
+
+[![GitHub Sponsors](https://img.shields.io/badge/Sponsor%20❤️-alejandroham-ff69b4.svg?style=for-the-badge&logo=github)](https://github.com/sponsors/alejandroham)
+[![Instagram](https://img.shields.io/badge/Instagram-@not.kano-E4405F.svg?style=for-the-badge&logo=instagram)](https://www.instagram.com/not.kano/)
+[![Manual de Usuario](https://img.shields.io/badge/📖%20Manual%20de%20Usuario-Ver%20Guía-blue.svg?style=for-the-badge)](docs/MANUAL_DE_USUARIO.md)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](LICENSE)
+[![Local First](https://img.shields.io/badge/Privacy-100%25%20Local--First-emerald.svg?style=for-the-badge)](docs/MANUAL_DE_USUARIO.md#9-privacidad-respaldos-cifrados-aes-256--ley-n-21719)
+
+<p align="center">
+  <strong>Un ecosistema inteligente, ético y soberano para dominar la búsqueda de empleo.</strong><br>
+  Equipado con un <strong>Comité Colegiado de 5 Evaluadores IA</strong>, <strong>Coach de Carrera y Tutor Práctico</strong>, <strong>Cerebro Cognitivo de Memoria Continua</strong>, diseño inspirado en <strong>Apple (Cupertino HIG)</strong>, cumplimiento con la <strong>Ley N° 21.719 de Chile</strong> y servidor nativo <strong>Model Context Protocol (MCP)</strong>.
+</p>
+
+[**📖 Leer el Manual de Usuario Completo »**](docs/MANUAL_DE_USUARIO.md)
+
+</div>
 
 ---
 
-## 🏗️ Arquitectura General del Sistema
+## 🧭 ¿Qué es NexusJob AI?
+
+**NexusJob AI** resuelve la fragmentación y falta de transparencia del mercado laboral moderno. En lugar de ser un simple formulario con un prompt de IA, opera como un **copiloto soberano de empleabilidad** donde:
+- **La IA asume el 95% del trabajo técnico:** Rastrea ofertas nacionales y globales, convoca a un **Comité de Selección de 5 evaluadores**, proyecta tu **Potential Fit Score**, redacta tu CV y carta a la medida con logros STAR reales y te entrena para superar tus brechas formativas con cursos gratuitos verificados.
+- **Tú mantienes el 100% del control soberano:** No usamos bots a ciegas que arriesguen tu cuenta. Tú validas tus antecedentes bajo la Ley N° 21.719 y postulas en **1 clic en el enlace oficial de la empresa**, incluso en portales estatales que exigen ClaveÚnica.
+
+---
+
+## 🏗️ Arquitectura General del Ecosistema
 
 ```mermaid
 flowchart TD
-    subgraph Entrada ["1. Fuentes de Ofertas & Entrada de Datos"]
-        Chile["🇨🇱 Portales Chile\n(Get on Board, CompuTrabajo,\nChileTrabajos, Laborum)"]
-        Global["🌍 Portales Remotos\n(RemoteOK, Arbeitnow,\nRemotive, LinkedIn)"]
-        Dorks["🔎 Motor ATS Dorks\n(Greenhouse, Lever, Ashby,\nWorkday, SmartRecruiters)"]
-        URL["🔗 Importador URL\n(Con Sanitización y Anti-Inyección)"]
+    subgraph Fuentes ["1. Fuentes & Búsqueda Soberana"]
+        Chile["🇨🇱 Cobertura Chile (16 Regiones)\n(Get on Board, CompuTrabajo,\nChileTrabajos, Laborum)"]
+        Global["🌍 Remoto Global\n(RemoteOK, Arbeitnow,\nRemotive, LinkedIn)"]
+        Dorks["🔎 Motor ATS Dorks Limpio\n(Greenhouse, Lever, Ashby,\nWorkday, SmartRecruiters, Taleo)"]
+        URL["🔗 Importador Seguro URL\n(Sanitización anti-inyecciones)"]
     end
 
-    subgraph Nucleo ["2. Inteligencia Artificial & Agentes Cognitivos"]
-        Profile["📄 Perfil & CV Maestro\n(Extracción sin alucinaciones)"]
-        Fit["⚖️ Fit Evaluator 5D\n(Compatibilidad 0-100% y Deal-Breakers)"]
-        Drafter["📝 Drafter-Reviewer\n(CV adaptado ATS y Carta Persuasiva)"]
-        Coach["🎙️ Coach STAR & Simulador\n(Evaluación diagnóstica con rúbrica STAR)"]
-        MemoryEngine["🧠 Cerebro Cognitivo Continuo\n(Aprendizaje transversal y consolidación)"]
+    subgraph Inteligencia ["2. Agentes Cognitivos & Comité Colegiado"]
+        Profile["📄 Perfil Universal & CV Maestro\n(Extracción multiformato sin alucinaciones)"]
+        Committee["👥 Comité de Evaluación IA\n• 1. Reclutador RRHH (25%)\n• 2. Hiring Manager (25%)\n• 3. Experto Técnico (25%)\n• 4. Filtro ATS (15%)\n• 5. Estratega Carrera (10%)\n• Director de Selección (Síntesis)\n• Dual Score (Actual vs Potencial)"]
+        CoachIA["🎓 Coach IA & Tutor Práctico\n• Diagnóstico de Brechas Formativas\n• Catálogo Verificado (Microsoft, AWS, Google, Cisco, SENCE)\n• Rutas de Aprendizaje por Hitos\n• Tutor de Casos Prácticos de Industria\n• Simulador de Entrevistas STAR por Rol"]
+        Drafter["📝 Drafter-Reviewer Formal\n(CV adaptado .formal-justify y Carta Persuasiva)"]
+        MemoryEngine["🧠 Cerebro Cognitivo Continuo\n(ADN Profesional, Historias STAR y Calibración)"]
     end
 
-    subgraph Presentacion ["3. Módulos de Usuario (Interfaz Cupertino & Multi-Dispositivo)"]
-        RadarUI["🛰️ Radar de Empleo\n• Paginación Dinámica (6 / 12 / 24 por pág.)\n• Filtros de Alcance, Remoto y ATS Dorks\n• Cuadrícula Adaptable (3, 2 cols o Lista)"]
-        TrackerUI["🎯 Mis Postulaciones (360°)\n• Vista Master-Detail Fluida para Móvil/PC\n• Documentos (CV Adaptado vs Master / Carta)\n• Coach & Simulador STAR en Vivo\n• Bitácora e Historial Cronológico"]
-        ProfileUI["👤 Perfil & CV Studio\n(Editor, trayectoria y carrusel de habilidades)"]
-        MemoryUI["💡 Memoria IA\n(ADN Profesional, Historias STAR, Reinicio)"]
-        MobileNav["📱 iOS Floating Tab Bar\n(Acceso ergonómico en móviles y tablets)"]
+    subgraph Presentacion ["3. Interfaz de Usuario (Apple Cupertino HIG)"]
+        WelcomeUI["🏠 Welcome Hub\n(Control de mando, estado y 6 módulos)"]
+        RadarUI["🛰️ Radar de Empleo\n(Paginación [6|12|24], orden por Fit Score)"]
+        TrackerUI["🎯 Mis Postulaciones (360°)\n(Master-Detail, Documentos, Bitácora)"]
+        CoachUI["🎓 Coach Studio\n(Diagnóstico, Cursos, Rutas, Tutor, Simulador)"]
+        ProfileUI["👤 Perfil Studio\n(Editor, trayectoria, habilidades universales)"]
+        MemoryUI["💡 Memoria Cognitiva\n(ADN profesional, calibración, reinicio seguro)"]
+        FooterUI["🦶 Footer Global\n(Instagram @not.kano y GitHub Sponsors)"]
     end
 
-    Chile --> RadarUI
-    Global --> RadarUI
-    Dorks --> RadarUI
-    URL --> RadarUI
-
-    Profile --> Fit
-    RadarUI --> Fit
-    Fit --> TrackerUI
-
+    Fuentes --> RadarUI
+    Profile --> Committee
+    RadarUI --> Committee
+    Committee -->|Brechas Sincronizadas| CoachIA
+    Committee --> TrackerUI
     TrackerUI --> Drafter
-    TrackerUI --> Coach
-
-    Profile -.-> MemoryEngine
-    TrackerUI -.-> MemoryEngine
-    RadarUI -.-> MemoryEngine
-    Coach -.-> MemoryEngine
-
+    CoachIA --> MemoryEngine
+    TrackerUI --> MemoryEngine
     MemoryEngine --> Drafter
     MemoryEngine --> MemoryUI
 ```
 
 ---
 
-## 🧠 Cerebro Cognitivo IA: Memoria Continua del Candidato
+## 🌟 Los 6 Módulos del Sistema
 
-A diferencia de los sistemas tradicionales con preferencias estáticas o prompts genéricos, **NexusJob AI** cuenta con una **Memoria Cognitiva Multicapa** que aprende de forma continua y transversal de cada interacción del candidato en la plataforma:
+| Módulo | Icono | Descripción Funcional |
+| :--- | :---: | :--- |
+| **Página Principal (Welcome Hub)** | 🏠 | Monitor de estado del sistema, acceso rápido a los 6 módulos, acciones en 1 clic y garantías legales. |
+| **Perfil & CV Studio** | 👤 | Carga inteligente de currículum (PDF/Word), extracción sin alucinaciones y taxonomía universal de profesiones. |
+| **Radar de Empleo** | 🛰️ | Exploración en las 16 regiones de Chile y remotas globales, orden descendente por Fit Score y ATS Dorks. |
+| **Comité de Evaluación IA** | 👥 | Análisis colegiado con 5 evaluadores, veredicto del Director, Dual Score (Actual vs Potencial) y matriz de requisitos. |
+| **Coach IA & Superación** | 🎓 | Diagnóstico de brechas, catálogo de cursos gratuitos certificados, rutas por hitos, tutor de casos y simulador STAR. |
+| **Mis Postulaciones** | 🎯 | Flujo 360° con CV adaptado `.formal-justify`, carta de presentación, selector de papel formal y bitácora inviolable. |
+| **Memoria Cognitiva** | 🧠 | Cerebro que acumula tu ADN profesional, biblioteca de logros STAR validados y asistente conversacional Nexus. |
 
-```mermaid
-flowchart LR
-    subgraph FuentesAprendizaje ["Fuentes de Aprendizaje en Tiempo Real"]
-        F1["📄 Perfil y CV Maestro\n(Seniority, stack y proyectos)"]
-        F2["🛰️ Radar de Empleos\n(Likes, descartes y motivos)"]
-        F3["📝 Postulaciones Creadas\n(Palabras clave de alta tracción)"]
-        F4["🎙️ Simulador STAR\n(Respuestas evaluadas >80 pts)"]
-    end
-
-    subgraph MemoriaMulticapa ["Memoria Cognitiva Unificada"]
-        M1["🧬 ADN Profesional\nPropuesta de valor única, tono\ny seniority inferido"]
-        M2["⭐ Biblioteca de Historias STAR\nCasos de éxito cuantificables con\nSituación, Tarea, Acción y Métrica"]
-        M3["🎯 Reglas de Afinidad del Radar\nPreferencias implícitas de cultura,\nsalario y condiciones innegociables"]
-        M4["📈 Patrones de Mercado\nKeywords críticas y sectores con\nmayor tasa de compatibilidad"]
-    end
-
-    subgraph ImpactoReal ["Impacto en Nuevas Postulaciones"]
-        I1["Documentos hiper-persuasivos que defienden tu candidatura con logros reales"]
-        I2["Filtrado inteligente en el Radar con puntuación calibrada a tus gustos"]
-        I3["Preparador de entrevistas que recuerda tus logros sin tener que reescribirlos"]
-    end
-
-    F1 --> MemoriaMulticapa
-    F2 --> MemoriaMulticapa
-    F3 --> MemoriaMulticapa
-    F4 --> MemoriaMulticapa
-
-    MemoriaMulticapa --> I1
-    MemoriaMulticapa --> I2
-    MemoriaMulticapa --> I3
-```
-
-### Funcionalidades de la Memoria IA:
-* **Sincronización Profunda (`⚡ Sincronizar Memoria`)**: El candidato puede consolidar todo su historial con un clic; Gemini analiza el CV maestro, las vacantes guardadas y el histórico de postulaciones para recalibrar el ADN profesional y extraer historias STAR.
-* **Calibración Dinámica**: Un medidor de madurez (`0% a 100%`) indica qué tan calibrada está la IA en función de los datos acumulados.
-* **Reinicio de Fábrica Seguro (`Reiniciar Memoria`)**: Si el candidato desea reorientar su perfil o empezar desde cero, dispone de un botón de borrado total con diálogo de confirmación que limpia recuerdos y patrones aprendidos sin afectar su CV maestro ni sus vacantes guardadas.
+👉 Para conocer a fondo cada pantalla con recomendaciones visuales, consulta el **[Manual de Usuario](docs/MANUAL_DE_USUARIO.md)**.
 
 ---
 
-## 🎯 Flujo de Postulación 360° & Coach STAR Integrado
+## 👥 Comité de Evaluación IA (5 Evaluadores + Director)
 
-El ciclo de postulación se encuentra completamente unificado en **Mis Postulaciones**, eliminando pestañas aisladas y brindando un flujo coherente por empresa:
+A diferencia de los analizadores tradicionales con puntuaciones ciegas, NexusJob AI reúne a un **Comité Colegiado de Selección**:
 
-```mermaid
-sequenceDiagram
-    autonumber
-    actor Usuario
-    participant Tracker as Mis Postulaciones
-    participant IA as Agente Drafter / Coach
-    participant Memoria as Memoria Cognitiva
-
-    Usuario->>Tracker: Selecciona vacante activa (ej. Falabella / Latam)
-    
-    rect rgb(240, 245, 255)
-        note over Tracker, IA: 1. Pestaña Documentos
-        Tracker->>IA: Solicitar adaptación de CV y Carta de Presentación
-        IA->>Memoria: Consultar Historias STAR y tono preferido
-        Memoria-->>IA: Devuelve casos de éxito reales verificados
-        IA-->>Tracker: Genera CV Formal (Justificado, sin asteriscos) + Carta
-        Usuario->>Tracker: Alterna vista (Master vs Tailored) y Papel (Blanco / Noche)
-    end
-
-    rect rgb(250, 245, 255)
-        note over Tracker, IA: 2. Pestaña Coach & Simulador STAR
-        Tracker->>IA: Cargar glosario técnico y preguntas conductuales
-        Usuario->>Tracker: Selecciona pregunta y hace clic en [ Practicar ]
-        Usuario->>Tracker: Escribe respuesta real en el Simulador
-        Tracker->>IA: Evaluar respuesta con rúbrica STAR (/100)
-        IA-->>Tracker: Diagnóstico (Nota, Fortalezas, Mejoras, Versión Recomendada)
-        IA->>Memoria: Si nota >= 75, guarda caso de éxito en la biblioteca
-    end
-
-    rect rgb(245, 255, 245)
-        note over Tracker, IA: 3. Pestaña Bitácora & Notas
-        Usuario->>Tracker: Registra notas, fechas de entrevistas y llamadas
-        Tracker->>Tracker: Actualiza cronología histórica inviolable
-    end
 ```
+                       ┌────────────────────────────┐
+                       │   Director de Selección    │
+                       │   (Síntesis y Veredicto)   │
+                       └─────────────┬──────────────┘
+                                     │
+         ┌──────────────┬────────────┴───┬──────────────┬──────────────┐
+         ▼              ▼                ▼              ▼              ▼
+   ┌───────────┐  ┌───────────┐    ┌───────────┐  ┌───────────┐  ┌───────────┐
+   │ Reclutador│  │  Hiring   │    │Especialista│ │Filtro ATS │  │ Estratega │
+   │   RRHH    │  │  Manager  │    │  Técnico  │  │(Screening)│  │de Carrera │
+   │   (25%)   │  │   (25%)   │    │   (25%)   │  │   (15%)   │  │   (10%)   │
+   └───────────┘  └───────────┘    └───────────┘  └───────────┘  └───────────┘
+```
+
+- **Dual Score de Compatibilidad:**
+  - **Fit Score Actual (0-100%):** Lo que demuestras hoy en tu currículum frente a la vacante.
+  - **Potential Fit Score (0-100%):** Tu proyección alcanzable al completar las capacitaciones recomendadas por el Coach IA.
+- **Matriz de Requisitos vs CV:** Evidencias textuales categorizadas en *Cumplido*, *Parcial* o *No Cumplido*.
+- **Veredicto del Director:** Dictamen ejecutivo (*Postular Inmediatamente*, *Con Ajustes*, *Brecha Crítica* o *Descartar*).
+- **Acción Inmediata:** Botón **"Transferir al Coach IA"** que envía las brechas detectadas al plan de capacitación con 1 clic.
 
 ---
 
-## 🌟 Características Principales
+## 🎓 Coach IA & Centro de Superación Profesional
 
-### 1. Multi-LLM y Configuración Local Segura
-- **Soporte Oficial de Google Gemini:** Modelos de última generación (`gemini-3.5-flash`, `gemini-3.8-flash`, `gemini-2.5-pro`) mediante el SDK oficial `google-genai` con fallback resiliente ante contingencias de cuota o servicio.
-- **Compatibilidad con OpenAI & Anthropic:** Alterna con facilidad a **GPT-4o**, **GPT-4o-mini**, **Claude 3.5 Sonnet** o ingresa modelos personalizados para prevenir incompatibilidades con versiones descontinuadas.
-- **Almacenamiento Local de Claves:** Tus API Keys y preferencias se almacenan localmente en tu equipo (`data/settings.json`), sin enviarse a servidores de terceros.
-- **Indicador de Estado en Vivo (Navbar):**
-  - 🟢 **Punto Verde + Modelo Activo:** IA conectada y lista para razonar.
-  - 🟡 **Modo Offline Heurístico:** Operatividad inmediata sin API Key (búsqueda de empleo, navegación, seguimiento y guardado local).
+El nuevo módulo de **Coach IA** acompaña al candidato durante todo su desarrollo profesional:
 
-### 2. Radar de Ofertas Laborales & Motor Inteligente ATS
-- **Paginación Dinámica Anti-Fatiga (Estilo Apple):**
-  - **Selector de Tamaño de Página Segmentado:** Permite elegir al instante entre **6, 12 o 24 ofertas por página**, memorizando la preferencia en `localStorage`.
-  - **Distribución Ergonómica Optimizada:** 12 ofertas recomendadas en PC (múltiplo simétrico de 3 y 2 columnas) y 6 ofertas en móviles para evitar scrolls excesivos de pantalla.
-  - **Navegación Fluida con Auto-Scroll:** Controles de navegación `[ Anterior ]`, páginas numeradas con elipsis y `[ Siguiente ]` con desplazamiento suave hacia arriba automático al cambiar de página.
-  - **Contador Dinámico en Tiempo Real:** Visualización transparente del rango (`Mostrando 1 - 12 de 48 oportunidades`).
-- **Maximización del Mercado en Chile:** Conectores especializados para **Get on Board Chile, CompuTrabajo Chile, ChileTrabajos, Laborum Chile y LinkedIn Chile**.
-- **Portales Globales Remotos:** Integración simultánea con **RemoteOK, Arbeitnow, Remotive y LinkedIn Global**.
-- **Directorio de Empresas Corporativas y ATS (Chile & Global):** Base de datos categorizada con más de 100 empresas líderes en Chile e Internacionales, identificando su ATS corporativo (**Workday, Greenhouse, Lever, Ashby, SmartRecruiters, SuccessFactors, Taleo**).
-- **Generador y Ejecutor de Consultas Booleanas (ATS Dorks):** Indexa ofertas reales desde portales corporativos limpios sin intermediarios ni muros de registro.
-- **Filtro de Alcance Instantáneo:** Alterna con un solo clic entre *Todos (Chile + Global)*, *Solo Chile* y *Solo Global Remoto*.
-- **Control de Vistas en Cards Compactas:** Configura la cuadrícula en **3 Cards por fila**, **2 Cards por fila** o **Vista de Lista** para maximizar la visibilidad.
-
-### 3. Visualización y Calidad Tipográfica Formal de Documentos
-- **Limpieza Rigurosa de Formato Markdown:**
-  - Supresión automática de asteriscos crudos `*` y separadores de guiones `---` en la previsualización. Los títulos, subtítulos, cargos y viñetas se renderizan como componentes HTML nativos de alta fidelidad.
-- **Justificación Formal de Documentos (`.formal-justify`):**
-  - Justificación de texto formal con prevención de espaciados exagerados mediante `text-align-last: left`, `text-justify: inter-word` y separación silábica automática (`hyphens: auto`).
-  - Alternador en barra de herramientas entre **Justificado Formal** y **Alineación Izquierda ATS**.
-- **Selector de Papel de Contraste:**
-  - **Hoja Blanca Formal (`paperTheme: light`)**: Hoja de papel blanco impoluto con tipografía oscura de alta legibilidad, ideal para lectura y exportación a PDF.
-  - **Hoja Noche (`paperTheme: dark`)**: Modo oscuro optimizado para ambientes de poca luz con tipografía clara.
-- **Selector de Versión de CV (Tailored vs Master)**:
-  - Alterna al instante entre el **CV Adaptado por la IA** para esa empresa o el **CV Maestro General** sin perder modificaciones.
-- **Edición Inline de Fechas y Textos**:
-  - Corrección directa de inconsistencias (ej. "Octubre 2026 – Presente" cuando ya concluyó) con sincronización automática en el perfil.
-
-### 4. Coach & Simulador STAR Integrado
-- **Simulador Interactivo en Tiempo Real**: Entrena tus respuestas técnicas y conductuales directamente en la vista de la postulación.
-- **Diagnóstico IA Inmediato**: Evaluación con nota `/100`, listado de fortalezas detectadas, oportunidades de mejora y una **versión recomendada de alto impacto**.
-- **Botón `[ Practicar ]` en cada Pregunta**: Haz clic sobre cualquier pregunta técnica o conductual de la empresa para cargarla de inmediato en el simulador.
-- **Estrategia Salarial y Preguntas Capciosas**: Consejos tácticos sobre cómo plantear pretensiones de renta líquida y argumentar motivos de cambio de empleo.
-- **Preguntas Inteligentes**: Banco de preguntas estratégicas para que el candidato destaque haciéndole preguntas al entrevistador al final de la sesión.
-
-### 5. Experiencia Móvil & Adaptabilidad Total (Mobile First & Tablet UI)
-
-El sistema ha sido optimizado con un diseño de alta respuesta que permite realizar el **100% del ciclo de postulación directamente desde smartphones** (375px a 430px) y tablets sin perder funciones ni alterar la estética en PC de escritorio:
-
-```mermaid
-flowchart TD
-    subgraph Deteccion ["Detección de Dispositivo & Viewport"]
-        MobileView["📱 Smartphones (< 768px)\n(iPhone, Android, Pantallas Angostas)"]
-        TabletView["📟 Tablets & Laptops (768px - 1024px)\n(iPad, Surface, Portátiles)"]
-        DesktopView["🖥️ Monitores Desktop (> 1024px)\n(Full HD, 2K, Ultrawide)"]
-    end
-
-    subgraph PatronesUX ["Patrones Adaptativos Implementados"]
-        direction TB
-        P1["📱 iOS Floating Tab Bar\nBarra translúcida inferior al alcance del pulgar"]
-        P2["🔄 Master-Detail Pane Switcher\nEn 'Mis Postulaciones' alterna entre Listado\ny Detalle 360° con botón ergonómico '← Volver'"]
-        P3["📑 Bottom-Sheet Modals\nLos modales se anclan al borde inferior con bordes redondeados"]
-        P4["🛡️ Safe-Area Padding (pb-24)\nEvita colisiones con barras de navegación o gestos de SO"]
-    end
-
-    MobileView --> P1
-    MobileView --> P2
-    MobileView --> P3
-    MobileView --> P4
-
-    DesktopView --> D1["🖥️ Top Floating Navbar + Dual-Pane Colapsable + Grid 3-Cols"]
-```
-
-* **Barra de Navegación Flotante Inferior (iOS Floating Tab Bar)**: En móviles, la barra superior se transforma en una barra flotante en la parte inferior de la pantalla con efecto *apple-glass* y botones con respuesta táctil, situándose al alcance natural del pulgar.
-* **Arquitectura Master-Detail en Mis Postulaciones**: En smartphones, evita el aplastamiento de dos columnas simultáneas activando un alternador de panel:
-  - **Panel de Lista**: Explora tus empresas postuladas con badges de estado y compatibilidad.
-  - **Panel de Detalle 360°**: Al tocar una empresa, se abre en pantalla completa el detalle con sus documentos, Coach STAR y bitácora, acompañado de una barra superior con el botón ergonómico `← Volver a postulaciones`.
-* **Modales Tipo Bottom-Sheet**: En pantallas móviles, los modales de Configuración, Importar URL de Oferta y Detalle se anclan con suavidad al fondo de la pantalla con bordes superiores curvados (`rounded-t-3xl`), emulando las aplicaciones nativas de iOS/Android.
-* **Safe-Area Padding (`pb-24`)**: La vista principal cuenta con un margen inferior de seguridad de 96px (`pb-24`) en móviles, garantizando que los botones de acción (`Guardar`, `Postular`, `Evaluar`) nunca queden tapados por la barra de navegación ni por los gestos del sistema operativo.
+1. **Diagnóstico de Competencias:** Mapeo de brechas con indicadores de nivel actual vs requerido e impacto proyectado en puntos.
+2. **Catálogo de Cursos Verificados:** Enlaces oficiales y gratuitos sin enlaces rotos:
+   - **Microsoft Learn** (Azure, DevOps, IA, C#).
+   - **AWS Skill Builder** (Cloud, Arquitectura, Serverless).
+   - **Cisco Networking Academy** (Ciberseguridad, Redes, Linux).
+   - **Google Cloud Skills Boost** (Cloud Computing, Big Data, Gemini).
+   - **SENCE Chile / Talento Digital** (Capacitación gratuita para Chile con código SENCE).
+   - **Coursera & edX** (Especializaciones universitarias).
+3. **Rutas de Aprendizaje por Hitos:** Planes estructurados paso a paso con objetivos, horas sugeridas y proyectos prácticos.
+4. **Tutor de Casos Prácticos:** Resuelve desafíos reales de la industria y recibe una evaluación instantánea con nota `/100` y la solución recomendada.
+5. **Simulador de Entrevistas por Rol:** Entrena con preguntas conductuales y técnicas frente al Reclutador de RRHH, el Líder Técnico, el Hiring Manager o el Director con retroalimentación **STAR**.
 
 ---
 
-## 🎨 Principios de Diseño Apple (Cupertino HIG)
-- **Glassmorphism Frosted:** Fondos translúcidos con desenfoque (`backdrop-filter: blur(20px)`), bordes hiperfinos y tipografía del sistema (`-apple-system`, `SF Pro Display`).
-- **Navegación Consolidada en 4 Pilares**:
-  1. **Radar de Empleo**: Descubrimiento, paginación inteligente `[ 6 | 12 | 24 ]` y filtrado de vacantes.
-  2. **Mis Postulaciones**: Master-detail responsivo, documentos adaptados, Coach & Simulador STAR y Bitácora de seguimiento.
-  3. **Perfil & CV**: Edición de trayectoria, habilidades y formación con carruseles responsivos.
-  4. **Memoria IA**: Centro de mando cognitivo, ADN profesional, historias STAR y reinicio seguro.
+## 🛡️ Privacidad, Cifrado Militar & Ley N° 21.719 de Chile
+
+NexusJob AI implementa los más altos estándares de **Privacy by Design**:
+- **Zero-Knowledge & Local-First:** Tus datos se guardan exclusivamente en tu navegador (IndexedDB) y en tu máquina local (`data/`). Cero recolección oculta en servidores externos.
+- **Cifrado AES-256 en Respaldos (`.nexusjob`):** Exporta e importa tus datos protegidos con **AES-GCM de 256 bits y derivación PBKDF2** bajo tu propia clave.
+- **Derecho al Olvido (Art. 17 Ley 21.719):** Un botón de purga total elimina permanentemente el 100% de tus datos con una sola acción.
+- **Custodia Segura de Claves:** Tus API Keys de Gemini, OpenAI o Claude nunca se exponen ni se guardan en texto plano.
 
 ---
 
 ## 🚀 Inicio Rápido
 
-### Opción A: Lanzador en 1 Clic (macOS / Linux / Windows)
+### Opción A: Lanzador en 1 Clic (Recomendado)
 
 - **macOS / Linux:**
   ```bash
   ./start_app.sh
   ```
 - **Windows:**
-  Haz doble clic sobre `start_app.bat` (o ejecuta `./start_app.ps1` en PowerShell).
+  Haz doble clic en `start_app.bat` (o ejecuta `./start_app.ps1` en PowerShell).
 
-Instala automáticamente el entorno virtual, compila el frontend, levanta el backend FastAPI y abre la aplicación en tu navegador en `http://localhost:8000`.
+El instalador configura el entorno virtual, compila la interfaz y abre el sistema automáticamente en `http://localhost:8000`.
 
 ### Opción B: Ejecución Manual
 
-1. **Backend (FastAPI):**
-   ```bash
-   python -m venv venv
-   .\venv\Scripts\activate
-   pip install -r backend/requirements.txt
-   cd backend
-   python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
-   ```
+```bash
+# 1. Backend (FastAPI)
+python -m venv venv
+source venv/bin/activate  # En Windows: .\venv\Scripts\activate
+pip install -r backend/requirements.txt
+cd backend
+python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
 
-2. **Frontend (React + Vite + TailwindCSS):**
-   ```bash
-   cd frontend
-   npm install
-   npm run dev
-   ```
-   Abre **http://localhost:3000** en tu navegador.
+# 2. Frontend (React + Vite + TailwindCSS)
+cd frontend
+npm install
+npm run dev
+```
+
+Abre **http://localhost:3000** en tu navegador.
 
 ---
 
-## 🔌 Conexión MCP (Model Context Protocol)
+## 🔌 Servidor Model Context Protocol (MCP)
 
-Puedes vincular este agente a **Gemini CLI**, **Claude Code**, **Cursor** o **ChatGPT**:
-
-Agrega a tu configuración MCP (`claude_desktop_config.json` o settings de tu entorno):
+Conecta NexusJob AI como backend de datos de empleo para **Claude Desktop**, **Cursor** o **Gemini CLI**:
 
 ```json
 {
@@ -285,97 +194,19 @@ Agrega a tu configuración MCP (`claude_desktop_config.json` o settings de tu en
 }
 ```
 
-### Herramientas MCP Disponibles:
-- `search_remote_jobs(keywords, remote_only, scope, limit)`
-- `evaluate_job_fit(job_id_or_url)`
-- `tailor_application(job_id)`
-- `track_job(job_id)`
-- `add_job_history(job_id, event_type, title, notes)`
-- `get_candidate_profile()`
-- `record_feedback_and_learn(job_id, action, notes)`
-- `consolidate_ai_memory()`
-
 ---
 
-## 📁 Estructura del Proyecto
+## 💖 Comunidad, Autor y Patrocinio (GitHub Sponsors)
 
-```
-Agente busca empleo Gemini/
-├── backend/
-│   ├── app/
-│   │   ├── main.py                  # API REST FastAPI, tracking y endpoints de memoria
-│   │   ├── config.py                # Ajustes de entorno, llaves y rutas
-│   │   ├── mcp_server.py            # Servidor MCP estándar JSON-RPC
-│   │   ├── models/schemas.py        # Modelos Pydantic (JobPosting, Tracking, ProfileDNA, STAR)
-│   │   ├── storage/db.py            # Persistencia de Radar, Postulaciones y Memoria
-│   │   ├── storage/companies_seed.py# Directorio seed de empresas líderes y portales ATS
-│   │   ├── scrapers/                # Scrapers de Chile, Globales y Motor ATS Dorks
-│   │   └── agents/
-│   │       ├── drafter_reviewer.py  # Adaptador de CV con Historias STAR y Revisor ATS
-│   │       ├── preference_learner.py# Motor de Consolidación Cognitiva y Aprendizaje Continuo
-│   │       ├── fit_evaluator.py     # Evaluador de Ajuste 5D y Deal-Breakers
-│   │       ├── interview_coach.py   # Generador de kits y Evaluador de Respuestas STAR
-│   │       ├── llm_provider.py      # Proveedor Multi-LLM resiliente (Gemini / OpenAI / Claude)
-│   │       ├── profile_analyzer.py  # Analizador de CV y extracción de experiencia
-│   │       └── role_recommender.py  # Deductor dinámico de familias de roles ATS
-│   ├── requirements.txt
-│   └── run.py
-├── frontend/
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── JobRadar.tsx         # Radar de búsqueda, cards compactas y filtros
-│   │   │   ├── PipelineTracker.tsx  # Documentos, Coach & Simulador STAR y Bitácora
-│   │   │   ├── PreferencesCenter.tsx# Centro de Mando de Memoria Cognitiva e Historias STAR
-│   │   │   ├── ProfileStudio.tsx    # Editor de CV Maestro y experiencia
-│   │   │   ├── SettingsModal.tsx    # Configuración de LLM, modelos y API keys
-│   │   │   ├── Toast.tsx            # Sistema de notificaciones minimalistas Cupertino
-│   │   │   └── Navbar.tsx           # Barra de navegación consolidada en 4 pilares
-│   │   ├── utils/dateUtils.ts       # Cálculos de fechas, vigencias y badges fidedignos
-│   │   ├── types.ts                 # Tipos TypeScript compartidos (STAR, Memory, DNA)
-│   │   └── api.ts                   # Cliente de conexión REST
-│   ├── package.json
-│   └── vite.config.ts
-├── data/                            # Almacenamiento local persistente (perfil, postulaciones, memoria)
-├── start_app.bat                    # Lanzador rápido Windows
-└── README.md
-```
+NexusJob AI es desarrollado con dedicación por **Alejandro Ham** como una herramienta de código abierto para devolver el control y la transparencia laboral a las personas.
 
----
-
-## 🛡️ Seguridad, Privacidad e Integridad
-- **Almacenamiento Local Estricto:** Tus datos personales, currículum vitae, notas de entrevistas y API keys residen únicamente en tu máquina local.
-- **Protección de Datos en Seguimiento:** La limpieza del Radar no toca las ofertas en Seguimiento; las fechas y el historial se preservan de forma definitiva.
-- **Cero Alucinaciones en CVs:** El pipeline Drafter-Reviewer reorganiza y resalta evidencia real de tu perfil, sin inventar ni exagerar competencias, apoyándose en tus historias STAR validadas.
-
----
-
-## 🏰 Arquitectura Defendible & MOAT (Foso Competitivo)
-
-A diferencia de los *"wrappers"* superficiales de IA (simples llamadas de API sin retención de contexto), **NexusJob AI** está diseñado bajo los fundamentos de un **MOAT económico y tecnológico sostenible**:
-
-```mermaid
-flowchart TD
-    subgraph FosoDefensivo ["4 Pilares de MOAT en NexusJob AI"]
-        direction TB
-        F1["🧬 Data Moat & Altos Costes de Cambio\nLa Memoria Cognitiva acumula tu ADN profesional e Historias STAR validadas.\nAbandonar la plataforma significa perder el aprendizaje acumulado."]
-        F2["🔄 Workflow Lock-In Vertical\nCadena integrada: Radar ATS Dorks ➔ Evaluador 5D ➔ Adaptador Formal ➔ Coach STAR ➔ Bitácora.\nResuelve el problema de punta a punta sin alternar entre 5 SaaS dispersos."]
-        F3["🔌 Protocol Moat: Servidor MCP Nativo\nExpone herramientas estándar JSON-RPC utilizables directamente\npor Claude Desktop, Cursor y Gemini CLI como backend."]
-        F4["🛡️ Soberanía Local-First\nPrivacidad absoluta para profesionales y directivos que no suben su trayectoria\nni notas confidenciales a nubes de terceros."]
-    end
-```
-
-| Dimensión de MOAT | Implementación en NexusJob AI | Impacto Defensivo |
-| :--- | :--- | :--- |
-| **Data Moat (Memoria Continua)** | Motor `preference_learner` que extrae patrones implícitos, historias STAR exitosas y propuesta de valor única. | **Efecto de Red Personal**: la plataforma se vuelve exponencialmente más precisa y personalizada con el uso. |
-| **Costes de Cambio (*Switching Costs*)** | Historial de postulaciones 360°, bitácora de llamadas y biblioteca de logros cuantificados. | Migrar a otra herramienta genérica exige reentrenar y redactar todo desde cero. |
-| **Integración de Flujo Vertical** | Indexación limpia de portales ATS (Workday, Greenhouse, Ashby, Lever) + simulador diagnóstica STAR + maquetación formal `.formal-justify`. | Imposible de sustituir con un solo prompt de ChatGPT. |
-| **Interoperabilidad de Protocolo** | Soporte de primer nivel de **Model Context Protocol (MCP)**. | Se posiciona como la capa de infraestructura de datos de empleo para cualquier cliente de IA. |
+- 📸 **Instagram Oficial:** [https://www.instagram.com/not.kano/](https://www.instagram.com/not.kano/) — Sigue a **`@not.kano`** para novedades de desarrollo, tips de empleabilidad y retroalimentación directa.
+- ❤️ **Conviértete en Sponsor:** [https://github.com/sponsors/alejandroham](https://github.com/sponsors/alejandroham) — Tu patrocinio financia servidores de prueba, conectores de empleo actualizados y nuevas capacidades de IA libres para todos.
+- 🐙 **Repositorio GitHub:** [https://github.com/alejandroham/Job-Search-All-IA](https://github.com/alejandroham/Job-Search-All-IA)
+- 📖 **Manual de Usuario:** [docs/MANUAL_DE_USUARIO.md](docs/MANUAL_DE_USUARIO.md)
 
 ---
 
 ## 📄 Licencia
 
-Este proyecto está bajo la Licencia **MIT** — consulta el archivo [LICENSE](LICENSE) para más detalles.
-
-Desarrollado con arquitectura agéntica de IA y privacidad local por el equipo de **NexusJob AI**.
-
+Distribuido bajo la Licencia **MIT**. Consulta [LICENSE](LICENSE) para más detalles.

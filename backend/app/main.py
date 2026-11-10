@@ -1,6 +1,7 @@
 import os
 import logging
 from pathlib import Path
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
 from typing import Optional, List
@@ -13,7 +14,9 @@ from app.config import settings
 from app.models.schemas import (
     CandidateProfile, UserPreferences, JobPosting, 
     FitEvaluation, ApplicationDraft, FeedbackAction, LLMConfig,
-    OutcomeSubmission, UpskillPlan
+    OutcomeSubmission, UpskillPlan, CompetencyDiagnosticItem,
+    LearningCourseResource, LearningPath, TutorPracticeChallenge,
+    TutorEvaluationResult
 )
 from app.storage.db import db
 from app.agents.profile_analyzer import (
@@ -24,6 +27,7 @@ from app.agents.fit_evaluator import fit_evaluator
 from app.agents.drafter_reviewer import drafter_reviewer
 from app.agents.preference_learner import preference_learner
 from app.agents.interview_coach import interview_coach
+from app.agents.career_coach import career_coach
 from app.agents.outcome_agent import outcome_agent
 from app.agents.llm_provider import llm
 from app.scrapers.remote_boards import RemoteBoardsScraper
@@ -434,6 +438,10 @@ def evaluate_job(job_id: str):
     evaluation = fit_evaluator.evaluate(job, profile, prefs)
     return evaluation
 
+@app.get("/api/jobs/{job_id}/evaluation", response_model=Optional[FitEvaluation])
+def get_job_evaluation(job_id: str):
+    return db.get_evaluation(job_id)
+
 @app.post("/api/jobs/batch-rank")
 def batch_rank_jobs():
     profile = db.get_profile()
@@ -583,6 +591,95 @@ def evaluate_interview_answer(data: dict):
     except Exception as e:
         logger.warning(f"Error auto-learning from interview answer: {e}")
     return eval_res
+
+# --- Coach IA Endpoints (Desarrollo y Crecimiento Profesional) ---
+
+@app.get("/api/coach/diagnostic", response_model=List[CompetencyDiagnosticItem])
+def get_coach_diagnostic():
+    profile = db.get_profile()
+    return career_coach.generate_or_get_diagnostic(profile)
+
+@app.put("/api/coach/competencies/{comp_id}", response_model=CompetencyDiagnosticItem)
+def update_coach_competency(comp_id: str, data: dict):
+    comps = db.get_competencies()
+    target = None
+    for c in comps:
+        if c.id == comp_id:
+            if "declared_level" in data:
+                c.declared_level = data["declared_level"]
+            if "validation_status" in data:
+                c.validation_status = data["validation_status"]
+            if "evidence" in data and data["evidence"]:
+                if data["evidence"] not in c.evidences:
+                    c.evidences.append(data["evidence"])
+            c.updated_at = datetime.utcnow().isoformat()
+            target = c
+            break
+    if not target:
+        raise HTTPException(status_code=404, detail="Competencia no encontrada")
+    db.save_competency(target)
+    return target
+
+@app.post("/api/coach/sync-gaps/{job_id}", response_model=List[CompetencyDiagnosticItem])
+def sync_gaps_from_job(job_id: str):
+    job = db.get_job_by_id(job_id)
+    if not job:
+        raise HTTPException(status_code=404, detail="Empleo no encontrado")
+    evaluation = db.get_evaluation(job_id)
+    if not evaluation:
+        profile = db.get_profile()
+        prefs = db.get_preferences()
+        evaluation = fit_evaluator.evaluate(job, profile, prefs)
+    return career_coach.sync_gaps_from_evaluation(evaluation, job.title)
+
+@app.get("/api/coach/courses", response_model=List[LearningCourseResource])
+def search_coach_courses(query: Optional[str] = None, competency: Optional[str] = None, cost: Optional[str] = None):
+    return career_coach.search_verified_courses(query=query or "", competency=competency or "", cost_filter=cost)
+
+@app.post("/api/coach/learning-path", response_model=LearningPath)
+def generate_coach_learning_path(data: dict):
+    target_role = data.get("target_role", "Especialista TI")
+    gaps = data.get("gaps", [])
+    profile = db.get_profile()
+    return career_coach.generate_learning_path(target_role, gaps, profile)
+
+@app.get("/api/coach/learning-paths", response_model=List[LearningPath])
+def get_coach_learning_paths():
+    return db.get_learning_paths()
+
+@app.put("/api/coach/learning-paths/{path_id}/milestones/{step_number}", response_model=LearningPath)
+def update_milestone(path_id: str, step_number: int, data: dict):
+    status = data.get("status", "completed")
+    evidence = data.get("evidence", None)
+    res = db.update_milestone_status(path_id, step_number, status, evidence)
+    if not res:
+        raise HTTPException(status_code=404, detail="Ruta de aprendizaje o hito no encontrado")
+    return res
+
+@app.post("/api/coach/tutor/challenge", response_model=TutorPracticeChallenge)
+def generate_tutor_challenge(data: dict):
+    competency = data.get("competency", "Continuidad Operacional")
+    seniority = data.get("seniority", "Intermedio")
+    return career_coach.generate_practice_challenge(competency, seniority)
+
+@app.post("/api/coach/tutor/evaluate", response_model=TutorEvaluationResult)
+def evaluate_tutor_solution(data: dict):
+    challenge_data = data.get("challenge")
+    solution = data.get("solution", "")
+    if not challenge_data or not solution:
+        raise HTTPException(status_code=400, detail="Desafío y solución del candidato requeridos")
+    challenge = TutorPracticeChallenge(**challenge_data)
+    return career_coach.evaluate_tutor_response(challenge, solution)
+
+@app.post("/api/coach/interview-prep")
+def get_targeted_interview_prep(data: dict):
+    job_id = data.get("job_id")
+    interviewer_role = data.get("interviewer_role", "all")
+    job = db.get_job_by_id(job_id) if job_id else None
+    if not job:
+        raise HTTPException(status_code=404, detail="Empleo no encontrado")
+    profile = db.get_profile()
+    return career_coach.generate_targeted_interview_prep(job, profile, interviewer_role)
 
 # --- Settings & Keys Endpoints ---
 

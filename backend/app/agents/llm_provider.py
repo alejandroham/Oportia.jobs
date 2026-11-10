@@ -193,28 +193,119 @@ class UnifiedLLMProvider:
         if "texto de currículum" in prompt_lower or "candidato" in prompt_lower and "technical_skills" in prompt_lower:
             return "{}"
 
-        # 2. Fit Evaluation
-        elif "evaluar ajuste" in prompt_lower or "fit" in prompt_lower or "overall_score" in prompt_lower:
+        # 2. Comité de Evaluación IA (Fit Evaluation)
+        elif "evaluar ajuste" in prompt_lower or "fit" in prompt_lower or "overall_score" in prompt_lower or "comité de evaluación" in prompt_lower or "committee_evaluations" in prompt_lower:
             return json.dumps({
-                "overall_score": 92,
-                "verdict": "Altamente Recomendado",
-                "dimension_scores": [
-                    {"dimension": "Technical Skills", "score": 94, "reasoning": "Fuerte coincidencia en Python, arquitecturas cloud y APIs modernas."},
-                    {"dimension": "Experience & Seniority", "score": 90, "reasoning": "Más de 7 años de experiencia demostrada en roles de liderazgo técnico."},
-                    {"dimension": "Culture & Work Style", "score": 92, "reasoning": "Excelente trayectoria en trabajo autónomo y comunicación asíncrona."},
-                    {"dimension": "Remote Flexibility", "score": 100, "reasoning": "100% alineado con trabajo remoto internacional sin fricción horaria."},
-                    {"dimension": "Career Alignment", "score": 85, "reasoning": "Oportunidad de alto impacto en proyectos de ingeniería e IA."}
+                "committee_evaluations": [
+                    {
+                        "role_id": "rrhh",
+                        "role_name": "Reclutador RR. HH.",
+                        "score": 88,
+                        "weight_percentage": 25,
+                        "justification": "Formación y años de trayectoria plenamente compatibles. Coherencia en la progresión de responsabilidades y estabilidad laboral.",
+                        "strengths": ["Trayectoria profesional sólida y coherente", "Formación académica y certificaciones afines"],
+                        "gaps": ["Revisar detalles específicos de disponibilidad contractual"],
+                        "key_question": "¿Este candidato cumple con el perfil general que estamos buscando?",
+                        "question_verdict": "Cumple ampliamente con el perfil general y requisitos transversales."
+                    },
+                    {
+                        "role_id": "hiring_manager",
+                        "role_name": "Jefe Contratante (Hiring Manager)",
+                        "score": 84,
+                        "weight_percentage": 25,
+                        "justification": "Demuestra capacidad de resolución, toma de decisiones y solvencia en proyectos complejos con autonomía.",
+                        "strengths": ["Evidencia de proyectos con impacto medible", "Autonomía en resolución de problemas"],
+                        "gaps": ["Detallar mayor evidencia en liderazgo de equipos distribuidos"],
+                        "key_question": "¿Contrataría a esta persona para resolver las necesidades de mi área?",
+                        "question_verdict": "Sí, aporta solvencia operativa y resolvería las prioridades inmediatas del equipo."
+                    },
+                    {
+                        "role_id": "technical",
+                        "role_name": "Evaluador Técnico Especialista",
+                        "score": 86,
+                        "weight_percentage": 25,
+                        "justification": "Dominio contrastado del stack principal y buenas prácticas arquitectónicas. Brechas menores en herramientas periféricas.",
+                        "strengths": ["Fuerte conocimiento técnico en herramientas centrales", "Buenas prácticas y metodologías ágiles"],
+                        "gaps": ["Herramienta interna secundaria a nivelar en inducción"],
+                        "key_question": "¿Tiene los conocimientos y la experiencia técnica necesarios para desempeñar este trabajo?",
+                        "question_verdict": "Posee la experiencia y conocimientos técnicos requeridos para desempeño productivo."
+                    },
+                    {
+                        "role_id": "ats",
+                        "role_name": "Especialista ATS",
+                        "score": 92,
+                        "weight_percentage": 15,
+                        "justification": "Estructura documental nítida, encabezados estándar y correspondencia alta con las palabras clave solicitadas.",
+                        "strengths": ["Alta legibilidad para parsers automatizados", "Palabras clave esenciales identificables"],
+                        "gaps": ["Incorporar un par de términos técnicos específicos de la descripción"],
+                        "key_question": "¿El currículum comunica correctamente la experiencia y es legible para los filtros automatizados?",
+                        "question_verdict": "El CV supera de forma destacada los filtros ATS iniciales."
+                    },
+                    {
+                        "role_id": "career_consultant",
+                        "role_name": "Consultor Estratégico de Carrera",
+                        "score": 88,
+                        "weight_percentage": 10,
+                        "justification": "La vacante ofrece una plataforma idónea para consolidar seniority y expandir responsabilidades de impacto.",
+                        "strengths": ["Alineación con el plan de desarrollo profesional", "Reto acorde al seniority proyectado"],
+                        "gaps": ["Definir metas de liderazgo a medio plazo"],
+                        "key_question": "¿Esta oportunidad representa un buen movimiento profesional para el candidato?",
+                        "question_verdict": "Excelente oportunidad estratégica de avance y consolidación profesional."
+                    }
                 ],
+                "requirements_matrix": [
+                    {
+                        "requirement": "Experiencia previa demostrable en responsabilidades afines",
+                        "cv_evidence": "Respaldada en trayectoria y roles previos detallados en el perfil",
+                        "status": "cumplido",
+                        "competency_status": "demostrada",
+                        "importance": "excluyente"
+                    },
+                    {
+                        "requirement": "Dominio de herramientas técnicas centrales y metodologías",
+                        "cv_evidence": "Listado en habilidades técnicas y evidenciado en descripción de proyectos",
+                        "status": "cumplido",
+                        "competency_status": "demostrada",
+                        "importance": "deseable"
+                    },
+                    {
+                        "requirement": "Capacidad de trabajo autónomo y gestión de proyectos",
+                        "cv_evidence": "Reflejado en logros de autonomía y coordinación",
+                        "status": "parcial",
+                        "competency_status": "transferible",
+                        "importance": "general"
+                    }
+                ],
+                "potential_projection": {
+                    "potential_score": 93,
+                    "score_delta": 6,
+                    "target_competencies": ["Profundización en certificaciones de industria", "Adaptación de CV para destacar métricas de impacto"],
+                    "required_evidence": ["Curso oficial o acreditación en Coach IA", "Inclusión de métricas cuantificables en CV"],
+                    "estimated_effort": "1 a 2 semanas",
+                    "reasoning": "Subsanando la mención explícita de herramientas y enriqueciendo el CV con logros medibles, la compatibilidad potencial supera el 90%."
+                },
+                "director_synthesis": {
+                    "summary": "El Comité dictamina un ajuste sólido de 87/100 (Recomendable postular). Coincidencia alta en evaluación técnica y de RRHH.",
+                    "contradictions_detected": [],
+                    "critical_deal_breakers": [],
+                    "missing_evidence_vs_real_gaps": "Las brechas detectadas corresponden principalmente a falta de mención explícita en el documento más que a carencia formativa.",
+                    "final_recommendation": "Recomendable postular",
+                    "suggested_actions": [
+                        "Adaptar el CV en Laboratorio CV para incluir las palabras clave sugeridas",
+                        "Enviar las competencias periféricas al Coach IA para consolidar conceptos",
+                        "Preparar historias STAR para la ronda con el Hiring Manager"
+                    ]
+                },
                 "strengths": [
-                    "Experiencia contrastada en diseño e implementación de sistemas escalables",
-                    "Capacidad probada de liderazgo en equipos remotos distribuidos",
-                    "Dominio avanzado de Python, React y despliegues en la nube"
+                    "Sólida coincidencia en experiencia y competencias requeridas",
+                    "Capacidad demostrada de autonomía y resolución técnica",
+                    "Currículum claro y estructurado para filtros ATS"
                 ],
                 "missing_skills": [
-                    "Herramientas internas específicas del cliente a dominar durante el onboarding"
+                    "Explicitación de métricas de impacto cuantificables en proyectos recientes",
+                    "Familiaridad con herramientas periféricas mencionadas en la oferta"
                 ],
-                "deal_breakers_found": [],
-                "recommendation_summary": "Perfil con altísima compatibilidad técnica y cultural. Se aconseja destacar métricas de reducción de tiempos e impacto en el CV."
+                "deal_breakers_found": []
             })
 
         # 3. Drafter: CV and Cover Letter

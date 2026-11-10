@@ -1,5 +1,5 @@
 import React from 'react';
-import { Radar, Settings as SettingsIcon, Sun, Moon, Briefcase, User, Brain, Shield, Info, Sparkles } from 'lucide-react';
+import { Radar, Settings as SettingsIcon, Sun, Moon, Briefcase, User, Brain, Shield, Info, Sparkles, GraduationCap } from 'lucide-react';
 import type { LLMSettings } from '../types';
 
 interface NavbarProps {
@@ -26,6 +26,7 @@ export const Navbar: React.FC<NavbarProps> = ({
     { id: 'welcome', label: 'Conoce NexusJob', shortLabel: 'Inicio', icon: Info },
     { id: 'radar', label: 'Radar de Empleo', shortLabel: 'Radar', icon: Radar },
     { id: 'tracker', label: 'Mis Postulaciones', shortLabel: 'Postulaciones', icon: Briefcase },
+    { id: 'coach', label: 'Coach IA', shortLabel: 'Coach', icon: GraduationCap },
     { id: 'profile', label: 'Perfil & CV', shortLabel: 'Perfil', icon: User },
     { id: 'preferences', label: 'Memoria IA', shortLabel: 'Memoria', icon: Brain },
   ];

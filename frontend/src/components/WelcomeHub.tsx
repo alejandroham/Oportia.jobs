@@ -16,7 +16,14 @@ import {
   Award,
   Layers,
   HeartHandshake,
-  AlertCircle
+  AlertCircle,
+  GraduationCap,
+  Heart,
+  Instagram,
+  ExternalLink,
+  Users,
+  Briefcase,
+  TrendingUp
 } from 'lucide-react';
 import type { CandidateProfile, LLMSettings } from '../types';
 
@@ -93,6 +100,14 @@ export const WelcomeHub: React.FC<WelcomeHubProps> = ({
             </button>
 
             <button
+              onClick={() => onNavigateToTab('coach')}
+              className="inline-flex items-center space-x-2 px-4 py-2.5 rounded-2xl bg-indigo-50 dark:bg-indigo-950/40 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 text-indigo-800 dark:text-indigo-300 text-xs font-semibold border border-indigo-300/50 dark:border-indigo-800/50 transition"
+            >
+              <GraduationCap className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+              <span>Coach IA & Cursos Verificados</span>
+            </button>
+
+            <button
               onClick={onOpenPrivacyModal}
               className="inline-flex items-center space-x-2 px-4 py-2.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300 text-xs font-semibold border border-emerald-300/50 dark:border-emerald-800/50 transition"
             >
@@ -128,67 +143,166 @@ export const WelcomeHub: React.FC<WelcomeHubProps> = ({
         </div>
       </div>
 
-      {/* Section 2: ¿Cómo funciona y qué puedes hacer? (3 Pilares) */}
+      {/* Section 2: ¿Cómo funciona y qué puedes hacer? (6 Módulos Especializados) */}
       <div className="space-y-4">
         <div className="text-center sm:text-left">
           <h3 className="text-base font-bold text-gray-900 dark:text-white">
-            ¿Cómo funciona y qué puedes hacer en la aplicación?
+            ¿Cómo funciona y qué puedes hacer en NexusJob AI?
           </h3>
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-            Tres capacidades agénticas diseñadas para potenciar tu carrera profesional.
+            Seis módulos agénticos de alta precisión diseñados para potenciar tu carrera profesional de punta a punta.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           
-          {/* Pillar 1: Universal Profiler */}
-          <div className="apple-glass apple-card p-5 space-y-3 hover:border-blue-500/40 transition">
-            <div className="w-10 h-10 rounded-2xl bg-blue-100 dark:bg-blue-950/80 text-blue-600 dark:text-blue-400 flex items-center justify-center shadow-xs">
-              <FileText className="w-5 h-5" />
+          {/* Module 1: Universal Profiler */}
+          <div 
+            onClick={() => onNavigateToTab('profile')}
+            className="apple-glass apple-card p-5 space-y-3 hover:border-blue-500/40 transition cursor-pointer group flex flex-col justify-between"
+          >
+            <div className="space-y-2.5">
+              <div className="w-10 h-10 rounded-2xl bg-blue-100 dark:bg-blue-950/80 text-blue-600 dark:text-blue-400 flex items-center justify-center shadow-xs group-hover:scale-105 transition">
+                <FileText className="w-5 h-5" />
+              </div>
+              <h4 className="font-bold text-xs text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400">
+                1. Perfil & CV Maestro Universal
+              </h4>
+              <p className="text-[11px] text-gray-600 dark:text-gray-400 leading-relaxed">
+                Extracción limpia de archivos PDF o Word sin inventar datos. Taxonomías universales para <strong>Salud</strong> (TENS, enfermeros, médicos), <strong>Construcción</strong>, <strong>Derecho</strong>, <strong>Educación</strong>, <strong>Administración</strong>, <strong>Minería</strong> y <strong>Tecnología</strong>.
+              </p>
             </div>
-            <h4 className="font-bold text-xs text-gray-900 dark:text-white">
-              1. Análisis de CV Universal (Sin Sesgos)
-            </h4>
-            <p className="text-[11px] text-gray-600 dark:text-gray-400 leading-relaxed">
-              Diseñado para cualquier formación u oficio: <strong>Salud</strong> (TENS, enfermeros, médicos), <strong>Construcción</strong> (arquitectos, constructores), <strong>Derecho</strong> (abogados, procuradores), <strong>Educación</strong> (profesores, educadores), <strong>Comercio</strong>, <strong>Administración</strong>, <strong>Minería</strong> y <strong>Tecnología</strong>.
-            </p>
-            <div className="text-[10px] text-blue-600 dark:text-blue-400 font-semibold flex items-center gap-1 pt-1">
-              <CheckCircle2 className="w-3.5 h-3.5" />
-              <span>Deduce sinónimos ATS y sectores reales</span>
-            </div>
-          </div>
-
-          {/* Pillar 2: Chile Geographic Radar */}
-          <div className="apple-glass apple-card p-5 space-y-3 hover:border-indigo-500/40 transition">
-            <div className="w-10 h-10 rounded-2xl bg-indigo-100 dark:bg-indigo-950/80 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shadow-xs">
-              <Compass className="w-5 h-5" />
-            </div>
-            <h4 className="font-bold text-xs text-gray-900 dark:text-white">
-              2. Radar de 16 Regiones de Chile & Remoto
-            </h4>
-            <p className="text-[11px] text-gray-600 dark:text-gray-400 leading-relaxed">
-              Doble nivel de búsqueda: <strong>Cobertura Nacional continua</strong> combinada con <strong>Prioridad Regional Inteligente</strong>. Si vives en el Biobío, Araucanía, Valparaíso o RM, verás primero las vacantes de tu zona sin que jamás desaparezcan las oportunidades del resto del país.
-            </p>
-            <div className="text-[10px] text-indigo-600 dark:text-indigo-400 font-semibold flex items-center gap-1 pt-1">
-              <CheckCircle2 className="w-3.5 h-3.5" />
-              <span>Compatibilidad profesional manda sobre distancia</span>
+            <div className="text-[10px] text-blue-600 dark:text-blue-400 font-semibold flex items-center justify-between pt-1 border-t border-black/5 dark:border-white/5">
+              <span className="flex items-center gap-1">
+                <CheckCircle2 className="w-3.5 h-3.5" />
+                Deduce sinónimos ATS y sectores
+              </span>
+              <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition" />
             </div>
           </div>
 
-          {/* Pillar 3: AI Cognitive Brain & STAR Coach */}
-          <div className="apple-glass apple-card p-5 space-y-3 hover:border-purple-500/40 transition">
-            <div className="w-10 h-10 rounded-2xl bg-purple-100 dark:bg-purple-950/80 text-purple-600 dark:text-purple-400 flex items-center justify-center shadow-xs">
-              <Brain className="w-5 h-5" />
+          {/* Module 2: Chile Geographic Radar */}
+          <div 
+            onClick={() => onNavigateToTab('radar')}
+            className="apple-glass apple-card p-5 space-y-3 hover:border-indigo-500/40 transition cursor-pointer group flex flex-col justify-between"
+          >
+            <div className="space-y-2.5">
+              <div className="w-10 h-10 rounded-2xl bg-indigo-100 dark:bg-indigo-950/80 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shadow-xs group-hover:scale-105 transition">
+                <Compass className="w-5 h-5" />
+              </div>
+              <h4 className="font-bold text-xs text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400">
+                2. Radar de Empleo (16 Regiones & Remoto)
+              </h4>
+              <p className="text-[11px] text-gray-600 dark:text-gray-400 leading-relaxed">
+                Doble nivel de búsqueda: <strong>Cobertura Nacional continua</strong> combinada con <strong>Prioridad Regional Inteligente</strong>. Indexa Get on Board, CompuTrabajo, ChileTrabajos, Laborum, LinkedIn y portales ATS limpios vía ATS Dorks.
+              </p>
             </div>
-            <h4 className="font-bold text-xs text-gray-900 dark:text-white">
-              3. Memoria Cognitiva & Coach STAR
-            </h4>
-            <p className="text-[11px] text-gray-600 dark:text-gray-400 leading-relaxed">
-              Asistente conversacional "Nexus" que aprende de tus logros laborales, los estructura con métricas verificables (Situación, Tarea, Acción, Resultado), redacta CVs adaptados y cartas de presentación, y simula entrevistas reales.
-            </p>
-            <div className="text-[10px] text-purple-600 dark:text-purple-400 font-semibold flex items-center gap-1 pt-1">
-              <CheckCircle2 className="w-3.5 h-3.5" />
-              <span>Ahorro máximo de tokens y cero alucinaciones</span>
+            <div className="text-[10px] text-indigo-600 dark:text-indigo-400 font-semibold flex items-center justify-between pt-1 border-t border-black/5 dark:border-white/5">
+              <span className="flex items-center gap-1">
+                <CheckCircle2 className="w-3.5 h-3.5" />
+                Prioridad regional activa sin sesgos
+              </span>
+              <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition" />
+            </div>
+          </div>
+
+          {/* Module 3: Comité de Evaluación IA */}
+          <div 
+            onClick={() => onNavigateToTab('radar')}
+            className="apple-glass apple-card p-5 space-y-3 hover:border-emerald-500/40 transition cursor-pointer group flex flex-col justify-between"
+          >
+            <div className="space-y-2.5">
+              <div className="w-10 h-10 rounded-2xl bg-emerald-100 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shadow-xs group-hover:scale-105 transition">
+                <Users className="w-5 h-5" />
+              </div>
+              <h4 className="font-bold text-xs text-gray-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400">
+                3. Comité de Evaluación IA Multiagente
+              </h4>
+              <p className="text-[11px] text-gray-600 dark:text-gray-400 leading-relaxed">
+                Simula un proceso real con <strong>5 evaluadores independientes</strong>: Reclutador RR. HH. (25%), Hiring Manager (25%), Evaluador Técnico (25%), Especialista ATS (15%) y Consultor Estratégico (10%), consolidado por el Director con <strong>Fit Score Actual y Potential Fit Score</strong>.
+              </p>
+            </div>
+            <div className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center justify-between pt-1 border-t border-black/5 dark:border-white/5">
+              <span className="flex items-center gap-1">
+                <CheckCircle2 className="w-3.5 h-3.5" />
+                Matriz de evidencias y deal-breakers
+              </span>
+              <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition" />
+            </div>
+          </div>
+
+          {/* Module 4: Mis Postulaciones 360 & Laboratorio CV */}
+          <div 
+            onClick={() => onNavigateToTab('tracker')}
+            className="apple-glass apple-card p-5 space-y-3 hover:border-blue-500/40 transition cursor-pointer group flex flex-col justify-between"
+          >
+            <div className="space-y-2.5">
+              <div className="w-10 h-10 rounded-2xl bg-sky-100 dark:bg-sky-950/80 text-sky-600 dark:text-sky-400 flex items-center justify-center shadow-xs group-hover:scale-105 transition">
+                <Briefcase className="w-5 h-5" />
+              </div>
+              <h4 className="font-bold text-xs text-gray-900 dark:text-white group-hover:text-sky-600 dark:group-hover:text-sky-400">
+                4. Mis Postulaciones & Laboratorio CV
+              </h4>
+              <p className="text-[11px] text-gray-600 dark:text-gray-400 leading-relaxed">
+                Genera tu CV adaptado a la vacante con tipografía formal justificada (<code>.formal-justify</code>), carta de presentación persuasiva, bitácora cronológica inviolable y postulación soberana en 1 clic oficial sin riesgo de baneo.
+              </p>
+            </div>
+            <div className="text-[10px] text-sky-600 dark:text-sky-400 font-semibold flex items-center justify-between pt-1 border-t border-black/5 dark:border-white/5">
+              <span className="flex items-center gap-1">
+                <CheckCircle2 className="w-3.5 h-3.5" />
+                Control humano 100% en cada envío
+              </span>
+              <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition" />
+            </div>
+          </div>
+
+          {/* Module 5: Coach IA & Cursos Verificados */}
+          <div 
+            onClick={() => onNavigateToTab('coach')}
+            className="apple-glass apple-card p-5 space-y-3 hover:border-purple-500/40 transition cursor-pointer group flex flex-col justify-between ring-1 ring-purple-500/20"
+          >
+            <div className="space-y-2.5">
+              <div className="w-10 h-10 rounded-2xl bg-purple-100 dark:bg-purple-950/80 text-purple-600 dark:text-purple-400 flex items-center justify-center shadow-xs group-hover:scale-105 transition">
+                <GraduationCap className="w-5 h-5" />
+              </div>
+              <h4 className="font-bold text-xs text-gray-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400">
+                5. Coach IA: Desarrollo Profesional
+              </h4>
+              <p className="text-[11px] text-gray-600 dark:text-gray-400 leading-relaxed">
+                Acompañamiento continuo: diagnóstico vivo de competencias, catálogo de <strong>cursos oficiales verificados</strong> (Microsoft Learn, AWS, Cisco, SENCE Chile), generador de rutas por hitos, <strong>Tutor de casos prácticos</strong> y simulador de entrevistas por rol.
+              </p>
+            </div>
+            <div className="text-[10px] text-purple-600 dark:text-purple-400 font-semibold flex items-center justify-between pt-1 border-t border-black/5 dark:border-white/5">
+              <span className="flex items-center gap-1">
+                <CheckCircle2 className="w-3.5 h-3.5" />
+                Valida competencias con evidencias
+              </span>
+              <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition" />
+            </div>
+          </div>
+
+          {/* Module 6: Memoria Cognitiva & Biblioteca STAR */}
+          <div 
+            onClick={() => onNavigateToTab('preferences')}
+            className="apple-glass apple-card p-5 space-y-3 hover:border-amber-500/40 transition cursor-pointer group flex flex-col justify-between"
+          >
+            <div className="space-y-2.5">
+              <div className="w-10 h-10 rounded-2xl bg-amber-100 dark:bg-amber-950/80 text-amber-600 dark:text-amber-400 flex items-center justify-center shadow-xs group-hover:scale-105 transition">
+                <Brain className="w-5 h-5" />
+              </div>
+              <h4 className="font-bold text-xs text-gray-900 dark:text-white group-hover:text-amber-600 dark:group-hover:text-amber-400">
+                6. Memoria Cognitiva & ADN Profesional
+              </h4>
+              <p className="text-[11px] text-gray-600 dark:text-gray-400 leading-relaxed">
+                Cerebro que aprende de tus interacciones: infiere tu tono y seniority, extrae historias de éxito bajo el método STAR (Situación, Tarea, Acción, Resultado) y asiste mediante el chat "Nexus Asistente" con reinicio seguro.
+              </p>
+            </div>
+            <div className="text-[10px] text-amber-600 dark:text-amber-400 font-semibold flex items-center justify-between pt-1 border-t border-black/5 dark:border-white/5">
+              <span className="flex items-center gap-1">
+                <CheckCircle2 className="w-3.5 h-3.5" />
+                Memoria soberana y auditable
+              </span>
+              <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition" />
             </div>
           </div>
 
@@ -413,6 +527,82 @@ export const WelcomeHub: React.FC<WelcomeHubProps> = ({
             </p>
           </button>
 
+        </div>
+      </div>
+
+      {/* Section 5: Apoyo al Desarrollo, Patrocinio y Comunidad */}
+      <div className="apple-glass apple-card p-6 sm:p-8 space-y-5 border-pink-500/20 bg-gradient-to-br from-pink-50/40 via-white/40 to-rose-50/30 dark:from-pink-950/20 dark:via-zinc-900/40 dark:to-rose-950/20">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center space-x-3.5">
+            <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-pink-500 to-rose-500 text-white flex items-center justify-center shrink-0 shadow-lg shadow-pink-500/20">
+              <Heart className="w-6 h-6 fill-white/80" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">
+                  Apoya el Desarrollo y Evolución Continua de NexusJob AI
+                </h3>
+                <span className="text-[10px] font-bold tracking-wider px-2.5 py-0.5 rounded-full bg-pink-100 dark:bg-pink-950/70 text-pink-700 dark:text-pink-300 border border-pink-300/40">
+                  Open Source & Soberano
+                </span>
+              </div>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                NexusJob AI es una iniciativa independiente creada para democratizar la búsqueda de empleo ética, transparente, asistida por IA y sin custodia de datos.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+          <a
+            href="https://github.com/sponsors/alejandroham"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group p-4 rounded-2xl bg-white/80 dark:bg-zinc-800/70 border border-pink-200 dark:border-pink-900/50 hover:border-pink-500 dark:hover:border-pink-400 transition-all shadow-sm hover:shadow-md flex items-center justify-between"
+          >
+            <div className="flex items-center space-x-3.5">
+              <div className="w-10 h-10 rounded-xl bg-pink-100 dark:bg-pink-900/40 text-pink-600 dark:text-pink-400 flex items-center justify-center group-hover:scale-110 transition">
+                <Heart className="w-5 h-5 fill-pink-500" />
+              </div>
+              <div>
+                <div className="text-xs font-bold text-gray-900 dark:text-white group-hover:text-pink-600 dark:group-hover:text-pink-400 flex items-center gap-1.5">
+                  <span>Conviértete en Sponsor en GitHub</span>
+                  <ExternalLink className="w-3 h-3 opacity-60 group-hover:opacity-100" />
+                </div>
+                <p className="text-[11px] text-gray-500 dark:text-gray-400">
+                  github.com/sponsors/alejandroham — Impulsa nuevas mejoras y servidores
+                </p>
+              </div>
+            </div>
+            <span className="hidden sm:inline-flex text-[10px] font-bold px-3 py-1 rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-300 border border-rose-500/20 group-hover:bg-rose-500 group-hover:text-white transition">
+              Sponsor ❤️
+            </span>
+          </a>
+
+          <a
+            href="https://www.instagram.com/not.kano/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group p-4 rounded-2xl bg-white/80 dark:bg-zinc-800/70 border border-purple-200 dark:border-purple-900/50 hover:border-purple-500 dark:hover:border-purple-400 transition-all shadow-sm hover:shadow-md flex items-center justify-between"
+          >
+            <div className="flex items-center space-x-3.5">
+              <div className="w-10 h-10 rounded-xl bg-purple-100 dark:bg-purple-900/40 text-purple-600 dark:text-purple-400 flex items-center justify-center group-hover:scale-110 transition">
+                <Instagram className="w-5 h-5" />
+              </div>
+              <div>
+                <div className="text-xs font-bold text-gray-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400 flex items-center gap-1.5">
+                  <span>Sígueme en Instagram</span>
+                  <ExternalLink className="w-3 h-3 opacity-60 group-hover:opacity-100" />
+                </div>
+                <p className="text-[11px] text-gray-500 dark:text-gray-400">
+                  @not.kano — Actualizaciones en vivo, feedback y comunidad
+                </p>
+              </div>
+            </div>
+            <span className="hidden sm:inline-flex text-[10px] font-bold px-3 py-1 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-300 border border-purple-500/20 group-hover:bg-purple-600 group-hover:text-white transition">
+              @not.kano 📸
+            </span>
+          </a>
         </div>
       </div>
 

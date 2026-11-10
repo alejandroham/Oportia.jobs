@@ -37,7 +37,15 @@ import {
   ChevronRight,
   MapPin,
   Filter,
-  Key
+  Key,
+  Users,
+  UserCheck,
+  TrendingUp,
+  CheckCircle2,
+  AlertTriangle,
+  ArrowUpRight,
+  BookOpen,
+  GraduationCap
 } from 'lucide-react';
 import type {
   JobPosting,
@@ -157,6 +165,8 @@ export const JobRadar: React.FC<JobRadarProps> = ({
 
   // Modals & Panels
   const [selectedEvaluation, setSelectedEvaluation] = useState<FitEvaluation | null>(null);
+  const [committeeModalTab, setCommitteeModalTab] = useState<'director' | 'evaluators' | 'requirements' | 'potential'>('director');
+  const [evaluatingTargetJob, setEvaluatingTargetJob] = useState<JobPosting | null>(null);
   const [selectedJobForDetail, setSelectedJobForDetail] = useState<JobPosting | null>(null);
   const [showStrategyDrawer, setShowStrategyDrawer] = useState(false);
   const [strategyTab, setStrategyTab] = useState<'roles' | 'companies'>('roles');
@@ -373,17 +383,39 @@ export const JobRadar: React.FC<JobRadarProps> = ({
     }
   };
 
+  const handleOpenOrEvaluate = async (job: JobPosting) => {
+    if (!hasAnalyzedCV) {
+      setShowNoCVModal(true);
+      return;
+    }
+    setEvaluatingTargetJob(job);
+    setCommitteeModalTab('director');
+    if (job.fit_score !== null && job.fit_score !== undefined) {
+      try {
+        const cached = await api.getJobEvaluation(job.id);
+        if (cached && (cached.committee_evaluations?.length || cached.overall_score)) {
+          setSelectedEvaluation(cached);
+          return;
+        }
+      } catch (err) {
+        console.warn('Could not load cached evaluation:', err);
+      }
+    }
+    await handleEvaluate(job);
+  };
+
   const handleEvaluate = async (job: JobPosting) => {
     if (!hasAnalyzedCV) {
       setShowNoCVModal(true);
       return;
     }
+    setEvaluatingTargetJob(job);
     setEvaluatingJobId(job.id);
     try {
       const evaluation = await api.evaluateJob(job.id);
       setSelectedEvaluation(evaluation);
       setSortBy('fit_desc');
-      toast.success(`Ajuste evaluado: ${evaluation.overall_score}% (${evaluation.verdict})`);
+      toast.success(`Comité de Evaluación: ${evaluation.overall_score}% (${evaluation.verdict})`);
       onRefresh();
     } catch (e: any) {
       toast.error('Error evaluando ajuste: ' + (e?.message || e));
@@ -1166,10 +1198,10 @@ export const JobRadar: React.FC<JobRadarProps> = ({
                       </div>
                     </div>
 
-                    {/* Match Score Badge (Clickable for 5D Diagnostic) */}
+                    {/* Match Score Badge (Clickable for Comité de Evaluación IA) */}
                     {hasFit ? (
                       <button
-                        onClick={() => handleEvaluate(job)}
+                        onClick={() => handleOpenOrEvaluate(job)}
                         className={`shrink-0 px-2.5 py-0.5 rounded-full flex items-center space-x-1 text-[11px] font-semibold transition ${
                           isTopFit
                             ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20'
@@ -1177,7 +1209,7 @@ export const JobRadar: React.FC<JobRadarProps> = ({
                             ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 hover:bg-blue-500/20'
                             : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 hover:bg-amber-500/20'
                         }`}
-                        title="Ver diagnóstico dimensional de compatibilidad con tu CV"
+                        title="Ver informe del Comité de Evaluación IA"
                       >
                         <Sparkles className="w-3 h-3" />
                         <span>{score}% Match</span>
@@ -1193,10 +1225,10 @@ export const JobRadar: React.FC<JobRadarProps> = ({
                       </button>
                     ) : (
                       <button
-                        onClick={() => handleEvaluate(job)}
+                        onClick={() => handleOpenOrEvaluate(job)}
                         disabled={evaluatingJobId === job.id}
                         className="shrink-0 text-[10px] px-2 py-0.5 rounded-full bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition flex items-center space-x-1"
-                        title="Calcular ajuste con IA"
+                        title="Evaluar con el Comité de Selección IA"
                       >
                         <Sparkles className="w-2.5 h-2.5 text-blue-500" />
                         <span>{evaluatingJobId === job.id ? '...' : 'Evaluar'}</span>
@@ -1933,34 +1965,74 @@ export const JobRadar: React.FC<JobRadarProps> = ({
         </div>
       )}
 
-      {/* 5D FIT EVALUATION MODAL */}
+      {/* COMITÉ DE EVALUACIÓN IA (NEXUS.JOB) */}
       {selectedEvaluation && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/40 backdrop-blur-xs animate-fade-in">
-          <div className="apple-glass apple-card max-w-xl w-full max-h-[92vh] sm:max-h-[90vh] overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-5 bg-white/95 dark:bg-zinc-900/95 shadow-2xl rounded-t-3xl sm:rounded-3xl">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/50 backdrop-blur-xs animate-fade-in">
+          <div className="apple-glass apple-card max-w-2xl w-full max-h-[92vh] sm:max-h-[90vh] overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-5 bg-white/95 dark:bg-zinc-900/95 shadow-2xl rounded-t-3xl sm:rounded-3xl border border-black/10 dark:border-white/10">
             
-            <div className="flex items-center justify-between border-b border-black/5 dark:border-white/5 pb-3">
+            {/* Header with Dual Scores */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-black/5 dark:border-white/5 pb-4 gap-3">
               <div>
-                <h3 className="text-base font-bold text-gray-900 dark:text-white">
-                  Diagnóstico de Ajuste (5 Dimensiones)
-                </h3>
-                <p className="text-xs text-gray-500">Evaluación imparcial de compatibilidad con tu perfil</p>
+                <div className="flex items-center space-x-2">
+                  <span className="p-1.5 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400">
+                    <Users className="w-4 h-4" />
+                  </span>
+                  <h3 className="text-base font-bold text-gray-900 dark:text-white">
+                    Comité de Evaluación IA
+                  </h3>
+                </div>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  Deliberación de 5 evaluadores independientes consolidada por el Director
+                </p>
               </div>
-              <div className="text-right">
-                <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                  {selectedEvaluation.overall_score}%
-                </span>
-                <p className="text-[11px] font-medium text-gray-500">{selectedEvaluation.verdict}</p>
+
+              {/* Dual Scores: Fit Score Actual & Potential Fit Score */}
+              <div className="flex items-center space-x-3 self-end sm:self-auto">
+                {/* Fit Score Actual */}
+                <div className="text-right">
+                  <div className="flex items-baseline space-x-1 justify-end">
+                    <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                      {selectedEvaluation.overall_score}%
+                    </span>
+                    <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wider">Fit Actual</span>
+                  </div>
+                  <span className={`inline-block text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                    selectedEvaluation.overall_score >= 80
+                      ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
+                      : selectedEvaluation.overall_score >= 70
+                      ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20'
+                      : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20'
+                  }`}>
+                    {selectedEvaluation.verdict}
+                  </span>
+                </div>
+
+                {/* Potential Fit Score */}
+                {selectedEvaluation.potential_fit_score && (
+                  <div className="text-right pl-3 border-l border-black/5 dark:border-white/5">
+                    <div className="flex items-baseline space-x-1 justify-end">
+                      <span className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 flex items-center">
+                        <TrendingUp className="w-3.5 h-3.5 mr-0.5 text-emerald-500" />
+                        {selectedEvaluation.potential_fit_score}%
+                      </span>
+                      <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wider">Potencial</span>
+                    </div>
+                    <span className="text-[10px] font-medium text-emerald-600 dark:text-emerald-400 flex items-center justify-end">
+                      {selectedEvaluation.potential_projection?.score_delta ? `+${selectedEvaluation.potential_projection.score_delta}% con Coach IA` : 'Proyectado'}
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
 
-            {/* Deal Breakers */}
-            {selectedEvaluation.deal_breakers_found.length > 0 && (
-              <div className="p-3.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/50 space-y-1">
+            {/* Deal Breakers Alert */}
+            {selectedEvaluation.deal_breakers_found && selectedEvaluation.deal_breakers_found.length > 0 && (
+              <div className="p-3.5 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/50 space-y-1">
                 <div className="flex items-center space-x-1.5 text-rose-600 dark:text-rose-400 text-xs font-semibold">
-                  <ShieldAlert className="w-4 h-4" />
-                  <span>Condición Excluyente Detectada:</span>
+                  <ShieldAlert className="w-4 h-4 shrink-0" />
+                  <span>Condición Excluyente Detectada (Deal Breaker):</span>
                 </div>
-                <ul className="list-disc list-inside text-xs text-rose-700 dark:text-rose-300">
+                <ul className="list-disc list-inside text-xs text-rose-700 dark:text-rose-300 space-y-0.5 pl-1">
                   {selectedEvaluation.deal_breakers_found.map((d, i) => (
                     <li key={i}>{d}</li>
                   ))}
@@ -1968,32 +2040,334 @@ export const JobRadar: React.FC<JobRadarProps> = ({
               </div>
             )}
 
-            {/* Dimension Breakdown */}
-            <div className="space-y-2">
-              <h4 className="text-xs font-semibold uppercase tracking-wider text-gray-400">Desglose Dimensional</h4>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                {selectedEvaluation.dimension_scores.map((dim, i) => (
-                  <div key={i} className="p-3 rounded-xl bg-gray-50 dark:bg-zinc-800/50 border border-black/5 dark:border-white/5 space-y-1">
-                    <div className="flex justify-between items-center text-xs font-medium">
-                      <span className="text-gray-800 dark:text-gray-200">{dim.dimension}</span>
-                      <span className="text-blue-600 dark:text-blue-400 font-bold">{dim.score}%</span>
+            {/* Navigation Tabs for Committee Insights */}
+            <div className="flex items-center space-x-1 bg-gray-100 dark:bg-zinc-800/80 p-1 rounded-xl text-xs font-medium overflow-x-auto">
+              <button
+                onClick={() => setCommitteeModalTab('director')}
+                className={`px-3 py-1.5 rounded-lg transition whitespace-nowrap ${
+                  committeeModalTab === 'director'
+                    ? 'bg-white dark:bg-zinc-700 text-gray-900 dark:text-white shadow-xs font-semibold'
+                    : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'
+                }`}
+              >
+                Dictamen del Director
+              </button>
+              <button
+                onClick={() => setCommitteeModalTab('evaluators')}
+                className={`px-3 py-1.5 rounded-lg transition whitespace-nowrap ${
+                  committeeModalTab === 'evaluators'
+                    ? 'bg-white dark:bg-zinc-700 text-gray-900 dark:text-white shadow-xs font-semibold'
+                    : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'
+                }`}
+              >
+                5 Evaluadores ({selectedEvaluation.committee_evaluations?.length || 5})
+              </button>
+              <button
+                onClick={() => setCommitteeModalTab('requirements')}
+                className={`px-3 py-1.5 rounded-lg transition whitespace-nowrap ${
+                  committeeModalTab === 'requirements'
+                    ? 'bg-white dark:bg-zinc-700 text-gray-900 dark:text-white shadow-xs font-semibold'
+                    : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'
+                }`}
+              >
+                Matriz Requisitos vs CV
+              </button>
+              <button
+                onClick={() => setCommitteeModalTab('potential')}
+                className={`px-3 py-1.5 rounded-lg transition whitespace-nowrap ${
+                  committeeModalTab === 'potential'
+                    ? 'bg-white dark:bg-zinc-700 text-gray-900 dark:text-white shadow-xs font-semibold'
+                    : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'
+                }`}
+              >
+                Proyección Potencial
+              </button>
+            </div>
+
+            {/* TAB 1: DICTAMEN DEL DIRECTOR */}
+            {committeeModalTab === 'director' && (
+              <div className="space-y-4 text-xs animate-fade-in">
+                {/* Synthesis Summary */}
+                <div className="p-4 rounded-2xl bg-blue-50/70 dark:bg-blue-950/30 border border-blue-200/60 dark:border-blue-800/40 space-y-2">
+                  <div className="flex items-center space-x-1.5 text-blue-700 dark:text-blue-300 font-semibold text-xs">
+                    <Sparkles className="w-3.5 h-3.5" />
+                    <span>Resolución Consolidada del Director:</span>
+                  </div>
+                  <p className="text-blue-900 dark:text-blue-100 leading-relaxed">
+                    {selectedEvaluation.director_synthesis?.summary || selectedEvaluation.recommendation_summary}
+                  </p>
+                </div>
+
+                {/* Contradictions Detected (if any) */}
+                {selectedEvaluation.director_synthesis?.contradictions_detected && selectedEvaluation.director_synthesis.contradictions_detected.length > 0 && (
+                  <div className="p-3.5 rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200/60 dark:border-amber-800/40 space-y-1.5">
+                    <div className="flex items-center space-x-1.5 text-amber-700 dark:text-amber-300 font-semibold">
+                      <AlertTriangle className="w-3.5 h-3.5" />
+                      <span>Discrepancias Identificadas entre Evaluadores:</span>
                     </div>
-                    <p className="text-[11px] text-gray-500 dark:text-gray-400 leading-tight">{dim.reasoning}</p>
+                    <ul className="list-disc list-inside text-amber-800 dark:text-amber-200 space-y-0.5">
+                      {selectedEvaluation.director_synthesis.contradictions_detected.map((c, i) => (
+                        <li key={i}>{c}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Evidence vs Real Gaps */}
+                {selectedEvaluation.director_synthesis?.missing_evidence_vs_real_gaps && (
+                  <div className="p-3 rounded-xl bg-gray-50 dark:bg-zinc-800/60 border border-black/5 dark:border-white/5 space-y-1">
+                    <span className="font-semibold text-gray-700 dark:text-gray-300">
+                      Distinción: Falta de evidencia en CV vs. Brechas reales
+                    </span>
+                    <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
+                      {selectedEvaluation.director_synthesis.missing_evidence_vs_real_gaps}
+                    </p>
+                  </div>
+                )}
+
+                {/* Suggested Actions */}
+                <div className="space-y-2">
+                  <h4 className="text-[11px] font-semibold uppercase tracking-wider text-gray-400">
+                    Acciones Sugeridas para Avanzar
+                  </h4>
+                  <div className="space-y-1.5">
+                    {(selectedEvaluation.director_synthesis?.suggested_actions || [
+                      "Adaptar el CV en Laboratorio CV",
+                      "Enviar brechas al Coach IA para activar ruta de estudio",
+                      "Preparar entrevista técnica simulada"
+                    ]).map((action, i) => (
+                      <div key={i} className="flex items-start space-x-2 p-2.5 rounded-xl bg-gray-50 dark:bg-zinc-800/40 border border-black/5 dark:border-white/5">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 mt-0.5 shrink-0" />
+                        <span className="text-gray-700 dark:text-gray-200">{action}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* TAB 2: 5 EVALUADORES ESPECIALIZADOS */}
+            {committeeModalTab === 'evaluators' && (
+              <div className="space-y-3 animate-fade-in">
+                {(selectedEvaluation.committee_evaluations && selectedEvaluation.committee_evaluations.length > 0
+                  ? selectedEvaluation.committee_evaluations
+                  : selectedEvaluation.dimension_scores.map((d, i) => ({
+                      role_id: `dim_${i}`,
+                      role_name: d.dimension,
+                      score: d.score,
+                      weight_percentage: i < 3 ? 25 : i === 3 ? 15 : 10,
+                      justification: d.reasoning,
+                      strengths: [],
+                      gaps: [],
+                      key_question: "¿Cumple con esta dimensión?",
+                      question_verdict: d.reasoning
+                    }))
+                ).map((evaluator, idx) => (
+                  <div
+                    key={evaluator.role_id || idx}
+                    className="p-3.5 rounded-2xl bg-gray-50 dark:bg-zinc-800/50 border border-black/5 dark:border-white/5 space-y-2"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        <span className="w-5 h-5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 text-[10px] font-bold flex items-center justify-center">
+                          {idx + 1}
+                        </span>
+                        <div>
+                          <h4 className="font-semibold text-xs text-gray-900 dark:text-white">
+                            {evaluator.role_name}
+                          </h4>
+                          <span className="text-[10px] text-gray-400">Ponderación: {evaluator.weight_percentage}%</span>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <span className={`text-base font-bold ${
+                          evaluator.score >= 80 ? 'text-emerald-600 dark:text-emerald-400' :
+                          evaluator.score >= 70 ? 'text-blue-600 dark:text-blue-400' : 'text-amber-600 dark:text-amber-400'
+                        }`}>
+                          {evaluator.score}%
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Key Question & Verdict */}
+                    {evaluator.key_question && (
+                      <div className="p-2 rounded-xl bg-white/70 dark:bg-zinc-900/60 border border-black/5 dark:border-white/5 space-y-0.5">
+                        <p className="text-[10px] font-medium text-gray-400 italic">"{evaluator.key_question}"</p>
+                        <p className="text-[11px] text-gray-800 dark:text-gray-200 font-medium">↳ {evaluator.question_verdict}</p>
+                      </div>
+                    )}
+
+                    {/* Justification */}
+                    <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed">
+                      {evaluator.justification}
+                    </p>
+
+                    {/* Strengths & Gaps tags */}
+                    <div className="flex flex-wrap gap-1 pt-1">
+                      {evaluator.strengths && evaluator.strengths.map((s, si) => (
+                        <span key={si} className="text-[10px] px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                          + {s}
+                        </span>
+                      ))}
+                      {evaluator.gaps && evaluator.gaps.map((g, gi) => (
+                        <span key={gi} className="text-[10px] px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                          ! {g}
+                        </span>
+                      ))}
+                    </div>
                   </div>
                 ))}
               </div>
-            </div>
+            )}
 
-            {/* Action Strategy */}
-            <div className="p-3.5 rounded-xl bg-blue-50/60 dark:bg-blue-950/30 border border-blue-200/60 dark:border-blue-800/40 space-y-1">
-              <span className="text-xs font-semibold text-blue-700 dark:text-blue-300">Recomendación Estratégica:</span>
-              <p className="text-xs text-blue-900 dark:text-blue-200">{selectedEvaluation.recommended_action}</p>
-            </div>
+            {/* TAB 3: MATRIZ DE REQUISITOS VS CV */}
+            {committeeModalTab === 'requirements' && (
+              <div className="space-y-3 animate-fade-in text-xs">
+                {selectedEvaluation.requirements_matrix && selectedEvaluation.requirements_matrix.length > 0 ? (
+                  <div className="space-y-2">
+                    {selectedEvaluation.requirements_matrix.map((req, ri) => (
+                      <div
+                        key={ri}
+                        className="p-3 rounded-2xl bg-gray-50 dark:bg-zinc-800/40 border border-black/5 dark:border-white/5 space-y-1.5"
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <span className="font-semibold text-gray-900 dark:text-white text-xs">
+                            {req.requirement}
+                          </span>
+                          <div className="flex items-center space-x-1 shrink-0">
+                            <span className={`text-[10px] px-2 py-0.5 rounded-md font-semibold ${
+                              req.status === 'cumplido' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' :
+                              req.status === 'parcial' ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400' :
+                              'bg-amber-500/10 text-amber-600 dark:text-amber-400'
+                            }`}>
+                              {req.status}
+                            </span>
+                            <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-gray-200/60 dark:bg-zinc-700 text-gray-600 dark:text-gray-300">
+                              {req.competency_status}
+                            </span>
+                          </div>
+                        </div>
+                        <p className="text-[11px] text-gray-500 dark:text-gray-400 bg-white/60 dark:bg-zinc-900/40 p-2 rounded-xl">
+                          <strong className="text-gray-700 dark:text-gray-300">Evidencia en tu CV:</strong> {req.cv_evidence}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="p-4 rounded-2xl bg-gray-50 dark:bg-zinc-800/50 text-center text-gray-500 space-y-2">
+                    <p>Requisitos analizados de forma general en la descripción de la vacante.</p>
+                    <div className="text-left space-y-1 pt-2">
+                      <span className="font-semibold text-gray-700 dark:text-gray-300">Fortalezas detectadas:</span>
+                      <ul className="list-disc list-inside text-emerald-600 dark:text-emerald-400">
+                        {selectedEvaluation.strengths.map((s, i) => <li key={i}>{s}</li>)}
+                      </ul>
+                      <span className="font-semibold text-gray-700 dark:text-gray-300 pt-2 block">Brechas a reforzar:</span>
+                      <ul className="list-disc list-inside text-amber-600 dark:text-amber-400">
+                        {selectedEvaluation.missing_skills.map((m, i) => <li key={i}>{m}</li>)}
+                      </ul>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
 
-            <div className="flex justify-end pt-1">
+            {/* TAB 4: PROYECCIÓN POTENCIAL */}
+            {committeeModalTab === 'potential' && (
+              <div className="space-y-4 animate-fade-in text-xs">
+                <div className="p-4 rounded-2xl bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200/60 dark:border-emerald-800/40 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="font-bold text-sm text-emerald-900 dark:text-emerald-200">
+                        Potential Fit Score
+                      </h4>
+                      <p className="text-[11px] text-emerald-700 dark:text-emerald-300">
+                        Proyección condicionada tras desarrollar y acreditar las brechas identificadas
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+                        {selectedEvaluation.potential_fit_score || selectedEvaluation.overall_score}%
+                      </span>
+                    </div>
+                  </div>
+
+                  <p className="text-emerald-800 dark:text-emerald-100 leading-relaxed">
+                    {selectedEvaluation.potential_projection?.reasoning ||
+                      "Acreditando las competencias no documentadas y adaptando el CV con logros medibles, la compatibilidad puede alcanzar el umbral superior."}
+                  </p>
+                </div>
+
+                {selectedEvaluation.potential_projection && (
+                  <div className="space-y-3">
+                    <div className="p-3 rounded-xl bg-gray-50 dark:bg-zinc-800/40 border border-black/5 dark:border-white/5 space-y-1">
+                      <span className="font-semibold text-gray-700 dark:text-gray-300">
+                        Competencias Clave a Acreditar:
+                      </span>
+                      <ul className="list-disc list-inside text-gray-600 dark:text-gray-400 space-y-0.5">
+                        {selectedEvaluation.potential_projection.target_competencies.map((tc, i) => (
+                          <li key={i}>{tc}</li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    <div className="p-3 rounded-xl bg-gray-50 dark:bg-zinc-800/40 border border-black/5 dark:border-white/5 space-y-1">
+                      <span className="font-semibold text-gray-700 dark:text-gray-300">
+                        Evidencia y Respaldo Recomendado:
+                      </span>
+                      <ul className="list-disc list-inside text-gray-600 dark:text-gray-400 space-y-0.5">
+                        {selectedEvaluation.potential_projection.required_evidence.map((re, i) => (
+                          <li key={i}>{re}</li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    <div className="flex items-center justify-between p-3 rounded-xl bg-gray-50 dark:bg-zinc-800/40 border border-black/5 dark:border-white/5 text-[11px]">
+                      <span className="text-gray-500">Esfuerzo estimado de nivelación:</span>
+                      <span className="font-semibold text-blue-600 dark:text-blue-400">
+                        {selectedEvaluation.potential_projection.estimated_effort}
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Footer Action Buttons */}
+            <div className="flex flex-col sm:flex-row items-center justify-between pt-2 border-t border-black/5 dark:border-white/5 gap-2">
+              <div className="flex items-center space-x-2 w-full sm:w-auto">
+                <button
+                  type="button"
+                  onClick={() => {
+                    toast.success('Brechas transferidas al Coach IA para diseño de ruta y preparación de entrevistas.');
+                    if (onNavigateToTab) onNavigateToTab('preferences');
+                    setSelectedEvaluation(null);
+                  }}
+                  className="flex-1 sm:flex-initial flex items-center justify-center space-x-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 hover:bg-blue-100 transition"
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>Transferir al Coach IA</span>
+                </button>
+
+                {evaluatingTargetJob && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const j = evaluatingTargetJob;
+                      setSelectedEvaluation(null);
+                      onApply(j);
+                    }}
+                    className="flex-1 sm:flex-initial flex items-center justify-center space-x-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white transition shadow-xs"
+                  >
+                    <Send className="w-3.5 h-3.5" />
+                    <span>Adaptar CV para esta vacante</span>
+                  </button>
+                )}
+              </div>
+
               <button
+                type="button"
                 onClick={() => setSelectedEvaluation(null)}
-                className="px-4 py-2 rounded-xl text-xs font-medium bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 transition"
+                className="w-full sm:w-auto px-4 py-2 rounded-xl text-xs font-medium bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 transition"
               >
                 Cerrar
               </button>
