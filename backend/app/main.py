@@ -235,7 +235,13 @@ def get_role_recommendations(force_refresh: bool = False):
         return []
 
     existing = db.get_role_recommendations()
-    if existing and not force_refresh:
+    # Auto-refresh if stored recs are legacy placeholders (<=3 or containing 'Profesional & Especialidad')
+    is_stale_or_default = False
+    if existing:
+        if len(existing) < 4 or any("Profesional & Especialidad" in r.role_family for r in existing):
+            is_stale_or_default = True
+
+    if existing and not force_refresh and not is_stale_or_default:
         return existing
 
     prefs = db.get_preferences()

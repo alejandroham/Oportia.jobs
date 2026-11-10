@@ -484,6 +484,7 @@ export function App() {
                 }}
                 llmSettings={settings}
                 onOpenSettings={() => setIsSettingsOpen(true)}
+                className="h-full flex-1 min-h-0"
               />
             </div>
           </div>

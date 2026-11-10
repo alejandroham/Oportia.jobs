@@ -393,15 +393,18 @@ export const PreferencesCenter: React.FC<PreferencesCenterProps> = ({
 
       {/* Sub-tab 1: Conversational Memory Chat */}
       {activeSubTab === 'chat' && (
-        <MemoryChat
-          preferences={formData}
-          onPreferencesUpdated={(updated) => {
-            setFormData(updated);
-            onPreferencesUpdated(updated);
-          }}
-          llmSettings={llmSettings}
-          onOpenSettings={onOpenSettings}
-        />
+        <div className="animate-fade-in">
+          <MemoryChat
+            preferences={formData}
+            onPreferencesUpdated={(updated) => {
+              setFormData(updated);
+              onPreferencesUpdated(updated);
+            }}
+            llmSettings={llmSettings}
+            onOpenSettings={onOpenSettings}
+            className="h-[600px] sm:h-[640px] max-h-[calc(100vh-220px)] min-h-[500px]"
+          />
+        </div>
       )}
 
       {/* Sub-tab 2: ADN Profesional & Biblioteca STAR */}

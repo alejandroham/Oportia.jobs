@@ -14,7 +14,8 @@ import {
   ExternalLink,
   Bot,
   RotateCcw,
-  Brain
+  Brain,
+  ChevronDown
 } from 'lucide-react';
 import type { UserPreferences, LLMSettings } from '../types';
 import { api } from '../api';
@@ -41,6 +42,7 @@ interface MemoryChatProps {
   onPreferencesUpdated: (p: UserPreferences) => void;
   llmSettings?: LLMSettings | null;
   onOpenSettings?: () => void;
+  className?: string;
 }
 
 const ACTIONABLE_SUGGESTIONS = [
@@ -75,7 +77,8 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
   preferences,
   onPreferencesUpdated,
   llmSettings,
-  onOpenSettings
+  onOpenSettings,
+  className
 }) => {
   const toast = useToast();
   const hasKey = Boolean(llmSettings?.has_active_key);
@@ -97,8 +100,11 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
   const [messages, setMessages] = useState<ChatMessage[]>([DEFAULT_WELCOME_MESSAGE]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [showScrollBottomBtn, setShowScrollBottomBtn] = useState(false);
+
+  const chatContainerRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const isFirstLoadRef = useRef(true);
 
   // Restore persistent conversation history from sovereign client storage
   useEffect(() => {
@@ -106,16 +112,40 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
       if (cached && Array.isArray(cached) && cached.length > 0) {
         setMessages(cached);
       }
+      // On initial load, set internal scroll to bottom instantly WITHOUT scrolling the whole browser page
+      setTimeout(() => {
+        if (chatContainerRef.current) {
+          chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+        }
+        isFirstLoadRef.current = false;
+      }, 100);
     });
   }, []);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  const scrollToBottom = (behavior: ScrollBehavior = 'smooth') => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTo({
+        top: chatContainerRef.current.scrollHeight,
+        behavior
+      });
+    }
+  };
+
+  const handleContainerScroll = () => {
+    if (!chatContainerRef.current) return;
+    const { scrollTop, scrollHeight, clientHeight } = chatContainerRef.current;
+    // Show 'scroll to bottom' button if user has scrolled up more than 120px
+    const isUp = scrollHeight - scrollTop - clientHeight > 120;
+    setShowScrollBottomBtn(isUp);
   };
 
   useEffect(() => {
-    scrollToBottom();
-  }, [messages, isLoading, hasKey]);
+    if (isFirstLoadRef.current) return;
+    // Only auto-scroll to bottom if user is already near bottom (do not interrupt reading previous messages)
+    if (!showScrollBottomBtn) {
+      scrollToBottom('smooth');
+    }
+  }, [messages, isLoading]);
 
   const handleClearHistory = async () => {
     setMessages([DEFAULT_WELCOME_MESSAGE]);
@@ -154,6 +184,8 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
       textareaRef.current.style.height = '44px';
     }
     setIsLoading(true);
+    setShowScrollBottomBtn(false);
+    setTimeout(() => scrollToBottom('smooth'), 50);
 
     try {
       const res = await api.chatMemory(text, history);
@@ -179,6 +211,8 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
       const finalMessages = [...updatedMessages, assistantMsg];
       setMessages(finalMessages);
       saveClientStore('nexus_chat_history', finalMessages);
+      setShowScrollBottomBtn(false);
+      setTimeout(() => scrollToBottom('smooth'), 50);
 
       if (res.preferences) {
         onPreferencesUpdated(res.preferences);
@@ -199,7 +233,7 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
   const historyCount = messages.filter((m) => m.id !== 'welcome').length;
 
   return (
-    <div className="flex flex-col h-full flex-1 min-h-[520px] rounded-3xl bg-white/85 dark:bg-zinc-900/85 border border-black/6 dark:border-white/8 shadow-xl backdrop-blur-xl overflow-hidden">
+    <div className={`flex flex-col rounded-3xl bg-white/85 dark:bg-zinc-900/85 border border-black/6 dark:border-white/8 shadow-xl backdrop-blur-xl overflow-hidden ${className || 'h-[620px] max-h-[calc(100vh-200px)] min-h-[500px]'}`}>
       
       {/* Chat Header */}
       <div className="px-4 sm:px-5 py-3.5 border-b border-black/6 dark:border-white/8 bg-gray-50/70 dark:bg-zinc-900/70 flex items-center justify-between shrink-0">
@@ -319,108 +353,127 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
         </div>
       ) : (
         /* ACTIVE MESSAGES SCROLL AREA */
-        <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 min-h-0">
-          {messages.map((msg) => {
-            const isUser = msg.role === 'user';
-            return (
-              <div
-                key={msg.id}
-                className={`flex flex-col ${isUser ? 'items-end' : 'items-start'} space-y-1.5`}
-              >
+        <div className="relative flex-1 min-h-0 flex flex-col overflow-hidden">
+          <div
+            ref={chatContainerRef}
+            onScroll={handleContainerScroll}
+            className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 min-h-0"
+          >
+            {messages.map((msg) => {
+              const isUser = msg.role === 'user';
+              return (
                 <div
-                  className={`max-w-[88%] sm:max-w-[80%] rounded-2xl px-4 py-3 text-xs leading-relaxed shadow-xs transition ${
-                    isUser
-                      ? 'bg-blue-600 text-white rounded-tr-none'
-                      : 'bg-gray-100/95 dark:bg-zinc-800/95 text-[#1D1D1F] dark:text-[#F5F5F7] rounded-tl-none border border-black/6 dark:border-white/8'
-                  }`}
+                  key={msg.id}
+                  className={`flex flex-col ${isUser ? 'items-end' : 'items-start'} space-y-1.5`}
                 >
-                  <div className="whitespace-pre-wrap">{msg.content}</div>
                   <div
-                    className={`text-[9px] mt-1.5 text-right ${
-                      isUser ? 'text-blue-200' : 'text-[#86868B] dark:text-[#A1A1A6]'
+                    className={`max-w-[88%] sm:max-w-[80%] rounded-2xl px-4 py-3 text-xs leading-relaxed shadow-xs transition ${
+                      isUser
+                        ? 'bg-blue-600 text-white rounded-tr-none'
+                        : 'bg-gray-100/95 dark:bg-zinc-800/95 text-[#1D1D1F] dark:text-[#F5F5F7] rounded-tl-none border border-black/6 dark:border-white/8'
                     }`}
                   >
-                    {msg.timestamp}
+                    <div className="whitespace-pre-wrap">{msg.content}</div>
+                    <div
+                      className={`text-[9px] mt-1.5 text-right ${
+                        isUser ? 'text-blue-200' : 'text-[#86868B] dark:text-[#A1A1A6]'
+                      }`}
+                    >
+                      {msg.timestamp}
+                    </div>
                   </div>
+
+                  {/* Detected STAR Story Badge Card */}
+                  {msg.learnedStory && (
+                    <div className="w-full max-w-[88%] sm:max-w-[80%] rounded-2xl p-3.5 bg-amber-50/90 dark:bg-amber-950/30 border border-amber-200/80 dark:border-amber-800/60 text-xs text-amber-900 dark:text-amber-200 space-y-1.5 animate-fade-in shadow-xs">
+                      <div className="flex items-center space-x-1.5 font-bold text-[11px] text-amber-700 dark:text-amber-300">
+                        <Star className="w-4 h-4 fill-amber-500 text-amber-500 shrink-0" />
+                        <span>¡Caso de éxito extraído y guardado en memoria!</span>
+                      </div>
+                      <div className="font-semibold text-gray-900 dark:text-white text-xs">
+                        {msg.learnedStory.title}
+                      </div>
+                      {msg.learnedStory.result_and_metrics && (
+                        <p className="text-[11px] text-gray-700 dark:text-gray-300">
+                          <strong className="text-amber-600 dark:text-amber-400 font-semibold">Métrica: </strong>
+                          {msg.learnedStory.result_and_metrics}
+                        </p>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Detected Insights Badge */}
+                  {msg.learnedInsights && msg.learnedInsights.length > 0 && (
+                    <div className="w-full max-w-[88%] sm:max-w-[80%] rounded-2xl p-3 bg-indigo-50/90 dark:bg-indigo-950/30 border border-indigo-200/60 dark:border-indigo-800/60 text-[11px] text-indigo-900 dark:text-indigo-200 space-y-1 animate-fade-in">
+                      <div className="flex items-center space-x-1.5 font-bold text-indigo-700 dark:text-indigo-300">
+                        <Lightbulb className="w-3.5 h-3.5 text-indigo-500" />
+                        <span>Regla de afinidad aprendida:</span>
+                      </div>
+                      {msg.learnedInsights.map((ins, i) => (
+                        <div key={i} className="text-gray-700 dark:text-gray-300 ml-4 list-disc">
+                          • {ins}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Detected Deal-Breakers Badge */}
+                  {msg.learnedDealBreakers && msg.learnedDealBreakers.length > 0 && (
+                    <div className="w-full max-w-[88%] sm:max-w-[80%] rounded-2xl p-3 bg-rose-50/90 dark:bg-rose-950/30 border border-rose-200/60 dark:border-rose-800/60 text-[11px] text-rose-900 dark:text-rose-200 space-y-1 animate-fade-in">
+                      <div className="flex items-center space-x-1.5 font-bold text-rose-700 dark:text-rose-300">
+                        <ShieldAlert className="w-3.5 h-3.5 text-rose-500" />
+                        <span>Límite / Deal-Breaker innegociable registrado:</span>
+                      </div>
+                      {msg.learnedDealBreakers.map((db_item, i) => (
+                        <div key={i} className="text-gray-700 dark:text-gray-300 ml-4 list-disc">
+                          • {db_item}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {/* Proactive Quick Reply Chips */}
+                  {!isUser && msg.quickReplies && msg.quickReplies.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 pt-1.5 max-w-[95%] animate-fade-in">
+                      {msg.quickReplies.map((qr, qIdx) => (
+                        <button
+                          key={qIdx}
+                          type="button"
+                          onClick={() => handleSend(qr)}
+                          disabled={isLoading}
+                          className="min-h-[36px] px-3.5 py-1.5 rounded-full bg-blue-50/90 dark:bg-blue-950/50 hover:bg-blue-100 dark:hover:bg-blue-900/60 text-blue-700 dark:text-blue-300 border border-blue-200/80 dark:border-blue-800/60 text-xs font-semibold transition active:scale-95 shadow-2xs flex items-center space-x-1.5 cursor-pointer disabled:opacity-50"
+                        >
+                          <span className="text-[11px]">💬</span>
+                          <span>{qr}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
+              );
+            })}
 
-                {/* Detected STAR Story Badge Card */}
-                {msg.learnedStory && (
-                  <div className="w-full max-w-[88%] sm:max-w-[80%] rounded-2xl p-3.5 bg-amber-50/90 dark:bg-amber-950/30 border border-amber-200/80 dark:border-amber-800/60 text-xs text-amber-900 dark:text-amber-200 space-y-1.5 animate-fade-in shadow-xs">
-                    <div className="flex items-center space-x-1.5 font-bold text-[11px] text-amber-700 dark:text-amber-300">
-                      <Star className="w-4 h-4 fill-amber-500 text-amber-500 shrink-0" />
-                      <span>¡Caso de éxito extraído y guardado en memoria!</span>
-                    </div>
-                    <div className="font-semibold text-gray-900 dark:text-white text-xs">
-                      {msg.learnedStory.title}
-                    </div>
-                    {msg.learnedStory.result_and_metrics && (
-                      <p className="text-[11px] text-gray-700 dark:text-gray-300">
-                        <strong className="text-amber-600 dark:text-amber-400 font-semibold">Métrica: </strong>
-                        {msg.learnedStory.result_and_metrics}
-                      </p>
-                    )}
-                  </div>
-                )}
-
-                {/* Detected Insights Badge */}
-                {msg.learnedInsights && msg.learnedInsights.length > 0 && (
-                  <div className="w-full max-w-[88%] sm:max-w-[80%] rounded-2xl p-3 bg-indigo-50/90 dark:bg-indigo-950/30 border border-indigo-200/60 dark:border-indigo-800/60 text-[11px] text-indigo-900 dark:text-indigo-200 space-y-1 animate-fade-in">
-                    <div className="flex items-center space-x-1.5 font-bold text-indigo-700 dark:text-indigo-300">
-                      <Lightbulb className="w-3.5 h-3.5 text-indigo-500" />
-                      <span>Regla de afinidad aprendida:</span>
-                    </div>
-                    {msg.learnedInsights.map((ins, i) => (
-                      <div key={i} className="text-gray-700 dark:text-gray-300 ml-4 list-disc">
-                        • {ins}
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {/* Detected Deal-Breakers Badge */}
-                {msg.learnedDealBreakers && msg.learnedDealBreakers.length > 0 && (
-                  <div className="w-full max-w-[88%] sm:max-w-[80%] rounded-2xl p-3 bg-rose-50/90 dark:bg-rose-950/30 border border-rose-200/60 dark:border-rose-800/60 text-[11px] text-rose-900 dark:text-rose-200 space-y-1 animate-fade-in">
-                    <div className="flex items-center space-x-1.5 font-bold text-rose-700 dark:text-rose-300">
-                      <ShieldAlert className="w-3.5 h-3.5 text-rose-500" />
-                      <span>Límite / Deal-Breaker innegociable registrado:</span>
-                    </div>
-                    {msg.learnedDealBreakers.map((db_item, i) => (
-                      <div key={i} className="text-gray-700 dark:text-gray-300 ml-4 list-disc">
-                        • {db_item}
-                      </div>
-                    ))}
-                  </div>
-                )}
-                {/* Proactive Quick Reply Chips */}
-                {!isUser && msg.quickReplies && msg.quickReplies.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5 pt-1.5 max-w-[95%] animate-fade-in">
-                    {msg.quickReplies.map((qr, qIdx) => (
-                      <button
-                        key={qIdx}
-                        type="button"
-                        onClick={() => handleSend(qr)}
-                        disabled={isLoading}
-                        className="min-h-[36px] px-3.5 py-1.5 rounded-full bg-blue-50/90 dark:bg-blue-950/50 hover:bg-blue-100 dark:hover:bg-blue-900/60 text-blue-700 dark:text-blue-300 border border-blue-200/80 dark:border-blue-800/60 text-xs font-semibold transition active:scale-95 shadow-2xs flex items-center space-x-1.5 cursor-pointer disabled:opacity-50"
-                      >
-                        <span className="text-[11px]">💬</span>
-                        <span>{qr}</span>
-                      </button>
-                    ))}
-                  </div>
-                )}
+            {isLoading && (
+              <div className="flex items-center space-x-2 text-[#86868B] dark:text-[#A1A1A6] text-xs py-2 animate-pulse">
+                <div className="w-4 h-4 rounded-full border-2 border-blue-600 border-t-transparent animate-spin" />
+                <span>Nexus está analizando tu perfil y respondiendo...</span>
               </div>
-            );
-          })}
+            )}
+          </div>
 
-          {isLoading && (
-            <div className="flex items-center space-x-2 text-[#86868B] dark:text-[#A1A1A6] text-xs py-2 animate-pulse">
-              <div className="w-4 h-4 rounded-full border-2 border-blue-600 border-t-transparent animate-spin" />
-              <span>Nexus está analizando tu perfil y respondiendo...</span>
-            </div>
+          {/* Floating 'Ir al final' pill when scrolled up */}
+          {showScrollBottomBtn && (
+            <button
+              type="button"
+              onClick={() => {
+                scrollToBottom('smooth');
+                setShowScrollBottomBtn(false);
+              }}
+              className="absolute bottom-3 left-1/2 -translate-x-1/2 px-3.5 py-1.5 rounded-full bg-blue-600/90 hover:bg-blue-600 text-white text-[11px] font-semibold shadow-lg backdrop-blur-md transition-all active:scale-95 flex items-center space-x-1.5 z-10 animate-fade-in cursor-pointer border border-white/20"
+            >
+              <ChevronDown className="w-3.5 h-3.5 animate-bounce" />
+              <span>Ir a los últimos mensajes</span>
+            </button>
           )}
-
-          <div ref={messagesEndRef} />
         </div>
       )}
 
