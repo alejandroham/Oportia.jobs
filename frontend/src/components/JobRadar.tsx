@@ -36,7 +36,8 @@ import {
   ChevronLeft,
   ChevronRight,
   MapPin,
-  Filter
+  Filter,
+  Key
 } from 'lucide-react';
 import type {
   JobPosting,
@@ -54,6 +55,8 @@ import { useToast } from './Toast';
 interface JobRadarProps {
   jobs: JobPosting[];
   profile?: CandidateProfile | null;
+  hasActiveKey?: boolean;
+  onOpenSettings?: () => void;
   onRefresh: () => void;
   onApply: (job: JobPosting) => void;
   onNavigateToTracker?: () => void;
@@ -63,6 +66,8 @@ interface JobRadarProps {
 export const JobRadar: React.FC<JobRadarProps> = ({
   jobs,
   profile,
+  hasActiveKey = false,
+  onOpenSettings,
   onRefresh,
   onApply,
   onNavigateToTracker,
@@ -87,6 +92,38 @@ export const JobRadar: React.FC<JobRadarProps> = ({
   );
 
   const [showNoCVModal, setShowNoCVModal] = useState<boolean>(false);
+
+  // Persistent banner dismiss states
+  const [showCopilotBanner, setShowCopilotBanner] = useState<boolean>(() => {
+    return localStorage.getItem('nexus_hide_radar_copilot') !== 'true';
+  });
+
+  const [showRegionalBanner, setShowRegionalBanner] = useState<boolean>(() => {
+    return localStorage.getItem('nexus_hide_radar_region') !== 'true';
+  });
+
+  const [showFreeSearchDismissed, setShowFreeSearchDismissed] = useState<boolean>(() => {
+    return localStorage.getItem('nexus_hide_radar_free_search') === 'true';
+  });
+
+  // Free search banner displays if not dismissed AND user hasn't loaded an analyzed CV nor active API key yet
+  // If user connects an API key OR analyzes a CV, it automatically exits. User can also close it anytime with 'X'.
+  const showFreeSearchBanner = !showFreeSearchDismissed && !hasAnalyzedCV && !hasActiveKey;
+
+  const handleDismissCopilotBanner = () => {
+    setShowCopilotBanner(false);
+    localStorage.setItem('nexus_hide_radar_copilot', 'true');
+  };
+
+  const handleDismissRegionalBanner = () => {
+    setShowRegionalBanner(false);
+    localStorage.setItem('nexus_hide_radar_region', 'true');
+  };
+
+  const handleDismissFreeSearchBanner = () => {
+    setShowFreeSearchDismissed(true);
+    localStorage.setItem('nexus_hide_radar_free_search', 'true');
+  };
 
   // Search & Filter state
   const [searchTerm, setSearchTerm] = useState('');
@@ -299,6 +336,11 @@ export const JobRadar: React.FC<JobRadarProps> = ({
   const handleBatchRank = async () => {
     if (!hasAnalyzedCV) {
       setShowNoCVModal(true);
+      return;
+    }
+    if (!hasActiveKey) {
+      toast.error('Se requiere conectar una clave de API (Gemini, OpenAI o Claude) para clasificar con IA');
+      if (onOpenSettings) onOpenSettings();
       return;
     }
     setIsBatchRanking(true);
@@ -574,7 +616,7 @@ export const JobRadar: React.FC<JobRadarProps> = ({
       {/* Hero Header & Primary Actions */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
         <div>
-          <div className="flex items-center space-x-2.5">
+          <div className="flex items-center space-x-2 flex-wrap gap-y-1.5">
             <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
               Radar de Empleo
             </h1>
@@ -582,6 +624,45 @@ export const JobRadar: React.FC<JobRadarProps> = ({
               <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse mr-1.5" />
               En vivo
             </span>
+            {!showCopilotBanner && (
+              <button
+                onClick={() => {
+                  setShowCopilotBanner(true);
+                  localStorage.removeItem('nexus_hide_radar_copilot');
+                }}
+                className="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/40 border border-blue-200/50 dark:border-blue-800/40 transition cursor-pointer"
+                title="Ver política de postulación asistida y Ley 21.719"
+              >
+                <ShieldCheck className="w-3.5 h-3.5" />
+                <span>¿Cómo postulas?</span>
+              </button>
+            )}
+            {!showRegionalBanner && (
+              <button
+                onClick={() => {
+                  setShowRegionalBanner(true);
+                  localStorage.removeItem('nexus_hide_radar_region');
+                }}
+                className="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 border border-indigo-200/50 dark:border-indigo-800/40 transition cursor-pointer"
+                title="Mostrar prioridad regional activa"
+              >
+                <MapPin className="w-3.5 h-3.5" />
+                <span>{userRegion ? userRegion : 'Chile'}</span>
+              </button>
+            )}
+            {!showFreeSearchBanner && !hasAnalyzedCV && !hasActiveKey && (
+              <button
+                onClick={() => {
+                  setShowFreeSearchDismissed(false);
+                  localStorage.removeItem('nexus_hide_radar_free_search');
+                }}
+                className="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/40 border border-amber-300/50 dark:border-amber-800/40 transition cursor-pointer"
+                title="Ver aviso de Modo Búsqueda Libre"
+              >
+                <FileText className="w-3.5 h-3.5" />
+                <span>Modo Libre</span>
+              </button>
+            )}
           </div>
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
             Explora ofertas recomendadas, portales chilenos y ATS corporativos analizados para tu perfil.
@@ -639,81 +720,120 @@ export const JobRadar: React.FC<JobRadarProps> = ({
         </div>
       </div>
 
-      {/* Copilot vs. Bots Info Banner */}
-      <div className="apple-glass apple-card p-3.5 rounded-2xl border border-blue-500/20 bg-blue-50/60 dark:bg-blue-950/20 text-xs flex items-start justify-between gap-3 shadow-2xs">
-        <div className="flex items-start space-x-3">
-          <div className="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 mt-0.5">
-            <ShieldCheck className="w-4 h-4" />
-          </div>
-          <div className="space-y-1">
-            <div className="flex items-center space-x-2">
-              <span className="font-bold text-gray-900 dark:text-white text-xs">
-                Copiloto de Empleabilidad Soberano (Control Humano 100%)
-              </span>
-              <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border border-emerald-300/40">
-                Anti-Bloqueo & Ley 21.719
-              </span>
+      {/* Copilot vs. Bots Info Banner (Dismissible) */}
+      {showCopilotBanner && (
+        <div className="apple-glass apple-card p-3.5 rounded-2xl border border-blue-500/20 bg-blue-50/60 dark:bg-blue-950/20 text-xs flex items-start justify-between gap-3 shadow-2xs animate-fade-in relative">
+          <div className="flex items-start space-x-3 pr-8">
+            <div className="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 mt-0.5">
+              <ShieldCheck className="w-4 h-4" />
             </div>
-            <p className="text-[11px] text-gray-600 dark:text-gray-300 leading-relaxed">
-              <strong>¿Cómo postulas?</strong> NexusJob AI rastrea y evalúa las vacantes clasificándolas por <strong>Fit Score (mayor % primero)</strong> y genera tu CV adaptado y carta de presentación a la medida. <strong>No postula automáticamente a ciegas</strong> para evitar que tu cuenta sea bloqueada por los portales, permitir la autenticación con ClaveÚnica (Empleos Públicos) y garantizar que tú valides tus antecedentes bajo la Ley N° 21.719. Tú revisas tus materiales y postulas en 1 clic en el enlace oficial.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Regional Priority Banner (Section 3 & 4) */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-4 py-2.5 rounded-2xl bg-gradient-to-r from-blue-50/90 via-indigo-50/70 to-purple-50/80 dark:from-blue-950/40 dark:via-indigo-950/30 dark:to-purple-950/30 border border-blue-200/60 dark:border-blue-800/40 text-xs shadow-2xs">
-        <div className="flex items-center space-x-2 text-blue-900 dark:text-blue-200">
-          <MapPin className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
-          <span>
-            {userRegion ? (
-              <>
-                Prioridad regional activa: <strong className="font-bold text-blue-700 dark:text-blue-300">{userRegion}</strong> {userCommune && `(${userCommune})`} • Cobertura: <strong>Chile Completo</strong>
-              </>
-            ) : (
-              <>
-                Cobertura activa: <strong className="font-bold text-blue-700 dark:text-blue-300">Chile Completo (Nacional)</strong> • Sin sesgo regional predefinido (se deduce de tu CV)
-              </>
-            )}
-          </span>
-        </div>
-        <div className="flex items-center space-x-2 self-end sm:self-auto">
-          <button
-            type="button"
-            onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-            className="px-2.5 py-1 rounded-lg bg-white/90 dark:bg-zinc-800 text-blue-600 dark:text-blue-400 border border-blue-200/80 dark:border-blue-700 font-semibold text-[11px] hover:bg-white transition flex items-center space-x-1"
-          >
-            <SlidersHorizontal className="w-3 h-3" />
-            <span>{showAdvancedFilters ? 'Ocultar filtros' : 'Filtros avanzados & Región'}</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Invitation banner to upload CV if not analyzed */}
-      {!hasAnalyzedCV && (
-        <div className="apple-glass apple-card p-4 rounded-2xl border border-amber-300/80 dark:border-amber-700/60 bg-amber-50/80 dark:bg-amber-950/30 text-amber-900 dark:text-amber-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs animate-fade-in">
-          <div className="flex items-start space-x-3">
-            <div className="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 mt-0.5">
-              <FileText className="w-5 h-5" />
-            </div>
-            <div className="space-y-0.5">
-              <h4 className="font-bold text-xs text-amber-950 dark:text-amber-100 flex items-center gap-1.5">
-                <span>Modo Búsqueda Libre en Radar</span>
-                <span className="text-[10px] px-2 py-0.2 rounded-full font-bold bg-amber-200/60 dark:bg-amber-900/60 text-amber-800 dark:text-amber-200">
-                  CV Requerido para Fit
+            <div className="space-y-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="font-bold text-gray-900 dark:text-white text-xs">
+                  Copiloto de Empleabilidad Soberano (Control Humano 100%)
                 </span>
-              </h4>
-              <p className="text-[11px] text-amber-800 dark:text-amber-300 leading-relaxed">
-                Puedes buscar y explorar vacantes libremente por cargo o palabras clave. Para calcular tu <strong>Fit Score de compatibilidad (100% a 0%)</strong>, detectar tu región y deducir tu estrategia de búsqueda sin sesgos, primero debes cargar tu currículum.
+                <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border border-emerald-300/40">
+                  Anti-Bloqueo & Ley 21.719
+                </span>
+              </div>
+              <p className="text-[11px] text-gray-600 dark:text-gray-300 leading-relaxed">
+                <strong>¿Cómo postulas?</strong> NexusJob AI rastrea y evalúa las vacantes clasificándolas por <strong>Fit Score (mayor % primero)</strong> y genera tu CV adaptado y carta de presentación a la medida. <strong>No postula automáticamente a ciegas</strong> para evitar que tu cuenta sea bloqueada por los portales, permitir la autenticación con ClaveÚnica (Empleos Públicos) y garantizar que tú valides tus antecedentes bajo la Ley N° 21.719. Tú revisas tus materiales y postulas en 1 clic en el enlace oficial.
               </p>
             </div>
           </div>
           <button
-            onClick={() => onNavigateToTab ? onNavigateToTab('profile') : null}
-            className="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow-xs transition shrink-0 flex items-center space-x-1.5 self-start sm:self-auto cursor-pointer"
+            onClick={handleDismissCopilotBanner}
+            className="absolute top-3 right-3 p-1.5 rounded-xl text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-black/5 dark:hover:bg-white/5 transition cursor-pointer"
+            title="Cerrar y no volver a mostrar en radar"
+            aria-label="Cerrar aviso de copiloto"
           >
-            <Upload className="w-3.5 h-3.5" />
-            <span>Cargar mi CV en Perfil</span>
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
+      {/* Regional Priority Banner (Dismissible / Collapsible) */}
+      {showRegionalBanner && (
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-4 py-2.5 rounded-2xl bg-gradient-to-r from-blue-50/90 via-indigo-50/70 to-purple-50/80 dark:from-blue-950/40 dark:via-indigo-950/30 dark:to-purple-950/30 border border-blue-200/60 dark:border-blue-800/40 text-xs shadow-2xs animate-fade-in relative">
+          <div className="flex items-center space-x-2 text-blue-900 dark:text-blue-200 pr-8 sm:pr-0">
+            <MapPin className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
+            <span>
+              {userRegion ? (
+                <>
+                  Prioridad regional activa: <strong className="font-bold text-blue-700 dark:text-blue-300">{userRegion}</strong> {userCommune && `(${userCommune})`} • Cobertura: <strong>Chile Completo</strong>
+                </>
+              ) : (
+                <>
+                  Cobertura activa: <strong className="font-bold text-blue-700 dark:text-blue-300">Chile Completo (Nacional)</strong> • Sin sesgo regional predefinido (se deduce de tu CV)
+                </>
+              )}
+            </span>
+          </div>
+          <div className="flex items-center space-x-2 self-end sm:self-auto shrink-0">
+            <button
+              type="button"
+              onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+              className="px-2.5 py-1 rounded-lg bg-white/90 dark:bg-zinc-800 text-blue-600 dark:text-blue-400 border border-blue-200/80 dark:border-blue-700 font-semibold text-[11px] hover:bg-white transition flex items-center space-x-1 cursor-pointer"
+            >
+              <SlidersHorizontal className="w-3 h-3" />
+              <span>{showAdvancedFilters ? 'Ocultar filtros' : 'Filtros avanzados & Región'}</span>
+            </button>
+            <button
+              type="button"
+              onClick={handleDismissRegionalBanner}
+              className="p-1 rounded-lg text-blue-500 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-100/50 dark:hover:bg-blue-900/30 transition cursor-pointer"
+              title="Ocultar aviso regional"
+              aria-label="Ocultar aviso regional"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Invitation banner to upload CV if in Free Search mode (Dismissible & Exits on API key / CV) */}
+      {showFreeSearchBanner && (
+        <div className="apple-glass apple-card p-4 rounded-2xl border border-amber-300/80 dark:border-amber-700/60 bg-amber-50/80 dark:bg-amber-950/30 text-amber-900 dark:text-amber-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs animate-fade-in relative">
+          <div className="flex items-start space-x-3 pr-8">
+            <div className="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 mt-0.5">
+              <FileText className="w-5 h-5" />
+            </div>
+            <div className="space-y-0.5">
+              <h4 className="font-bold text-xs text-amber-950 dark:text-amber-100 flex items-center gap-1.5 flex-wrap">
+                <span>Modo Búsqueda Libre en Radar</span>
+                <span className="text-[10px] px-2 py-0.2 rounded-full font-bold bg-amber-200/60 dark:bg-amber-900/60 text-amber-800 dark:text-amber-200">
+                  CV o Clave IA requeridos para Fit Score
+                </span>
+              </h4>
+              <p className="text-[11px] text-amber-800 dark:text-amber-300 leading-relaxed">
+                Puedes buscar y explorar vacantes libremente por cargo o palabras clave. Para calcular tu <strong>Fit Score de compatibilidad (100% a 0%)</strong>, detectar tu región y deducir tu estrategia de búsqueda sin sesgos, primero debes cargar tu currículum o conectar tu clave de API.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center space-x-2 shrink-0 self-start sm:self-auto">
+            <button
+              onClick={() => onNavigateToTab ? onNavigateToTab('profile') : null}
+              className="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow-xs transition flex items-center space-x-1.5 cursor-pointer active:scale-95"
+            >
+              <Upload className="w-3.5 h-3.5" />
+              <span>Cargar mi CV</span>
+            </button>
+            {onOpenSettings && (
+              <button
+                onClick={onOpenSettings}
+                className="px-3.5 py-2 rounded-xl bg-amber-100 dark:bg-amber-900/60 hover:bg-amber-200 dark:hover:bg-amber-800 text-amber-900 dark:text-amber-200 font-semibold text-xs border border-amber-300/60 dark:border-amber-700/60 transition flex items-center space-x-1 cursor-pointer active:scale-95"
+              >
+                <span>Conectar API</span>
+              </button>
+            )}
+          </div>
+          <button
+            onClick={handleDismissFreeSearchBanner}
+            className="absolute top-3 right-3 p-1.5 rounded-xl text-amber-700/70 hover:text-amber-900 dark:text-amber-300/70 dark:hover:text-amber-100 hover:bg-amber-200/50 dark:hover:bg-amber-900/40 transition cursor-pointer"
+            title="Cerrar y no volver a mostrar"
+            aria-label="Cerrar aviso de búsqueda libre"
+          >
+            <X className="w-4 h-4" />
           </button>
         </div>
       )}
@@ -793,7 +913,20 @@ export const JobRadar: React.FC<JobRadarProps> = ({
             </button>
           </div>
 
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-3 flex-wrap">
+            {/* If regional banner is hidden, allow toggling advanced filters directly here */}
+            {!showRegionalBanner && (
+              <button
+                type="button"
+                onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+                className="px-2.5 py-1 rounded-lg bg-gray-100 dark:bg-zinc-800 text-blue-600 dark:text-blue-400 border border-black/5 dark:border-white/5 font-semibold text-xs hover:bg-blue-50 dark:hover:bg-blue-950/40 transition flex items-center space-x-1 cursor-pointer"
+                title={userRegion ? `Región prioritaria: ${userRegion}` : 'Cobertura: Chile Completo'}
+              >
+                <SlidersHorizontal className="w-3 h-3 text-blue-500" />
+                <span>{showAdvancedFilters ? 'Ocultar filtros' : (userRegion ? `${userRegion} & Filtros` : 'Filtros & Región')}</span>
+              </button>
+            )}
+
             {/* Remote checkbox */}
             <label className="flex items-center space-x-2 cursor-pointer select-none">
               <input
@@ -1898,19 +2031,31 @@ export const JobRadar: React.FC<JobRadarProps> = ({
               Carga tu documento (PDF, Word) en la pestaña <strong>"Perfil & CV"</strong>. NexusJob procesará tu CV de forma 100% local (Zero-Knowledge, Ley N° 21.719) y activará el motor de compatibilidad sin sesgos.
             </p>
 
-            <div className="flex items-center justify-end space-x-2 pt-2 border-t border-black/5 dark:border-white/5">
+            <div className="flex items-center justify-end space-x-2 pt-2 border-t border-black/5 dark:border-white/5 flex-wrap gap-y-2">
               <button
                 onClick={() => setShowNoCVModal(false)}
-                className="px-3.5 py-1.5 rounded-xl border border-gray-200 dark:border-zinc-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-zinc-800 font-medium"
+                className="px-3.5 py-1.5 rounded-xl border border-gray-200 dark:border-zinc-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-zinc-800 font-medium cursor-pointer"
               >
                 Seguir buscando sin Fit Score
               </button>
+              {onOpenSettings && !hasActiveKey && (
+                <button
+                  onClick={() => {
+                    setShowNoCVModal(false);
+                    onOpenSettings();
+                  }}
+                  className="px-3.5 py-1.5 rounded-xl bg-purple-600 text-white font-semibold hover:bg-purple-700 transition flex items-center space-x-1.5 cursor-pointer"
+                >
+                  <Key className="w-3.5 h-3.5" />
+                  <span>Conectar API Key</span>
+                </button>
+              )}
               <button
                 onClick={() => {
                   setShowNoCVModal(false);
                   if (onNavigateToTab) onNavigateToTab('profile');
                 }}
-                className="px-4 py-1.5 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700 transition flex items-center space-x-1.5"
+                className="px-4 py-1.5 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700 transition flex items-center space-x-1.5 cursor-pointer"
               >
                 <Upload className="w-3.5 h-3.5" />
                 <span>Ir a Cargar mi CV</span>

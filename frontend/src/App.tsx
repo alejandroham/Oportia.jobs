@@ -361,6 +361,8 @@ export function App() {
                 <JobRadar
                   jobs={jobs}
                   profile={profile}
+                  hasActiveKey={Boolean(settings.has_active_key)}
+                  onOpenSettings={() => setIsSettingsOpen(true)}
                   onRefresh={async () => {
                     const updated = await api.getJobs();
                     setJobs(updated);

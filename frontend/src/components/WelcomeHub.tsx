@@ -195,20 +195,34 @@ export const WelcomeHub: React.FC<WelcomeHubProps> = ({
         </div>
       </div>
 
-      {/* Section 2.5: ¿Cómo funciona la postulación? Copiloto Humano vs Bots */}
+      {/* Section 2.5: Copiloto de Empleabilidad Soberano (Control Humano 100%) & Ley 21.719 */}
       <div className="apple-glass apple-card p-6 sm:p-8 space-y-5 border-blue-500/20 bg-gradient-to-br from-blue-50/50 via-white/40 to-indigo-50/40 dark:from-blue-950/20 dark:via-zinc-900/40 dark:to-indigo-950/20">
-        <div className="flex items-center space-x-3 border-b border-black/5 dark:border-white/5 pb-3">
-          <div className="w-10 h-10 rounded-2xl bg-blue-600/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
-            <Sparkles className="w-5 h-5" />
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-black/5 dark:border-white/5 pb-3">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 rounded-2xl bg-blue-600/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+              <ShieldCheck className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex flex-wrap items-center gap-2">
+                <h3 className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">
+                  Copiloto de Empleabilidad Soberano (Control Humano 100%)
+                </h3>
+                <span className="text-[10px] font-bold tracking-wider px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border border-emerald-300/40">
+                  Anti-Bloqueo & Ley N° 21.719
+                </span>
+              </div>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                ¿Cómo postulas? NexusJob AI asume el 95% del esfuerzo técnico y te entrega el control soberano final en 1 clic oficial.
+              </p>
+            </div>
           </div>
-          <div>
-            <h3 className="text-sm font-bold text-gray-900 dark:text-white">
-              ¿Cómo funciona la postulación? Copiloto de Alto Rendimiento vs. Bots a Ciegas
-            </h3>
-            <p className="text-xs text-gray-500">
-              NexusJob AI asume el 95% del esfuerzo técnico y te entrega el control soberano final en 1 clic.
-            </p>
-          </div>
+        </div>
+
+        {/* Core explanation */}
+        <div className="p-4 rounded-2xl bg-blue-500/5 dark:bg-blue-400/5 border border-blue-500/15 text-xs text-gray-700 dark:text-gray-300 leading-relaxed">
+          <p>
+            <strong>¿Cómo postulas?</strong> NexusJob AI rastrea y evalúa las vacantes clasificándolas por <strong>Fit Score (mayor % primero)</strong> y genera tu CV adaptado y carta de presentación a la medida. <strong>No postula automáticamente a ciegas</strong> para evitar que tu cuenta sea bloqueada por los portales, permitir la autenticación con ClaveÚnica (Empleos Públicos) y garantizar que tú valides tus antecedentes bajo la Ley N° 21.719. Tú revisas tus materiales y postulas en 1 clic en el enlace oficial.
+          </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
@@ -239,6 +253,29 @@ export const WelcomeHub: React.FC<WelcomeHubProps> = ({
             </div>
             <p className="text-[11px] text-gray-600 dark:text-gray-300 leading-relaxed">
               Revisas tus materiales adaptados, los descargas en PDF o los copias, y haces clic en el enlace oficial de la vacante para postular directamente en la empresa con una candidatura auténtica, protegida y con la más alta tasa de respuesta.
+            </p>
+          </div>
+        </div>
+
+        {/* Radar Modes & Regional Priority Explanation */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1 text-xs">
+          <div className="p-4 rounded-2xl bg-amber-50/60 dark:bg-amber-950/20 border border-amber-300/40 dark:border-amber-700/40 space-y-1.5">
+            <div className="font-bold text-amber-900 dark:text-amber-200 flex items-center space-x-1.5">
+              <FileText className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+              <span>Modo Búsqueda Libre en Radar vs. Fit Score</span>
+            </div>
+            <p className="text-[11px] text-amber-800 dark:text-amber-300 leading-relaxed">
+              Puedes buscar y explorar vacantes libremente por cargo o palabras clave sin cargar nada. Para calcular tu <strong>Fit Score de compatibilidad (100% a 0%)</strong>, detectar tu región y deducir tu estrategia de búsqueda sin sesgos, primero debes cargar tu currículum o conectar tu clave de API.
+            </p>
+          </div>
+
+          <div className="p-4 rounded-2xl bg-indigo-50/60 dark:bg-indigo-950/20 border border-indigo-300/40 dark:border-indigo-700/40 space-y-1.5">
+            <div className="font-bold text-indigo-900 dark:text-indigo-200 flex items-center space-x-1.5">
+              <Compass className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+              <span>Prioridad Regional Inteligente & Cobertura Chile</span>
+            </div>
+            <p className="text-[11px] text-indigo-800 dark:text-indigo-300 leading-relaxed">
+              Prioridad regional activa para las 16 regiones de Chile (ej: Región del Biobío, Metropolitana, Valparaíso) detectada sin sesgo desde tu CV, manteniendo siempre la cobertura activa en <strong>Chile Completo</strong> y oportunidades remotas globales.
             </p>
           </div>
         </div>
