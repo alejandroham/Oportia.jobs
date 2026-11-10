@@ -360,7 +360,12 @@ def analyze_cv_content(raw_text: str, save_to_db: bool = True) -> CandidateProfi
             "Eres un analista experto de talento y empleabilidad para cualquier profesión, oficio o especialidad. "
             "Tu misión es extraer de manera fiel, estructurada y verificable toda la información del currículum (CV) "
             "del candidato SIN inventar datos, títulos ni competencias que no posea. "
-            "Identifica la profesión real del candidato a partir de su CV y NO condiciones la respuesta al área TI."
+            "Identifica la profesión real del candidato a partir de su CV y NO condiciones la respuesta al área TI. "
+            "REGLAS CRÍTICAS DE CLASIFICACIÓN:\n"
+            "1. 'experiences': Corresponde ÚNICAMENTE a experiencia laboral previa (empresas, instituciones donde trabajó, cargos y responsabilidades).\n"
+            "2. 'education': Corresponde ÚNICAMENTE a formación académica reglada (universidades, institutos profesionales, títulos de pregrado o posgrado, carreras técnicas, diplomados y educación media/secundaria).\n"
+            "3. NUNCA coloques un empleo, cargo profesional o experiencia laboral en la lista de 'education'.\n"
+            "4. NUNCA coloques una carrera universitaria o título en la lista de 'experiences'."
         )
 
         prompt = f"""

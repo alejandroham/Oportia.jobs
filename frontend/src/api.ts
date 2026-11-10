@@ -83,33 +83,6 @@ export const api = {
     }
     return res.json();
   },
-  importFromLinkedIn: async (params: { file?: File; text?: string; linkedin_url?: string }): Promise<{
-    message: string;
-    extracted_profile: CandidateProfile;
-    profile: CandidateProfile;
-    experiences_count: number;
-    education_count: number;
-    skills_count: number;
-  }> => {
-    const formData = new FormData();
-    if (params.file) formData.append('file', params.file);
-    if (params.text) formData.append('text', params.text);
-    if (params.linkedin_url) formData.append('linkedin_url', params.linkedin_url);
-
-    const res = await fetch(`${API_BASE}/profile/import-linkedin`, {
-      method: 'POST',
-      body: formData
-    });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.detail || 'Error importando desde LinkedIn');
-    }
-    const data = await res.json();
-    return {
-      ...data,
-      profile: data.profile || data.extracted_profile
-    };
-  },
 
   // Preferences & Cognitive AI Memory
   getPreferences: async (): Promise<UserPreferences> => {

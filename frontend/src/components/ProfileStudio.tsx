@@ -155,20 +155,6 @@ export const ProfileStudio: React.FC<ProfileStudioProps> = ({ profile, onProfile
   const [isExtractingPreview, setIsExtractingPreview] = useState(false);
   const [extractedPreview, setExtractedPreview] = useState<{ profile: CandidateProfile; filename: string } | null>(null);
 
-  // LinkedIn Import State
-  const [showLinkedInModal, setShowLinkedInModal] = useState(false);
-  const [linkedInSubTab, setLinkedInSubTab] = useState<'pdf' | 'text'>('pdf');
-  const [linkedInText, setLinkedInText] = useState('');
-  const [linkedInUrl, setLinkedInUrl] = useState('');
-  const [isProcessingLinkedIn, setIsProcessingLinkedIn] = useState(false);
-  const [linkedInResult, setLinkedInResult] = useState<{
-    profile: CandidateProfile;
-    experiences_count: number;
-    education_count: number;
-    skills_count: number;
-  } | null>(null);
-  const [mergeStrategy, setMergeStrategy] = useState<'merge' | 'replace'>('merge');
-
   // AI Assist Modal State
   const [aiModal, setAiModal] = useState<{
     isOpen: boolean;
@@ -343,6 +329,15 @@ export const ProfileStudio: React.FC<ProfileStudioProps> = ({ profile, onProfile
     // Reset input value so the same file can be selected again if needed
     e.target.value = '';
 
+    // Strict validation: Only Word (.docx, .doc) and PDF (.pdf)
+    const validExtensions = ['.pdf', '.docx', '.doc'];
+    const lowerName = file.name.toLowerCase();
+    const isValid = validExtensions.some(ext => lowerName.endsWith(ext));
+    if (!isValid) {
+      toast.error('Formato no compatible. Por favor sube tu currículum exclusivamente en formato PDF (.pdf) o Word (.docx, .doc).');
+      return;
+    }
+
     const rec = generateConsentRecord(file.name);
     setPendingUploadFile(file);
     setCurrentConsentRecord(rec);
@@ -383,138 +378,6 @@ export const ProfileStudio: React.FC<ProfileStudioProps> = ({ profile, onProfile
       toast.success('CV Maestro actualizado exitosamente con la información del documento');
     } catch (err: any) {
       toast.error('Error guardando perfil: ' + (err?.message || err));
-    }
-  };
-
-  // ==========================================
-  // HANDLERS FOR LINKEDIN IMPORT
-  // ==========================================
-  const handleLinkedInFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setIsProcessingLinkedIn(true);
-    try {
-      const res = await api.importFromLinkedIn({ file });
-      const targetProf = res.profile || res.extracted_profile;
-      if (!targetProf) {
-        throw new Error('No se pudo estructurar el contenido de LinkedIn.');
-      }
-      setLinkedInResult({
-        profile: targetProf,
-        experiences_count: res.experiences_count ?? (targetProf.experiences?.length || 0),
-        education_count: res.education_count ?? (targetProf.education?.length || 0),
-        skills_count: res.skills_count ?? (targetProf.technical_skills?.length || 0)
-      });
-      toast.success(`Datos de LinkedIn analizados: ${res.experiences_count || 0} empleos y ${res.education_count || 0} estudios`);
-    } catch (err: any) {
-      toast.error('Error al analizar archivo de LinkedIn: ' + (err?.message || err));
-    } finally {
-      setIsProcessingLinkedIn(false);
-    }
-  };
-
-  const handleLinkedInTextSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!linkedInText.trim() && !linkedInUrl.trim()) {
-      toast.warning('Ingresa el texto de tu perfil o la URL de LinkedIn');
-      return;
-    }
-
-    setIsProcessingLinkedIn(true);
-    try {
-      const res = await api.importFromLinkedIn({
-        text: linkedInText.trim() || undefined,
-        linkedin_url: linkedInUrl.trim() || undefined
-      });
-      const targetProf = res.profile || res.extracted_profile;
-      if (!targetProf) {
-        throw new Error('No se pudo estructurar el contenido de LinkedIn.');
-      }
-      setLinkedInResult({
-        profile: targetProf,
-        experiences_count: res.experiences_count ?? (targetProf.experiences?.length || 0),
-        education_count: res.education_count ?? (targetProf.education?.length || 0),
-        skills_count: res.skills_count ?? (targetProf.technical_skills?.length || 0)
-      });
-      toast.success(`Datos de LinkedIn analizados: ${res.experiences_count || 0} empleos y ${res.education_count || 0} estudios`);
-    } catch (err: any) {
-      toast.error('Error importando desde LinkedIn: ' + (err?.message || err));
-    } finally {
-      setIsProcessingLinkedIn(false);
-    }
-  };
-
-  const handleConfirmLinkedInImport = async () => {
-    if (!linkedInResult || !linkedInResult.profile) return;
-    const imported = linkedInResult.profile;
-
-    let newExperiences: WorkExperience[] = [];
-    if (mergeStrategy === 'replace') {
-      newExperiences = imported.experiences || [];
-    } else {
-      // Merge without duplicates (by company + role)
-      const existing = [...(editableProfile.experiences || [])];
-      const incoming = imported.experiences || [];
-      incoming.forEach(inc => {
-        const comp = (inc.company || '').toLowerCase().trim();
-        const rle = (inc.role || '').toLowerCase().trim();
-        const exists = existing.some(
-          e => (e.company || '').toLowerCase().trim() === comp &&
-               (e.role || '').toLowerCase().trim() === rle
-        );
-        if (!exists) {
-          existing.push(inc);
-        }
-      });
-      newExperiences = existing;
-    }
-
-    let newEducation: EducationItem[] = [];
-    if (mergeStrategy === 'replace') {
-      newEducation = imported.education || [];
-    } else {
-      const existingEdu = [...(editableProfile.education || [])];
-      const incomingEdu = imported.education || [];
-      incomingEdu.forEach(inc => {
-        const inst = (inc.institution || '').toLowerCase().trim();
-        const deg = (inc.degree || '').toLowerCase().trim();
-        const exists = existingEdu.some(
-          e => (e.institution || '').toLowerCase().trim() === inst &&
-               (e.degree || '').toLowerCase().trim() === deg
-        );
-        if (!exists) {
-          existingEdu.push(inc);
-        }
-      });
-      newEducation = existingEdu;
-    }
-
-    const mergedSkills = Array.from(new Set([
-      ...(editableProfile.technical_skills || []),
-      ...(imported.technical_skills || [])
-    ]));
-
-    const updatedProfile: CandidateProfile = {
-      ...editableProfile,
-      experiences: newExperiences,
-      education: newEducation,
-      technical_skills: mergedSkills,
-      headline: imported.headline && imported.headline !== 'Profesional Tecnológico' ? imported.headline : editableProfile.headline,
-      linkedin_url: imported.linkedin_url || editableProfile.linkedin_url || (linkedInUrl.trim() ? linkedInUrl.trim() : editableProfile.linkedin_url)
-    };
-
-    try {
-      const saved = await api.updateProfile(updatedProfile);
-      setEditableProfile(saved);
-      onProfileUpdated(saved);
-      setShowLinkedInModal(false);
-      setLinkedInResult(null);
-      setLinkedInText('');
-      setLinkedInUrl('');
-      toast.success('Experiencia y formación de LinkedIn incorporadas al CV Maestro');
-    } catch (err: any) {
-      toast.error('Error al guardar datos de LinkedIn: ' + (err?.message || err));
     }
   };
 
@@ -784,25 +647,16 @@ export const ProfileStudio: React.FC<ProfileStudioProps> = ({ profile, onProfile
             </button>
           </div>
 
-          {/* LinkedIn Import Button */}
-          <button
-            onClick={() => setShowLinkedInModal(true)}
-            className="flex items-center space-x-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-[#0A66C2]/10 dark:bg-[#0A66C2]/20 text-[#0A66C2] dark:text-[#3897f0] border border-[#0A66C2]/30 hover:bg-[#0A66C2]/20 transition shadow-2xs"
-            title="Importar experiencia y formación académica desde LinkedIn"
+          {/* Upload Button - Exclusively Word and PDF */}
+          <label
+            className="flex items-center space-x-2 px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white transition shadow-sm cursor-pointer active:scale-95"
+            title="Importar tu currículum oficial en formato Word (.docx, .doc) o PDF (.pdf)"
           >
-            <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
-              <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.46 8.76a1.62 1.62 0 1 0-.01-3.24 1.62 1.62 0 0 0 .01 3.24M7.86 18.5v-8.37H5.07v8.37h2.79Z"/>
-            </svg>
-            <span>Importar de LinkedIn</span>
-          </button>
-
-          {/* Upload Button */}
-          <label className="flex items-center space-x-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-white dark:bg-zinc-800 text-gray-800 dark:text-gray-200 border border-black/5 dark:border-white/5 hover:bg-gray-50 dark:hover:bg-zinc-700 transition shadow-2xs cursor-pointer">
-            <Upload className="w-3.5 h-3.5 text-blue-500" />
-            <span>Importar PDF/Word</span>
+            <Upload className="w-3.5 h-3.5 text-white" />
+            <span>Subir CV (Word o PDF)</span>
             <input
               type="file"
-              accept=".pdf,.docx,.doc,.txt,.md"
+              accept=".pdf,.docx,.doc,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/msword"
               onChange={handleSelectFileForPreview}
               className="hidden"
             />
@@ -1563,18 +1417,6 @@ export const ProfileStudio: React.FC<ProfileStudioProps> = ({ profile, onProfile
 
                   <div className="flex items-center space-x-2">
                     <button
-                      type="button"
-                      onClick={() => setShowLinkedInModal(true)}
-                      className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-[#0077b5]/10 hover:bg-[#0077b5]/20 text-[#0077b5] dark:text-[#3897d3] font-semibold transition border border-[#0077b5]/20 shadow-xs"
-                      title="Importar experiencia directamente desde LinkedIn"
-                    >
-                      <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
-                        <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.46 10.9v8.37H9.2V10.9H6.46M7.83 6.45a1.64 1.64 0 1 0 0 3.28 1.64 1.64 0 0 0 0-3.28Z"/>
-                      </svg>
-                      <span>Importar de LinkedIn</span>
-                    </button>
-
-                    <button
                       onClick={() => {
                         const newExp: WorkExperience = {
                           id: Math.random().toString(36).substring(2, 9),
@@ -1832,18 +1674,6 @@ export const ProfileStudio: React.FC<ProfileStudioProps> = ({ profile, onProfile
                   </div>
 
                   <div className="flex items-center space-x-2">
-                    <button
-                      type="button"
-                      onClick={() => setShowLinkedInModal(true)}
-                      className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-[#0077b5]/10 hover:bg-[#0077b5]/20 text-[#0077b5] dark:text-[#3897d3] font-semibold transition border border-[#0077b5]/20 shadow-xs"
-                      title="Importar formación académica desde LinkedIn"
-                    >
-                      <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
-                        <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.46 10.9v8.37H9.2V10.9H6.46M7.83 6.45a1.64 1.64 0 1 0 0 3.28 1.64 1.64 0 0 0 0-3.28Z"/>
-                      </svg>
-                      <span>Importar de LinkedIn</span>
-                    </button>
-
                     <button
                       onClick={() => {
                         const newEdu: EducationItem = {
@@ -2484,11 +2314,15 @@ export const ProfileStudio: React.FC<ProfileStudioProps> = ({ profile, onProfile
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-500">Experiencias encontradas:</span>
-                    <strong className="text-blue-600">{extractedPreview.profile.experiences?.length || 0} cargos</strong>
+                    <strong className="text-blue-600 font-bold">{extractedPreview.profile.experiences?.length || 0} cargos laborales</strong>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Formación académica:</span>
+                    <strong className="text-indigo-600 font-bold">{extractedPreview.profile.education?.length || 0} títulos / estudios</strong>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-500">Competencias técnicas:</span>
-                    <strong className="text-blue-600">{extractedPreview.profile.technical_skills?.length || 0} tecnologías</strong>
+                    <strong className="text-emerald-600 font-bold">{extractedPreview.profile.technical_skills?.length || 0} habilidades</strong>
                   </div>
                 </div>
 
@@ -2576,366 +2410,6 @@ export const ProfileStudio: React.FC<ProfileStudioProps> = ({ profile, onProfile
                 </div>
               </div>
             )}
-          </div>
-        </div>
-      )}
-
-      {/* ========================================================
-          MODAL: IMPORT FROM LINKEDIN
-          ======================================================== */}
-      {showLinkedInModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs animate-fade-in text-xs">
-          <div className="apple-glass apple-card max-w-2xl w-full p-6 space-y-4 bg-white/95 dark:bg-zinc-900/95 shadow-2xl max-h-[90vh] flex flex-col">
-            
-            {/* Header */}
-            <div className="flex items-center justify-between border-b border-black/5 dark:border-white/5 pb-3">
-              <div className="flex items-center space-x-2.5">
-                <div className="w-8 h-8 rounded-xl bg-[#0077b5] text-white flex items-center justify-center shadow-xs">
-                  <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
-                    <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.46 10.9v8.37H9.2V10.9H6.46M7.83 6.45a1.64 1.64 0 1 0 0 3.28 1.64 1.64 0 0 0 0-3.28Z"/>
-                  </svg>
-                </div>
-                <div>
-                  <h3 className="text-sm font-bold text-gray-900 dark:text-white">
-                    Importar Experiencia y Educación desde LinkedIn
-                  </h3>
-                  <p className="text-[11px] text-gray-500">
-                    Extrae automáticamente tu trayectoria profesional sin tener que escribirla de nuevo
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={() => {
-                  setShowLinkedInModal(false);
-                  setLinkedInResult(null);
-                }}
-                className="text-gray-400 hover:text-gray-600 p-1 rounded-lg"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            {/* Content Body */}
-            <div className="flex-1 overflow-y-auto space-y-4 pr-1">
-              
-              {/* STATE 1: Processing */}
-              {isProcessingLinkedIn && (
-                <div className="py-12 flex flex-col items-center justify-center text-center space-y-3">
-                  <div className="w-10 h-10 border-3 border-[#0077b5] border-t-transparent rounded-full animate-spin"></div>
-                  <div>
-                    <h4 className="font-bold text-gray-900 dark:text-white text-sm">Analizando información con Gemini AI...</h4>
-                    <p className="text-xs text-gray-500 mt-1 max-w-sm">
-                      Detectando empresas, cargos, períodos, logros cuantificables y formación académica.
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {/* STATE 2: Input Selection (Upload PDF or Paste Text) */}
-              {!isProcessingLinkedIn && !linkedInResult && (
-                <div className="space-y-4">
-                  {/* SubTabs */}
-                  <div className="flex p-1 bg-gray-100 dark:bg-zinc-800 rounded-xl space-x-1">
-                    <button
-                      type="button"
-                      onClick={() => setLinkedInSubTab('pdf')}
-                      className={`flex-1 py-1.5 rounded-lg font-medium text-center transition ${
-                        linkedInSubTab === 'pdf'
-                          ? 'bg-white dark:bg-zinc-700 text-gray-900 dark:text-white shadow-xs font-semibold'
-                          : 'text-gray-500 hover:text-gray-700'
-                      }`}
-                    >
-                      📄 Exportación PDF de LinkedIn (Recomendado)
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setLinkedInSubTab('text')}
-                      className={`flex-1 py-1.5 rounded-lg font-medium text-center transition ${
-                        linkedInSubTab === 'text'
-                          ? 'bg-white dark:bg-zinc-700 text-gray-900 dark:text-white shadow-xs font-semibold'
-                          : 'text-gray-500 hover:text-gray-700'
-                      }`}
-                    >
-                      📋 Pegar Texto / URL
-                    </button>
-                  </div>
-
-                  {/* SubTab PDF */}
-                  {linkedInSubTab === 'pdf' && (
-                    <div className="space-y-4">
-                      {/* 3 Step Instruction Card */}
-                      <div className="p-3.5 rounded-2xl bg-blue-50/70 dark:bg-blue-950/20 border border-blue-200/60 dark:border-blue-900/40 text-blue-900 dark:text-blue-200 space-y-2">
-                        <div className="font-semibold text-xs flex items-center space-x-1.5">
-                          <CheckCircle2 className="w-4 h-4 text-blue-600" />
-                          <span>¿Cómo descargar tu perfil oficial de LinkedIn en 10 segundos?</span>
-                        </div>
-                        <ol className="list-decimal list-inside space-y-1 text-[11px] text-blue-800/90 dark:text-blue-300">
-                          <li>Ve a tu perfil en <strong>LinkedIn.com</strong>.</li>
-                          <li>Haz clic en el botón <strong>"Recursos"</strong> (o botón <strong>"Más" / "..."</strong> debajo de tu foto de portada y nombre).</li>
-                          <li>Selecciona <strong>"Guardar en PDF"</strong> (descargará automáticamente el archivo oficial <em>Profile.pdf</em>).</li>
-                        </ol>
-                      </div>
-
-                      {/* Dropzone */}
-                      <div className="border-2 border-dashed border-[#0077b5]/30 hover:border-[#0077b5] dark:border-zinc-700 rounded-2xl p-8 text-center transition bg-white/40 dark:bg-zinc-800/40">
-                        <input
-                          type="file"
-                          id="linkedin-pdf-input"
-                          accept=".pdf"
-                          onChange={handleLinkedInFileUpload}
-                          className="hidden"
-                        />
-                        <label
-                          htmlFor="linkedin-pdf-input"
-                          className="cursor-pointer flex flex-col items-center space-y-2.5"
-                        >
-                          <div className="w-12 h-12 rounded-2xl bg-[#0077b5]/10 text-[#0077b5] flex items-center justify-center">
-                            <Upload className="w-6 h-6" />
-                          </div>
-                          <div>
-                            <span className="font-bold text-gray-900 dark:text-white block text-sm">
-                              Selecciona tu archivo Profile.pdf de LinkedIn
-                            </span>
-                            <span className="text-gray-500 text-xs mt-0.5 block">
-                              o arrastra y suelta el archivo aquí (solo formato .PDF)
-                            </span>
-                          </div>
-                          <span className="px-4 py-1.5 rounded-xl bg-[#0077b5] hover:bg-[#006097] text-white font-semibold shadow-xs transition mt-2">
-                            Explorar Archivo
-                          </span>
-                        </label>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* SubTab Text / URL */}
-                  {linkedInSubTab === 'text' && (
-                    <form onSubmit={handleLinkedInTextSubmit} className="space-y-3">
-                      <div>
-                        <label className="font-semibold text-gray-700 dark:text-gray-300 block mb-1">
-                          Enlace a tu perfil de LinkedIn (opcional)
-                        </label>
-                        <input
-                          type="url"
-                          placeholder="https://www.linkedin.com/in/tu-perfil"
-                          value={linkedInUrl}
-                          onChange={(e) => setLinkedInUrl(e.target.value)}
-                          className="w-full px-3 py-2 rounded-xl bg-gray-50 dark:bg-zinc-800 border border-black/10 dark:border-white/10 text-xs"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="font-semibold text-gray-700 dark:text-gray-300 block mb-1">
-                          Texto copiado de tu perfil de LinkedIn *
-                        </label>
-                        <textarea
-                          rows={6}
-                          placeholder="Copia y pega aquí la información de tu perfil de LinkedIn: sección Experiencia laboral, Cargos, Fechas, Educación y Tecnologías..."
-                          value={linkedInText}
-                          onChange={(e) => setLinkedInText(e.target.value)}
-                          className="w-full px-3 py-2 rounded-xl bg-gray-50 dark:bg-zinc-800 border border-black/10 dark:border-white/10 text-xs leading-relaxed font-mono"
-                        />
-                      </div>
-
-                      <div className="flex justify-end pt-1">
-                        <button
-                          type="submit"
-                          disabled={!linkedInText.trim() && !linkedInUrl.trim()}
-                          className="px-4 py-2 rounded-xl bg-[#0077b5] hover:bg-[#006097] disabled:opacity-50 text-white font-semibold transition shadow-xs flex items-center space-x-1.5"
-                        >
-                          <Sparkles className="w-3.5 h-3.5" />
-                          <span>Analizar con Inteligencia Artificial</span>
-                        </button>
-                      </div>
-                    </form>
-                  )}
-                </div>
-              )}
-
-              {/* STATE 3: Review & Merge Strategy Selection */}
-              {!isProcessingLinkedIn && linkedInResult && (
-                <div className="space-y-4">
-                  
-                  {/* Results Count Summary Banner */}
-                  <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/50 flex items-center justify-between">
-                    <div>
-                      <h4 className="font-bold text-emerald-900 dark:text-emerald-200 text-xs flex items-center space-x-1.5">
-                        <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                        <span>Extracción de LinkedIn Completada</span>
-                      </h4>
-                      <p className="text-[11px] text-emerald-800/80 dark:text-emerald-300/80 mt-0.5">
-                        Gemini estructuró con éxito tu trayectoria profesional y académica.
-                      </p>
-                    </div>
-
-                    <div className="flex space-x-2 text-center">
-                      <div className="px-2.5 py-1 rounded-xl bg-white/80 dark:bg-zinc-800 border border-emerald-200">
-                        <span className="block font-bold text-gray-900 dark:text-white text-xs">{linkedInResult.experiences_count}</span>
-                        <span className="text-[10px] text-gray-500 uppercase tracking-tight">Empleos</span>
-                      </div>
-                      <div className="px-2.5 py-1 rounded-xl bg-white/80 dark:bg-zinc-800 border border-emerald-200">
-                        <span className="block font-bold text-gray-900 dark:text-white text-xs">{linkedInResult.education_count}</span>
-                        <span className="text-[10px] text-gray-500 uppercase tracking-tight">Estudios</span>
-                      </div>
-                      <div className="px-2.5 py-1 rounded-xl bg-white/80 dark:bg-zinc-800 border border-emerald-200">
-                        <span className="block font-bold text-gray-900 dark:text-white text-xs">{linkedInResult.skills_count}</span>
-                        <span className="text-[10px] text-gray-500 uppercase tracking-tight">Skills</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Preview Items */}
-                  <div className="space-y-3">
-                    <h5 className="font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider text-[10px]">
-                      Vista previa de elementos detectados
-                    </h5>
-
-                    {/* Experiences Preview List */}
-                    <div className="max-h-48 overflow-y-auto space-y-2 p-2 rounded-xl bg-gray-50/60 dark:bg-zinc-800/40 border border-black/5">
-                      <div className="font-semibold text-gray-800 dark:text-gray-200 text-[11px] mb-1">
-                        Experiencias ({linkedInResult.profile?.experiences?.length || 0}):
-                      </div>
-                      {(linkedInResult.profile?.experiences || []).map((exp, i) => (
-                        <div key={i} className="p-2 rounded-lg bg-white dark:bg-zinc-800 border border-black/5 text-[11px]">
-                          <div className="flex justify-between items-baseline">
-                            <span className="font-bold text-gray-900 dark:text-white">{exp.role || 'Cargo registrado'}</span>
-                            <span className="text-gray-500 text-[10px]">{formatExperiencePeriod(exp.start_date, exp.end_date)}</span>
-                          </div>
-                          <span className="text-gray-600 dark:text-gray-300 font-medium">{exp.company || 'Empresa'}</span>
-                          {exp.technologies && exp.technologies.length > 0 && (
-                            <div className="flex flex-wrap gap-1 mt-1">
-                              {exp.technologies.slice(0, 5).map((t, ti) => (
-                                <span key={ti} className="text-[9px] px-1.5 py-0.2 rounded bg-blue-50 text-blue-700">
-                                  {t}
-                                </span>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      ))}
-
-                      {/* Education Preview List */}
-                      {linkedInResult.profile?.education && (linkedInResult.profile.education?.length || 0) > 0 && (
-                        <>
-                          <div className="font-semibold text-gray-800 dark:text-gray-200 text-[11px] mt-2 mb-1">
-                            Educación ({linkedInResult.profile.education?.length || 0}):
-                          </div>
-                          {(linkedInResult.profile.education || []).map((edu, ei) => (
-                            <div key={ei} className="p-2 rounded-lg bg-white dark:bg-zinc-800 border border-black/5 text-[11px] flex justify-between">
-                              <div>
-                                <span className="font-bold text-gray-900 dark:text-white">{edu.degree || 'Título'}</span>
-                                <span className="text-gray-500"> • {edu.institution || 'Institución'}</span>
-                              </div>
-                              <span className="text-gray-500 text-[10px]">{edu.graduation_year || ''}</span>
-                            </div>
-                          ))}
-                        </>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Merge Strategy Radio Options */}
-                  <div className="space-y-2 pt-2 border-t border-black/5 dark:border-white/5">
-                    <label className="font-semibold text-gray-900 dark:text-white block">
-                      ¿Cómo deseas integrar estos datos a tu CV Maestro?
-                    </label>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                      <label
-                        onClick={() => setMergeStrategy('merge')}
-                        className={`p-3 rounded-xl border cursor-pointer transition flex items-start space-x-2.5 ${
-                          mergeStrategy === 'merge'
-                            ? 'bg-blue-50/70 dark:bg-blue-950/20 border-blue-500 shadow-xs'
-                            : 'bg-white dark:bg-zinc-800 border-black/10 dark:border-white/10 hover:bg-gray-50'
-                        }`}
-                      >
-                        <input
-                          type="radio"
-                          name="mergeStrategy"
-                          checked={mergeStrategy === 'merge'}
-                          onChange={() => setMergeStrategy('merge')}
-                          className="mt-0.5 text-blue-600"
-                        />
-                        <div>
-                          <span className="font-bold text-gray-900 dark:text-white block">
-                            Combinar sin duplicar (Recomendado)
-                          </span>
-                          <span className="text-[11px] text-gray-500 block leading-tight mt-0.5">
-                            Conserva tus registros actuales y agrega los nuevos empleos y títulos de LinkedIn.
-                          </span>
-                        </div>
-                      </label>
-
-                      <label
-                        onClick={() => setMergeStrategy('replace')}
-                        className={`p-3 rounded-xl border cursor-pointer transition flex items-start space-x-2.5 ${
-                          mergeStrategy === 'replace'
-                            ? 'bg-blue-50/70 dark:bg-blue-950/20 border-blue-500 shadow-xs'
-                            : 'bg-white dark:bg-zinc-800 border-black/10 dark:border-white/10 hover:bg-gray-50'
-                        }`}
-                      >
-                        <input
-                          type="radio"
-                          name="mergeStrategy"
-                          checked={mergeStrategy === 'replace'}
-                          onChange={() => setMergeStrategy('replace')}
-                          className="mt-0.5 text-blue-600"
-                        />
-                        <div>
-                          <span className="font-bold text-gray-900 dark:text-white block">
-                            Reemplazar secciones
-                          </span>
-                          <span className="text-[11px] text-gray-500 block leading-tight mt-0.5">
-                            Sustituye la lista de empleos y estudios actuales por los de LinkedIn.
-                          </span>
-                        </div>
-                      </label>
-                    </div>
-                  </div>
-
-                </div>
-              )}
-
-            </div>
-
-            {/* Modal Footer Actions */}
-            <div className="border-t border-black/5 dark:border-white/5 pt-3 flex items-center justify-between">
-              <div>
-                {linkedInResult && (
-                  <button
-                    type="button"
-                    onClick={() => setLinkedInResult(null)}
-                    className="text-gray-500 hover:text-gray-700 text-xs font-medium"
-                  >
-                    ← Elegir otro archivo o texto
-                  </button>
-                )}
-              </div>
-
-              <div className="flex space-x-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowLinkedInModal(false);
-                    setLinkedInResult(null);
-                  }}
-                  className="px-4 py-2 rounded-xl text-xs font-medium text-gray-600 hover:bg-gray-100"
-                >
-                  Cancelar
-                </button>
-
-                {linkedInResult && (
-                  <button
-                    type="button"
-                    onClick={handleConfirmLinkedInImport}
-                    className="px-4 py-2 rounded-xl text-xs font-semibold bg-[#0077b5] hover:bg-[#006097] text-white shadow-xs transition flex items-center space-x-1.5"
-                  >
-                    <span>✓ Confirmar e incorporar al CV Maestro</span>
-                  </button>
-                )}
-              </div>
-            </div>
-
           </div>
         </div>
       )}

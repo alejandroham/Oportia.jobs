@@ -72,7 +72,14 @@ async def upload_cv(file: UploadFile = File(...)):
 
 @app.post("/api/profile/extract-preview")
 async def extract_profile_preview(file: UploadFile = File(...)):
-    file_path = settings.UPLOADS_DIR / file.filename
+    filename = file.filename or ""
+    ext = Path(filename).suffix.lower()
+    if ext not in [".pdf", ".docx", ".doc"]:
+        raise HTTPException(
+            status_code=400,
+            detail="Formato no compatible. Por favor sube tu currículum exclusivamente en formato PDF (.pdf) o Word (.docx, .doc)."
+        )
+    file_path = settings.UPLOADS_DIR / filename
     content = await file.read()
     with open(file_path, "wb") as f:
         f.write(content)
@@ -86,7 +93,7 @@ async def extract_profile_preview(file: UploadFile = File(...)):
     return {
         "message": "Currículum analizado para revisión previa",
         "extracted_profile": extracted,
-        "filename": file.filename,
+        "filename": filename,
         "text_length": len(text)
     }
 
@@ -100,43 +107,11 @@ def ai_assist_profile_endpoint(data: dict):
     return res
 
 @app.post("/api/profile/import-linkedin")
-async def import_from_linkedin(
-    file: Optional[UploadFile] = File(None),
-    text: Optional[str] = Form(None),
-    linkedin_url: Optional[str] = Form(None)
-):
-    raw_text = ""
-    if file:
-        file_path = settings.UPLOADS_DIR / file.filename
-        content = await file.read()
-        with open(file_path, "wb") as f:
-            f.write(content)
-        raw_text = extract_text_from_file(file_path)
-    elif text and text.strip():
-        raw_text = text.strip()
-    elif linkedin_url and linkedin_url.strip():
-        # Clean and use provided URL as reference
-        raw_text = f"Perfil de LinkedIn: {linkedin_url.strip()}"
-
-    if not raw_text:
-        raise HTTPException(
-            status_code=400,
-            detail="Por favor sube el PDF de tu perfil de LinkedIn ('Guardar como PDF') o pega el texto de tu experiencia."
-        )
-
-    # Extract without overwriting DB directly (guarantees preview review before confirm)
-    extracted = analyze_cv_content(raw_text, save_to_db=False)
-    if linkedin_url and not extracted.linkedin_url:
-        extracted.linkedin_url = linkedin_url.strip()
-
-    return {
-        "message": "Datos de LinkedIn extraídos exitosamente para revisión",
-        "extracted_profile": extracted,
-        "profile": extracted,
-        "experiences_count": len(extracted.experiences or []),
-        "education_count": len(extracted.education or []),
-        "skills_count": len(extracted.technical_skills or [])
-    }
+async def import_from_linkedin():
+    raise HTTPException(
+        status_code=400,
+        detail="La importación directa desde perfiles de LinkedIn ha sido deshabilitada para evitar distorsiones en la experiencia profesional. Por favor sube tu currículum oficial en formato PDF (.pdf) o Word (.docx, .doc)."
+    )
 
 # --- Preferences & Learning Endpoints ---
 
