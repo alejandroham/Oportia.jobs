@@ -165,6 +165,7 @@ export const api = {
     new_story?: any;
     new_insights: string[];
     new_deal_breakers: string[];
+    quick_replies?: string[];
     preferences: UserPreferences;
   }> => {
     const res = await fetch(`${API_BASE}/memory/chat`, {

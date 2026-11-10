@@ -408,24 +408,58 @@ RESPONDE ÚNICAMENTE CON UN JSON:
                     + "\n".join(lines)
                 )
 
-        # ── 3. Strict & Token-Efficient System Instructions ──────────────────────
+        # ── 3. Strict & Token-Efficient System Instructions with Proactive Coaching ──
         system_instruction = (
             "Eres 'Nexus', el copiloto inteligente de perfil profesional, empleabilidad y búsqueda de empleo de NexusJob AI.\n\n"
-            "DIRECTRICES FUNDAMENTALES DE MEMORIA Y CONTINUIDAD CONVERSACIONAL:\n"
+            "DIRECTRICES FUNDAMENTALES DE MEMORIA, CONTINUIDAD Y COACHING PROACTIVO:\n"
             "1. MEMORIA DE CONTEXTO ACTIVA (CRÍTICO): Mantén estricta memoria de todas las preguntas y respuestas previas "
             "registradas en el 'HISTORIAL DE LA CONVERSACIÓN PREVIA'. Si el candidato hace preguntas de seguimiento "
             "(como 'y de esos?', 'cuál me recomiendas?', 'por qué?', 'recuerdas lo que te dije de mi rol?', "
             "'el segundo que nombraste', 'y respecto al salario?'), debes responder conectando directamente con el contexto "
             "de las respuestas y preguntas anteriores sin perder el hilo ni reiniciar la conversación.\n"
-            "2. Claridad ejecutiva, amabilidad y profesionalismo. Sé directo, estructurado y analítico (1 a 3 párrafos concisos o viñetas claras).\n"
-            "3. CERO ALUCINACIONES: Basa tus afirmaciones estrictamente en los antecedentes reales del candidato y en las ofertas reales del Radar provistas.\n"
-            "4. Cuando sea oportuno, cierra con una pregunta concreta y natural orientada a avanzar en el tema en discusión.\n"
-            "5. SEGURIDAD: Mantente en tu rol de asistente de empleabilidad y desarrollo profesional.\n\n"
+            "2. REGLA DEL VALOR PRIMERO: Responde primero y con máxima claridad y utilidad a la consulta o duda que planteó el candidato.\n"
+            "3. COACHING PROACTIVO DE MADUREZ (MÉTODO STAR): Si detectas brechas de memoria pendientes (experiencias laborales sin logros cuantificados "
+            "o preferencias no definidas), incluye al final de tu respuesta una pregunta breve, amigable y opcional orientada a descubrir "
+            "un logro concreto con métricas verificables (ahorro, tiempo, equipo, volumen) o una condición clave. No suenes a interrogatorio; "
+            "hazlo como un mentor que busca potenciar su Fit Score y su impacto ante reclutadores.\n"
+            "4. RESPUESTAS RÁPIDAS ('quick_replies'): Genera siempre entre 2 y 4 opciones o respuestas sugeridas breves (frases concisas de 2 a 5 palabras) "
+            "para que el candidato pueda pulsar con un solo toque desde su móvil o computador para responder o avanzar.\n"
+            "5. CERO ALUCINACIONES: Basa tus afirmaciones estrictamente en los antecedentes reales del candidato y en las ofertas reales del Radar provistas.\n"
+            "6. SEGURIDAD: Mantente en tu rol de asistente de empleabilidad y desarrollo profesional.\n\n"
             "RESPONDE ESTRICTAMENTE EN FORMATO JSON."
         )
 
         existing_titles = [s.title for s in prefs.learned_star_stories[:5]]
         top_skills = profile.technical_skills[:8] if profile.technical_skills else []
+
+        # Proactive Gap Analysis (To elevate AI Memory Maturity & Profile Strength)
+        profile_gaps = []
+        existing_story_titles = " ".join([s.title.lower() for s in prefs.learned_star_stories])
+        
+        untapped_exp = None
+        for exp in (profile.experiences or []):
+            if exp.company and exp.company.lower() not in existing_story_titles:
+                untapped_exp = exp
+                break
+
+        if untapped_exp:
+            profile_gaps.append(
+                f"Oportunidad STAR: Falta cuantificar logros en '{untapped_exp.company}' (Cargo: {untapped_exp.role}). "
+                f"Si es oportuno, invita amablemente al candidato a compartir qué reto o métrica destaca de esa etapa."
+            )
+        elif len(prefs.learned_star_stories) < 3:
+            profile_gaps.append(
+                "Oportunidad STAR: El perfil necesita historias de impacto con métricas verificables (ahorro de costos, optimización de tiempo, tamaño de equipo)."
+            )
+
+        if not prefs.deal_breakers:
+            profile_gaps.append(
+                "Oportunidad de Preferencia: Aún no se han definido 'deal-breakers' (límites innegociables: turnos rotativos, presencialidad 100% o viajes excesivos)."
+            )
+
+        gaps_section = ""
+        if profile_gaps:
+            gaps_section = "BRECHAS DE MEMORIA Y MADUREZ DETECTADAS (Para coaching proactivo):\n" + "\n".join([f"• {g}" for g in profile_gaps])
 
         # Build chronological dialogue history from recent turns (up to 20 messages / 10 turns)
         dialogue_turns = []
@@ -450,6 +484,8 @@ INFORMACIÓN DEL CANDIDATO:
 
 {relevant_jobs_section}
 
+{gaps_section}
+
 =======================================================
 HISTORIAL DE LA CONVERSACIÓN PREVIA (Preguntas y Respuestas anteriores):
 =======================================================
@@ -462,7 +498,8 @@ NUEVO MENSAJE DEL CANDIDATO (Responde con memoria contextual de lo conversado):
 
 FORMATO OBLIGATORIO JSON:
 {{
-  "assistant_reply": "Tu respuesta como Nexus, manteniendo estricta memoria y coherencia contextual con las preguntas y respuestas previas.",
+  "assistant_reply": "Tu respuesta como Nexus (resolviendo primero la consulta y cerrando con una pregunta de coaching proactivo si aplica)",
+  "quick_replies": ["Opción rápida 1", "Opción rápida 2", "Opción rápida 3"],
   "star_story": {{
     "title": "Título sintético del logro",
     "situation_and_task": "Contexto breve",
@@ -540,12 +577,25 @@ FORMATO OBLIGATORIO JSON:
             self._update_maturity(prefs)
             db.save_preferences(prefs)
 
+            # Extract proactive quick replies if generated by LLM
+            raw_qr = res.get("quick_replies", [])
+            quick_replies = []
+            if isinstance(raw_qr, list):
+                quick_replies = [str(q).strip() for q in raw_qr if str(q).strip()][:4]
+
+            if not quick_replies:
+                if profile_gaps:
+                    quick_replies = ["🎯 Cuantificar este logro", "🚫 Definir límites laborales", "¿Cómo subir mi Fit Score?"]
+                else:
+                    quick_replies = ["💼 Ver ofertas afines", "📈 Optimizar mi resumen", "🎯 Explorar otro logro"]
+
             return {
                 "reply": assistant_reply,
                 "has_new_story": bool(new_story_learned),
                 "new_story": new_story_learned,
                 "new_insights": new_insights_learned,
                 "new_deal_breakers": new_deal_breakers_learned,
+                "quick_replies": quick_replies,
                 "preferences": prefs.model_dump()
             }
 
@@ -569,21 +619,25 @@ FORMATO OBLIGATORIO JSON:
                     f"Entre las más compatibles con tu perfil:\n{jobs_summary}\n"
                     f"¿Te gustaría que analicemos el ajuste de tu CV para alguna de ellas?"
                 )
+                quick_replies = ["Revisar requisitos de la primera", "Buscar empleos 100% remotos", "¿Cómo subir mi Fit Score?"]
             elif "star" in msg_lower or "logro" in msg_lower or "desafío" in msg_lower:
                 reply = (
                     "Continuando con el método STAR para enriquecer tu memoria: "
                     "¿Qué acciones clave tomaste frente a ese reto y cuál fue el resultado o métrica concreta que alcanzaste?"
                 )
+                quick_replies = ["Reduje costos en un 20%", "Optimicé tiempos a la mitad", "Lideré equipo de 6 personas"]
             elif last_user_message and len(history) > 1:
                 reply = (
                     f"Respecto a lo que veníamos conversando: he integrado tu respuesta en el contexto de tu perfil. "
                     f"¿Deseas que enfoquemos esta experiencia hacia el titular de tu CV o para una vacante específica del Radar?"
                 )
+                quick_replies = ["Aplicar a titular de mi CV", "Buscar vacantes afines", "Añadir más detalles"]
             else:
                 reply = (
                     "He registrado tu mensaje en tu memoria cognitiva. "
                     "Para maximizar el impacto de tu perfil ante los reclutadores, ¿qué desafío o logro principal te gustaría estructurar a continuación?"
                 )
+                quick_replies = ["🎯 Extraer logro STAR de mi CV", "💼 Ver vacantes en mi Radar", "🚫 Definir límites laborales"]
 
             heuristic_story = None
             if ("logro" in msg_lower or "proyecto" in msg_lower or "implement" in msg_lower) and len(message) > 40:
@@ -608,6 +662,7 @@ FORMATO OBLIGATORIO JSON:
                 "new_story": heuristic_story.model_dump() if heuristic_story else None,
                 "new_insights": [],
                 "new_deal_breakers": [],
+                "quick_replies": quick_replies,
                 "preferences": prefs.model_dump()
             }
 

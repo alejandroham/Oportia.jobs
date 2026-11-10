@@ -26,6 +26,7 @@ interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
   timestamp: string;
+  quickReplies?: string[];
   learnedStory?: {
     title: string;
     action: string;
@@ -83,8 +84,14 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
     id: 'welcome',
     role: 'assistant',
     content:
-      '¡Hola! Soy Nexus, tu asistente de perfil profesional y búsqueda de empleo. Mi misión es ayudarte a maximizar tu empleabilidad: estructurar tus logros en formato STAR con métricas comprobables, optimizar tus palabras clave para superar filtros ATS y orientarte hacia las vacantes más compatibles de tu Radar. ¿Qué desafío o vacante te gustaría que analicemos hoy?',
-    timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      '¡Hola! Soy Nexus, tu copiloto de perfil profesional y búsqueda de empleo. Mi misión es ayudarte a alcanzar tu máximo potencial de empleabilidad: estructurar tus logros clave en formato STAR con métricas comprobables, optimizar tus palabras clave para superar filtros ATS y orientarte hacia las vacantes más compatibles de tu Radar. ¿Qué te gustaría que analicemos hoy?',
+    timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    quickReplies: [
+      '🎯 Extraer logros STAR de mi CV',
+      '📈 ¿Cómo subir mi Fit Score al 90%?',
+      '💼 Ver ofertas top en mi Radar',
+      '🚫 Definir mis límites laborales'
+    ]
   };
 
   const [messages, setMessages] = useState<ChatMessage[]>([DEFAULT_WELCOME_MESSAGE]);
@@ -156,6 +163,7 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
         role: 'assistant',
         content: res.reply,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        quickReplies: res.quick_replies && res.quick_replies.length > 0 ? res.quick_replies : undefined,
         learnedStory: res.new_story
           ? {
               title: res.new_story.title,
@@ -381,6 +389,23 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
                       <div key={i} className="text-gray-700 dark:text-gray-300 ml-4 list-disc">
                         • {db_item}
                       </div>
+                    ))}
+                  </div>
+                )}
+                {/* Proactive Quick Reply Chips */}
+                {!isUser && msg.quickReplies && msg.quickReplies.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 pt-1.5 max-w-[95%] animate-fade-in">
+                    {msg.quickReplies.map((qr, qIdx) => (
+                      <button
+                        key={qIdx}
+                        type="button"
+                        onClick={() => handleSend(qr)}
+                        disabled={isLoading}
+                        className="min-h-[36px] px-3.5 py-1.5 rounded-full bg-blue-50/90 dark:bg-blue-950/50 hover:bg-blue-100 dark:hover:bg-blue-900/60 text-blue-700 dark:text-blue-300 border border-blue-200/80 dark:border-blue-800/60 text-xs font-semibold transition active:scale-95 shadow-2xs flex items-center space-x-1.5 cursor-pointer disabled:opacity-50"
+                      >
+                        <span className="text-[11px]">💬</span>
+                        <span>{qr}</span>
+                      </button>
                     ))}
                   </div>
                 )}
