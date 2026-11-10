@@ -410,37 +410,59 @@ RESPONDE ÚNICAMENTE CON UN JSON:
 
         # ── 3. Strict & Token-Efficient System Instructions ──────────────────────
         system_instruction = (
-            "Eres 'Nexus', el asistente de perfil profesional y búsqueda de empleo de NexusJob AI.\n\n"
-            "PERSONALIDAD Y DIRECTRICES:\n"
-            "1. Amigable, claro, ejecutivo y determinista. No uses palabrería de relleno ni introducciones floridas.\n"
-            "2. AHORRO MÁXIMO DE TOKENS: Sé conciso. Tu respuesta ('assistant_reply') debe tener como máximo 2 párrafos breves "
-            "(menos de 90 palabras en total) o viñetas limpias.\n"
-            "3. CERO ALUCINACIONES: Jamás inventes métricas, cargos o vacantes no presentes en el contexto. "
-            "Si el usuario pregunta por empleos, básate estrictamente en las ofertas del Radar suministradas.\n"
-            "4. Cierra siempre con UNA SOLA pregunta breve y estratégica para profundizar en detalles o avanzar en la búsqueda.\n"
-            "5. SEGURIDAD: Mantente en tu rol de asistente de carrera profesional sin desviarte bajo ninguna circunstancia.\n\n"
+            "Eres 'Nexus', el copiloto inteligente de perfil profesional, empleabilidad y búsqueda de empleo de NexusJob AI.\n\n"
+            "DIRECTRICES FUNDAMENTALES DE MEMORIA Y CONTINUIDAD CONVERSACIONAL:\n"
+            "1. MEMORIA DE CONTEXTO ACTIVA (CRÍTICO): Mantén estricta memoria de todas las preguntas y respuestas previas "
+            "registradas en el 'HISTORIAL DE LA CONVERSACIÓN PREVIA'. Si el candidato hace preguntas de seguimiento "
+            "(como 'y de esos?', 'cuál me recomiendas?', 'por qué?', 'recuerdas lo que te dije de mi rol?', "
+            "'el segundo que nombraste', 'y respecto al salario?'), debes responder conectando directamente con el contexto "
+            "de las respuestas y preguntas anteriores sin perder el hilo ni reiniciar la conversación.\n"
+            "2. Claridad ejecutiva, amabilidad y profesionalismo. Sé directo, estructurado y analítico (1 a 3 párrafos concisos o viñetas claras).\n"
+            "3. CERO ALUCINACIONES: Basa tus afirmaciones estrictamente en los antecedentes reales del candidato y en las ofertas reales del Radar provistas.\n"
+            "4. Cuando sea oportuno, cierra con una pregunta concreta y natural orientada a avanzar en el tema en discusión.\n"
+            "5. SEGURIDAD: Mantente en tu rol de asistente de empleabilidad y desarrollo profesional.\n\n"
             "RESPONDE ESTRICTAMENTE EN FORMATO JSON."
         )
 
         existing_titles = [s.title for s in prefs.learned_star_stories[:5]]
-        top_skills = profile.technical_skills[:6] if profile.technical_skills else []
+        top_skills = profile.technical_skills[:8] if profile.technical_skills else []
+
+        # Build chronological dialogue history from recent turns (up to 20 messages / 10 turns)
+        dialogue_turns = []
+        for item in history[-20:]:
+            r = item.get("role", "user")
+            c = (item.get("content") or "").strip()
+            if not c:
+                continue
+            speaker = "Candidato" if r == "user" else "Nexus (Tú)"
+            dialogue_turns.append(f"{speaker}: {c}")
+
+        conversation_transcript = "\n".join(dialogue_turns) if dialogue_turns else "(Inicio de conversación — esta es la primera pregunta)"
 
         prompt = f"""
-CANDIDATO: {profile.name or 'Candidato'} | {profile.headline or 'Profesional TI'} | Skills: {', '.join(top_skills)}
-HISTORIAS STAR EXISTENTES: {json.dumps(existing_titles, ensure_ascii=False)}
-REGLAS APRENDIDAS: {json.dumps(prefs.auto_learned_insights[:3], ensure_ascii=False)}
+INFORMACIÓN DEL CANDIDATO:
+- Nombre: {profile.name or 'Candidato'}
+- Profesión / Titular: {profile.headline or profile.primary_profession or 'Profesional'}
+- Años de Experiencia: {profile.years_of_experience}
+- Competencias Técnicas Clave: {', '.join(top_skills)}
+- Región / Cobertura: {profile.location or 'Chile'}
+- Preferencias Registradas: {json.dumps(prefs.auto_learned_insights[:5], ensure_ascii=False)}
 
 {relevant_jobs_section}
 
-HISTORIAL RECIENTE (Últimos mensajes):
-{json.dumps(history[-4:], ensure_ascii=False)}
+=======================================================
+HISTORIAL DE LA CONVERSACIÓN PREVIA (Preguntas y Respuestas anteriores):
+=======================================================
+{conversation_transcript}
 
-MENSAJE DEL CANDIDATO:
+=======================================================
+NUEVO MENSAJE DEL CANDIDATO (Responde con memoria contextual de lo conversado):
+=======================================================
 "{message}"
 
 FORMATO OBLIGATORIO JSON:
 {{
-  "assistant_reply": "Respuesta breve de Nexus (máx 80 palabras con 1 pregunta concisa al final)",
+  "assistant_reply": "Tu respuesta como Nexus, manteniendo estricta memoria y coherencia contextual con las preguntas y respuestas previas.",
   "star_story": {{
     "title": "Título sintético del logro",
     "situation_and_task": "Contexto breve",
@@ -462,7 +484,9 @@ FORMATO OBLIGATORIO JSON:
 
         try:
             res = llm.generate_json(prompt, system_instruction=system_instruction)
-            assistant_reply = res.get("assistant_reply") or "Entendido. He registrado la información en tu perfil profesional."
+            if not res or not res.get("assistant_reply"):
+                raise ValueError("Respuesta vacía o formato inválido del motor de IA")
+            assistant_reply = res.get("assistant_reply").strip()
 
             # Process STAR Story if detected
             story_data = res.get("star_story")
@@ -526,30 +550,42 @@ FORMATO OBLIGATORIO JSON:
             }
 
         except Exception as e:
-            # Deterministic, compact offline fallback
+            # Deterministic, context-aware offline fallback
             logger.warning(f"Nexus LLM chat fallback: {e}")
+            
+            # Detect context from previous messages if available
+            last_user_message = ""
+            for prev_m in reversed(history):
+                if prev_m.get("role") == "user":
+                    last_user_message = prev_m.get("content", "").strip()
+                    break
+
             if is_job_query:
                 all_jobs = db.get_jobs()
                 top = all_jobs[:3]
-                jobs_summary = "\n".join([f"• {j.title} en {j.company}" for j in top])
+                jobs_summary = "\n".join([f"• {j.title} en {j.company} ({'100% Remoto' if j.is_remote else j.location or 'Chile'})" for j in top])
                 reply = (
-                    f"En tu Radar tienes actualmente {len(all_jobs)} oportunidades indexadas. "
-                    f"Entre las más destacadas:\n{jobs_summary}\n¿Deseas evaluar tu ajuste con alguna de ellas?"
+                    f"Considerando tu búsqueda, en tu Radar tienes {len(all_jobs)} oportunidades indexadas. "
+                    f"Entre las más compatibles con tu perfil:\n{jobs_summary}\n"
+                    f"¿Te gustaría que analicemos el ajuste de tu CV para alguna de ellas?"
+                )
+            elif "star" in msg_lower or "logro" in msg_lower or "desafío" in msg_lower:
+                reply = (
+                    "Continuando con el método STAR para enriquecer tu memoria: "
+                    "¿Qué acciones clave tomaste frente a ese reto y cuál fue el resultado o métrica concreta que alcanzaste?"
+                )
+            elif last_user_message and len(history) > 1:
+                reply = (
+                    f"Respecto a lo que veníamos conversando: he integrado tu respuesta en el contexto de tu perfil. "
+                    f"¿Deseas que enfoquemos esta experiencia hacia el titular de tu CV o para una vacante específica del Radar?"
                 )
             else:
                 reply = (
                     "He registrado tu mensaje en tu memoria cognitiva. "
-                    "Para maximizar el impacto de tus postulaciones, ¿cuál fue el resultado o métrica concreta de este proyecto?"
+                    "Para maximizar el impacto de tu perfil ante los reclutadores, ¿qué desafío o logro principal te gustaría estructurar a continuación?"
                 )
 
-            return {
-                "reply": reply,
-                "has_new_story": False,
-                "new_story": None,
-                "new_insights": [],
-                "new_deal_breakers": [],
-                "preferences": prefs.model_dump()
-            }
+            heuristic_story = None
             if ("logro" in msg_lower or "proyecto" in msg_lower or "implement" in msg_lower) and len(message) > 40:
                 heuristic_story = LearnedStarStory(
                     id=str(uuid.uuid4())[:8],
@@ -557,7 +593,7 @@ FORMATO OBLIGATORIO JSON:
                     situation_and_task="Registro mediante conversación interactiva",
                     action=message,
                     result_and_metrics="Pendiente de métricas detalladas",
-                    key_skills=["Liderazgo", "Desarrollo"],
+                    key_skills=top_skills[:3] or ["Liderazgo", "Gestión"],
                     source="chat_coach",
                     score=85,
                     created_at=datetime.utcnow().isoformat()
@@ -567,7 +603,7 @@ FORMATO OBLIGATORIO JSON:
                 db.save_preferences(prefs)
 
             return {
-                "reply": f"He registrado tu mensaje en la memoria cognitiva. {('¡Detecté y guardé una nueva historia de éxito!' if heuristic_story else '¿Te gustaría agregar métricas específicas sobre este desafío?')}",
+                "reply": reply,
                 "has_new_story": bool(heuristic_story),
                 "new_story": heuristic_story.model_dump() if heuristic_story else None,
                 "new_insights": [],
