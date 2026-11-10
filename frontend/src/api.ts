@@ -84,6 +84,47 @@ export const api = {
     return res.json();
   },
 
+  suggestRoles: async (profile?: CandidateProfile): Promise<Array<{
+    title: string;
+    category: 'direct' | 'leadership' | 'transferable';
+    category_label: string;
+    reasoning: string;
+    matching_skills: string[];
+    seniority: string;
+  }>> => {
+    const res = await fetch(`${API_BASE}/profile/suggest-roles`, {
+      method: profile ? 'POST' : 'GET',
+      headers: profile ? { 'Content-Type': 'application/json' } : undefined,
+      body: profile ? JSON.stringify({ profile }) : undefined
+    });
+    if (!res.ok) return [];
+    return res.json();
+  },
+
+  tailorVersion: async (data: {
+    target_role: string;
+    version_name?: string;
+    profile?: CandidateProfile;
+  }): Promise<{
+    target_role: string;
+    version_name: string;
+    headline: string;
+    summary: string;
+    selected_skills: string[];
+    match_rationale: string;
+  }> => {
+    const res = await fetch(`${API_BASE}/profile/tailor-version`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || 'Error al optimizar versión con IA');
+    }
+    return res.json();
+  },
+
   // Preferences & Cognitive AI Memory
   getPreferences: async (): Promise<UserPreferences> => {
     const res = await fetch(`${API_BASE}/preferences`);

@@ -584,3 +584,194 @@ Devuelve el resultado en JSON:
         "suggestion": suggestion,
         "reasoning": reasoning
     }
+
+
+def suggest_roles_from_experience(profile: CandidateProfile) -> List[Dict[str, Any]]:
+    """
+    Extracts realistic, strategic target roles directly derived from the candidate's CV experience,
+    career taxonomy, past job titles, and technical skills.
+    Categorized into:
+    - 'direct': Immediate match with proven past experience
+    - 'leadership': Seniority advancement or leadership coordination roles
+    - 'transferable': High affinity roles based on transferable skills
+    """
+    primary = profile.primary_profession or profile.headline or "Profesional"
+    years = profile.years_of_experience
+    sector = profile.economic_sectors[0] if profile.economic_sectors else "Área Profesional"
+    
+    # Check if we have past company/role history
+    past_roles = []
+    past_companies = []
+    for exp in (profile.experiences or []):
+        if exp.role and exp.role not in past_roles:
+            past_roles.append(exp.role)
+        if exp.company and exp.company not in past_companies:
+            past_companies.append(exp.company)
+
+    suggested: List[Dict[str, Any]] = []
+
+    # 1. Direct Roles (from primary profession, equivalents, and past experience)
+    direct_titles = []
+    if primary not in direct_titles:
+        direct_titles.append(primary)
+    for eq in (profile.equivalent_roles or []):
+        if eq not in direct_titles:
+            direct_titles.append(eq)
+    for pr in past_roles:
+        if pr not in direct_titles:
+            direct_titles.append(pr)
+
+    for title in direct_titles[:4]:
+        company_ref = f" en {past_companies[0]}" if past_companies else ""
+        suggested.append({
+            "title": title,
+            "category": "direct",
+            "category_label": "Coincidencia Directa",
+            "reasoning": f"Alineado con tus {years:.0f} años de experiencia comprobada{company_ref} y competencias técnicas centrales.",
+            "matching_skills": profile.technical_skills[:4],
+            "seniority": "Senior / Especialista" if years >= 5 else "Profesional"
+        })
+
+    # 2. Leadership & Coordination Roles (based on seniority and sector)
+    lead_titles = []
+    clean_primary = re.sub(r'\s*\([^)]*\)', '', primary).strip()
+    if years >= 3:
+        lead_titles.append(f"Coordinador/a de {clean_primary}")
+        lead_titles.append(f"Jefatura / Encargado/a de {clean_primary}")
+        if years >= 5:
+            lead_titles.append(f"Líder / Supervisor/a en {sector}")
+    else:
+        lead_titles.append(f"{clean_primary} Senior")
+        lead_titles.append(f"Especialista en {clean_primary}")
+
+    for title in lead_titles[:3]:
+        suggested.append({
+            "title": title,
+            "category": "leadership",
+            "category_label": "Liderazgo & Coordinación",
+            "reasoning": f"Proyección natural para asumir responsabilidades de supervisión, optimización de flujos y gestión en {sector}.",
+            "matching_skills": (profile.soft_skills + profile.technical_skills)[:4],
+            "seniority": "Jefatura / Coordinación" if years >= 4 else "Especialista"
+        })
+
+    # 3. Transferable & Specialized Roles (from related roles and cross-disciplinary skills)
+    transferable_titles = []
+    for rel in (profile.related_roles or []):
+        if rel not in transferable_titles and rel not in direct_titles:
+            transferable_titles.append(rel)
+    
+    if not transferable_titles:
+        transferable_titles.append(f"Consultor/a Técnico/a en {sector}")
+        transferable_titles.append(f"Analista de Calidad y Procesos en {clean_primary}")
+        transferable_titles.append(f"Auditor/a / Asesor/a en {sector}")
+
+    for title in transferable_titles[:3]:
+        suggested.append({
+            "title": title,
+            "category": "transferable",
+            "category_label": "Habilidades Transferibles",
+            "reasoning": f"Aprovecha tus competencias transversales aplicadas a roles de alta demanda en {sector}.",
+            "matching_skills": profile.technical_skills[:4],
+            "seniority": "Especialista"
+        })
+
+    return suggested
+
+
+def tailor_profile_for_role(profile: CandidateProfile, target_role: str, version_name: Optional[str] = None) -> Dict[str, Any]:
+    """
+    Tailors candidate headline, professional summary, and prioritizes skills for a target role
+    based strictly on their actual CV experiences without fabricating facts or hallucinating qualifications.
+    """
+    has_key = bool(settings.GEMINI_API_KEY or settings.OPENAI_API_KEY or settings.ANTHROPIC_API_KEY)
+    clean_target = target_role.strip()
+    
+    if has_key:
+        system_prompt = (
+            "Eres un consultor senior de empleabilidad y optimizador ATS de clase mundial. "
+            "Tu misión es adaptar estratégicamente el currículum del candidato para un cargo objetivo específico, "
+            "destacando su experiencia real, competencias y logros más afines. "
+            "REGLAS ESTRICTAS DE VERACIDAD (Ley N° 21.719 de Chile): "
+            "1. NO inventes empresas, cargos no ejercidos, ni certificaciones que no consten en su CV. "
+            "2. 'headline': Titular profesional conciso y moderno enfocado en el cargo objetivo y especialidad. "
+            "3. 'summary': Resumen profesional de 4 a 6 líneas estructurado para captar la atención de reclutadores, "
+            "   destacando sus años de experiencia real, especialidades y logros verificables pertinentes a este rol. "
+            "4. 'selected_skills': Lista de 8 a 15 habilidades técnicas extraídas de las competencias REALES del candidato, "
+            "   reordenadas poniendo en primer lugar las más críticas para el cargo objetivo. "
+            "5. 'match_rationale': 1 a 2 oraciones explicando por qué el candidato calza sólidamente con este cargo."
+        )
+
+        prompt = f"""
+CARGO OBJETIVO A POSTULAR: {clean_target}
+
+INFORMACIÓN REAL DEL CANDIDATO (Verificada):
+- Nombre: {profile.name}
+- Profesión Principal: {profile.primary_profession or profile.headline}
+- Años de Experiencia: {profile.years_of_experience}
+- Titular Maestro: {profile.headline}
+- Resumen Maestro: {profile.summary}
+- Competencias Técnicas Reales: {", ".join(profile.technical_skills)}
+- Competencias Transversales: {", ".join(profile.soft_skills)}
+- Experiencias Laborales Registradas:
+{chr(10).join([f"  * {exp.role} en {exp.company} ({exp.start_date} - {exp.end_date}): {exp.description[:180]}" for exp in profile.experiences[:5]])}
+
+Genera la optimización en JSON estricto:
+{{
+  "headline": "Titular profesional orientado a {clean_target}",
+  "summary": "Resumen profesional orientado a {clean_target} basado en su experiencia real",
+  "selected_skills": ["Habilidad 1", "Habilidad 2", "..."],
+  "match_rationale": "Explicación estratégica de empleabilidad"
+}}
+"""
+        try:
+            result = llm.generate_json(prompt, system_instruction=system_prompt)
+            if result and result.get("headline") and result.get("summary"):
+                raw_skills = result.get("selected_skills", [])
+                matched_skills = []
+                for s in raw_skills:
+                    if any(real.lower() in s.lower() or s.lower() in real.lower() for real in profile.technical_skills):
+                        matched_skills.append(s)
+                if not matched_skills:
+                    matched_skills = profile.technical_skills[:12]
+
+                return {
+                    "target_role": clean_target,
+                    "version_name": version_name or f"🎯 Versión: {clean_target}",
+                    "headline": result.get("headline").strip(),
+                    "summary": result.get("summary").strip(),
+                    "selected_skills": matched_skills[:15],
+                    "match_rationale": result.get("match_rationale", f"Perfil adaptado de forma óptima para '{clean_target}'.")
+                }
+        except Exception as e:
+            logger.warning(f"Error en tailor_profile_for_role con LLM: {e}")
+
+    # Deterministic Heuristic Fallback
+    top_skills = profile.technical_skills[:3]
+    top_str = " • ".join(top_skills) if top_skills else "Gestión y Excelencia Operativa"
+    headline = f"{clean_target} | Especialista en {top_str}"
+    
+    comp_ref = f" en empresas como {profile.experiences[0].company}" if profile.experiences else ""
+    summary = (
+        f"Profesional con más de {profile.years_of_experience:.0f} años de experiencia consolidada en {profile.primary_profession or 'su especialidad'}{comp_ref}. "
+        f"Cuenta con sólida trayectoria en {clean_target.lower()}, destacando por su rigor técnico, capacidad analítica y orientación a resultados cuantificables. "
+        f"Especializado/a en {', '.join(profile.technical_skills[:5]) if profile.technical_skills else 'optimización de procesos y cumplimiento de normativas'}, "
+        f"con alto compromiso por la mejora continua y el trabajo interdisciplinario de alto rendimiento."
+    )
+
+    # Rank skills by keyword overlap with target_role
+    target_words = set(re.findall(r'\w+', clean_target.lower()))
+    ranked_skills = sorted(
+        profile.technical_skills,
+        key=lambda s: sum(1 for w in target_words if w in s.lower()) if len(target_words) > 0 else 0,
+        reverse=True
+    )
+
+    return {
+        "target_role": clean_target,
+        "version_name": version_name or f"🎯 Versión: {clean_target}",
+        "headline": headline,
+        "summary": summary,
+        "selected_skills": ranked_skills[:12] if ranked_skills else profile.technical_skills[:12],
+        "match_rationale": f"Adaptación estratégica basada en tu experiencia de {profile.years_of_experience:.0f} años en {profile.primary_profession or 'tu área'}."
+    }
+

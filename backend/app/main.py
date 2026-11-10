@@ -16,7 +16,10 @@ from app.models.schemas import (
     OutcomeSubmission, UpskillPlan
 )
 from app.storage.db import db
-from app.agents.profile_analyzer import extract_text_from_file, analyze_cv_content, assist_profile_content
+from app.agents.profile_analyzer import (
+    extract_text_from_file, analyze_cv_content, assist_profile_content,
+    suggest_roles_from_experience, tailor_profile_for_role
+)
 from app.agents.fit_evaluator import fit_evaluator
 from app.agents.drafter_reviewer import drafter_reviewer
 from app.agents.preference_learner import preference_learner
@@ -112,6 +115,41 @@ async def import_from_linkedin():
         status_code=400,
         detail="La importación directa desde perfiles de LinkedIn ha sido deshabilitada para evitar distorsiones en la experiencia profesional. Por favor sube tu currículum oficial en formato PDF (.pdf) o Word (.docx, .doc)."
     )
+
+@app.api_route("/api/profile/suggest-roles", methods=["GET", "POST"])
+def suggest_roles_endpoint(data: Optional[dict] = None):
+    """Generates suggested career roles derived directly from candidate's CV experiences and taxonomy"""
+    profile = None
+    if data and data.get("profile"):
+        try:
+            profile = CandidateProfile(**data["profile"])
+        except Exception:
+            profile = None
+    if not profile:
+        profile = db.get_profile()
+    if not profile or not profile.name or profile.name.lower() == "candidato":
+        return []
+    return suggest_roles_from_experience(profile)
+
+@app.post("/api/profile/tailor-version")
+def tailor_version_endpoint(data: dict):
+    """Tailors headline, executive summary, and prioritizes skills for a target role without hallucinations"""
+    target_role = data.get("target_role", "").strip()
+    version_name = data.get("version_name", "").strip() or None
+    if not target_role:
+        raise HTTPException(status_code=400, detail="Debes indicar un cargo objetivo para optimizar la versión.")
+    
+    profile_data = data.get("profile")
+    if profile_data:
+        profile = CandidateProfile(**profile_data)
+    else:
+        profile = db.get_profile()
+
+    if not profile or not profile.name or profile.name.lower() == "candidato":
+        raise HTTPException(status_code=400, detail="Se requiere un currículum cargado para optimizar con IA.")
+
+    tailored = tailor_profile_for_role(profile, target_role, version_name)
+    return tailored
 
 # --- Preferences & Learning Endpoints ---
 

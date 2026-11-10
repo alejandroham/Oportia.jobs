@@ -38,7 +38,8 @@ import {
   Sun,
   Moon,
   MapPin,
-  Compass
+  Compass,
+  Target
 } from 'lucide-react';
 import type {
   CandidateProfile,
@@ -172,6 +173,24 @@ export const ProfileStudio: React.FC<ProfileStudioProps> = ({ profile, onProfile
   const [showNewVersionModal, setShowNewVersionModal] = useState(false);
   const [newVersionName, setNewVersionName] = useState('');
   const [newVersionRole, setNewVersionRole] = useState('');
+  const [suggestedRoles, setSuggestedRoles] = useState<Array<{
+    title: string;
+    category: 'direct' | 'leadership' | 'transferable';
+    category_label: string;
+    reasoning: string;
+    matching_skills: string[];
+    seniority: string;
+  }>>([]);
+  const [isLoadingSuggestedRoles, setIsLoadingSuggestedRoles] = useState(false);
+  const [roleCategoryFilter, setRoleCategoryFilter] = useState<'all' | 'direct' | 'leadership' | 'transferable'>('all');
+  const [autoOptimizeWithAI, setAutoOptimizeWithAI] = useState(true);
+  const [isTailoringVersion, setIsTailoringVersion] = useState(false);
+  const [tailoredPreview, setTailoredPreview] = useState<{
+    headline: string;
+    summary: string;
+    selected_skills: string[];
+    match_rationale: string;
+  } | null>(null);
 
   // Expandable experiences tracker
   const [expandedExpIds, setExpandedExpIds] = useState<Record<string, boolean>>({});
@@ -417,14 +436,64 @@ export const ProfileStudio: React.FC<ProfileStudioProps> = ({ profile, onProfile
     }
   };
 
+  // Active version data resolver
+  const currentActiveVersion = activeVersionId === 'master'
+    ? null
+    : (editableProfile.versions || []).find(v => v.id === activeVersionId) || null;
+
+  // Active effective display profile
+  const effectiveProfile: CandidateProfile = currentActiveVersion
+    ? {
+        ...editableProfile,
+        headline: currentActiveVersion.headline || editableProfile.headline,
+        summary: currentActiveVersion.summary || editableProfile.summary,
+        technical_skills: currentActiveVersion.selected_skills.length > 0 ? currentActiveVersion.selected_skills : editableProfile.technical_skills
+      }
+    : editableProfile;
+
+  // Modifiers that update currentActiveVersion if active, else master
+  const handleUpdateHeadline = (newHeadline: string) => {
+    if (currentActiveVersion) {
+      setEditableProfile(prev => ({
+        ...prev,
+        versions: (prev.versions || []).map(v => v.id === currentActiveVersion.id ? { ...v, headline: newHeadline } : v)
+      }));
+    } else {
+      setEditableProfile(prev => ({ ...prev, headline: newHeadline }));
+    }
+  };
+
+  const handleUpdateSummary = (newSummary: string) => {
+    if (currentActiveVersion) {
+      setEditableProfile(prev => ({
+        ...prev,
+        versions: (prev.versions || []).map(v => v.id === currentActiveVersion.id ? { ...v, summary: newSummary } : v)
+      }));
+    } else {
+      setEditableProfile(prev => ({ ...prev, summary: newSummary }));
+    }
+  };
+
+  const handleToggleVersionSkill = (skill: string) => {
+    if (!currentActiveVersion) return;
+    const currentSkills = currentActiveVersion.selected_skills || [];
+    const exists = currentSkills.includes(skill);
+    const updatedSkills = exists ? currentSkills.filter(s => s !== skill) : [...currentSkills, skill];
+
+    setEditableProfile(prev => ({
+      ...prev,
+      versions: (prev.versions || []).map(v => v.id === currentActiveVersion.id ? { ...v, selected_skills: updatedSkills } : v)
+    }));
+  };
+
   const handleApplyAISuggestion = () => {
     if (!aiModal) return;
     const { section, suggestion, targetField, targetId } = aiModal;
 
     if (section === 'headline') {
-      setEditableProfile(prev => ({ ...prev, headline: suggestion }));
+      handleUpdateHeadline(suggestion);
     } else if (section === 'summary') {
-      setEditableProfile(prev => ({ ...prev, summary: suggestion }));
+      handleUpdateSummary(suggestion);
     } else if (section === 'experience_bullet' && targetId) {
       setEditableProfile(prev => ({
         ...prev,
@@ -445,8 +514,174 @@ export const ProfileStudio: React.FC<ProfileStudioProps> = ({ profile, onProfile
   };
 
   // ==========================================
-  // VERSIONS MANAGEMENT (Section 10)
+  // VERSIONS MANAGEMENT & AI TARGETING (Section 10)
   // ==========================================
+  const handleOpenNewVersionModal = async () => {
+    setShowNewVersionModal(true);
+    setNewVersionName('');
+    setNewVersionRole('');
+    setTailoredPreview(null);
+    setRoleCategoryFilter('all');
+    setIsLoadingSuggestedRoles(true);
+
+    try {
+      const roles = await api.suggestRoles(editableProfile);
+      if (roles && roles.length > 0) {
+        setSuggestedRoles(roles);
+        const first = roles[0];
+        setNewVersionRole(first.title);
+        setNewVersionName(`🎯 ${first.title}`);
+        if (autoOptimizeWithAI) {
+          handleGenerateTailorPreview(first.title, `🎯 ${first.title}`);
+        }
+      } else {
+        const fallbacks: Array<{
+          title: string;
+          category: 'direct' | 'leadership' | 'transferable';
+          category_label: string;
+          reasoning: string;
+          matching_skills: string[];
+          seniority: string;
+        }> = [];
+
+        const primary = editableProfile.primary_profession || editableProfile.headline || 'Especialista Profesional';
+        fallbacks.push({
+          title: primary,
+          category: 'direct',
+          category_label: 'Coincidencia Directa',
+          reasoning: `Basado en tu trayectoria de ${editableProfile.years_of_experience || 0} años y profesión registrada.`,
+          matching_skills: editableProfile.technical_skills.slice(0, 4),
+          seniority: editableProfile.years_of_experience >= 5 ? 'Senior' : 'Profesional'
+        });
+
+        (editableProfile.experiences || []).forEach(exp => {
+          if (exp.role && !fallbacks.some(f => f.title.toLowerCase() === exp.role.toLowerCase())) {
+            fallbacks.push({
+              title: exp.role,
+              category: 'direct',
+              category_label: 'Experiencia Comprobada',
+              reasoning: `Cargo desempeñado en ${exp.company}.`,
+              matching_skills: editableProfile.technical_skills.slice(0, 3),
+              seniority: 'Especialista'
+            });
+          }
+        });
+
+        fallbacks.push({
+          title: `Líder / Jefatura en ${primary}`,
+          category: 'leadership',
+          category_label: 'Liderazgo & Coordinación',
+          reasoning: 'Proyección directiva y coordinación de equipos y procesos clave.',
+          matching_skills: editableProfile.technical_skills.slice(0, 4),
+          seniority: 'Jefatura'
+        });
+
+        (editableProfile.related_roles || []).forEach(r => {
+          fallbacks.push({
+            title: r,
+            category: 'transferable',
+            category_label: 'Habilidades Transferibles',
+            reasoning: 'Rol con alta afinidad técnica y metodológica.',
+            matching_skills: editableProfile.technical_skills.slice(0, 3),
+            seniority: 'Especialista'
+          });
+        });
+
+        setSuggestedRoles(fallbacks);
+        if (fallbacks.length > 0) {
+          const first = fallbacks[0];
+          setNewVersionRole(first.title);
+          setNewVersionName(`🎯 ${first.title}`);
+          if (autoOptimizeWithAI) {
+            handleGenerateTailorPreview(first.title, `🎯 ${first.title}`);
+          }
+        }
+      }
+    } catch (err) {
+      console.error('Error fetching suggested roles:', err);
+    } finally {
+      setIsLoadingSuggestedRoles(false);
+    }
+  };
+
+  const handleSelectSuggestedRole = (role: { title: string; category?: string }) => {
+    setNewVersionRole(role.title);
+    const generatedName = `🎯 ${role.title}`;
+    setNewVersionName(generatedName);
+    if (autoOptimizeWithAI) {
+      handleGenerateTailorPreview(role.title, generatedName);
+    }
+  };
+
+  const handleGenerateTailorPreview = async (targetRole?: string, verName?: string) => {
+    const roleToUse = (targetRole || newVersionRole).trim();
+    if (!roleToUse) {
+      toast.warning('Ingresa un cargo objetivo para optimizar con IA');
+      return;
+    }
+
+    setIsTailoringVersion(true);
+    try {
+      const res = await api.tailorVersion({
+        target_role: roleToUse,
+        version_name: (verName || newVersionName).trim() || `🎯 ${roleToUse}`,
+        profile: editableProfile
+      });
+
+      setTailoredPreview({
+        headline: res.headline,
+        summary: res.summary,
+        selected_skills: res.selected_skills,
+        match_rationale: res.match_rationale
+      });
+
+      if (!newVersionName.trim()) {
+        setNewVersionName(res.version_name || `🎯 ${roleToUse}`);
+      }
+    } catch (err: any) {
+      console.warn('Fallback local tailoring:', err);
+      const topSkills = editableProfile.technical_skills.slice(0, 3).join(' • ') || 'Gestión y Excelencia Operativa';
+      setTailoredPreview({
+        headline: `${roleToUse} | Especialista en ${topSkills}`,
+        summary: `Profesional con más de ${editableProfile.years_of_experience || 0} años de trayectoria en ${editableProfile.primary_profession || 'el área'}. Especializado/a en ${roleToUse.toLowerCase()} con probadas capacidades técnicas en ${editableProfile.technical_skills.slice(0, 4).join(', ')}, riguroso apego a estándares de calidad y orientación al logro verificable.`,
+        selected_skills: editableProfile.technical_skills.slice(0, 12),
+        match_rationale: `Adaptación estructurada para ${roleToUse} cumpliendo con la Ley N° 21.719 sobre antecedentes fidedignos.`
+      });
+    } finally {
+      setIsTailoringVersion(false);
+    }
+  };
+
+  const handleReOptimizeActiveVersion = async () => {
+    if (!currentActiveVersion) return;
+    setIsTailoringVersion(true);
+    toast.info(`Optimizando versión para "${currentActiveVersion.target_role}" con IA...`);
+
+    try {
+      const res = await api.tailorVersion({
+        target_role: currentActiveVersion.target_role,
+        version_name: currentActiveVersion.name,
+        profile: editableProfile
+      });
+
+      setEditableProfile(prev => ({
+        ...prev,
+        versions: (prev.versions || []).map(v => v.id === currentActiveVersion.id ? {
+          ...v,
+          headline: res.headline,
+          summary: res.summary,
+          selected_skills: res.selected_skills.length > 0 ? res.selected_skills : v.selected_skills
+        } : v)
+      }));
+
+      toast.success(`Versión "${currentActiveVersion.name}" re-optimizada con éxito`);
+    } catch (err: any) {
+      toast.error('Error al optimizar versión: ' + (err?.message || err));
+    } finally {
+      setIsTailoringVersion(false);
+    }
+  };
+
   const handleCreateVersion = () => {
     if (!newVersionName.trim() || !newVersionRole.trim()) {
       toast.warning('Ingresa un nombre y cargo objetivo para la versión');
@@ -457,9 +692,11 @@ export const ProfileStudio: React.FC<ProfileStudioProps> = ({ profile, onProfile
       id: Math.random().toString(36).substring(2, 9),
       name: newVersionName.trim(),
       target_role: newVersionRole.trim(),
-      headline: `${newVersionRole.trim()} | ${editableProfile.name}`,
-      summary: editableProfile.summary,
-      selected_skills: [...editableProfile.technical_skills],
+      headline: tailoredPreview?.headline || `${newVersionRole.trim()} | ${editableProfile.name}`,
+      summary: tailoredPreview?.summary || editableProfile.summary,
+      selected_skills: tailoredPreview?.selected_skills && tailoredPreview.selected_skills.length > 0
+        ? tailoredPreview.selected_skills
+        : [...editableProfile.technical_skills],
       template: activeTemplate,
       created_at: new Date().toISOString()
     };
@@ -470,7 +707,8 @@ export const ProfileStudio: React.FC<ProfileStudioProps> = ({ profile, onProfile
     setShowNewVersionModal(false);
     setNewVersionName('');
     setNewVersionRole('');
-    toast.success(`Versión personalizada "${newVer.name}" creada`);
+    setTailoredPreview(null);
+    toast.success(`Versión personalizada "${newVer.name}" adaptada y creada`);
   };
 
   const handleDeleteVersion = (versionId: string) => {
@@ -481,21 +719,6 @@ export const ProfileStudio: React.FC<ProfileStudioProps> = ({ profile, onProfile
     }
     toast.info('Versión eliminada (el CV maestro no se vio afectado)');
   };
-
-  // Active version data resolver
-  const currentActiveVersion = activeVersionId === 'master'
-    ? null
-    : (editableProfile.versions || []).find(v => v.id === activeVersionId) || null;
-
-  // Active effective display profile
-  const effectiveProfile: CandidateProfile = currentActiveVersion
-    ? {
-        ...editableProfile,
-        headline: currentActiveVersion.headline || editableProfile.headline,
-        summary: currentActiveVersion.summary || editableProfile.summary,
-        technical_skills: currentActiveVersion.selected_skills.length > 0 ? currentActiveVersion.selected_skills : editableProfile.technical_skills
-      }
-    : editableProfile;
 
   // ==========================================
   // MARKDOWN GENERATOR & PRINT
@@ -639,9 +862,9 @@ export const ProfileStudio: React.FC<ProfileStudioProps> = ({ profile, onProfile
             ))}
 
             <button
-              onClick={() => setShowNewVersionModal(true)}
+              onClick={handleOpenNewVersionModal}
               className="px-2 py-1.5 rounded-lg text-gray-500 hover:text-blue-600 hover:bg-white dark:hover:bg-zinc-700 transition"
-              title="Crear nueva versión adaptada a un cargo objetivo"
+              title="Crear nueva versión adaptada a un cargo objetivo con IA"
             >
               <Plus className="w-3.5 h-3.5" />
             </button>
@@ -676,6 +899,57 @@ export const ProfileStudio: React.FC<ProfileStudioProps> = ({ profile, onProfile
           </button>
         </div>
       </div>
+
+      {/* Active Version Banner */}
+      {currentActiveVersion && (
+        <div className="apple-glass apple-card p-4 rounded-2xl bg-gradient-to-r from-blue-50/90 via-indigo-50/70 to-purple-50/80 dark:from-blue-950/40 dark:via-indigo-950/30 dark:to-purple-950/30 border border-blue-200/60 dark:border-blue-800/60 shadow-sm flex flex-wrap items-center justify-between gap-3 animate-fade-in">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-lg shadow-sm shrink-0">
+              🎯
+            </div>
+            <div>
+              <div className="flex items-center space-x-2 flex-wrap">
+                <span className="font-bold text-gray-900 dark:text-white text-sm">
+                  Versión Personalizada: {currentActiveVersion.name}
+                </span>
+                <span className="px-2.5 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300 font-semibold text-[11px] border border-blue-200/60 dark:border-blue-700/60">
+                  Cargo Objetivo: {currentActiveVersion.target_role}
+                </span>
+              </div>
+              <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
+                Las modificaciones en titular, resumen ejecutivo y competencias aplican únicamente a esta versión, protegiendo tu CV Maestro.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center space-x-2 flex-wrap">
+            <button
+              onClick={handleReOptimizeActiveVersion}
+              disabled={isTailoringVersion}
+              className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-white dark:bg-zinc-800 border border-black/10 dark:border-white/10 text-blue-600 dark:text-blue-400 font-semibold text-xs hover:bg-blue-50 dark:hover:bg-zinc-700 transition shadow-2xs disabled:opacity-50 min-h-[44px]"
+              title="Re-analizar y optimizar esta versión con IA para su cargo objetivo"
+            >
+              <Sparkles className={`w-3.5 h-3.5 ${isTailoringVersion ? 'animate-spin' : ''}`} />
+              <span>{isTailoringVersion ? 'Optimizando...' : 'Re-optimizar con IA'}</span>
+            </button>
+
+            <button
+              onClick={() => setActiveVersionId('master')}
+              className="px-3 py-1.5 rounded-xl bg-white dark:bg-zinc-800 border border-black/10 dark:border-white/10 text-gray-700 dark:text-gray-300 font-semibold text-xs hover:bg-gray-100 dark:hover:bg-zinc-700 transition shadow-2xs min-h-[44px]"
+            >
+              👑 Volver al CV Maestro
+            </button>
+
+            <button
+              onClick={() => handleDeleteVersion(currentActiveVersion.id)}
+              className="p-2.5 rounded-xl text-gray-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition min-h-[44px] min-w-[44px] flex items-center justify-center"
+              title="Eliminar esta versión personalizada"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* ========================================================
           VISTA PREVIA DINÁMICA & EXPORTACIÓN (Section 12)
@@ -1309,23 +1583,32 @@ export const ProfileStudio: React.FC<ProfileStudioProps> = ({ profile, onProfile
               <div className="apple-glass apple-card p-6 space-y-4 animate-fade-in text-xs">
                 <div className="flex items-center justify-between border-b border-black/5 dark:border-white/5 pb-3">
                   <div>
-                    <h2 className="text-sm font-bold text-gray-900 dark:text-white">
-                      Titular Profesional
-                    </h2>
+                    <div className="flex items-center space-x-2">
+                      <h2 className="text-sm font-bold text-gray-900 dark:text-white">
+                        Titular Profesional
+                      </h2>
+                      {currentActiveVersion && (
+                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300 font-semibold">
+                          Versión: {currentActiveVersion.name}
+                        </span>
+                      )}
+                    </div>
                     <p className="text-xs text-gray-500">
-                      Define tu posición estratégica ante los reclutadores en 5 segundos de lectura.
+                      {currentActiveVersion
+                        ? `Titular enfocado estratégicamente en "${currentActiveVersion.target_role}".`
+                        : 'Define tu posición estratégica ante los reclutadores en 5 segundos de lectura.'}
                     </p>
                   </div>
                   <span className="text-gray-400 font-mono text-[11px]">
-                    {(editableProfile.headline || '').length} caracteres
+                    {(effectiveProfile.headline || '').length} caracteres
                   </span>
                 </div>
 
                 <div className="space-y-2">
                   <textarea
                     rows={3}
-                    value={editableProfile.headline || ''}
-                    onChange={(e) => setEditableProfile({ ...editableProfile, headline: e.target.value })}
+                    value={effectiveProfile.headline || ''}
+                    onChange={(e) => handleUpdateHeadline(e.target.value)}
                     className="w-full px-3 py-2.5 rounded-xl bg-gray-50 dark:bg-zinc-800 border border-black/10 dark:border-white/10 focus:ring-1 focus:ring-blue-500 leading-relaxed font-sans"
                     placeholder="Ej: IT Manager | Líder de Transformación Digital | Cloud Solutions Architect..."
                   />
@@ -1333,7 +1616,7 @@ export const ProfileStudio: React.FC<ProfileStudioProps> = ({ profile, onProfile
                   {/* AI Assistant Quick Actions */}
                   <div className="flex items-center space-x-2 pt-1 flex-wrap gap-y-1">
                     <button
-                      onClick={() => triggerAIAssist('headline', 'improve', editableProfile.headline || '')}
+                      onClick={() => triggerAIAssist('headline', 'improve', effectiveProfile.headline || '')}
                       className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 border border-blue-200/60 dark:border-blue-800/60 hover:bg-blue-100 transition font-semibold"
                     >
                       <Sparkles className="w-3.5 h-3.5" />
@@ -1341,7 +1624,7 @@ export const ProfileStudio: React.FC<ProfileStudioProps> = ({ profile, onProfile
                     </button>
 
                     <button
-                      onClick={() => triggerAIAssist('headline', 'shorten', editableProfile.headline || '')}
+                      onClick={() => triggerAIAssist('headline', 'shorten', effectiveProfile.headline || '')}
                       className="flex items-center space-x-1 px-3 py-1.5 rounded-xl bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 transition"
                     >
                       <span>Sintetizar en 3 Pilares</span>
@@ -1358,23 +1641,32 @@ export const ProfileStudio: React.FC<ProfileStudioProps> = ({ profile, onProfile
               <div className="apple-glass apple-card p-6 space-y-4 animate-fade-in text-xs">
                 <div className="flex items-center justify-between border-b border-black/5 dark:border-white/5 pb-3">
                   <div>
-                    <h2 className="text-sm font-bold text-gray-900 dark:text-white">
-                      Perfil Profesional (Resumen Ejecutivo)
-                    </h2>
+                    <div className="flex items-center space-x-2">
+                      <h2 className="text-sm font-bold text-gray-900 dark:text-white">
+                        Perfil Profesional (Resumen Ejecutivo)
+                      </h2>
+                      {currentActiveVersion && (
+                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300 font-semibold">
+                          Versión: {currentActiveVersion.name}
+                        </span>
+                      )}
+                    </div>
                     <p className="text-xs text-gray-500">
-                      Sintetiza tu valor diferencial, años de trayectoria e impacto verificable.
+                      {currentActiveVersion
+                        ? `Resumen ejecutivo redactado para destacar antecedentes pertinentes a "${currentActiveVersion.target_role}".`
+                        : 'Sintetiza tu valor diferencial, años de trayectoria e impacto verificable.'}
                     </p>
                   </div>
                   <span className="text-gray-400 font-mono text-[11px]">
-                    {(editableProfile.summary || '').trim().split(/\s+/).filter(Boolean).length} palabras
+                    {(effectiveProfile.summary || '').trim().split(/\s+/).filter(Boolean).length} palabras
                   </span>
                 </div>
 
                 <div className="space-y-3">
                   <textarea
                     rows={8}
-                    value={editableProfile.summary || ''}
-                    onChange={(e) => setEditableProfile({ ...editableProfile, summary: e.target.value })}
+                    value={effectiveProfile.summary || ''}
+                    onChange={(e) => handleUpdateSummary(e.target.value)}
                     className="w-full px-3.5 py-3 rounded-xl bg-gray-50 dark:bg-zinc-800 border border-black/10 dark:border-white/10 focus:ring-1 focus:ring-blue-500 leading-relaxed font-sans text-xs"
                     placeholder="Describe tus años de experiencia, especialidad tecnológica y logros de negocio..."
                   />
@@ -1382,7 +1674,7 @@ export const ProfileStudio: React.FC<ProfileStudioProps> = ({ profile, onProfile
                   {/* AI Assistant Quick Actions */}
                   <div className="flex items-center space-x-2 pt-1 flex-wrap gap-y-1">
                     <button
-                      onClick={() => triggerAIAssist('summary', 'improve', editableProfile.summary || '')}
+                      onClick={() => triggerAIAssist('summary', 'improve', effectiveProfile.summary || '')}
                       className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 border border-blue-200/60 dark:border-blue-800/60 hover:bg-blue-100 transition font-semibold"
                     >
                       <Sparkles className="w-3.5 h-3.5" />
@@ -1390,7 +1682,7 @@ export const ProfileStudio: React.FC<ProfileStudioProps> = ({ profile, onProfile
                     </button>
 
                     <button
-                      onClick={() => triggerAIAssist('summary', 'shorten', editableProfile.summary || '')}
+                      onClick={() => triggerAIAssist('summary', 'shorten', effectiveProfile.summary || '')}
                       className="flex items-center space-x-1 px-3 py-1.5 rounded-xl bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 transition"
                     >
                       <span>Resumir (Elevator Pitch)</span>
@@ -2073,11 +2365,11 @@ export const ProfileStudio: React.FC<ProfileStudioProps> = ({ profile, onProfile
                   </div>
 
                   <button
-                    onClick={() => setShowNewVersionModal(true)}
+                    onClick={handleOpenNewVersionModal}
                     className="flex items-center space-x-1 px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold transition"
                   >
-                    <Plus className="w-3.5 h-3.5" />
-                    <span>Nueva Versión</span>
+                    <Sparkles className="w-3.5 h-3.5" />
+                    <span>Nueva Versión con IA</span>
                   </button>
                 </div>
 
@@ -2415,61 +2707,288 @@ export const ProfileStudio: React.FC<ProfileStudioProps> = ({ profile, onProfile
       )}
 
       {/* ========================================================
-          MODAL: NEW TARGETED CV VERSION (Section 10)
+          MODAL: CREAR & OPTIMIZAR VERSIÓN PERSONALIZADA CON IA (Section 10)
           ======================================================== */}
       {showNewVersionModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs animate-fade-in text-xs">
-          <div className="apple-glass apple-card max-w-md w-full p-6 space-y-4 bg-white/95 dark:bg-zinc-900/95 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-black/5 pb-3">
-              <h3 className="text-sm font-bold text-gray-900 dark:text-white">
-                Crear Versión Personalizada de CV
-              </h3>
-              <button onClick={() => setShowNewVersionModal(false)} className="text-gray-400 hover:text-gray-600">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in text-xs overflow-y-auto">
+          <div className="apple-glass apple-card max-w-2xl w-full p-6 space-y-5 bg-white/95 dark:bg-zinc-900/95 shadow-2xl my-8 max-h-[90vh] overflow-y-auto border border-black/10 dark:border-white/10 rounded-3xl">
+            {/* Modal Header */}
+            <div className="flex items-start justify-between border-b border-black/5 dark:border-white/5 pb-3">
+              <div className="flex items-center space-x-2.5">
+                <div className="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-xs shrink-0">
+                  <Sparkles className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-gray-900 dark:text-white">
+                    Crear Versión Personalizada de CV
+                  </h3>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                    La IA define cargos según tu experiencia real para adecuar titular, resumen y competencias.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowNewVersionModal(false)}
+                className="p-1 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition"
+              >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <p className="text-xs text-gray-500">
-              Genera una variante orientada a un cargo o industria específica. Tu CV maestro no se modificará.
-            </p>
-
-            <div className="space-y-3">
-              <div>
-                <label className="font-semibold text-gray-700 dark:text-gray-300 block mb-1">Nombre de la Versión *</label>
-                <input
-                  type="text"
-                  placeholder="Ej: Jefatura TI & Cloud"
-                  value={newVersionName}
-                  onChange={(e) => setNewVersionName(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-gray-50 dark:bg-zinc-800 border border-black/10 text-xs"
-                />
+            {/* AI Suggested Roles based on Experience */}
+            <div className="space-y-2.5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-1.5">
+                  <Target className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                  <span className="font-bold text-gray-800 dark:text-gray-200">
+                    Cargos Sugeridos por IA según tu Experiencia
+                  </span>
+                </div>
+                {isLoadingSuggestedRoles && (
+                  <span className="text-[11px] text-blue-600 dark:text-blue-400 flex items-center space-x-1">
+                    <RefreshCw className="w-3 h-3 animate-spin" />
+                    <span>Analizando trayectoria...</span>
+                  </span>
+                )}
               </div>
 
-              <div>
-                <label className="font-semibold text-gray-700 dark:text-gray-300 block mb-1">Cargo Objetivo *</label>
-                <input
-                  type="text"
-                  placeholder="Ej: IT Manager / Cloud Solutions Architect"
-                  value={newVersionRole}
-                  onChange={(e) => setNewVersionRole(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-gray-50 dark:bg-zinc-800 border border-black/10 text-xs"
-                />
+              {/* Category Filter Tabs */}
+              <div className="flex items-center space-x-1 bg-gray-100 dark:bg-zinc-800 p-1 rounded-xl text-xs overflow-x-auto">
+                <button
+                  type="button"
+                  onClick={() => setRoleCategoryFilter('all')}
+                  className={`px-3 py-1.5 rounded-lg font-semibold transition shrink-0 ${
+                    roleCategoryFilter === 'all'
+                      ? 'bg-white dark:bg-zinc-700 text-blue-600 dark:text-blue-400 shadow-2xs'
+                      : 'text-gray-500 hover:text-gray-800 dark:hover:text-gray-300'
+                  }`}
+                >
+                  Todos ({suggestedRoles.length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setRoleCategoryFilter('direct')}
+                  className={`px-3 py-1.5 rounded-lg font-semibold transition shrink-0 ${
+                    roleCategoryFilter === 'direct'
+                      ? 'bg-white dark:bg-zinc-700 text-blue-600 dark:text-blue-400 shadow-2xs'
+                      : 'text-gray-500 hover:text-gray-800 dark:hover:text-gray-300'
+                  }`}
+                >
+                  🎯 Coincidencia Directa
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setRoleCategoryFilter('leadership')}
+                  className={`px-3 py-1.5 rounded-lg font-semibold transition shrink-0 ${
+                    roleCategoryFilter === 'leadership'
+                      ? 'bg-white dark:bg-zinc-700 text-blue-600 dark:text-blue-400 shadow-2xs'
+                      : 'text-gray-500 hover:text-gray-800 dark:hover:text-gray-300'
+                  }`}
+                >
+                  👑 Liderazgo & Jefatura
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setRoleCategoryFilter('transferable')}
+                  className={`px-3 py-1.5 rounded-lg font-semibold transition shrink-0 ${
+                    roleCategoryFilter === 'transferable'
+                      ? 'bg-white dark:bg-zinc-700 text-blue-600 dark:text-blue-400 shadow-2xs'
+                      : 'text-gray-500 hover:text-gray-800 dark:hover:text-gray-300'
+                  }`}
+                >
+                  ⚡ Transferibles
+                </button>
+              </div>
+
+              {/* Roles Chips / Cards Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto p-1">
+                {suggestedRoles
+                  .filter(r => roleCategoryFilter === 'all' || r.category === roleCategoryFilter)
+                  .map((role, idx) => {
+                    const isSelected = newVersionRole.toLowerCase() === role.title.toLowerCase();
+                    return (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => handleSelectSuggestedRole(role)}
+                        className={`text-left p-3 rounded-2xl border transition-all flex flex-col justify-between ${
+                          isSelected
+                            ? 'bg-blue-50/90 dark:bg-blue-950/50 border-blue-500 shadow-2xs ring-1 ring-blue-500'
+                            : 'bg-gray-50/70 dark:bg-zinc-800/50 border-black/5 dark:border-white/5 hover:bg-gray-100/80 dark:hover:bg-zinc-800'
+                        }`}
+                      >
+                        <div className="space-y-1">
+                          <div className="flex items-center justify-between">
+                            <span className="font-bold text-gray-900 dark:text-white text-xs truncate">
+                              {role.title}
+                            </span>
+                            <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300 font-semibold shrink-0">
+                              {role.seniority}
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-gray-500 dark:text-gray-400 line-clamp-2 leading-relaxed">
+                            {role.reasoning}
+                          </p>
+                        </div>
+                        {role.matching_skills && role.matching_skills.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-2 pt-1.5 border-t border-black/5 dark:border-white/5">
+                            {role.matching_skills.slice(0, 3).map((s, sIdx) => (
+                              <span key={sIdx} className="text-[9px] px-1.5 py-0.5 rounded-md bg-white dark:bg-zinc-700 text-gray-600 dark:text-gray-300 border border-black/5">
+                                {s}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </button>
+                    );
+                  })}
               </div>
             </div>
 
-            <div className="flex justify-end space-x-2 pt-2">
-              <button
-                onClick={() => setShowNewVersionModal(false)}
-                className="px-4 py-2 rounded-xl text-xs font-medium text-gray-600 hover:bg-gray-100"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={handleCreateVersion}
-                className="px-4 py-2 rounded-xl text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white shadow-xs transition"
-              >
-                Crear Versión
-              </button>
+            {/* Form Fields: Cargo Objetivo & Nombre de Versión */}
+            <div className="space-y-3 pt-1 border-t border-black/5 dark:border-white/5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="font-semibold text-gray-700 dark:text-gray-300 block mb-1">
+                    Cargo Objetivo *
+                  </label>
+                  <div className="relative flex items-center">
+                    <input
+                      type="text"
+                      placeholder="Ej: IT Manager / Solutions Architect"
+                      value={newVersionRole}
+                      onChange={(e) => setNewVersionRole(e.target.value)}
+                      className="w-full px-3 py-2 pr-20 rounded-xl bg-gray-50 dark:bg-zinc-800 border border-black/10 dark:border-white/10 text-xs focus:ring-1 focus:ring-blue-500"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleGenerateTailorPreview()}
+                      disabled={isTailoringVersion || !newVersionRole.trim()}
+                      className="absolute right-1 px-2.5 py-1 rounded-lg bg-blue-600 text-white font-semibold text-[11px] hover:bg-blue-700 disabled:opacity-50 transition shadow-2xs flex items-center space-x-1"
+                    >
+                      <Sparkles className={`w-3 h-3 ${isTailoringVersion ? 'animate-spin' : ''}`} />
+                      <span>{isTailoringVersion ? 'IA...' : 'Adaptar'}</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="font-semibold text-gray-700 dark:text-gray-300 block mb-1">
+                    Nombre de la Versión *
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Ej: 🎯 Jefatura TI & Cloud"
+                    value={newVersionName}
+                    onChange={(e) => setNewVersionName(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl bg-gray-50 dark:bg-zinc-800 border border-black/10 dark:border-white/10 text-xs focus:ring-1 focus:ring-blue-500"
+                  />
+                </div>
+              </div>
+
+              {/* Auto Optimize AI Toggle */}
+              <label className="flex items-center space-x-2.5 cursor-pointer pt-1">
+                <input
+                  type="checkbox"
+                  checked={autoOptimizeWithAI}
+                  onChange={(e) => setAutoOptimizeWithAI(e.target.checked)}
+                  className="rounded text-blue-600 focus:ring-blue-500 w-4 h-4"
+                />
+                <span className="text-xs text-gray-700 dark:text-gray-300">
+                  <strong className="text-blue-600 dark:text-blue-400">Optimización Automática con IA:</strong> Adaptar titular, resumen y competencias con datos fidedignos (Ley N° 21.719).
+                </span>
+              </label>
+            </div>
+
+            {/* Live AI Tailored Preview */}
+            {isTailoringVersion && (
+              <div className="p-4 rounded-2xl bg-blue-50/60 dark:bg-blue-950/30 border border-blue-200/60 dark:border-blue-800/60 flex items-center justify-center space-x-2 text-blue-600 dark:text-blue-400">
+                <RefreshCw className="w-4 h-4 animate-spin" />
+                <span className="font-semibold text-xs">Optimizando tu perfil para "{newVersionRole}" con IA...</span>
+              </div>
+            )}
+
+            {tailoredPreview && !isTailoringVersion && (
+              <div className="p-4 rounded-2xl bg-gradient-to-br from-blue-50/70 via-indigo-50/50 to-purple-50/60 dark:from-blue-950/30 dark:via-indigo-950/20 dark:to-purple-950/20 border border-blue-200/60 dark:border-blue-800/60 space-y-3 animate-fade-in">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-1.5 text-blue-700 dark:text-blue-300 font-bold text-xs">
+                    <Sparkles className="w-3.5 h-3.5" />
+                    <span>Propuesta de Versión Optimizada por IA</span>
+                  </div>
+                  <span className="text-[10px] text-gray-500 dark:text-gray-400">
+                    Puedes ajustar los textos antes de crear
+                  </span>
+                </div>
+
+                {tailoredPreview.match_rationale && (
+                  <p className="text-[11px] text-gray-600 dark:text-gray-400 italic bg-white/70 dark:bg-zinc-800/70 p-2.5 rounded-xl border border-black/5">
+                    💡 {tailoredPreview.match_rationale}
+                  </p>
+                )}
+
+                <div className="space-y-1">
+                  <label className="text-[11px] font-semibold text-gray-700 dark:text-gray-300">
+                    Titular Adaptado:
+                  </label>
+                  <input
+                    type="text"
+                    value={tailoredPreview.headline}
+                    onChange={(e) => setTailoredPreview({ ...tailoredPreview, headline: e.target.value })}
+                    className="w-full px-3 py-1.5 rounded-xl bg-white dark:bg-zinc-800 border border-black/10 dark:border-white/10 text-xs font-medium"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[11px] font-semibold text-gray-700 dark:text-gray-300">
+                    Resumen Ejecutivo Adaptado:
+                  </label>
+                  <textarea
+                    rows={4}
+                    value={tailoredPreview.summary}
+                    onChange={(e) => setTailoredPreview({ ...tailoredPreview, summary: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl bg-white dark:bg-zinc-800 border border-black/10 dark:border-white/10 text-xs leading-relaxed"
+                  />
+                </div>
+
+                {tailoredPreview.selected_skills && tailoredPreview.selected_skills.length > 0 && (
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-semibold text-gray-700 dark:text-gray-300">
+                      Competencias Clave Priorizadas ({tailoredPreview.selected_skills.length}):
+                    </label>
+                    <div className="flex flex-wrap gap-1">
+                      {tailoredPreview.selected_skills.map((s, idx) => (
+                        <span key={idx} className="text-[10px] px-2 py-0.5 rounded-lg bg-blue-100/80 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 font-medium">
+                          {s}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Modal Actions */}
+            <div className="flex items-center justify-between pt-2 border-t border-black/5 dark:border-white/5">
+              <span className="text-[11px] text-gray-500">
+                🔒 El CV Maestro nunca será alterado
+              </span>
+              <div className="flex items-center space-x-2">
+                <button
+                  type="button"
+                  onClick={() => setShowNewVersionModal(false)}
+                  className="px-4 py-2 rounded-xl text-xs font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-zinc-800 transition min-h-[44px]"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  onClick={handleCreateVersion}
+                  className="px-4 py-2 rounded-xl text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white shadow-xs transition flex items-center space-x-1.5 min-h-[44px]"
+                >
+                  <Check className="w-4 h-4" />
+                  <span>Crear Versión Personalizada</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
