@@ -60,8 +60,8 @@ export const Navbar: React.FC<NavbarProps> = ({
               alt="Nexus.Job"
               className="h-7 sm:h-8 w-auto object-contain hidden dark:block group-hover:scale-[1.02] transition"
             />
-            <span className="text-[10px] font-bold tracking-wider uppercase px-1.5 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 border border-blue-200/60 dark:border-blue-800/60 shrink-0">
-              AI
+            <span className="text-[10px] font-mono font-bold tracking-wider px-1.5 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 border border-blue-200/60 dark:border-blue-800/60 shrink-0">
+              v1.0.0
             </span>
           </button>
 

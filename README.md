@@ -2,9 +2,11 @@
 
 <div align="center">
 
+[![Version](https://img.shields.io/badge/Versi%C3%B3n-1.0.0%20Official-blue.svg?style=for-the-badge)](CHANGELOG.md)
 [![GitHub Sponsors](https://img.shields.io/badge/Sponsor%20❤️-alejandroham-ff69b4.svg?style=for-the-badge&logo=github)](https://github.com/sponsors/alejandroham)
 [![Instagram](https://img.shields.io/badge/Instagram-@not.kano-E4405F.svg?style=for-the-badge&logo=instagram)](https://www.instagram.com/not.kano/)
 [![Manual de Usuario](https://img.shields.io/badge/📖%20Manual%20de%20Usuario-Ver%20Guía-blue.svg?style=for-the-badge)](docs/MANUAL_DE_USUARIO.md)
+[![Changelog](https://img.shields.io/badge/Changelog-Ver%20Cambios-indigo.svg?style=for-the-badge)](CHANGELOG.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](LICENSE)
 [![Local First](https://img.shields.io/badge/Privacy-100%25%20Local--First-emerald.svg?style=for-the-badge)](docs/MANUAL_DE_USUARIO.md#9-privacidad-respaldos-cifrados-aes-256--ley-n-21719)
 

@@ -215,6 +215,11 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
       setTimeout(() => scrollToBottom('smooth'), 50);
 
       if (res.preferences) {
+        const oldVp = preferences?.profile_dna?.summary;
+        const newVp = res.preferences?.profile_dna?.summary;
+        if (newVp && newVp !== oldVp) {
+          toast.success('Propuesta de Valor Actualizada', 'Tu ADN profesional ha sido calibrado.');
+        }
         onPreferencesUpdated(res.preferences);
       }
 

@@ -353,17 +353,25 @@ RESPONDE ÚNICAMENTE CON UN JSON:
 
         msg_lower = message.lower().strip()
 
-        # ── 1. Anti-Jailbreak Guardrail ───────────────────────────────────────────
-        jailbreak_patterns = [
+        # ── 1. Strict Security, Code Tampering & Anti-Jailbreak Guardrail ───────
+        prohibited_intents = [
             "ignore previous", "ignora las instrucciones", "ignora todas las instrucciones",
             "jailbreak", "modo desarrollador", "developer mode", "finge que eres", "dan mode",
-            "rompe tu programacion", "cambia tus reglas", "actua como", "olvida tus reglas"
+            "rompe tu programacion", "cambia tus reglas", "actua como", "olvida tus reglas",
+            "escribe codigo", "escribe un codigo", "genera codigo", "codigo python", "script python",
+            "crea un script", "automatiza con python", "automatizacion con python", "insertar codigo",
+            "modifica el codigo", "editar el codigo", "cambiar funciones", "hack", "hackear",
+            "hackeo", "exploit", "vulnerar", "inyeccion de codigo", "reverse engineering",
+            "crackear", "bot automatico", "selenium", "playwright", "beautifulsoup script"
         ]
-        if any(p in msg_lower for p in jailbreak_patterns):
+        if any(p in msg_lower for p in prohibited_intents):
             refusal_msg = (
-                "Como Nexus, mi propósito está estrictamente enfocado en optimizar tu perfil profesional, "
-                "estructurar tus logros de carrera y ayudarte en la búsqueda de empleo. "
-                "No puedo realizar tareas fuera de ese ámbito. ¿Qué proyecto o vacante de tu Radar te gustaría que revisemos?"
+                "🛡️ Como Nexus, mi rol está estrictamente delimitado a la asesoría de empleabilidad, "
+                "optimización de tu perfil/CV, refinamiento de tu ADN profesional y preparación para entrevistas "
+                "dentro de las capacidades oficiales de NexusJob AI.\n\n"
+                "Tengo terminantemente prohibido generar código de programación, sugerir scripts o automatizaciones externas "
+                "(como scripts en Python), editar el código fuente del sistema o hacer alusiones a vulneraciones o hackeos.\n\n"
+                "¿Deseas que revisemos tu Propuesta de Valor Sintetizada, analicemos las ofertas de tu Radar o preparemos una entrevista?"
             )
             return {
                 "reply": refusal_msg,
@@ -371,8 +379,18 @@ RESPONDE ÚNICAMENTE CON UN JSON:
                 "new_story": None,
                 "new_insights": [],
                 "new_deal_breakers": [],
+                "quick_replies": ["Revisar Propuesta de Valor", "Ver vacantes en Radar", "¿Cómo subir mi Fit Score?"],
                 "preferences": prefs.model_dump()
             }
+
+        # Check for intent to update Value Proposition / Professional DNA
+        value_prop_keywords = [
+            "propuesta de valor", "propuesta de valor sintetizada", "adn profesional",
+            "sintetizar mi perfil", "actualizar mi resumen de adn", "actualizar propuesta de valor",
+            "mejorar propuesta de valor", "cambiar propuesta de valor", "redactar mi propuesta de valor",
+            "definir mi propuesta de valor"
+        ]
+        is_value_prop_intent = any(k in msg_lower for k in value_prop_keywords)
 
         # ── 2. Compact Radar Jobs Context (Token-Optimized) ──────────────────────
         job_intent_keywords = [
@@ -410,8 +428,20 @@ RESPONDE ÚNICAMENTE CON UN JSON:
 
         # ── 3. Strict & Token-Efficient System Instructions with Proactive Coaching ──
         system_instruction = (
-            "Eres 'Nexus', el copiloto inteligente de perfil profesional, empleabilidad y búsqueda de empleo de NexusJob AI.\n\n"
-            "DIRECTRICES FUNDAMENTALES DE MEMORIA, CONTINUIDAD Y COACHING PROACTIVO:\n"
+            "Eres 'Nexus', el copiloto inteligente de perfil profesional, empleabilidad y desarrollo de carrera de NexusJob AI.\n\n"
+            "REGLAS DE ORO DE SEGURIDAD Y DELIMITACIÓN ESTRICTA (INVIOLABLES):\n"
+            "1. PROHIBICIÓN ABSOLUTA DE GENERAR CÓDIGO: Jamás redactes código de programación en ningún lenguaje "
+            "(Python, JavaScript, Shell, Bash, SQL, C++, etc.), ni fragmentos ejecutables, ni scripts de automatización externa. "
+            "Nexus no es un asistente de programación ni un generador de scripts.\n"
+            "2. PROHIBICIÓN DE MODIFICAR CÓDIGO FUENTE O ALTERAR FUNCIONES: Tienes terminantemente prohibido sugerir ediciones al código "
+            "fuente de NexusJob AI, proponer parches o alterar sus funciones predeterminadas.\n"
+            "3. PROHIBICIÓN DE ALUSIONES A HACKEOS O EVASIONES: No hagas ninguna alusión a hackeos, vulnerabilidades, bypasses, "
+            "bots automáticos ni técnicas de elusión de seguridad.\n"
+            "4. ACTUALIZACIÓN DE PROPUESTA DE VALOR SINTETIZADA: Si el candidato solicita actualizar, refinar o corregir su "
+            "'Propuesta de Valor Sintetizada' o ADN Profesional, analiza sus antecedentes y redacta el texto profesional en el campo "
+            "'updated_value_proposition'. Describe en tu respuesta la nueva redacción y explica cómo potencia su impacto ante reclutadores. "
+            "NUNCA ofrezcas scripts ni automatizaciones con Python.\n\n"
+            "DIRECTRICES DE CONTINUIDAD Y COACHING PROACTIVO:\n"
             "1. MEMORIA DE CONTEXTO ACTIVA (CRÍTICO): Mantén estricta memoria de todas las preguntas y respuestas previas "
             "registradas en el 'HISTORIAL DE LA CONVERSACIÓN PREVIA'. Si el candidato hace preguntas de seguimiento "
             "(como 'y de esos?', 'cuál me recomiendas?', 'por qué?', 'recuerdas lo que te dije de mi rol?', "
@@ -425,7 +455,7 @@ RESPONDE ÚNICAMENTE CON UN JSON:
             "4. RESPUESTAS RÁPIDAS ('quick_replies'): Genera siempre entre 2 y 4 opciones o respuestas sugeridas breves (frases concisas de 2 a 5 palabras) "
             "para que el candidato pueda pulsar con un solo toque desde su móvil o computador para responder o avanzar.\n"
             "5. CERO ALUCINACIONES: Basa tus afirmaciones estrictamente en los antecedentes reales del candidato y en las ofertas reales del Radar provistas.\n"
-            "6. SEGURIDAD: Mantente en tu rol de asistente de empleabilidad y desarrollo profesional.\n\n"
+            "6. SEGURIDAD: Mantente 100% en tu rol de asistente de empleabilidad y desarrollo profesional.\n\n"
             "RESPONDE ESTRICTAMENTE EN FORMATO JSON."
         )
 
@@ -480,6 +510,7 @@ INFORMACIÓN DEL CANDIDATO:
 - Años de Experiencia: {profile.years_of_experience}
 - Competencias Técnicas Clave: {', '.join(top_skills)}
 - Región / Cobertura: {profile.location or 'Chile'}
+- ADN Profesional Actual: "{prefs.profile_dna.summary if prefs.profile_dna else 'No especificado'}"
 - Preferencias Registradas: {json.dumps(prefs.auto_learned_insights[:5], ensure_ascii=False)}
 
 {relevant_jobs_section}
@@ -496,10 +527,12 @@ NUEVO MENSAJE DEL CANDIDATO (Responde con memoria contextual de lo conversado):
 =======================================================
 "{message}"
 
-FORMATO OBLIGATORIO JSON:
+FORMATO OBLIGATORIO JSON (ESTRICTAMENTE EN PROSA PROFESIONAL, NUNCA CÓDIGO NI SCRIPTS):
 {{
-  "assistant_reply": "Tu respuesta como Nexus (resolviendo primero la consulta y cerrando con una pregunta de coaching proactivo si aplica)",
+  "assistant_reply": "Tu respuesta como Nexus (en prosa profesional, resolviendo primero la consulta y cerrando con una pregunta de coaching proactivo si aplica. NUNCA generes código)",
   "quick_replies": ["Opción rápida 1", "Opción rápida 2", "Opción rápida 3"],
+  "updated_value_proposition": "Nueva propuesta de valor sintetizada en prosa profesional si el usuario solicitó actualizarla o corregirla; de lo contrario null",
+  "updated_core_strengths": ["Fortaleza 1", "Fortaleza 2"],
   "star_story": {{
     "title": "Título sintético del logro",
     "situation_and_task": "Contexto breve",
@@ -512,7 +545,7 @@ FORMATO OBLIGATORIO JSON:
   "preferred_technologies": ["Tecnologías destacadas si las mencionó"],
   "target_roles": ["Roles específicos de interés si los mencionó"]
 }}
-(Si el mensaje no contiene un caso de éxito nuevo, 'star_story' debe ser null).
+(Si el mensaje no contiene un caso de éxito nuevo, 'star_story' debe ser null. Si no solicitó actualizar la propuesta de valor, 'updated_value_proposition' debe ser null).
 """
 
         new_story_learned = None
@@ -523,7 +556,29 @@ FORMATO OBLIGATORIO JSON:
             res = llm.generate_json(prompt, system_instruction=system_instruction)
             if not res or not res.get("assistant_reply"):
                 raise ValueError("Respuesta vacía o formato inválido del motor de IA")
-            assistant_reply = res.get("assistant_reply").strip()
+            assistant_reply = str(res.get("assistant_reply", "")).strip()
+
+            # Output Sanitizer: Strip any unintended code blocks or python script suggestions
+            if "```" in assistant_reply or "import " in assistant_reply or "def " in assistant_reply:
+                assistant_reply = re.sub(r'```[\s\S]*?```', '', assistant_reply).strip()
+                cleaned_lines = [l for l in assistant_reply.split('\n') if not l.strip().startswith(('import ', 'from ', 'def ', 'class ', 'pip install', 'python '))]
+                assistant_reply = '\n'.join(cleaned_lines).strip()
+                if not assistant_reply:
+                    assistant_reply = "He analizado tus antecedentes profesionales y actualizado tu información en tu perfil. ¿Qué otro aspecto te gustaría revisar?"
+
+            # Process Updated Value Proposition (ProfileDNA)
+            updated_vp = res.get("updated_value_proposition")
+            if updated_vp and isinstance(updated_vp, str) and len(updated_vp.strip()) > 10:
+                if not prefs.profile_dna:
+                    prefs.profile_dna = ProfileDNA()
+                prefs.profile_dna.summary = updated_vp.strip()
+                strengths = res.get("updated_core_strengths")
+                if isinstance(strengths, list) and strengths:
+                    cleaned_str = [str(s).strip() for s in strengths if str(s).strip()]
+                    if cleaned_str:
+                        prefs.profile_dna.core_strengths = cleaned_str[:5]
+                self._update_maturity(prefs)
+                db.save_preferences(prefs)
 
             # Process STAR Story if detected
             story_data = res.get("star_story")
@@ -610,7 +665,28 @@ FORMATO OBLIGATORIO JSON:
                     last_user_message = prev_m.get("content", "").strip()
                     break
 
-            if is_job_query:
+            if is_value_prop_intent:
+                # Deterministic synthesis of Value Proposition from candidate profile
+                skills_summary = ", ".join(top_skills[:3]) if top_skills else "gestión tecnológica y arquitectura de soluciones"
+                exp_years = profile.years_of_experience or 7
+                title = profile.headline or profile.primary_profession or "Ingeniero y Líder Profesional"
+                new_vp = (
+                    f"{title} con más de {exp_years} años de trayectoria demostrable, especializado en {skills_summary}. "
+                    f"Orientado a la optimización de procesos, liderazgo de proyectos estratégicos y generación de impacto operativo medible."
+                )
+                if not prefs.profile_dna:
+                    prefs.profile_dna = ProfileDNA()
+                prefs.profile_dna.summary = new_vp
+                self._update_maturity(prefs)
+                db.save_preferences(prefs)
+                reply = (
+                    f"He analizado tus antecedentes y actualizado exitosamente tu **Propuesta de Valor Sintetizada** en tu ADN profesional:\n\n"
+                    f"> \"{new_vp}\"\n\n"
+                    f"Esta síntesis ya quedó integrada en tu memoria cognitiva y servirá de base para alinear el Comité de Selección, "
+                    f"adaptar tus cartas de presentación y calibrar tu Fit Score. ¿Deseas enfatizar alguna especialidad o logro adicional?"
+                )
+                quick_replies = ["Guardar y continuar", "Enfatizar liderazgo", "Buscar vacantes afines"]
+            elif is_job_query:
                 all_jobs = db.get_jobs()
                 top = all_jobs[:3]
                 jobs_summary = "\n".join([f"• {j.title} en {j.company} ({'100% Remoto' if j.is_remote else j.location or 'Chile'})" for j in top])

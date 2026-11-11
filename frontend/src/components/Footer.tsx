@@ -19,9 +19,14 @@ export const Footer: React.FC<FooterProps> = ({ onNavigateToTab }) => {
               className="w-8 h-8 rounded-xl object-contain shadow-xs shrink-0"
             />
             <div>
-              <span className="font-bold text-gray-900 dark:text-white text-sm">
-                NexusJob AI
-              </span>
+              <div className="flex items-center space-x-2">
+                <span className="font-bold text-gray-900 dark:text-white text-sm">
+                  NexusJob AI
+                </span>
+                <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border border-blue-300/40">
+                  v1.0.0
+                </span>
+              </div>
               <p className="text-[11px] text-gray-500 dark:text-gray-400">
                 Ecosistema Autónomo de Empleabilidad, Comité de Selección IA y Coach Profesional
               </p>
