@@ -1,0 +1,9 @@
+{
+  "name": "oportia-workspace",
+  "version": "1.0.1",
+  "private": true,
+  "scripts": {
+    "build": "sh -c 'if [ -d \"frontend\" ]; then (cd frontend && npm install && npm run build); else npm run build; fi'",
+    "start": "sh -c 'if [ -d \"frontend\" ]; then (cd frontend && npm run preview); else npm run preview; fi'"
+  }
+}
