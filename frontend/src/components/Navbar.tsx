@@ -62,7 +62,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               className="h-8 sm:h-9 w-auto object-contain hidden dark:block group-hover:scale-[1.02] transition"
             />
             <span className="text-[10px] font-mono font-bold tracking-wider px-1.5 py-0.5 rounded-full bg-[#20A88A]/10 dark:bg-[#20A88A]/20 text-[#20A88A] dark:text-[#8AD9C4] border border-[#20A88A]/30 shrink-0">
-              v1.0.0
+              v1.0.1
             </span>
           </button>
 

@@ -1,13 +1,14 @@
 # 🚀 Guía de Publicación y Despliegue en Vercel
 
-Esta guía detalla cómo publicar **NexusJob AI** en [Vercel](https://vercel.com) de manera rápida, segura y optimizada.
+Esta guía detalla cómo publicar **Oportia Jobs IA** en [Vercel](https://vercel.com) de manera rápida, segura y optimizada.
 
 ---
 
 ## 📌 Resumen de Arquitectura en Vercel
 
 El repositorio ya está preconfigurado de fábrica con los archivos necesarios para Vercel:
-- `vercel.json`: Orquesta la compilación del frontend en Vite y el enrutamiento hacia la API.
+- `vercel.json`: Orquesta la compilación del frontend en Vite, preserva el servicio de archivos estáticos (`"handle": "filesystem"`) y enruta la API.
+- `frontend/vercel.json`: Reglas específicas para el despliegue con Root Directory `frontend`.
 - `api/index.py`: Punto de entrada Serverless ASGI para FastAPI.
 - `requirements.txt`: Dependencias del backend instaladas automáticamente por el runtime de Vercel.
 
@@ -39,10 +40,10 @@ Esta opción publica tanto la interfaz visual (React) como el backend (FastAPI e
    - Ve a [https://vercel.com](https://vercel.com) e inicia sesión con tu cuenta de **GitHub**.
 2. **Importar el Repositorio:**
    - Haz clic en **"Add New..."** ➔ **"Project"**.
-   - Busca tu repositorio: `alejandroham/Job-Search-All-IA` y haz clic en **"Import"**.
+   - Busca tu repositorio: `alejandroham/Oportia.jobs` y haz clic en **"Import"**.
 3. **Configuración del Proyecto (Automática):**
    - **Framework Preset:** `Vite` (o `Other`).
-   - **Root Directory:** `./` (dejar por defecto en la raíz).
+   - **Root Directory:** `./` (dejar por defecto en la raíz) o `frontend` si prefieres desplegar solo la UI desacoplada.
    - **Build Command:** `cd frontend && npm install && npm run build` *(configurado en `vercel.json`)*.
    - **Output Directory:** `frontend/dist` *(configurado en `vercel.json`)*.
 4. **Variables de Entorno (Environment Variables):**
@@ -51,7 +52,7 @@ Esta opción publica tanto la interfaz visual (React) como el backend (FastAPI e
      - `DEFAULT_PROVIDER`: `gemini`
 5. **Hacer clic en "Deploy":**
    - Vercel compilará el frontend y desplegará la función serverless de Python.
-   - En aproximadamente 1-2 minutos obtendrás tu URL pública oficial (ej: `https://job-search-all-ia.vercel.app`).
+   - En aproximadamente 1-2 minutos obtendrás tu URL pública oficial (ej: `https://oportia-jobs.vercel.app`).
 
 > [!NOTE]
 > **Consideración técnica sobre Serverless:**  
@@ -69,11 +70,11 @@ En entornos de alta concurrencia de IA o scrapers intensivos, la arquitectura pr
 1. **Despliega el Backend en Render o Railway:**
    - Conecta el repo y configura el comando de inicio:
      `uvicorn app.main:app --host 0.0.0.0 --port $PORT` con directorio raíz `backend`.
-   - Obtendrás una URL como: `https://nexusjob-backend.onrender.com`.
+   - Obtendrás una URL como: `https://oportia-backend.onrender.com`.
 2. **Despliega el Frontend en Vercel:**
    - En Vercel, agrega la variable de entorno:
      ```env
-     VITE_API_URL=https://nexusjob-backend.onrender.com/api
+     VITE_API_URL=https://oportia-backend.onrender.com/api
      ```
    - El frontend automáticamente se comunicará con tu backend dedicado en la nube.
 
@@ -81,7 +82,7 @@ En entornos de alta concurrencia de IA o scrapers intensivos, la arquitectura pr
 
 ## 📱 Almacenamiento Soberano en Vercel
 
-NexusJob AI almacena los datos sensibles (tu CV, notas y claves) de forma **Soberana en el Cliente** mediante `IndexedDB` y `localStorage` en tu propio navegador.
+Oportia Jobs IA almacena los datos sensibles (tu CV, notas y claves) de forma **Soberana en el Cliente** mediante `IndexedDB` y `localStorage` en tu propio navegador.
 
 Esto significa que al publicar en Vercel:
 - **Tus datos personales no se comparten con otros usuarios:** Cada persona que entre a tu URL de Vercel tendrá su propia sesión soberana aislada en su dispositivo.
@@ -93,6 +94,6 @@ Esto significa que al publicar en Vercel:
 
 Una vez desplegado tu proyecto en Vercel:
 1. Ve a **Project Settings** ➔ **Domains**.
-2. Ingresa tu dominio o subdominio (ej: `empleo.midominio.cl` o `nexusjob.com`).
+2. Ingresa tu dominio o subdominio (ej: `empleo.midominio.cl` u `oportia.jobs`).
 3. Vercel te proporcionará los registros DNS (`CNAME` o `A`) para configurar en tu registrador (NIC Chile, Cloudflare, Namecheap, etc.).
 4. El certificado SSL (HTTPS) se generará y renovará de forma 100% gratuita y automática.

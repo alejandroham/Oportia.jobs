@@ -36,8 +36,8 @@ load_dotenv(BASE_DIR / ".env")
 class Settings:
     BASE_DIR: Path = BASE_DIR
     DATA_DIR: Path = DATA_DIR
-    PROJECT_NAME: str = "Oportia Jobs IA - Ecosistema Inteligente de Búsqueda de Empleo"
-    VERSION: str = "1.0.0"
+    PROJECT_NAME: str = "Oportia Jobs IA - Tu talento. Tus decisiones. Tus oportunidades."
+    VERSION: str = "1.0.1"
     
     # Storage Paths
     PROFILE_FILE: Path = DATA_DIR / "profile.json"

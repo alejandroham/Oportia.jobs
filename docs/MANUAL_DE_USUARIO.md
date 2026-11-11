@@ -1,4 +1,4 @@
-# NexusJob AI — Manual Maestro de Usuario
+# Oportia Jobs IA — Manual Maestro de Usuario
 > Guía completa paso a paso, manual de operaciones, explicación de módulos y capturas visuales del ecosistema autónomo de empleabilidad soberana.
 
 ---
@@ -11,7 +11,7 @@
 5. [Módulo 3: Comité de Evaluación IA (5 Evaluadores + Director)](#5-módulo-3-comité-de-evaluación-ia-5-evaluadores--director)
 6. [Módulo 4: Coach IA & Centro de Superación Profesional](#6-módulo-4-coach-ia--centro-de-superación-profesional)
 7. [Módulo 5: Mis Postulaciones & Laboratorio de Documentos](#7-módulo-5-mis-postulaciones--laboratorio-de-documentos)
-8. [Módulo 6: Memoria Cognitiva & Asistente Nexus](#8-módulo-6-memoria-cognitiva--asistente-nexus)
+8. [Módulo 6: Memoria Cognitiva & Copiloto Opi](#8-módulo-6-memoria-cognitiva--copiloto-opi)
 9. [Privacidad, Respaldos Cifrados AES-256 & Ley N° 21.719](#9-privacidad-respaldos-cifrados-aes-256--ley-n-21719)
 10. [Conexión Externa & Servidor MCP](#10-conexión-externa--servidor-mcp)
 11. [Comunidad, Redes y Patrocinio (Sponsors)](#11-comunidad-redes-y-patrocinio-sponsors)
@@ -20,11 +20,11 @@
 
 ## 1. Introducción & Filosofía Soberana
 
-**NexusJob AI** es un ecosistema agéntico de empleabilidad de código abierto diseñado bajo una premisa fundamental: **el control soberano total pertenece al profesional postulante**.
+**Oportia Jobs IA** es un ecosistema agéntico de empleabilidad de código abierto diseñado bajo una premisa fundamental: **el control soberano total pertenece al profesional postulante**.
 
 ```
 ┌────────────────────────────────────────────────────────────────────────┐
-│                   PRINCIPIOS FUNDAMENTALES DE NEXUSJOB AI              │
+│               PRINCIPIOS FUNDAMENTALES DE OPORTIA JOBS IA              │
 ├──────────────────────────────────┬─────────────────────────────────────┤
 │ 🛡️ Local-First & Zero-Knowledge   │ Tus datos no se envían a la nube.   │
 │ 🇨🇱 Cumplimiento Ley N° 21.719     │ Consentimiento explícito y olvido.  │
@@ -132,7 +132,7 @@ El **Radar de Empleo** explora activamente cientos de fuentes laborales sin nece
 
 ## 5. Módulo 3: Comité de Evaluación IA (5 Evaluadores + Director)
 
-A diferencia de los analizadores simples que solo entregan un porcentaje ciego, NexusJob AI implementa un **Comité Colegiado de Selección Multidisciplinario** con 5 roles especializados supervisados por un Director de Selección.
+A diferencia de los analizadores simples que solo entregan un porcentaje ciego, Oportia Jobs IA implementa un **Comité Colegiado de Selección Multidisciplinario** con 5 roles especializados supervisados por un Director de Selección.
 
 ```
 ┌────────────────────────────────────────────────────────────────────────┐
@@ -245,21 +245,21 @@ El módulo **Mis Postulaciones** unifica el seguimiento de empresas en un flujo 
 
 ---
 
-## 8. Módulo 6: Memoria Cognitiva & Asistente Nexus
+## 8. Módulo 6: Memoria Cognitiva & Copiloto Opi
 
 La **Memoria Cognitiva Continua** es el cerebro que permite a la IA aprender de ti con cada postulación y entrevista, evitando que tengas que repetir tus antecedentes una y otra vez.
 
 ```
 ┌────────────────────────────────────────────────────────────────────────┐
-│ [ESPACIO PARA CAPTURA DE PANTALLA: MEMORIA COGNITIVA & ASISTENTE NEXUS]│
+│ [ESPACIO PARA CAPTURA DE PANTALLA: MEMORIA COGNITIVA & COPILOTO OPI]   │
 │                                                                        │
 │ Recomendación: Captura del centro de memoria mostrando el medidor de   │
 │ madurez (%), el ADN profesional, las historias STAR registradas y el   │
-│ cajón flotante del Asistente Nexus abierto.                            │
+│ cajón flotante del Copiloto Opi abierto.                               │
 └────────────────────────────────────────────────────────────────────────┘
 ```
-![Captura de Pantalla: Memoria Cognitiva y Chat Nexus](docs/screenshots/07_cognitive_memory.png)
-*Figura 7: Centro de mando de la Memoria Cognitiva y asistente conversacional flotante.*
+![Captura de Pantalla: Memoria Cognitiva y Copiloto Opi](docs/screenshots/07_cognitive_memory.png)
+*Figura 7: Centro de mando de la Memoria Cognitiva y copiloto conversacional flotante Opi.*
 
 ### Características de la Memoria:
 - **ADN Profesional:** Perfil inferido de tu propuesta de valor, tono comunicativo y seniority real.
@@ -267,13 +267,13 @@ La **Memoria Cognitiva Continua** es el cerebro que permite a la IA aprender de 
 - **Reglas de Afinidad:** Aprende qué tipo de empresas, salarios y condiciones laborales prefieres o descartas.
 - **Sincronización Profunda (`⚡ Sincronizar Memoria`):** Reanaliza todo tu historial para actualizar tu calibración con un solo clic.
 - **Reinicio de Fábrica Seguro (`Reiniciar Memoria`):** Permite restablecer los patrones aprendidos sin tocar tu CV ni tus postulaciones guardadas.
-- **Asistente Nexus (Botón Flotante):** Chat disponible en cualquier pantalla para hacer consultas en lenguaje natural, pedir consejos salariales o resolver dudas sobre ofertas.
+- **Copiloto Opi (Botón Flotante):** Chat inteligente disponible en cualquier pantalla para hacer consultas en lenguaje natural, pedir consejos salariales o resolver dudas sobre ofertas con guardrails estrictos de seguridad.
 
 ---
 
 ## 9. Privacidad, Respaldos Cifrados AES-256 & Ley N° 21.719
 
-NexusJob AI respeta estrictamente los principios de **Privacy by Design** y el marco de protección de datos personales de la **Ley N° 21.719 y Ley 19.628 de Chile**.
+Oportia Jobs IA respeta estrictamente los principios de **Privacy by Design** y el marco de protección de datos personales de la **Ley N° 21.719 y Ley 19.628 de Chile**.
 
 ```
 ┌────────────────────────────────────────────────────────────────────────┐
@@ -281,7 +281,7 @@ NexusJob AI respeta estrictamente los principios de **Privacy by Design** y el m
 │                                                                        │
 │ Recomendación: Captura del modal de respaldo cifrado mostrando las     │
 │ opciones de Exportar Respaldo con contraseña, Importar archivo         │
-│ .nexusjob y el botón de Purga Total Soberana.                          │
+│ .oportia y el botón de Purga Total Soberana.                           │
 └────────────────────────────────────────────────────────────────────────┘
 ```
 ![Captura de Pantalla: Privacidad y Respaldo Cifrado](docs/screenshots/08_privacy_backup.png)
@@ -290,7 +290,7 @@ NexusJob AI respeta estrictamente los principios de **Privacy by Design** y el m
 ### Garantías de Seguridad:
 1. **Almacenamiento Local (Zero-Knowledge):**
    - Tus datos residen en la base de datos local de tu navegador (IndexedDB) y en tu máquina local (`data/`). No existen servidores intermedios leyendo tu historial.
-2. **Cifrado AES-GCM de 256 bits en Respaldos (`.nexusjob`):**
+2. **Cifrado AES-GCM de 256 bits en Respaldos (`.oportia`):**
    - Al exportar tu información, los archivos se cifran mediante **AES-GCM de 256 bits con derivación PBKDF2** bajo la contraseña que tú elijas. Nadie sin tu contraseña puede acceder al contenido.
 3. **Gestión Protegida de API Keys:**
    - Las llaves de Google Gemini, OpenAI o Anthropic se almacenan cifradas localmente y viajan directamente al proveedor oficial de IA.
@@ -301,16 +301,16 @@ NexusJob AI respeta estrictamente los principios de **Privacy by Design** y el m
 
 ## 10. Conexión Externa & Servidor MCP
 
-NexusJob AI implementa un servidor estándar **Model Context Protocol (MCP)**, permitiendo que agentes de escritorio como **Claude Desktop**, **Cursor**, **Gemini CLI** o entornos compatibles operen sobre tus datos de empleo con total soberanía.
+Oportia Jobs IA implementa un servidor estándar **Model Context Protocol (MCP)**, permitiendo que agentes de escritorio como **Claude Desktop**, **Cursor**, **Gemini CLI** o entornos compatibles operen sobre tus datos de empleo con total soberanía.
 
 ### Configuración de Claude Desktop (`claude_desktop_config.json`):
 ```json
 {
   "mcpServers": {
-    "nexusjob-ai": {
+    "oportia-jobs": {
       "command": "python",
       "args": ["run_mcp.py"],
-      "cwd": "/ruta/absoluta/a/Job-Search-All-IA",
+      "cwd": "/ruta/absoluta/a/Oportia.jobs",
       "env": {
         "GEMINI_API_KEY": "tu_clave_de_gemini"
       }
@@ -331,12 +331,12 @@ NexusJob AI implementa un servidor estándar **Model Context Protocol (MCP)**, p
 
 ## 11. Comunidad, Redes y Patrocinio (Sponsors)
 
-NexusJob AI es una iniciativa independiente y de código abierto creada para democratizar la empleabilidad y devolver el poder a las personas mediante inteligencia artificial ética y privada.
+Oportia Jobs IA es una iniciativa independiente y de código abierto creada para democratizar la empleabilidad y devolver el poder a las personas mediante inteligencia artificial ética y privada.
 
 ### Canales Oficiales del Creador:
 - **Autor y Desarrollador:** Alejandro Ham
 - **Instagram Oficial:** [https://www.instagram.com/not.kano/](https://www.instagram.com/not.kano/) — Sigue a **`@not.kano`** para novedades en vivo, encuestas de nuevas funciones, tutoriales en video y contacto directo.
-- **GitHub Oficial:** [https://github.com/alejandroham/Job-Search-All-IA](https://github.com/alejandroham/Job-Search-All-IA)
+- **GitHub Oficial:** [https://github.com/alejandroham/Oportia.jobs](https://github.com/alejandroham/Oportia.jobs)
 - **Patrocinio y Donaciones (GitHub Sponsors):**
   - 👉 [https://github.com/sponsors/alejandroham](https://github.com/sponsors/alejandroham)
   - Tu aporte como Sponsor permite costear pruebas de servidores, mantener actualizados los conectores de portales de empleo, incorporar nuevos modelos de IA y financiar el desarrollo de nuevas herramientas libres para toda la comunidad.

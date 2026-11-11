@@ -2,9 +2,9 @@
 
 <div align="center">
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Falejandroham%2FJob-Search-All-IA)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Falejandroham%2FOportia.jobs)
 [![Guía Vercel](https://img.shields.io/badge/Deploy%20en%20Vercel-Gu%C3%ADa%20Paso%20a%20Paso-black.svg?style=for-the-badge&logo=vercel)](docs/DESPLIEGUE_VERCEL.md)
-[![Version](https://img.shields.io/badge/Versi%C3%B3n-1.0.0%20Official-blue.svg?style=for-the-badge)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/Versi%C3%B3n-1.0.1%20Official-blue.svg?style=for-the-badge)](CHANGELOG.md)
 [![GitHub Sponsors](https://img.shields.io/badge/Sponsor%20❤️-alejandroham-ff69b4.svg?style=for-the-badge&logo=github)](https://github.com/sponsors/alejandroham)
 [![Instagram](https://img.shields.io/badge/Instagram-@not.kano-E4405F.svg?style=for-the-badge&logo=instagram)](https://www.instagram.com/not.kano/)
 [![Manual de Usuario](https://img.shields.io/badge/📖%20Manual%20de%20Usuario-Ver%20Guía-blue.svg?style=for-the-badge)](docs/MANUAL_DE_USUARIO.md)
@@ -183,15 +183,15 @@ Abre **http://localhost:3000** en tu navegador.
 
 ## 🔌 Servidor Model Context Protocol (MCP)
 
-Conecta NexusJob AI como backend de datos de empleo para **Claude Desktop**, **Cursor** o **Gemini CLI**:
+Conecta Oportia Jobs IA como backend de datos de empleo para **Claude Desktop**, **Cursor** o **Gemini CLI**:
 
 ```json
 {
   "mcpServers": {
-    "nexusjob-ai": {
+    "oportia-jobs": {
       "command": "python",
       "args": ["run_mcp.py"],
-      "cwd": "/ruta/a/Job-Search-All-IA",
+      "cwd": "/ruta/a/Oportia.jobs",
       "env": {
         "GEMINI_API_KEY": "tu_clave_de_gemini"
       }
@@ -204,11 +204,11 @@ Conecta NexusJob AI como backend de datos de empleo para **Claude Desktop**, **C
 
 ## 💖 Comunidad, Autor y Patrocinio (GitHub Sponsors)
 
-NexusJob AI es desarrollado con dedicación por **Alejandro Ham** como una herramienta de código abierto para devolver el control y la transparencia laboral a las personas.
+Oportia Jobs IA es desarrollado con dedicación por **Alejandro Ham** como una herramienta de código abierto para devolver el control y la transparencia laboral a las personas.
 
 - 📸 **Instagram Oficial:** [https://www.instagram.com/not.kano/](https://www.instagram.com/not.kano/) — Sigue a **`@not.kano`** para novedades de desarrollo, tips de empleabilidad y retroalimentación directa.
 - ❤️ **Conviértete en Sponsor:** [https://github.com/sponsors/alejandroham](https://github.com/sponsors/alejandroham) — Tu patrocinio financia servidores de prueba, conectores de empleo actualizados y nuevas capacidades de IA libres para todos.
-- 🐙 **Repositorio GitHub:** [https://github.com/alejandroham/Job-Search-All-IA](https://github.com/alejandroham/Job-Search-All-IA)
+- 🐙 **Repositorio GitHub Oficial:** [https://github.com/alejandroham/Oportia.jobs](https://github.com/alejandroham/Oportia.jobs)
 - 📖 **Manual de Usuario:** [docs/MANUAL_DE_USUARIO.md](docs/MANUAL_DE_USUARIO.md)
 
 ---

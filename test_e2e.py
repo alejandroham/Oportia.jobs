@@ -1,5 +1,5 @@
 """
-End-to-End Functional Test Suite for Oportia Jobs IA / Job-Search-All-IA
+End-to-End Functional Test Suite for Oportia Jobs IA (https://github.com/alejandroham/Oportia.jobs)
 Tests all core agent pipelines:
 1. CV Analysis & Profile extraction
 2. Scrapers (Arbeitnow, Remotive, RemoteOK, LinkedIn)

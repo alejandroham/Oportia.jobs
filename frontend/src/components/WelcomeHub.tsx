@@ -358,7 +358,7 @@ export const WelcomeHub: React.FC<WelcomeHubProps> = ({
               <span>Qué hace la IA por ti (95% del trabajo)</span>
             </div>
             <p className="text-[11px] text-gray-600 dark:text-gray-300 leading-relaxed">
-              Rastrea y consolida múltiples fuentes, calcula el <strong>Fit Score de compatibilidad (ordenando de mayor a menor porcentaje)</strong>, redacta un CV a la medida destacando tus logros STAR reales, genera la carta de presentación y audita la compatibilidad ATS.
+              Rastrea y consolida múltiples fuentes, calcula la <strong>Compatibilidad Oportia (ordenando de mayor a menor porcentaje)</strong>, redacta un CV a la medida destacando tus logros STAR reales, genera la carta de presentación y audita la compatibilidad ATS.
             </p>
           </div>
 
@@ -381,7 +381,7 @@ export const WelcomeHub: React.FC<WelcomeHubProps> = ({
               <span>Modo Búsqueda Libre en Radar vs. Fit Score</span>
             </div>
             <p className="text-[11px] text-amber-800 dark:text-amber-300 leading-relaxed">
-              Puedes buscar y explorar vacantes libremente por cargo o palabras clave sin cargar nada. Para calcular tu <strong>Fit Score de compatibilidad (100% a 0%)</strong>, detectar tu región y deducir tu estrategia de búsqueda sin sesgos, primero debes cargar tu currículum o conectar tu clave de API.
+              Puedes buscar y explorar vacantes libremente por cargo o palabras clave sin cargar nada. Para calcular tu <strong>porcentaje de Compatibilidad Oportia (100% a 0%)</strong>, detectar tu región y deducir tu estrategia de búsqueda sin sesgos, primero debes cargar tu currículum o conectar tu clave de API.
             </p>
           </div>
 
@@ -398,63 +398,75 @@ export const WelcomeHub: React.FC<WelcomeHubProps> = ({
       </div>
 
       {/* Section 3: Privacidad, Seguridad y Cumplimiento Legal (Ley 21.719 y Ley 19.628 de Chile) */}
-      <div className="rounded-3xl bg-gradient-to-br from-emerald-950/30 via-zinc-900/40 to-blue-950/30 border border-emerald-500/30 p-6 sm:p-8 space-y-5 backdrop-blur-xl shadow-xl">
-        <div className="flex items-center space-x-3 border-b border-white/10 pb-4">
-          <div className="w-11 h-11 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-500/40">
-            <ShieldCheck className="w-6 h-6" />
-          </div>
-          <div>
-            <h3 className="text-base font-bold text-white flex items-center gap-2">
-              <span>Compromiso de Seguridad, Soberanía y Cumplimiento Legal</span>
-              <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
-                Ley N° 21.719 & 19.628 (Chile)
-              </span>
-            </h3>
-            <p className="text-xs text-gray-400">
-              Garantía de protección de datos personales, privacidad desde el diseño y por defecto (Privacy by Design), y consentimiento informado verificable.
-            </p>
+      <div className="apple-glass apple-card p-6 sm:p-8 space-y-5 border border-[#20A88A]/30 dark:border-[#20A88A]/40 bg-gradient-to-br from-[#20A88A]/5 via-white/80 to-[#173B50]/5 dark:from-[#1E3B50]/90 dark:via-[#142B3D]/95 dark:to-[#173B50]/90 shadow-xl rounded-3xl">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-black/8 dark:border-white/10 pb-4">
+          <div className="flex items-center space-x-3.5">
+            <div className="w-11 h-11 rounded-2xl bg-[#20A88A]/10 text-[#20A88A] dark:bg-[#20A88A]/20 dark:text-[#8AD9C4] flex items-center justify-center shrink-0 border border-[#20A88A]/30 shadow-xs">
+              <ShieldCheck className="w-6 h-6" />
+            </div>
+            <div>
+              <div className="flex flex-wrap items-center gap-2">
+                <h3 className="text-base font-bold text-[#173B50] dark:text-white">
+                  Compromiso de Seguridad, Soberanía y Cumplimiento Legal
+                </h3>
+                <span className="text-[10px] uppercase font-bold tracking-wider px-2.5 py-0.5 rounded-full bg-[#20A88A]/10 dark:bg-[#20A88A]/20 text-[#173B50] dark:text-[#8AD9C4] border border-[#20A88A]/30">
+                  Ley N° 21.719 & 19.628 (Chile)
+                </span>
+              </div>
+              <p className="text-xs text-gray-600 dark:text-gray-300 mt-1 leading-relaxed">
+                Garantía de protección de datos personales, privacidad por diseño y por defecto (Privacy by Design), y consentimiento informado verificable.
+              </p>
+            </div>
           </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
           
-          <div className="p-4 rounded-2xl bg-black/30 border border-white/5 space-y-1.5">
-            <div className="font-semibold text-emerald-300 flex items-center space-x-1.5">
-              <Lock className="w-4 h-4 text-emerald-400" />
-              <span>Almacenamiento Local Soberano (Zero-Knowledge)</span>
+          <div className="p-4 rounded-2xl bg-white/90 dark:bg-[#142B3D]/90 border border-black/8 dark:border-white/10 shadow-xs hover:shadow-md transition space-y-2">
+            <div className="font-bold text-xs text-[#173B50] dark:text-[#8AD9C4] flex items-center space-x-2">
+              <span className="p-1.5 rounded-lg bg-[#20A88A]/10 dark:bg-[#20A88A]/20 text-[#20A88A] dark:text-[#8AD9C4]">
+                <Lock className="w-4 h-4" />
+              </span>
+              <span>Almacenamiento Local Soberano</span>
             </div>
-            <p className="text-gray-400 text-[11px] leading-relaxed">
-              Tus datos de contacto, historial laboral y postulaciones residen exclusivamente en la base de datos local de tu navegador (IndexedDB). No existen bases de datos centrales en la nube recopilando tu información personal ni custodia de terceros (Art. 12 Ley 21.719).
+            <p className="text-gray-600 dark:text-gray-300 text-[11px] leading-relaxed">
+              Tus datos de contacto, historial laboral y postulaciones residen exclusivamente en la base de datos local de tu navegador (IndexedDB). No existen bases de datos centrales en la nube recopilando tu información personal ni custodia de terceros (<strong className="text-gray-900 dark:text-white font-semibold">Art. 12 Ley 21.719</strong>).
             </p>
           </div>
 
-          <div className="p-4 rounded-2xl bg-black/30 border border-white/5 space-y-1.5">
-            <div className="font-semibold text-emerald-300 flex items-center space-x-1.5">
-              <Key className="w-4 h-4 text-emerald-400" />
+          <div className="p-4 rounded-2xl bg-white/90 dark:bg-[#142B3D]/90 border border-black/8 dark:border-white/10 shadow-xs hover:shadow-md transition space-y-2">
+            <div className="font-bold text-xs text-[#173B50] dark:text-[#8AD9C4] flex items-center space-x-2">
+              <span className="p-1.5 rounded-lg bg-[#20A88A]/10 dark:bg-[#20A88A]/20 text-[#20A88A] dark:text-[#8AD9C4]">
+                <Key className="w-4 h-4" />
+              </span>
               <span>Cifrado Militar AES-256 en Respaldos</span>
             </div>
-            <p className="text-gray-400 text-[11px] leading-relaxed">
-              Los archivos de respaldo exportados (<code className="text-emerald-400 font-mono">.oportia</code>) se cifran mediante <strong>AES-GCM de 256 bits</strong> con derivación PBKDF2 bajo tu contraseña personal. Nadie puede leer su contenido sin tu clave.
+            <p className="text-gray-600 dark:text-gray-300 text-[11px] leading-relaxed">
+              Los archivos de respaldo exportados (<code className="px-1.5 py-0.5 rounded bg-[#EDF3F5] dark:bg-white/10 text-[#173B50] dark:text-[#8AD9C4] font-mono font-semibold">.oportia</code>) se cifran mediante <strong className="text-gray-900 dark:text-white font-semibold">AES-GCM de 256 bits</strong> con derivación PBKDF2 bajo tu contraseña personal. Nadie puede leer su contenido sin tu clave.
             </p>
           </div>
 
-          <div className="p-4 rounded-2xl bg-black/30 border border-white/5 space-y-1.5">
-            <div className="font-semibold text-emerald-300 flex items-center space-x-1.5">
-              <ShieldCheck className="w-4 h-4 text-emerald-400" />
+          <div className="p-4 rounded-2xl bg-white/90 dark:bg-[#142B3D]/90 border border-black/8 dark:border-white/10 shadow-xs hover:shadow-md transition space-y-2">
+            <div className="font-bold text-xs text-[#173B50] dark:text-[#8AD9C4] flex items-center space-x-2">
+              <span className="p-1.5 rounded-lg bg-[#20A88A]/10 dark:bg-[#20A88A]/20 text-[#20A88A] dark:text-[#8AD9C4]">
+                <ShieldCheck className="w-4 h-4" />
+              </span>
               <span>Gestión Protegida de Claves de IA</span>
             </div>
-            <p className="text-gray-400 text-[11px] leading-relaxed">
+            <p className="text-gray-600 dark:text-gray-300 text-[11px] leading-relaxed">
               Tus claves API (Google Gemini, OpenAI, Anthropic) se guardan cifradas en tu navegador y nunca en texto plano. Se comunican directamente con los proveedores y se destruyen en memoria al purgar o cerrar sesión.
             </p>
           </div>
 
-          <div className="p-4 rounded-2xl bg-black/30 border border-white/5 space-y-1.5">
-            <div className="font-semibold text-emerald-300 flex items-center space-x-1.5">
-              <HeartHandshake className="w-4 h-4 text-emerald-400" />
-              <span>Derecho al Olvido y Supresión Efectiva (Art. 17 Ley 21.719)</span>
+          <div className="p-4 rounded-2xl bg-white/90 dark:bg-[#142B3D]/90 border border-black/8 dark:border-white/10 shadow-xs hover:shadow-md transition space-y-2">
+            <div className="font-bold text-xs text-[#173B50] dark:text-[#8AD9C4] flex items-center space-x-2">
+              <span className="p-1.5 rounded-lg bg-[#20A88A]/10 dark:bg-[#20A88A]/20 text-[#20A88A] dark:text-[#8AD9C4]">
+                <HeartHandshake className="w-4 h-4" />
+              </span>
+              <span>Derecho al Olvido y Supresión Efectiva</span>
             </div>
-            <p className="text-gray-400 text-[11px] leading-relaxed">
-              En pleno cumplimiento de los derechos ARCO de la <strong>Ley N° 21.719</strong> y Ley 19.628, el botón de purgado elimina el 100% de tu información personal, historial y credenciales con un solo clic de forma irreversible.
+            <p className="text-gray-600 dark:text-gray-300 text-[11px] leading-relaxed">
+              En pleno cumplimiento de los derechos ARCO de la <strong className="text-gray-900 dark:text-white font-semibold">Ley N° 21.719</strong> y Ley 19.628, el botón de purgado elimina el 100% de tu información personal, historial y credenciales con un solo clic de forma irreversible.
             </p>
           </div>
 
