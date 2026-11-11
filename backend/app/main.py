@@ -52,6 +52,37 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.middleware("http")
+async def ensure_api_prefix_middleware(request, call_next):
+    """
+    Transparently rewrites root endpoint requests (e.g. /settings, /profile, /jobs)
+    to /api/* so frontend calls work seamlessly whether VITE_API_URL has /api or not.
+    """
+    path = request.url.path
+    if (
+        not path.startswith("/api")
+        and not path.startswith("/docs")
+        and not path.startswith("/openapi")
+        and not path.startswith("/redoc")
+        and not path.startswith("/assets")
+        and not path.startswith("/health")
+        and path != "/"
+        and path != "/favicon.ico"
+    ):
+        request.scope["path"] = f"/api{path}"
+    return await call_next(request)
+
+@app.get("/health")
+@app.get("/api/health")
+def health_check():
+    """Health check endpoint for Render, Vercel, and monitoring."""
+    return {
+        "status": "healthy",
+        "service": "oportia-backend",
+        "version": settings.VERSION,
+        "provider": settings.DEFAULT_PROVIDER
+    }
+
 # --- Profile Endpoints ---
 
 @app.get("/api/profile", response_model=CandidateProfile)

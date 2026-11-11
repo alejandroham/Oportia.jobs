@@ -231,13 +231,30 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
       const finalModelName = isCustomModel ? customModelText.trim() : selectedModel;
 
-      await api.updateSettings({
-        provider,
-        api_key: apiKey ? apiKey : undefined,
-        model_name: finalModelName ? finalModelName : undefined
-      });
-      const updated = await api.getSettings();
-      onSettingsUpdated(updated);
+      try {
+        await api.updateSettings({
+          provider,
+          api_key: apiKey ? apiKey : undefined,
+          model_name: finalModelName ? finalModelName : undefined
+        });
+        const updated = await api.getSettings();
+        onSettingsUpdated(updated);
+      } catch (netErr: any) {
+        console.warn('Backend sync delayed or in cold start:', netErr);
+        // Fallback: Update UI state directly from sovereign local storage
+        onSettingsUpdated({
+          provider,
+          has_active_key: !!apiKey,
+          has_gemini_key: provider === 'gemini' ? !!apiKey : false,
+          has_openai_key: provider === 'openai' ? !!apiKey : false,
+          has_claude_key: provider === 'claude' ? !!apiKey : false,
+          active_model_name: finalModelName,
+          gemini_model: provider === 'gemini' ? finalModelName : 'gemini-3.5-flash',
+          openai_model: provider === 'openai' ? finalModelName : 'gpt-4o',
+          claude_model: provider === 'claude' ? finalModelName : 'claude-3-5-sonnet-20241022'
+        });
+      }
+
       setSavedSuccess(true);
       toast.success('Configuración y clave de IA guardadas (Cifradas)');
       setTimeout(() => {

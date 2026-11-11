@@ -15,7 +15,21 @@ import type {
   TutorEvaluationResult
 } from './types';
 
-const API_BASE = (import.meta.env.VITE_API_URL as string) || '/api';
+function resolveApiBase(): string {
+  const envUrl = (import.meta.env.VITE_API_URL as string)?.trim();
+  if (!envUrl) {
+    return '/api';
+  }
+  // Strip trailing slashes
+  let clean = envUrl.replace(/\/+$/, '');
+  // If user provided a full URL (http/https) without /api, append /api automatically
+  if (/^https?:\/\//i.test(clean) && !clean.endsWith('/api')) {
+    clean = `${clean}/api`;
+  }
+  return clean;
+}
+
+export const API_BASE = resolveApiBase();
 
 export async function safeFetchJson<T = any>(url: string, options?: RequestInit, fallback: T = null as any): Promise<T> {
   try {
@@ -38,6 +52,12 @@ export async function handleResponse<T = any>(res: Response, defaultError = 'Err
     parsed = text ? JSON.parse(text) : {};
   } catch {
     if (!res.ok) {
+      if (res.status === 404 || res.status === 405) {
+        throw new Error(`Ruta de backend no encontrada (${res.status}). Verifica que el backend en Render esté activo.`);
+      }
+      if (res.status === 502 || res.status === 503 || res.status === 504) {
+        throw new Error(`El backend en Render está iniciando (Cold Start: 30-50s). Espera un instante y reintenta.`);
+      }
       throw new Error(`Error del servidor (${res.status}): ${text.slice(0, 150) || res.statusText || defaultError}`);
     }
     // Return empty object instead of crashing if HTML was returned
