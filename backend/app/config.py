@@ -23,8 +23,13 @@ def _unmask_key(val: str) -> str:
 
 # Load .env if present
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
-DATA_DIR = BASE_DIR / "data"
-DATA_DIR.mkdir(exist_ok=True)
+if os.environ.get("VERCEL"):
+    DATA_DIR = Path("/tmp/data")
+else:
+    DATA_DIR = BASE_DIR / "data"
+
+DATA_DIR.mkdir(parents=True, exist_ok=True)
+(DATA_DIR / "uploads").mkdir(parents=True, exist_ok=True)
 
 load_dotenv(BASE_DIR / ".env")
 

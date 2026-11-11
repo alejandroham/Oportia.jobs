@@ -15,7 +15,7 @@ import type {
   TutorEvaluationResult
 } from './types';
 
-const API_BASE = '/api';
+const API_BASE = (import.meta.env.VITE_API_URL as string) || '/api';
 
 export async function handleResponse<T = any>(res: Response, defaultError = 'Error en la petición'): Promise<T> {
   const text = await res.text();
