@@ -1,6 +1,6 @@
 """
 Acceptance Test Suite for Universal Profession Engine & Geographic Radar
-Validates all requirements from REGLAS DE NEGOCIO — NEXUS.JOB
+Validates all requirements from REGLAS DE NEGOCIO — OPORTIA JOBS IA
 Section 6: 5 acceptance profiles (TENS, Arquitecto, Abogado, Profesor, Desarrollador)
 """
 import sys
