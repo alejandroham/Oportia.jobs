@@ -1,5 +1,5 @@
 /**
- * NexusJob AI — Sovereign Client-Side Storage & Session Manager
+ * Oportia Jobs IA — Sovereign Client-Side Storage & Session Manager
  * Uses browser-native IndexedDB for persistent local-first storage.
  * Guarantees zero personal data retention on cloud/remote servers.
  */
@@ -17,12 +17,13 @@ import {
   type EncryptedPackage
 } from './crypto';
 
+// Retain DB_NAME for seamless zero-loss backwards compatibility
 const DB_NAME = 'NexusJob_SovereignDB';
 const DB_VERSION = 1;
 const STORE_NAME = 'client_session';
 
 export interface SessionBackupBundle {
-  app: 'NexusJob AI';
+  app: 'Oportia Jobs IA' | 'NexusJob AI';
   format_version: '1.0';
   exported_at: string;
   candidate_name?: string;
@@ -112,9 +113,16 @@ export async function clearClientStore(): Promise<void> {
     console.warn('[Storage] Error al limpiar IndexedDB:', e);
   }
 
-  // Clear ALL localStorage keys related to NexusJob including API keys and encryption seed
+  // Clear ALL localStorage keys related to Oportia & NexusJob including API keys and encryption seed
   try {
     const keysToRemove = [
+      'oportia_profile',
+      'oportia_preferences',
+      'oportia_jobs',
+      'oportia_applications',
+      'oportia_radar_pageSize',
+      'oportia_chat_history',
+      'nexus_chat_history',
       'nexusjob_profile',
       'nexusjob_preferences',
       'nexusjob_jobs',
@@ -124,7 +132,8 @@ export async function clearClientStore(): Promise<void> {
       'job_search_llm_key_openai',
       'job_search_llm_key_claude',
       'job_search_default_provider',
-      'nexusjob_sec_seed_v1'
+      'nexusjob_sec_seed_v1',
+      'oportia_sec_seed_v1'
     ];
     keysToRemove.forEach((k) => localStorage.removeItem(k));
     clearDeviceCryptoSeed();
@@ -145,7 +154,7 @@ export async function exportSessionBackupFile(
 ): Promise<void> {
   const dateStr = new Date().toISOString().split('T')[0];
   const bundle: SessionBackupBundle = {
-    app: 'NexusJob AI',
+    app: 'Oportia Jobs IA',
     format_version: '1.0',
     exported_at: new Date().toISOString(),
     candidate_name: profile?.name || 'Candidato',
@@ -166,14 +175,14 @@ export async function exportSessionBackupFile(
   let filename: string;
 
   if (passphrase && passphrase.trim().length > 0) {
-    // Military Grade AES-GCM 256-bit encryption
+    // AES-GCM 256-bit encryption
     const rawJson = JSON.stringify(bundle);
     const encryptedPkg = await encryptText(rawJson, passphrase, hint);
     fileContent = JSON.stringify(encryptedPkg, null, 2);
-    filename = `nexusjob_cifrado_${cleanName}_${dateStr}.nexusjob`;
+    filename = `oportia_cifrado_${cleanName}_${dateStr}.oportia`;
   } else {
     fileContent = JSON.stringify(bundle, null, 2);
-    filename = `nexusjob_backup_${cleanName}_${dateStr}.json`;
+    filename = `oportia_backup_${cleanName}_${dateStr}.json`;
   }
 
   const blob = new Blob([fileContent], { type: 'application/json' });
@@ -217,8 +226,8 @@ export async function parseSessionBackupFile(
     }
   }
 
-  // Validate format
-  if (parsed.app === 'NexusJob AI' && parsed.payload) {
+  // Validate format (compatible with both Oportia Jobs IA and legacy NexusJob AI)
+  if ((parsed.app === 'Oportia Jobs IA' || parsed.app === 'NexusJob AI') && parsed.payload) {
     return {
       profile: parsed.payload.profile || null,
       preferences: parsed.payload.preferences || null,
@@ -237,5 +246,5 @@ export async function parseSessionBackupFile(
     };
   }
 
-  throw new Error('El formato del archivo de respaldo no es reconocido por NexusJob AI.');
+  throw new Error('El formato del archivo de respaldo no es reconocido por Oportia Jobs IA.');
 }

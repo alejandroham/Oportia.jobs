@@ -4,27 +4,27 @@
 
 @layer base {
   body {
-    @apply bg-[#FBFBFD] dark:bg-[#000000] text-[#1D1D1F] dark:text-[#F5F5F7] font-sans selection:bg-blue-500/20;
-    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+    @apply bg-[#F4F7F9] dark:bg-[#142B3D] text-[#173B50] dark:text-[#F4F7F9] font-sans selection:bg-[#20A88A]/20;
+    font-family: 'Manrope', 'Inter', -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 }
 
-/* Apple Cupertino Glassmorphism (Section 4 Manual Maestro) */
+/* Oportia Glassmorphism */
 .apple-glass {
-  background: rgba(255, 255, 255, 0.72);
+  background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(220, 229, 234, 0.9);
 }
 
 .dark .apple-glass {
-  background: rgba(28, 28, 30, 0.75);
+  background: rgba(30, 59, 80, 0.85);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(54, 83, 104, 0.5);
 }
 
 /* Cupertino Hairline Borders (1px, 6% light / 8% dark) */

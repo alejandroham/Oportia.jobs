@@ -54,91 +54,93 @@ export const WelcomeHub: React.FC<WelcomeHubProps> = ({
       <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-blue-900/20 via-indigo-900/10 to-transparent border border-blue-500/20 p-6 sm:p-10 backdrop-blur-xl shadow-2xl">
         <div className="relative z-10 space-y-4 max-w-3xl">
           <div className="flex flex-wrap items-center gap-2.5">
-            <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300 border border-blue-300/60 dark:border-blue-800/60 shadow-xs">
-              <ShieldCheck className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
-              <span>Soberanía Digital & Privacidad Local Certificada</span>
+            <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full text-xs font-semibold bg-[#20A88A]/10 dark:bg-[#20A88A]/20 text-[#173B50] dark:text-[#8AD9C4] border border-[#20A88A]/30 shadow-xs">
+              <ShieldCheck className="w-3.5 h-3.5 text-[#20A88A]" />
+              <span>Soberanía Digital & Privacidad por Diseño</span>
             </div>
           </div>
 
           <div className="flex items-center space-x-3 pt-1">
             <img
-              src="/nexusjob-logo.png"
-              alt="Nexus.Job"
-              className="h-9 sm:h-12 w-auto object-contain dark:hidden"
+              src="/oportia-logo.svg"
+              alt="Oportia Jobs IA"
+              className="h-10 sm:h-12 w-auto object-contain dark:hidden"
             />
             <img
-              src="/nexusjob-logo-dark.png"
-              alt="Nexus.Job"
-              className="h-9 sm:h-12 w-auto object-contain hidden dark:block"
+              src="/oportia-logo-dark.svg"
+              alt="Oportia Jobs IA"
+              className="h-10 sm:h-12 w-auto object-contain hidden dark:block"
             />
-            <span className="text-xs font-bold tracking-wider uppercase px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 border border-blue-200/60 dark:border-blue-800/60">
-              AI
-            </span>
           </div>
 
-          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300 leading-relaxed font-normal">
-            El ecosistema autónomo e inteligente de búsqueda de empleo, radar geográfico y preparación profesional para <strong>cualquier carrera, especialidad u oficio</strong>, con arquitectura soberana <em>Zero-Knowledge</em> y cumplimiento estricto de la legislación de protección de datos personales.
-          </p>
+          <div className="space-y-1">
+            <h1 className="text-xl sm:text-2xl font-extrabold text-[#173B50] dark:text-white tracking-tight">
+              Tu talento. Tus decisiones. Tus oportunidades.
+            </h1>
+            <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300 leading-relaxed font-normal">
+              El ecosistema inteligente que automatiza tu búsqueda laboral, protege tu información y te acompaña en tu desarrollo profesional con total autonomía humana.
+            </p>
+          </div>
 
           {/* Quick Action Badges */}
           <div className="flex flex-wrap items-center gap-2 pt-2">
             <button
               onClick={onUploadCVClick}
-              className="inline-flex items-center space-x-2 px-4 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-md shadow-blue-600/25 transition active:scale-95"
+              className="inline-flex items-center space-x-2 px-4 py-2.5 rounded-2xl bg-[#173B50] hover:bg-[#1E3B50] dark:bg-[#20A88A] dark:hover:bg-[#1C967A] text-white text-xs font-semibold shadow-md shadow-[#173B50]/20 transition active:scale-95"
             >
               <UploadCloud className="w-4 h-4" />
-              <span>{hasProfile ? 'Actualizar mi CV Maestro' : 'Cargar mi Currículum Vitae'}</span>
+              <span>{hasProfile ? 'Actualizar mi CV' : 'Cargar mi Currículum Vitae'}</span>
               <ArrowRight className="w-3.5 h-3.5 ml-1" />
             </button>
 
             <button
               onClick={() => onNavigateToTab('radar')}
-              className="inline-flex items-center space-x-2 px-4 py-2.5 rounded-2xl bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 text-gray-900 dark:text-white text-xs font-semibold border border-black/5 dark:border-white/5 transition"
+              className="inline-flex items-center space-x-2 px-4 py-2.5 rounded-2xl bg-white dark:bg-[#1E3B50] hover:bg-gray-100 dark:hover:bg-[#243F55] text-gray-900 dark:text-white text-xs font-semibold border border-black/5 dark:border-white/5 transition"
             >
-              <Compass className="w-4 h-4 text-blue-500" />
-              <span>Explorar Radar de Empleos</span>
+              <Compass className="w-4 h-4 text-[#20A88A]" />
+              <span>Explorar Oportia Radar</span>
             </button>
 
             <button
               onClick={() => onNavigateToTab('coach')}
-              className="inline-flex items-center space-x-2 px-4 py-2.5 rounded-2xl bg-indigo-50 dark:bg-indigo-950/40 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 text-indigo-800 dark:text-indigo-300 text-xs font-semibold border border-indigo-300/50 dark:border-indigo-800/50 transition"
+              className="inline-flex items-center space-x-2 px-4 py-2.5 rounded-2xl bg-[#EDF3F5] dark:bg-[#243F55] hover:opacity-90 text-[#173B50] dark:text-[#8AD9C4] text-xs font-semibold border border-[#DCE5EA] dark:border-[#365368] transition"
             >
-              <GraduationCap className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
-              <span>Coach IA & Cursos Verificados</span>
+              <GraduationCap className="w-4 h-4 text-[#20A88A]" />
+              <span>Opi Coach & Oportia Aprende</span>
             </button>
 
             <button
               onClick={onOpenPrivacyModal}
-              className="inline-flex items-center space-x-2 px-4 py-2.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300 text-xs font-semibold border border-emerald-300/50 dark:border-emerald-800/50 transition"
+              className="inline-flex items-center space-x-2 px-4 py-2.5 rounded-2xl bg-[#20A88A]/10 dark:bg-[#20A88A]/20 hover:opacity-90 text-[#173B50] dark:text-[#8AD9C4] text-xs font-semibold border border-[#20A88A]/30 transition"
             >
-              <Lock className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+              <Lock className="w-4 h-4 text-[#20A88A]" />
               <span>Respaldo Cifrado & Purgado</span>
             </button>
           </div>
         </div>
 
         {/* Ambient Glow */}
-        <div className="absolute -top-24 -right-24 w-96 h-96 bg-blue-500/10 dark:bg-blue-600/20 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -top-24 -right-24 w-96 h-96 bg-[#20A88A]/10 dark:bg-[#20A88A]/15 rounded-full blur-3xl pointer-events-none" />
       </div>
 
-      {/* Section 1: ¿Qué es NexusJob AI? */}
+      {/* Section 1: ¿Qué es Oportia Jobs IA? */}
       <div className="apple-glass apple-card p-6 sm:p-8 space-y-4">
         <div className="border-b border-black/5 dark:border-white/5 pb-3">
           <h2 className="text-lg font-bold text-gray-900 dark:text-white flex items-center space-x-2">
-            <Sparkles className="w-5 h-5 text-blue-600" />
-            <span>¿Qué es NexusJob AI y cuál es su propósito?</span>
+            <Sparkles className="w-5 h-5 text-[#20A88A]" />
+            <span>¿Qué es Oportia Jobs IA y cuál es su propósito?</span>
           </h2>
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-            Democratización real del acceso al empleo eliminando algoritmos opacos e intermediarios innecesarios.
+            Democratizar el acceso a oportunidades laborales mediante herramientas inteligentes centradas en tus decisiones.
           </p>
         </div>
 
         <div className="text-xs text-gray-700 dark:text-gray-300 leading-relaxed space-y-3">
           <p>
-            <strong>NexusJob AI</strong> nace para transformar la búsqueda de empleo en un proceso transparente, digno y eficiente. Tradicionalmente, los portales laborales condicionan las oportunidades a algoritmos cerrados, sesgos predefinidos o suscripciones de pago que penalizan a quienes buscan trabajo.
+            <strong>Oportia Jobs IA</strong> nace para transformar la búsqueda de empleo en un proceso más organizado, transparente y eficiente. La idea fundamental es sencilla y clara: <em>la IA organiza y te orienta, tú decides tu camino</em>.
           </p>
           <p>
-            Esta plataforma pone en tus manos un <strong>agente de inteligencia artificial personal</strong> que trabaja exclusivamente para ti: lee tu currículum sin inventar ni falsificar datos, mapea ofertas de todo Chile y del mundo, adapta tus postulaciones a los filtros ATS de los empleadores y entrena tus respuestas para entrevistas bajo la metodología STAR.
+            La plataforma actúa como tu <strong>copiloto profesional inteligente</strong>: lee tu currículum sin inventar ni falsificar datos, mapea ofertas en Chile y el mundo, analiza la compatibilidad con diferentes cargos de forma explicable, adapta postulaciones y entrena tus respuestas con el asistente <strong>Opi</strong>.
           </p>
         </div>
       </div>
@@ -147,10 +149,10 @@ export const WelcomeHub: React.FC<WelcomeHubProps> = ({
       <div className="space-y-4">
         <div className="text-center sm:text-left">
           <h3 className="text-base font-bold text-gray-900 dark:text-white">
-            ¿Cómo funciona y qué puedes hacer en NexusJob AI?
+            ¿Cómo funciona y qué puedes hacer en Oportia Jobs IA?
           </h3>
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-            Seis módulos agénticos de alta precisión diseñados para potenciar tu carrera profesional de punta a punta.
+            Módulos inteligentes de alta precisión diseñados para potenciar tu carrera profesional con autonomía.
           </p>
         </div>
 
@@ -291,10 +293,10 @@ export const WelcomeHub: React.FC<WelcomeHubProps> = ({
                 <Brain className="w-5 h-5" />
               </div>
               <h4 className="font-bold text-xs text-gray-900 dark:text-white group-hover:text-amber-600 dark:group-hover:text-amber-400">
-                6. Memoria Cognitiva & ADN Profesional
+                6. Oportia Skills & ADN Profesional
               </h4>
               <p className="text-[11px] text-gray-600 dark:text-gray-400 leading-relaxed">
-                Cerebro que aprende de tus interacciones: infiere tu tono y seniority, extrae historias de éxito bajo el método STAR (Situación, Tarea, Acción, Resultado) y asiste mediante el chat "Nexus Asistente" con reinicio seguro.
+                Cerebro que aprende de tus interacciones: infiere tu tono y seniority, extrae historias de éxito bajo el método STAR (Situación, Tarea, Acción, Resultado) y asiste mediante el chat con "Opi Copiloto" con reinicio seguro.
               </p>
             </div>
             <div className="text-[10px] text-amber-600 dark:text-amber-400 font-semibold flex items-center justify-between pt-1 border-t border-black/5 dark:border-white/5">
@@ -313,7 +315,7 @@ export const WelcomeHub: React.FC<WelcomeHubProps> = ({
       <div className="apple-glass apple-card p-6 sm:p-8 space-y-5 border-blue-500/20 bg-gradient-to-br from-blue-50/50 via-white/40 to-indigo-50/40 dark:from-blue-950/20 dark:via-zinc-900/40 dark:to-indigo-950/20">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-black/5 dark:border-white/5 pb-3">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-2xl bg-blue-600/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+            <div className="w-10 h-10 rounded-2xl bg-[#20A88A]/10 text-[#20A88A] dark:text-[#8AD9C4] flex items-center justify-center shrink-0">
               <ShieldCheck className="w-5 h-5" />
             </div>
             <div>
@@ -326,16 +328,16 @@ export const WelcomeHub: React.FC<WelcomeHubProps> = ({
                 </span>
               </div>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                ¿Cómo postulas? NexusJob AI asume el 95% del esfuerzo técnico y te entrega el control soberano final en 1 clic oficial.
+                ¿Cómo postulas? Oportia Jobs IA asume el esfuerzo operativo y te entrega el control soberano final en 1 clic oficial.
               </p>
             </div>
           </div>
         </div>
 
         {/* Core explanation */}
-        <div className="p-4 rounded-2xl bg-blue-500/5 dark:bg-blue-400/5 border border-blue-500/15 text-xs text-gray-700 dark:text-gray-300 leading-relaxed">
+        <div className="p-4 rounded-2xl bg-[#20A88A]/5 border border-[#20A88A]/20 text-xs text-gray-700 dark:text-gray-300 leading-relaxed">
           <p>
-            <strong>¿Cómo postulas?</strong> NexusJob AI rastrea y evalúa las vacantes clasificándolas por <strong>Fit Score (mayor % primero)</strong> y genera tu CV adaptado y carta de presentación a la medida. <strong>No postula automáticamente a ciegas</strong> para evitar que tu cuenta sea bloqueada por los portales, permitir la autenticación con ClaveÚnica (Empleos Públicos) y garantizar que tú valides tus antecedentes bajo la Ley N° 21.719. Tú revisas tus materiales y postulas en 1 clic en el enlace oficial.
+            <strong>¿Cómo postulas?</strong> Oportia Jobs IA rastrea y evalúa las vacantes ordenándolas por <strong>Compatibilidad Oportia (mayor % primero)</strong> y genera tu CV adaptado y carta de presentación a la medida. <strong>No postula automáticamente a ciegas</strong> para evitar que tu cuenta sea bloqueada por los portales, permitir la autenticación con ClaveÚnica (Empleos Públicos) y garantizar que tú valides tus antecedentes bajo la Ley N° 21.719. Tú revisas tus materiales y postulas en 1 clic en el enlace oficial.
           </p>
         </div>
 
@@ -432,7 +434,7 @@ export const WelcomeHub: React.FC<WelcomeHubProps> = ({
               <span>Cifrado Militar AES-256 en Respaldos</span>
             </div>
             <p className="text-gray-400 text-[11px] leading-relaxed">
-              Los archivos de respaldo exportados (<code className="text-emerald-400 font-mono">.nexusjob</code>) se cifran mediante <strong>AES-GCM de 256 bits</strong> con derivación PBKDF2 bajo tu contraseña personal. Nadie puede leer su contenido sin tu clave.
+              Los archivos de respaldo exportados (<code className="text-emerald-400 font-mono">.oportia</code>) se cifran mediante <strong>AES-GCM de 256 bits</strong> con derivación PBKDF2 bajo tu contraseña personal. Nadie puede leer su contenido sin tu clave.
             </p>
           </div>
 
@@ -493,7 +495,7 @@ export const WelcomeHub: React.FC<WelcomeHubProps> = ({
               2. Restaurar Respaldo Cifrado
             </div>
             <p className="text-[11px] text-gray-500 dark:text-gray-400 leading-snug">
-              Importa un archivo <span className="font-mono">.nexusjob</span> con contraseña.
+              Importa un archivo <span className="font-mono">.oportia</span> (o .nexusjob) con contraseña.
             </p>
           </button>
 
@@ -540,14 +542,14 @@ export const WelcomeHub: React.FC<WelcomeHubProps> = ({
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">
-                  Apoya el Desarrollo y Evolución Continua de NexusJob AI
+                  Apoya el Desarrollo y Evolución Continua de Oportia Jobs IA
                 </h3>
                 <span className="text-[10px] font-bold tracking-wider px-2.5 py-0.5 rounded-full bg-pink-100 dark:bg-pink-950/70 text-pink-700 dark:text-pink-300 border border-pink-300/40">
                   Open Source & Soberano
                 </span>
               </div>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                NexusJob AI es una iniciativa independiente creada para democratizar la búsqueda de empleo ética, transparente, asistida por IA y sin custodia de datos.
+                Oportia Jobs IA es una iniciativa creada para democratizar la búsqueda de empleo ética, transparente, asistida por IA y centrada en tus decisiones.
               </p>
             </div>
           </div>

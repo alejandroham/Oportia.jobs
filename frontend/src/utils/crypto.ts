@@ -1,12 +1,12 @@
 /**
- * NexusJob AI — Sovereign Client-Side Cryptographic Engine
+ * Oportia Jobs IA — Sovereign Client-Side Cryptographic Engine
  * Provides AES-GCM 256-bit encryption with PBKDF2 key derivation (SHA-256, 100,000 iterations).
  * Includes pure JavaScript fallback for non-secure contexts (e.g. mobile access over local Wi-Fi HTTP).
- * Guarantees zero-knowledge privacy compliant with Chile's Ley 19.628 / 21.719 and GDPR standards.
+ * Guarantees sovereignty and privacy compliant with Chile's Ley 19.628 / 21.719 and GDPR standards.
  */
 
 export interface EncryptedPackage {
-  app: 'NexusJob AI';
+  app: 'Oportia Jobs IA' | 'NexusJob AI';
   format_version: '2.0-encrypted';
   encrypted: true;
   algorithm: 'AES-GCM-256' | 'DeviceSeed-XOR';
@@ -146,7 +146,7 @@ export async function encryptText(plainText: string, passphrase: string, hint?: 
       );
 
       return {
-        app: 'NexusJob AI',
+        app: 'Oportia Jobs IA',
         format_version: '2.0-encrypted',
         encrypted: true,
         algorithm: 'AES-GCM-256',
@@ -169,7 +169,7 @@ export async function encryptText(plainText: string, passphrase: string, hint?: 
   const ciphertext_b64 = xorObfuscate(plainText, passphrase);
 
   return {
-    app: 'NexusJob AI',
+    app: 'Oportia Jobs IA',
     format_version: '2.0-encrypted',
     encrypted: true,
     algorithm: 'DeviceSeed-XOR',

@@ -8,37 +8,55 @@ export default {
   theme: {
     extend: {
       colors: {
+        oportia: {
+          petrol: '#173B50',
+          jade: '#20A88A',
+          coral: '#FF906F',
+          mist: '#EDF3F5',
+          deep: '#243F55',
+          mint: '#8AD9C4',
+          warm: '#F4C56A',
+          slate: '#64748B',
+          bgLight: '#F4F7F9',
+          borderLight: '#DCE5EA',
+          bgDark: '#142B3D',
+          surfaceDark: '#1E3B50',
+          borderDark: '#365368',
+          textDarkSec: '#B7C9D6'
+        },
         apple: {
           canvas: {
-            light: '#FBFBFD',
-            dark: '#000000'
+            light: '#F4F7F9',
+            dark: '#142B3D'
           },
           text: {
             primary: {
-              light: '#1D1D1F',
-              dark: '#F5F5F7'
+              light: '#173B50',
+              dark: '#F4F7F9'
             },
             secondary: {
-              light: '#86868B',
-              dark: '#A1A1A6'
+              light: '#64748B',
+              dark: '#B7C9D6'
             }
           },
-          blue: '#0071E3',
-          darkBlue: '#0A84FF',
-          gray: '#F5F5F7',
+          blue: '#173B50',
+          darkBlue: '#20A88A',
+          gray: '#EDF3F5',
           card: '#FFFFFF',
-          darkBg: '#000000',
-          darkCard: '#1C1C1E',
-          darkSecondary: '#2C2C2E',
-          border: 'rgba(0, 0, 0, 0.06)',
+          darkBg: '#142B3D',
+          darkCard: '#1E3B50',
+          darkSecondary: '#243F55',
+          border: 'rgba(23, 59, 80, 0.08)',
           darkBorder: 'rgba(255, 255, 255, 0.08)',
-          green: '#34C759',
-          orange: '#FF9F0A',
-          red: '#FF3B30'
+          green: '#20A88A',
+          orange: '#FF906F',
+          red: '#FF4D4D'
         }
       },
       fontFamily: {
         sans: [
+          'Manrope',
+          'Inter',
           '-apple-system',
           'BlinkMacSystemFont',
           '"SF Pro Display"',
@@ -50,10 +68,10 @@ export default {
         ]
       },
       boxShadow: {
-        'apple-subtle': '0 2px 10px rgba(0, 0, 0, 0.04)',
-        'apple-card': '0 4px 20px -2px rgba(0, 0, 0, 0.05)',
-        'apple-glass': '0 8px 32px 0 rgba(0, 0, 0, 0.08)',
-        'apple-dark-card': '0 8px 24px -4px rgba(0, 0, 0, 0.5)'
+        'apple-subtle': '0 2px 10px rgba(23, 59, 80, 0.04)',
+        'apple-card': '0 4px 20px -2px rgba(23, 59, 80, 0.06)',
+        'apple-glass': '0 8px 32px 0 rgba(23, 59, 80, 0.08)',
+        'apple-dark-card': '0 8px 24px -4px rgba(10, 20, 30, 0.5)'
       }
     },
   },

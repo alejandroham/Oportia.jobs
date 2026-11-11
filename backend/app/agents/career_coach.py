@@ -171,7 +171,7 @@ VERIFIED_COURSE_CATALOG: List[Dict[str, Any]] = [
 
 class CareerCoach:
     """
-    Coach IA de Nexus.Job: Asistente Integral de Desarrollo Profesional.
+    Opi Coach de Oportia Jobs IA: Asistente Integral de Desarrollo Profesional.
     Implementa las 6 capacidades funcionales especificadas:
     A. Diagnóstico de competencias y brechas.
     B. Buscador inteligente de cursos y capacitaciones verificadas.
@@ -294,7 +294,7 @@ class CareerCoach:
             matched_resources = [LearningCourseResource(**c) for c in VERIFIED_COURSE_CATALOG[:3]]
 
         system_instruction = (
-            "Eres un Diseñador Curricular Senior y Coach de Aprendizaje Técnico para Nexus.Job. "
+            "Eres un Diseñador Curricular Senior y Coach de Aprendizaje Técnico para Oportia Jobs IA. "
             "Tu misión es estructurar una ruta de aprendizaje de 3 a 4 hitos secuenciales y lógicos "
             "para cerrar las brechas detectadas hacia el cargo objetivo. "
             "Cada hito debe incluir un objetivo claro, una actividad práctica de aplicación real y un desafío evaluable."

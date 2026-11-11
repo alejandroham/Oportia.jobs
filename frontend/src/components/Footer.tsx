@@ -14,21 +14,21 @@ export const Footer: React.FC<FooterProps> = ({ onNavigateToTab }) => {
         <div className="flex flex-col md:flex-row items-center justify-between gap-4 border-b border-black/5 dark:border-white/5 pb-6">
           <div className="flex items-center space-x-3 text-center md:text-left">
             <img
-              src="/nexusjob-icon.png"
-              alt="Nexus.Job"
+              src="/oportia-icon.svg"
+              alt="Oportia Jobs IA"
               className="w-8 h-8 rounded-xl object-contain shadow-xs shrink-0"
             />
             <div>
               <div className="flex items-center space-x-2">
                 <span className="font-bold text-gray-900 dark:text-white text-sm">
-                  NexusJob AI
+                  Oportia Jobs IA
                 </span>
-                <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border border-blue-300/40">
+                <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-[#20A88A]/10 dark:bg-[#20A88A]/20 text-[#20A88A] dark:text-[#8AD9C4] border border-[#20A88A]/30">
                   v1.0.0
                 </span>
               </div>
               <p className="text-[11px] text-gray-500 dark:text-gray-400">
-                Ecosistema Autónomo de Empleabilidad, Comité de Selección IA y Coach Profesional
+                Tu talento. Tus decisiones. Tus oportunidades.
               </p>
             </div>
           </div>
@@ -54,7 +54,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigateToTab }) => {
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center space-x-1.5 px-4 py-2 rounded-full bg-rose-50 dark:bg-rose-950/50 hover:bg-rose-100 dark:hover:bg-rose-900/50 text-rose-700 dark:text-rose-300 border border-rose-300/60 dark:border-rose-800/60 transition shadow-xs active:scale-95 font-semibold animate-pulse hover:animate-none"
-              title="Apoya el desarrollo continuo de NexusJob AI en GitHub Sponsors"
+              title="Apoya el desarrollo continuo de Oportia Jobs IA en GitHub Sponsors"
             >
               <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500" />
               <span>Conviértete en Sponsor</span>
@@ -68,40 +68,40 @@ export const Footer: React.FC<FooterProps> = ({ onNavigateToTab }) => {
           <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-6 gap-y-2 text-[11px] font-medium">
             <button
               onClick={() => onNavigateToTab('welcome')}
-              className="hover:text-blue-600 dark:hover:text-blue-400 transition"
+              className="hover:text-[#20A88A] dark:hover:text-[#8AD9C4] transition"
             >
-              Inicio
+              Mi Oportia
             </button>
             <button
               onClick={() => onNavigateToTab('radar')}
-              className="hover:text-blue-600 dark:hover:text-blue-400 transition"
+              className="hover:text-[#20A88A] dark:hover:text-[#8AD9C4] transition"
             >
-              Radar de Empleo
+              Oportia Radar
             </button>
             <button
               onClick={() => onNavigateToTab('tracker')}
-              className="hover:text-blue-600 dark:hover:text-blue-400 transition"
+              className="hover:text-[#20A88A] dark:hover:text-[#8AD9C4] transition"
             >
-              Mis Postulaciones
+              Mis postulaciones
             </button>
             <button
               onClick={() => onNavigateToTab('coach')}
-              className="hover:text-blue-600 dark:hover:text-blue-400 transition flex items-center space-x-1 text-blue-600 dark:text-blue-400 font-semibold"
+              className="hover:text-[#20A88A] dark:hover:text-[#8AD9C4] transition flex items-center space-x-1 text-[#20A88A] dark:text-[#8AD9C4] font-semibold"
             >
               <GraduationCap className="w-3 h-3" />
-              <span>Coach IA</span>
+              <span>Opi Coach</span>
             </button>
             <button
               onClick={() => onNavigateToTab('profile')}
-              className="hover:text-blue-600 dark:hover:text-blue-400 transition"
+              className="hover:text-[#20A88A] dark:hover:text-[#8AD9C4] transition"
             >
               Perfil & CV
             </button>
             <button
               onClick={() => onNavigateToTab('preferences')}
-              className="hover:text-blue-600 dark:hover:text-blue-400 transition"
+              className="hover:text-[#20A88A] dark:hover:text-[#8AD9C4] transition"
             >
-              Memoria Cognitiva
+              Oportia Skills
             </button>
           </div>
         )}

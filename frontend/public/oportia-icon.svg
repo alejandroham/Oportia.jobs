@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" width="100%" height="100%">
+  <defs>
+    <linearGradient id="oportiaGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#173B50"/>
+      <stop offset="100%" stop-color="#20A88A"/>
+    </linearGradient>
+    <linearGradient id="orbGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#20A88A"/>
+      <stop offset="100%" stop-color="#173B50"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Smooth Squircle Container -->
+  <rect x="4" y="4" width="152" height="152" rx="38" fill="url(#oportiaGrad)"/>
+  
+  <!-- Outer Connection Orbit -->
+  <circle cx="80" cy="80" r="50" fill="none" stroke="#EDF3F5" stroke-width="4" stroke-opacity="0.35" stroke-dasharray="6 4"/>
+  
+  <!-- Upward Trajectory Arc / Route (White to Jade) -->
+  <path d="M 45 112 C 45 78, 68 52, 108 46" fill="none" stroke="#FFFFFF" stroke-width="9" stroke-linecap="round"/>
+  
+  <!-- Ascending Forward Arrow / Node -->
+  <path d="M 94 40 L 114 46 L 108 66" fill="none" stroke="#FFFFFF" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  
+  <!-- Connection Network Nodes -->
+  <!-- Base Node (Candidate / Talent) -->
+  <circle cx="45" cy="112" r="9" fill="#FFFFFF"/>
+  <circle cx="45" cy="112" r="5" fill="#20A88A"/>
+  
+  <!-- Central Guiding Hub -->
+  <circle cx="78" cy="78" r="7" fill="#EDF3F5"/>
+  
+  <!-- Opportunity / Target Node (Coral Warm Accent #FF906F) -->
+  <circle cx="114" cy="46" r="8" fill="#FF906F"/>
+  <circle cx="114" cy="46" r="4" fill="#FFFFFF"/>
+</svg>

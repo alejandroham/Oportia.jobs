@@ -208,7 +208,7 @@ class FitDimensionScore(BaseModel):
     score: int # 0-100
     reasoning: str
 
-# Modelos del Comité de Evaluación IA (Nexus.Job)
+# Modelos del Comité de Evaluación (Comité Oportia)
 class EvaluatorRoleScore(BaseModel):
     role_id: str # "rrhh", "hiring_manager", "technical", "ats", "career_consultant"
     role_name: str # "Reclutador RR. HH.", "Jefe Contratante", "Evaluador Técnico", "Especialista ATS", "Consultor Estratégico"

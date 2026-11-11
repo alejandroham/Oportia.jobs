@@ -1,5 +1,5 @@
 Write-Host "==================================================" -ForegroundColor Cyan
-Write-Host "  Iniciando NexusJob AI - Agente de Empleo" -ForegroundColor Cyan
+Write-Host "  Iniciando Oportia Jobs IA - Ecosistema de Empleo" -ForegroundColor Cyan
 Write-Host "==================================================" -ForegroundColor Cyan
 
 Set-Location $PSScriptRoot

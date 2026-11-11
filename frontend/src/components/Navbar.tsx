@@ -23,19 +23,20 @@ export const Navbar: React.FC<NavbarProps> = ({
 }) => {
   // Clean, spacious Apple navigation
   const tabs = [
-    { id: 'welcome', label: 'Conoce NexusJob', shortLabel: 'Inicio', icon: Info },
-    { id: 'radar', label: 'Radar de Empleo', shortLabel: 'Radar', icon: Radar },
+    { id: 'welcome', label: 'Mi Oportia', shortLabel: 'Inicio', icon: Info },
+    { id: 'radar', label: 'Oportia Radar', shortLabel: 'Radar', icon: Radar },
     { id: 'tracker', label: 'Mis Postulaciones', shortLabel: 'Postulaciones', icon: Briefcase },
-    { id: 'coach', label: 'Coach IA', shortLabel: 'Coach', icon: GraduationCap },
+    { id: 'coach', label: 'Opi Coach', shortLabel: 'Coach', icon: GraduationCap },
     { id: 'profile', label: 'Perfil & CV', shortLabel: 'Perfil', icon: User },
-    { id: 'preferences', label: 'Memoria IA', shortLabel: 'Memoria', icon: Brain },
+    { id: 'preferences', label: 'Oportia Skills', shortLabel: 'Skills', icon: Brain },
   ];
 
   const hasKey = Boolean(llmSettings?.has_active_key);
+  const providerName = (llmSettings?.provider || 'gemini').toUpperCase();
   const statusLabel = hasKey
-    ? (llmSettings?.status_label || (llmSettings?.active_model_name ? `${llmSettings.provider.toUpperCase()} (${llmSettings.active_model_name})` : llmSettings?.provider?.toUpperCase() || 'IA Conectada'))
+    ? (llmSettings?.status_label || (llmSettings?.active_model_name ? `${providerName} (${llmSettings.active_model_name})` : providerName || 'IA Conectada'))
     : 'Modo Offline';
-  const dotColor = hasKey ? 'bg-emerald-500' : 'bg-yellow-400';
+  const dotColor = hasKey ? 'bg-[#20A88A]' : 'bg-yellow-400';
 
   return (
     <>
@@ -46,21 +47,21 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button
             onClick={() => setActiveTab('welcome')}
             className="flex items-center space-x-2 text-left hover:opacity-90 transition group focus:outline-none shrink-0"
-            title="Ir a Inicio & Conoce Nexus.Job AI"
+            title="Ir a Inicio & Conoce Oportia Jobs IA"
           >
             {/* Light Mode Logo */}
             <img
-              src="/nexusjob-logo.png"
-              alt="Nexus.Job"
-              className="h-7 sm:h-8 w-auto object-contain dark:hidden group-hover:scale-[1.02] transition"
+              src="/oportia-logo.svg"
+              alt="Oportia Jobs IA"
+              className="h-8 sm:h-9 w-auto object-contain dark:hidden group-hover:scale-[1.02] transition"
             />
             {/* Dark Mode Logo */}
             <img
-              src="/nexusjob-logo-dark.png"
-              alt="Nexus.Job"
-              className="h-7 sm:h-8 w-auto object-contain hidden dark:block group-hover:scale-[1.02] transition"
+              src="/oportia-logo-dark.svg"
+              alt="Oportia Jobs IA"
+              className="h-8 sm:h-9 w-auto object-contain hidden dark:block group-hover:scale-[1.02] transition"
             />
-            <span className="text-[10px] font-mono font-bold tracking-wider px-1.5 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 border border-blue-200/60 dark:border-blue-800/60 shrink-0">
+            <span className="text-[10px] font-mono font-bold tracking-wider px-1.5 py-0.5 rounded-full bg-[#20A88A]/10 dark:bg-[#20A88A]/20 text-[#20A88A] dark:text-[#8AD9C4] border border-[#20A88A]/30 shrink-0">
               v1.0.0
             </span>
           </button>

@@ -1,4 +1,4 @@
-# NexusJob AI — Ecosistema Autónomo de Empleabilidad, Comité de Selección IA & Coach Profesional
+# Oportia Jobs IA — Tu talento. Tus decisiones. Tus oportunidades.
 
 <div align="center">
 
@@ -13,8 +13,8 @@
 [![Local First](https://img.shields.io/badge/Privacy-100%25%20Local--First-emerald.svg?style=for-the-badge)](docs/MANUAL_DE_USUARIO.md#9-privacidad-respaldos-cifrados-aes-256--ley-n-21719)
 
 <p align="center">
-  <strong>Un ecosistema inteligente, ético y soberano para dominar la búsqueda de empleo.</strong><br>
-  Equipado con un <strong>Comité Colegiado de 5 Evaluadores IA</strong>, <strong>Coach de Carrera y Tutor Práctico</strong>, <strong>Cerebro Cognitivo de Memoria Continua</strong>, diseño inspirado en <strong>Apple (Cupertino HIG)</strong>, cumplimiento con la <strong>Ley N° 21.719 de Chile</strong> y servidor nativo <strong>Model Context Protocol (MCP)</strong>.
+  <strong>El ecosistema inteligente que automatiza tu búsqueda laboral, protege tu información y te acompaña en tu desarrollo profesional.</strong><br>
+  Equipado con el copiloto <strong>Opi</strong>, <strong>Comité Oportia (5 Evaluadores)</strong>, <strong>Opi Coach y Oportia Aprende</strong>, <strong>Oportia Radar</strong>, diseño con <strong>Modo Día predeterminado y Modo Noche</strong>, cumplimiento con la <strong>Ley N° 21.719 de Chile</strong> y servidor nativo <strong>Model Context Protocol (MCP)</strong>.
 </p>
 
 [**📖 Leer el Manual de Usuario Completo »**](docs/MANUAL_DE_USUARIO.md)
@@ -23,11 +23,13 @@
 
 ---
 
-## 🧭 ¿Qué es NexusJob AI?
+## 🧭 ¿Qué es Oportia Jobs IA?
 
-**NexusJob AI** resuelve la fragmentación y falta de transparencia del mercado laboral moderno. En lugar de ser un simple formulario con un prompt de IA, opera como un **copiloto soberano de empleabilidad** donde:
-- **La IA asume el 95% del trabajo técnico:** Rastrea ofertas nacionales y globales, convoca a un **Comité de Selección de 5 evaluadores**, proyecta tu **Potential Fit Score**, redacta tu CV y carta a la medida con logros STAR reales y te entrena para superar tus brechas formativas con cursos gratuitos verificados.
-- **Tú mantienes el 100% del control soberano:** No usamos bots a ciegas que arriesguen tu cuenta. Tú validas tus antecedentes bajo la Ley N° 21.719 y postulas en **1 clic en el enlace oficial de la empresa**, incluso en portales estatales que exigen ClaveÚnica.
+**Oportia Jobs IA** resuelve la fragmentación y falta de transparencia del mercado laboral moderno. La idea fundamental es:
+> **La IA organiza y te orienta. Tú decides tu camino.**
+
+- **Automatización con autonomía humana:** Rastrea ofertas en Chile y el mundo, convoca al **Comité Oportia**, estima la **Compatibilidad Oportia**, adapta tu CV y carta a la medida con logros STAR reales y te conecta con recursos de **Oportia Aprende**.
+- **Tú mantienes el 100% del control sobre tus decisiones:** No usamos bots a ciegas que arriesguen tu cuenta. Tú validas tus antecedentes bajo la Ley N° 21.719 y postulas en **1 clic en el enlace oficial de la empresa**, incluso en portales estatales que exigen ClaveÚnica.
 
 ---
 
@@ -74,29 +76,29 @@ flowchart TD
 
 ---
 
-## 🌟 Los 6 Módulos del Sistema
+## 🌟 Los Módulos del Sistema
 
 | Módulo | Icono | Descripción Funcional |
 | :--- | :---: | :--- |
-| **Página Principal (Welcome Hub)** | 🏠 | Monitor de estado del sistema, acceso rápido a los 6 módulos, acciones en 1 clic y garantías legales. |
+| **Mi Oportia (Welcome Hub)** | 🏠 | Monitor de estado del sistema, acceso rápido a los módulos, acciones en 1 clic y garantías de privacidad. |
 | **Perfil & CV Studio** | 👤 | Carga inteligente de currículum (PDF/Word), extracción sin alucinaciones y taxonomía universal de profesiones. |
-| **Radar de Empleo** | 🛰️ | Exploración en las 16 regiones de Chile y remotas globales, orden descendente por Fit Score y ATS Dorks. |
-| **Comité de Evaluación IA** | 👥 | Análisis colegiado con 5 evaluadores, veredicto del Director, Dual Score (Actual vs Potencial) y matriz de requisitos. |
-| **Coach IA & Superación** | 🎓 | Diagnóstico de brechas, catálogo de cursos gratuitos certificados, rutas por hitos, tutor de casos y simulador STAR. |
-| **Mis Postulaciones** | 🎯 | Flujo 360° con CV adaptado `.formal-justify`, carta de presentación, selector de papel formal y bitácora inviolable. |
-| **Memoria Cognitiva** | 🧠 | Cerebro que acumula tu ADN profesional, biblioteca de logros STAR validados y asistente conversacional Nexus. |
+| **Oportia Radar** | 🛰️ | Exploración en las 16 regiones de Chile y remotas globales, orden descendente por Compatibilidad Oportia. |
+| **Comité Oportia** | 👥 | Evaluación asistida con 5 evaluadores, veredicto del Director y matriz de fortalezas y brechas. |
+| **Opi Coach & Oportia Aprende** | 🎓 | Diagnóstico de brechas, catálogo de cursos gratuitos certificados, rutas por hitos, tutor de casos y simulador STAR. |
+| **Mis postulaciones** | 🎯 | Flujo 360° con CV adaptado `.formal-justify`, carta de presentación, selector de papel formal y bitácora inviolable. |
+| **Oportia Skills & Memoria** | 🧠 | Cerebro que acumula tu ADN profesional, biblioteca de logros STAR validados y copiloto conversacional Opi. |
 
 👉 Para conocer a fondo cada pantalla con recomendaciones visuales, consulta el **[Manual de Usuario](docs/MANUAL_DE_USUARIO.md)**.
 
 ---
 
-## 👥 Comité de Evaluación IA (5 Evaluadores + Director)
+## 👥 Comité Oportia (5 Evaluadores + Director)
 
-A diferencia de los analizadores tradicionales con puntuaciones ciegas, NexusJob AI reúne a un **Comité Colegiado de Selección**:
+A diferencia de los analizadores tradicionales con puntuaciones ciegas, Oportia Jobs IA reúne al **Comité Oportia**:
 
 ```
                        ┌────────────────────────────┐
-                       │   Director de Selección    │
+                       │   Director del Comité      │
                        │   (Síntesis y Veredicto)   │
                        └─────────────┬──────────────┘
                                      │
@@ -109,21 +111,21 @@ A diferencia de los analizadores tradicionales con puntuaciones ciegas, NexusJob
    └───────────┘  └───────────┘    └───────────┘  └───────────┘  └───────────┘
 ```
 
-- **Dual Score de Compatibilidad:**
-  - **Fit Score Actual (0-100%):** Lo que demuestras hoy en tu currículum frente a la vacante.
-  - **Potential Fit Score (0-100%):** Tu proyección alcanzable al completar las capacitaciones recomendadas por el Coach IA.
+- **Dual Score de Compatibilidad Oportia:**
+  - **Compatibilidad Actual (0-100%):** Lo que demuestras hoy en tu currículum frente a la vacante.
+  - **Compatibilidad Potencial (0-100%):** Tu proyección alcanzable al completar las capacitaciones recomendadas por Opi Coach.
 - **Matriz de Requisitos vs CV:** Evidencias textuales categorizadas en *Cumplido*, *Parcial* o *No Cumplido*.
 - **Veredicto del Director:** Dictamen ejecutivo (*Postular Inmediatamente*, *Con Ajustes*, *Brecha Crítica* o *Descartar*).
 - **Acción Inmediata:** Botón **"Transferir al Coach IA"** que envía las brechas detectadas al plan de capacitación con 1 clic.
 
 ---
 
-## 🎓 Coach IA & Centro de Superación Profesional
+## 🎓 Opi Coach & Centro de Superación Profesional
 
-El nuevo módulo de **Coach IA** acompaña al candidato durante todo su desarrollo profesional:
+El módulo de **Opi Coach** acompaña al candidato durante todo su desarrollo profesional:
 
 1. **Diagnóstico de Competencias:** Mapeo de brechas con indicadores de nivel actual vs requerido e impacto proyectado en puntos.
-2. **Catálogo de Cursos Verificados:** Enlaces oficiales y gratuitos sin enlaces rotos:
+2. **Catálogo de Cursos Verificados (Oportia Aprende):** Enlaces oficiales y gratuitos sin enlaces rotos:
    - **Microsoft Learn** (Azure, DevOps, IA, C#).
    - **AWS Skill Builder** (Cloud, Arquitectura, Serverless).
    - **Cisco Networking Academy** (Ciberseguridad, Redes, Linux).
@@ -138,9 +140,9 @@ El nuevo módulo de **Coach IA** acompaña al candidato durante todo su desarrol
 
 ## 🛡️ Privacidad, Cifrado Militar & Ley N° 21.719 de Chile
 
-NexusJob AI implementa los más altos estándares de **Privacy by Design**:
-- **Zero-Knowledge & Local-First:** Tus datos se guardan exclusivamente en tu navegador (IndexedDB) y en tu máquina local (`data/`). Cero recolección oculta en servidores externos.
-- **Cifrado AES-256 en Respaldos (`.nexusjob`):** Exporta e importa tus datos protegidos con **AES-GCM de 256 bits y derivación PBKDF2** bajo tu propia clave.
+Oportia Jobs IA implementa los más altos estándares de **Privacy by Design**:
+- **Soberanía y Local-First:** Tus datos se guardan en tu navegador (IndexedDB) y en tu máquina local (`data/`). Cero recolección oculta en servidores externos.
+- **Cifrado AES-256 en Respaldos (`.oportia`):** Exporta e importa tus datos protegidos con **AES-GCM de 256 bits y derivación PBKDF2** bajo tu propia clave (compatible también con archivos legacy `.nexusjob`).
 - **Derecho al Olvido (Art. 17 Ley 21.719):** Un botón de purga total elimina permanentemente el 100% de tus datos con una sola acción.
 - **Custodia Segura de Claves:** Tus API Keys de Gemini, OpenAI o Claude nunca se exponen ni se guardan en texto plano.
 

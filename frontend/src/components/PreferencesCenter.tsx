@@ -361,7 +361,7 @@ export const PreferencesCenter: React.FC<PreferencesCenterProps> = ({
           }`}
         >
           <MessageSquare className="w-3.5 h-3.5" />
-          <span>Nexus — Asistente de Perfil</span>
+          <span>Opi — Copiloto Profesional</span>
         </button>
 
         <button

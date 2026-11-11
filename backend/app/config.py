@@ -36,7 +36,7 @@ load_dotenv(BASE_DIR / ".env")
 class Settings:
     BASE_DIR: Path = BASE_DIR
     DATA_DIR: Path = DATA_DIR
-    PROJECT_NAME: str = "NexusJob AI - Agente Autónomo de Búsqueda de Empleo"
+    PROJECT_NAME: str = "Oportia Jobs IA - Ecosistema Inteligente de Búsqueda de Empleo"
     VERSION: str = "1.0.0"
     
     # Storage Paths

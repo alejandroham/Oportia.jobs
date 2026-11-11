@@ -9,7 +9,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
     print(f"\n==================================================")
-    print(f"  NexusJob AI - Agente Autónomo de Búsqueda de Empleo")
+    print(f"  Oportia Jobs IA - Ecosistema Inteligente de Búsqueda de Empleo")
     print(f"  Servidor Iniciado en: http://localhost:{port}")
     print(f"  Documentación Swagger: http://localhost:{port}/docs")
     print(f"==================================================\n")

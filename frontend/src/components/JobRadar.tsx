@@ -769,7 +769,7 @@ export const JobRadar: React.FC<JobRadarProps> = ({
                 </span>
               </div>
               <p className="text-[11px] text-gray-600 dark:text-gray-300 leading-relaxed">
-                <strong>¿Cómo postulas?</strong> NexusJob AI rastrea y evalúa las vacantes clasificándolas por <strong>Fit Score (mayor % primero)</strong> y genera tu CV adaptado y carta de presentación a la medida. <strong>No postula automáticamente a ciegas</strong> para evitar que tu cuenta sea bloqueada por los portales, permitir la autenticación con ClaveÚnica (Empleos Públicos) y garantizar que tú valides tus antecedentes bajo la Ley N° 21.719. Tú revisas tus materiales y postulas en 1 clic en el enlace oficial.
+                <strong>¿Cómo postulas?</strong> Oportia Jobs IA rastrea y evalúa las vacantes clasificándolas por <strong>Compatibilidad Oportia (mayor % primero)</strong> y genera tu CV adaptado y carta de presentación a la medida. <strong>No postula automáticamente a ciegas</strong> para evitar que tu cuenta sea bloqueada por los portales, permitir la autenticación con ClaveÚnica (Empleos Públicos) y garantizar que tú valides tus antecedentes bajo la Ley N° 21.719. Tú revisas tus materiales y postulas en 1 clic en el enlace oficial.
               </p>
             </div>
           </div>
@@ -1562,7 +1562,7 @@ export const JobRadar: React.FC<JobRadarProps> = ({
                         Estrategia Personalizada No Generada Aún
                       </h3>
                       <p className="text-xs text-gray-500 max-w-sm mx-auto leading-relaxed">
-                        Para que Nexus deduzca tus familias de roles equivalentes, sinónimos ATS y consultas optimizadas para portales a partir de tu perfil real (sin datos genéricos predefinidos), primero debes cargar tu currículum en <strong>Perfil & CV</strong>.
+                        Para que Opi deduzca tus familias de roles equivalentes, sinónimos ATS y consultas optimizadas para portales a partir de tu perfil real (sin datos genéricos predefinidos), primero debes cargar tu currículum en <strong>Perfil & CV</strong>.
                       </p>
                       <button
                         onClick={() => {
@@ -1965,7 +1965,7 @@ export const JobRadar: React.FC<JobRadarProps> = ({
         </div>
       )}
 
-      {/* COMITÉ DE EVALUACIÓN IA (NEXUS.JOB) */}
+      {/* COMITÉ OPORTIA */}
       {selectedEvaluation && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/50 backdrop-blur-xs animate-fade-in">
           <div className="apple-glass apple-card max-w-2xl w-full max-h-[92vh] sm:max-h-[90vh] overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-5 bg-white/95 dark:bg-zinc-900/95 shadow-2xl rounded-t-3xl sm:rounded-3xl border border-black/10 dark:border-white/10">
@@ -1978,23 +1978,23 @@ export const JobRadar: React.FC<JobRadarProps> = ({
                     <Users className="w-4 h-4" />
                   </span>
                   <h3 className="text-base font-bold text-gray-900 dark:text-white">
-                    Comité de Evaluación IA
+                    Comité Oportia
                   </h3>
                 </div>
                 <p className="text-xs text-gray-500 mt-0.5">
-                  Deliberación de 5 evaluadores independientes consolidada por el Director
+                  Estimación orientativa de 5 evaluadores consolidados por el Director del Comité
                 </p>
               </div>
 
-              {/* Dual Scores: Fit Score Actual & Potential Fit Score */}
+              {/* Dual Scores: Compatibilidad Actual & Potencial */}
               <div className="flex items-center space-x-3 self-end sm:self-auto">
-                {/* Fit Score Actual */}
+                {/* Compatibilidad Actual */}
                 <div className="text-right">
                   <div className="flex items-baseline space-x-1 justify-end">
                     <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                       {selectedEvaluation.overall_score}%
                     </span>
-                    <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wider">Fit Actual</span>
+                    <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wider">Compatibilidad</span>
                   </div>
                   <span className={`inline-block text-[10px] font-semibold px-2 py-0.5 rounded-full ${
                     selectedEvaluation.overall_score >= 80
@@ -2398,11 +2398,11 @@ export const JobRadar: React.FC<JobRadarProps> = ({
             </div>
 
             <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed">
-              Para evaluar el <strong>Fit Score</strong> de una vacante y ordenarla de mayor a menor porcentaje, la IA necesita conocer tus antecedentes laborales, formación académica y competencias reales.
+              Para evaluar la <strong>Compatibilidad Oportia</strong> de una vacante y ordenarla de mayor a menor porcentaje, la IA necesita conocer tus antecedentes laborales, formación académica y competencias reales.
             </p>
 
             <p className="text-[11px] text-gray-500 dark:text-gray-400">
-              Carga tu documento (PDF, Word) en la pestaña <strong>"Perfil & CV"</strong>. NexusJob procesará tu CV de forma 100% local (Zero-Knowledge, Ley N° 21.719) y activará el motor de compatibilidad sin sesgos.
+              Carga tu documento (PDF, Word) en la pestaña <strong>"Perfil & CV"</strong>. Oportia Jobs IA procesará tu CV de forma local (Privacidad por Diseño, Ley N° 21.719) y activará el motor de compatibilidad sin sesgos.
             </p>
 
             <div className="flex items-center justify-end space-x-2 pt-2 border-t border-black/5 dark:border-white/5 flex-wrap gap-y-2">
@@ -2410,7 +2410,7 @@ export const JobRadar: React.FC<JobRadarProps> = ({
                 onClick={() => setShowNoCVModal(false)}
                 className="px-3.5 py-1.5 rounded-xl border border-gray-200 dark:border-zinc-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-zinc-800 font-medium cursor-pointer"
               >
-                Seguir buscando sin Fit Score
+                Seguir buscando sin porcentaje de compatibilidad
               </button>
               {onOpenSettings && !hasActiveKey && (
                 <button

@@ -366,7 +366,7 @@ class UnifiedLLMProvider:
                 ]
             })
 
-        # 7. Conversational Chat Assistant (Nexus Offline Heuristic)
+        # 7. Conversational Chat Assistant (Opi Offline Heuristic)
         elif "asistente de perfil profesional" in prompt_lower or "mensaje del candidato" in prompt_lower:
             if any(k in prompt_lower for k in ["oferta", "ofertas", "empleo", "empleos", "vacante", "vacantes", "trabajo", "radar", "remot"]):
                 reply = "He consultado las vacantes de tu Radar local. Puedes filtrar y explorar las mejores opciones en la pestaña 'Radar de Empleo', o indicarme qué cargo buscas para evaluar coincidencias."

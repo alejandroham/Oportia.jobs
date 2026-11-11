@@ -53,8 +53,8 @@ const ACTIONABLE_SUGGESTIONS = [
   },
   {
     icon: TrendingUp,
-    label: 'Subir Fit Score al 90%',
-    prompt: '¿Cómo puedo adaptar y redactar mejor mis experiencias laborales para alcanzar un Fit Score superior al 90% en las ofertas del Radar?'
+    label: 'Subir compatibilidad al 90%',
+    prompt: '¿Cómo puedo adaptar y redactar mejor mis experiencias laborales para alcanzar una compatibilidad superior al 90% en las ofertas del Radar?'
   },
   {
     icon: Sparkles,
@@ -64,7 +64,7 @@ const ACTIONABLE_SUGGESTIONS = [
   {
     icon: Briefcase,
     label: 'Ofertas top del Radar',
-    prompt: '¿Cuáles son las vacantes laborales actualmente indexadas en mi Radar que presentan mayor afinidad con mi experiencia y perfil?'
+    prompt: '¿Cuáles son las vacantes laborales actualmente indexadas en mi Oportia Radar que presentan mayor afinidad con mi experiencia y perfil?'
   },
   {
     icon: Lightbulb,
@@ -87,12 +87,13 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
     id: 'welcome',
     role: 'assistant',
     content:
-      '¡Hola! Soy Nexus, tu copiloto de perfil profesional y búsqueda de empleo. Mi misión es ayudarte a alcanzar tu máximo potencial de empleabilidad: estructurar tus logros clave en formato STAR con métricas comprobables, optimizar tus palabras clave para superar filtros ATS y orientarte hacia las vacantes más compatibles de tu Radar. ¿Qué te gustaría que analicemos hoy?',
+      '¡Hola! Soy Opi 👋\nPuedo ayudarte a encontrar oportunidades, analizar tu CV, preparar entrevistas y descubrir qué habilidades puedes desarrollar.\nTú decides qué hacer; yo te ayudo a organizar el camino.',
     timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     quickReplies: [
       '🎯 Extraer logros STAR de mi CV',
-      '📈 ¿Cómo subir mi Fit Score al 90%?',
+      '📈 ¿Cómo subir mi compatibilidad con ofertas?',
       '💼 Ver ofertas top en mi Radar',
+      '🎓 Recomendar cursos y capacitaciones',
       '🚫 Definir mis límites laborales'
     ]
   };
@@ -108,9 +109,12 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
 
   // Restore persistent conversation history from sovereign client storage
   useEffect(() => {
-    getClientStore<ChatMessage[]>('nexus_chat_history').then((cached) => {
-      if (cached && Array.isArray(cached) && cached.length > 0) {
-        setMessages(cached);
+    getClientStore<ChatMessage[]>('oportia_chat_history').then(async (cached) => {
+      const history = (cached && cached.length > 0)
+        ? cached
+        : await getClientStore<ChatMessage[]>('nexus_chat_history');
+      if (history && Array.isArray(history) && history.length > 0) {
+        setMessages(history);
       }
       // On initial load, set internal scroll to bottom instantly WITHOUT scrolling the whole browser page
       setTimeout(() => {
@@ -149,14 +153,14 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
 
   const handleClearHistory = async () => {
     setMessages([DEFAULT_WELCOME_MESSAGE]);
-    await saveClientStore('nexus_chat_history', [DEFAULT_WELCOME_MESSAGE]);
+    await saveClientStore('oportia_chat_history', [DEFAULT_WELCOME_MESSAGE]);
     toast.info('Historial y contexto del chat reiniciados');
   };
 
   const handleSend = async (textToSend?: string) => {
     if (!hasKey) {
       if (onOpenSettings) onOpenSettings();
-      toast.error('Nexus requiere una clave de API activa para interactuar en vivo.');
+      toast.error('Opi requiere una clave de API activa para interactuar en vivo.');
       return;
     }
 
@@ -177,7 +181,7 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
 
     const updatedMessages = [...messages, userMsg];
     setMessages(updatedMessages);
-    saveClientStore('nexus_chat_history', updatedMessages);
+    saveClientStore('oportia_chat_history', updatedMessages);
 
     setInputValue('');
     if (textareaRef.current) {
@@ -210,7 +214,7 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
 
       const finalMessages = [...updatedMessages, assistantMsg];
       setMessages(finalMessages);
-      saveClientStore('nexus_chat_history', finalMessages);
+      saveClientStore('oportia_chat_history', finalMessages);
       setShowScrollBottomBtn(false);
       setTimeout(() => scrollToBottom('smooth'), 50);
 
@@ -229,7 +233,7 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
         toast.success('Preferencia registrada en tu memoria IA');
       }
     } catch (e: any) {
-      toast.error('Error al comunicarse con Nexus: ' + (e?.message || e));
+      toast.error('Error al comunicarse con Opi: ' + (e?.message || e));
     } finally {
       setIsLoading(false);
     }
@@ -244,14 +248,14 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
       <div className="px-4 sm:px-5 py-3.5 border-b border-black/6 dark:border-white/8 bg-gray-50/70 dark:bg-zinc-900/70 flex items-center justify-between shrink-0">
         <div className="flex items-center space-x-3">
           <img
-            src="/nexusjob-icon.png"
-            alt="Nexus.Job"
-            className="w-9 h-9 rounded-xl object-contain shadow-xs shrink-0"
+            src="/opi-avatar.svg"
+            alt="Opi"
+            className="w-9 h-9 rounded-2xl object-cover shadow-xs border border-[#20A88A]/40 shrink-0"
           />
           <div>
             <div className="flex items-center space-x-2">
               <h3 className="font-bold text-sm text-[#1D1D1F] dark:text-[#F5F5F7]">
-                Nexus — Asistente de Perfil
+                Opi — Tu copiloto profesional
               </h3>
               {hasKey ? (
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-300/60 dark:border-emerald-800/60 flex items-center gap-1">
@@ -266,7 +270,7 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
               )}
             </div>
             <p className="text-[11px] text-[#86868B] dark:text-[#A1A1A6] truncate max-w-[240px] sm:max-w-md">
-              Estructura logros STAR, optimiza tu CV y orienta postulaciones del Radar.
+              La IA organiza y te orienta. Tú decides tu camino.
             </p>
           </div>
         </div>
@@ -317,10 +321,10 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
 
           <div className="space-y-1.5">
             <h4 className="text-base font-bold text-[#1D1D1F] dark:text-[#F5F5F7]">
-              Nexus Asistente requiere una Clave de API
+              Opi Copiloto requiere una Clave de API
             </h4>
             <p className="text-xs text-[#86868B] dark:text-[#A1A1A6] leading-relaxed">
-              Para conversar en vivo, extraer logros STAR con métricas y analizar tu perfil, el asistente necesita estar conectado a un motor de inteligencia artificial.
+              Para conversar en vivo, extraer logros STAR con métricas y orientar tu desarrollo profesional, el copiloto necesita estar conectado a un motor de inteligencia artificial.
             </p>
           </div>
 
@@ -328,7 +332,7 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
           <div className="w-full text-left p-4 rounded-2xl bg-blue-50/80 dark:bg-blue-950/40 border border-blue-200/80 dark:border-blue-900/60 space-y-2 text-xs text-blue-950 dark:text-blue-200">
             <div className="flex items-center space-x-2 font-bold text-blue-700 dark:text-blue-300">
               <ShieldCheck className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
-              <span>Privacidad Soberana & Zero-Knowledge</span>
+              <span>Soberanía Digital & Privacidad por Diseño</span>
             </div>
             <p className="text-[11px] text-blue-900/90 dark:text-blue-200/90 leading-relaxed">
               <strong>Tu clave de API NO es guardada por la aplicación en servidores externos</strong> ni transferida a terceros. Se mantiene 100% cifrada y segura exclusivamente en tu propio equipo local.
@@ -459,8 +463,8 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
 
             {isLoading && (
               <div className="flex items-center space-x-2 text-[#86868B] dark:text-[#A1A1A6] text-xs py-2 animate-pulse">
-                <div className="w-4 h-4 rounded-full border-2 border-blue-600 border-t-transparent animate-spin" />
-                <span>Nexus está analizando tu perfil y respondiendo...</span>
+                <div className="w-4 h-4 rounded-full border-2 border-[#20A88A] border-t-transparent animate-spin" />
+                <span>Opi está analizando tu consulta y organizando recomendaciones...</span>
               </div>
             )}
           </div>
@@ -541,7 +545,7 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
                     handleSend();
                   }
                 }}
-                placeholder="Escribe a Nexus: consulta ofertas, comparte un logro o define condiciones... (Enter para enviar)"
+                placeholder="Escribe a Opi: consulta ofertas, comparte un logro o define condiciones... (Enter para enviar)"
                 rows={1}
                 disabled={isLoading}
                 className="w-full max-h-32 min-h-[44px] px-4 py-3 rounded-2xl bg-gray-100/90 dark:bg-zinc-800/90 border border-black/6 dark:border-white/8 focus:border-blue-500 dark:focus:border-blue-500 focus:outline-hidden text-xs resize-none placeholder-[#86868B] dark:placeholder-[#A1A1A6] transition leading-relaxed text-[#1D1D1F] dark:text-[#F5F5F7]"
@@ -551,8 +555,8 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
             <button
               onClick={() => handleSend()}
               disabled={!inputValue.trim() || isLoading}
-              className="min-h-[44px] min-w-[44px] rounded-2xl bg-blue-600 hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed text-white flex items-center justify-center shrink-0 shadow-md shadow-blue-500/20 transition cursor-pointer active:scale-95"
-              title="Enviar mensaje a Nexus"
+              className="min-h-[44px] min-w-[44px] rounded-2xl bg-[#173B50] hover:bg-[#1E3B50] dark:bg-[#20A88A] dark:hover:bg-[#1C967A] disabled:opacity-40 disabled:cursor-not-allowed text-white flex items-center justify-center shrink-0 shadow-md shadow-[#173B50]/20 transition cursor-pointer active:scale-95"
+              title="Enviar mensaje a Opi"
             >
               <Send className="w-4 h-4" />
             </button>

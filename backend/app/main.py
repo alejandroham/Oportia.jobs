@@ -41,7 +41,7 @@ from app.models.schemas import (
     CompanyDirectoryItem, RoleRecommendation, GeneratedATSQuery
 )
 
-app = FastAPI(title="NexusJob AI API", version=settings.VERSION)
+app = FastAPI(title="Oportia Jobs IA API", version=settings.VERSION)
 
 # Enable CORS for frontend development
 app.add_middleware(
@@ -193,7 +193,7 @@ def memory_chat(payload: dict):
     if not message:
         raise HTTPException(status_code=400, detail="El mensaje no puede estar vacío.")
 
-    # Nexus Asistente requires an active API key
+    # Opi Copiloto requires an active API key
     provider = settings.DEFAULT_PROVIDER
     has_key = False
     if provider == "gemini":
@@ -207,7 +207,7 @@ def memory_chat(payload: dict):
         raise HTTPException(
             status_code=403,
             detail=(
-                "Nexus Asistente requiere una clave de API activa (Google Gemini, OpenAI o Claude) para interactuar en vivo. "
+                "Opi Copiloto requiere una clave de API activa (Google Gemini, OpenAI o Claude) para interactuar en vivo. "
                 "La clave no es guardada por la aplicación en servidores externos y se mantiene 100% segura y cifrada en tu propio equipo."
             )
         )

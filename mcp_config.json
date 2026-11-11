@@ -1,6 +1,6 @@
 {
   "mcpServers": {
-    "nexusjob-ai": {
+    "oportia-ai": {
       "command": "python",
       "args": [
         "-m",

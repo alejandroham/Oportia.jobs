@@ -1,6 +1,6 @@
 @echo off
 echo ==================================================
-echo   Iniciando NexusJob AI - Agente de Empleo
+echo   Iniciando Oportia Jobs IA - Ecosistema de Empleo
 echo ==================================================
 
 cd /d "%~dp0"

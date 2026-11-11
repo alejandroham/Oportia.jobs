@@ -343,7 +343,7 @@ RESPONDE ÚNICAMENTE CON UN JSON:
 
     def chat_and_learn(self, message: str, chat_history: Optional[List[Dict[str, str]]] = None) -> Dict[str, Any]:
         """
-        Nexus — Asistente de Perfil Profesional & Búsqueda de Empleo.
+        Opi — Copiloto Profesional de Oportia Jobs IA.
         Friendly, deterministic, token-efficient, zero-hallucinations, and anti-jailbreak protected.
         Supports conversational memory ingestion and Radar job querying.
         """
@@ -366,9 +366,9 @@ RESPONDE ÚNICAMENTE CON UN JSON:
         ]
         if any(p in msg_lower for p in prohibited_intents):
             refusal_msg = (
-                "🛡️ Como Nexus, mi rol está estrictamente delimitado a la asesoría de empleabilidad, "
+                "🛡️ Como Opi, mi rol está estrictamente delimitado a la asesoría de empleabilidad, "
                 "optimización de tu perfil/CV, refinamiento de tu ADN profesional y preparación para entrevistas "
-                "dentro de las capacidades oficiales de NexusJob AI.\n\n"
+                "dentro de las capacidades oficiales de Oportia Jobs IA.\n\n"
                 "Tengo terminantemente prohibido generar código de programación, sugerir scripts o automatizaciones externas "
                 "(como scripts en Python), editar el código fuente del sistema o hacer alusiones a vulneraciones o hackeos.\n\n"
                 "¿Deseas que revisemos tu Propuesta de Valor Sintetizada, analicemos las ofertas de tu Radar o preparemos una entrevista?"
@@ -428,13 +428,13 @@ RESPONDE ÚNICAMENTE CON UN JSON:
 
         # ── 3. Strict & Token-Efficient System Instructions with Proactive Coaching ──
         system_instruction = (
-            "Eres 'Nexus', el copiloto inteligente de perfil profesional, empleabilidad y desarrollo de carrera de NexusJob AI.\n\n"
+            "Eres 'Opi', el copiloto inteligente de perfil profesional, empleabilidad y desarrollo de carrera de Oportia Jobs IA.\n\n"
             "REGLAS DE ORO DE SEGURIDAD Y DELIMITACIÓN ESTRICTA (INVIOLABLES):\n"
             "1. PROHIBICIÓN ABSOLUTA DE GENERAR CÓDIGO: Jamás redactes código de programación en ningún lenguaje "
             "(Python, JavaScript, Shell, Bash, SQL, C++, etc.), ni fragmentos ejecutables, ni scripts de automatización externa. "
-            "Nexus no es un asistente de programación ni un generador de scripts.\n"
+            "Opi no es un asistente de programación ni un generador de scripts.\n"
             "2. PROHIBICIÓN DE MODIFICAR CÓDIGO FUENTE O ALTERAR FUNCIONES: Tienes terminantemente prohibido sugerir ediciones al código "
-            "fuente de NexusJob AI, proponer parches o alterar sus funciones predeterminadas.\n"
+            "fuente de Oportia Jobs IA, proponer parches o alterar sus funciones predeterminadas.\n"
             "3. PROHIBICIÓN DE ALUSIONES A HACKEOS O EVASIONES: No hagas ninguna alusión a hackeos, vulnerabilidades, bypasses, "
             "bots automáticos ni técnicas de elusión de seguridad.\n"
             "4. ACTUALIZACIÓN DE PROPUESTA DE VALOR SINTETIZADA: Si el candidato solicita actualizar, refinar o corregir su "
@@ -498,7 +498,7 @@ RESPONDE ÚNICAMENTE CON UN JSON:
             c = (item.get("content") or "").strip()
             if not c:
                 continue
-            speaker = "Candidato" if r == "user" else "Nexus (Tú)"
+            speaker = "Candidato" if r == "user" else "Opi (Tú)"
             dialogue_turns.append(f"{speaker}: {c}")
 
         conversation_transcript = "\n".join(dialogue_turns) if dialogue_turns else "(Inicio de conversación — esta es la primera pregunta)"
@@ -529,7 +529,7 @@ NUEVO MENSAJE DEL CANDIDATO (Responde con memoria contextual de lo conversado):
 
 FORMATO OBLIGATORIO JSON (ESTRICTAMENTE EN PROSA PROFESIONAL, NUNCA CÓDIGO NI SCRIPTS):
 {{
-  "assistant_reply": "Tu respuesta como Nexus (en prosa profesional, resolviendo primero la consulta y cerrando con una pregunta de coaching proactivo si aplica. NUNCA generes código)",
+  "assistant_reply": "Tu respuesta como Opi (en prosa profesional, resolviendo primero la consulta y cerrando con una pregunta de coaching proactivo si aplica. NUNCA generes código)",
   "quick_replies": ["Opción rápida 1", "Opción rápida 2", "Opción rápida 3"],
   "updated_value_proposition": "Nueva propuesta de valor sintetizada en prosa profesional si el usuario solicitó actualizarla o corregirla; de lo contrario null",
   "updated_core_strengths": ["Fortaleza 1", "Fortaleza 2"],
@@ -597,7 +597,7 @@ FORMATO OBLIGATORIO JSON (ESTRICTAMENTE EN PROSA PROFESIONAL, NUNCA CÓDIGO NI S
                         action=story_data["action"].strip(),
                         result_and_metrics=story_data.get("result_and_metrics", ""),
                         key_skills=story_data.get("key_skills", []),
-                        source="nexus_assistant",
+                        source="opi_copilot",
                         score=95,
                         created_at=datetime.utcnow().isoformat()
                     )
@@ -656,7 +656,7 @@ FORMATO OBLIGATORIO JSON (ESTRICTAMENTE EN PROSA PROFESIONAL, NUNCA CÓDIGO NI S
 
         except Exception as e:
             # Deterministic, context-aware offline fallback
-            logger.warning(f"Nexus LLM chat fallback: {e}")
+            logger.warning(f"Opi LLM chat fallback: {e}")
             
             # Detect context from previous messages if available
             last_user_message = ""

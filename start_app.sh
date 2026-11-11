@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # ==================================================
-#   Iniciando NexusJob AI - macOS / Linux Launcher
+#   Iniciando Oportia Jobs IA - macOS / Linux Launcher
 # ==================================================
 
 set -e
@@ -10,7 +10,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
 echo "=================================================="
-echo "  🚀 NexusJob AI - Agente Autónomo de Empleo"
+echo "  🚀 Oportia Jobs IA - Ecosistema Inteligente de Empleo"
 echo "=================================================="
 
 # 1. Detect and configure Node.js in PATH if needed

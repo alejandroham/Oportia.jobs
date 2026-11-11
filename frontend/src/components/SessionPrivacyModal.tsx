@@ -102,7 +102,7 @@ export const SessionPrivacyModal: React.FC<SessionPrivacyModalProps> = ({
       await exportSessionBackupFile(profile, preferences, jobs, applications, exportPassword, exportHint);
       const isEnc = Boolean(exportPassword.trim());
       toast.success(
-        isEnc ? 'Archivo cifrado (.nexusjob) descargado' : 'Archivo de respaldo (.json) descargado',
+        isEnc ? 'Archivo cifrado (.oportia) descargado' : 'Archivo de respaldo (.json) descargado',
         isEnc ? 'Protegido con AES-256' : 'Texto plano (sin contraseña)'
       );
     } catch (e: any) {
@@ -347,7 +347,7 @@ export const SessionPrivacyModal: React.FC<SessionPrivacyModalProps> = ({
                 <span className="text-[10px] text-blue-600 dark:text-blue-400 font-semibold uppercase">Recomendado</span>
               </div>
               <p className="text-[11px] text-gray-600 dark:text-gray-400 leading-snug">
-                Ingresa una contraseña para cifrar el archivo descargado (<code className="text-blue-600 dark:text-blue-400 font-mono">.nexusjob</code>). Nadie podrá ver tu CV ni datos sin ella.
+                Ingresa una contraseña para cifrar el archivo descargado (<code className="text-[#20A88A] font-mono">.oportia</code>). Nadie podrá ver tu CV ni datos sin ella.
               </p>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-0.5">
@@ -449,7 +449,7 @@ export const SessionPrivacyModal: React.FC<SessionPrivacyModalProps> = ({
                 </div>
                 <div className="flex-1 min-w-0">
                   <span className="font-semibold text-xs text-gray-900 dark:text-white">
-                    Descargar Copia de Respaldo ({exportPassword ? '.nexusjob cifrado' : '.json'})
+                    Descargar Copia de Respaldo ({exportPassword ? '.oportia cifrado' : '.json'})
                   </span>
                   <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5 leading-snug">
                     Genera un archivo portátil sin modificar ni borrar lo que tienes en pantalla.
@@ -462,13 +462,13 @@ export const SessionPrivacyModal: React.FC<SessionPrivacyModalProps> = ({
             <div className="pt-2 border-t border-black/5 dark:border-white/5 space-y-2.5">
               <label className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500 flex items-center justify-between">
                 <span>Restaurar Datos desde Archivo Cifrado</span>
-                <span className="text-[10px] text-blue-500 font-normal">.nexusjob o .json</span>
+                <span className="text-[10px] text-[#20A88A] font-normal">.oportia, .nexusjob o .json</span>
               </label>
 
               <input
                 type="file"
                 ref={fileInputRef}
-                accept=".nexusjob,.json"
+                accept=".oportia,.nexusjob,.json"
                 className="hidden"
                 onChange={(e) => {
                   if (e.target.files && e.target.files[0]) {
@@ -487,13 +487,13 @@ export const SessionPrivacyModal: React.FC<SessionPrivacyModalProps> = ({
                 onClick={() => fileInputRef.current?.click()}
                 className={`p-4 rounded-2xl border-2 border-dashed cursor-pointer transition text-center space-y-1.5 ${
                   isDragging
-                    ? 'border-blue-500 bg-blue-50/50 dark:bg-blue-950/30'
-                    : 'border-black/10 dark:border-white/10 hover:border-blue-400/80 bg-gray-50/50 dark:bg-zinc-900/40'
+                    ? 'border-[#20A88A] bg-[#20A88A]/10'
+                    : 'border-black/10 dark:border-white/10 hover:border-[#20A88A]/80 bg-gray-50/50 dark:bg-zinc-900/40'
                 }`}
               >
-                <UploadCloud className="w-5 h-5 mx-auto text-blue-500" />
+                <UploadCloud className="w-5 h-5 mx-auto text-[#20A88A]" />
                 <p className="text-xs font-medium text-gray-800 dark:text-gray-200">
-                  Importar archivo <span className="font-mono text-blue-600 dark:text-blue-400">.nexusjob</span> o <span className="font-mono text-blue-600 dark:text-blue-400">.json</span>
+                  Importar archivo <span className="font-mono text-[#20A88A]">.oportia</span> (o .nexusjob / .json)
                 </p>
                 <p className="text-[10px] text-gray-400">
                   Restaura tu perfil, radar, postulaciones y memoria STAR al instante con total seguridad.

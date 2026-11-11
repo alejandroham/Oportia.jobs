@@ -1,5 +1,5 @@
 /**
- * NexusJob AI — Legal Consent & Disclaimer Engine (Chilean Ley N° 21.719 Compliance)
+ * Oportia Jobs IA — Legal Consent & Disclaimer Engine (Chilean Ley N° 21.719 Compliance)
  * Generates locally signed proof of consent, terms of processing, and liability disclaimers
  * without communicating with any external mail or cloud servers.
  */
@@ -37,7 +37,7 @@ Referencia Legal: ${record.referenceId}
 Fecha y Hora de Emisión (Chile): ${record.timestamp}
 Fecha ISO UTC: ${record.isoDate}
 Documento Analizado: ${record.filename}
-Plataforma: Nexus.Job AI — Motor de Empleabilidad Soberano & Radar Geográfico
+Plataforma: Oportia Jobs IA — Ecosistema Inteligente de Empleabilidad & Radar Geográfico
 
 --------------------------------------------------------------------------------
 1. DECLARACIONES Y BASES DE LICITUD (ART. 12 Y 13 LEY N° 21.719)
@@ -48,25 +48,25 @@ de estructurar su perfil profesional, extraer competencias laborales y emparejar
 vacantes en el Radar de Empleos.
 
 --------------------------------------------------------------------------------
-2. ARQUITECTURA SOBERANA LOCAL (ZERO-KNOWLEDGE / PRIVACY BY DESIGN)
+2. ARQUITECTURA SOBERANA LOCAL (PRIVACIDAD POR DISEÑO Y SOBERANÍA DIGITAL)
 --------------------------------------------------------------------------------
 Se deja constancia expresa de que:
 a) El documento suministrado se procesa de forma transitoria en la memoria local
    del navegador del usuario.
-b) Los datos personales jamás se transfieren a servidores centrales de Nexus.Job AI
-   ni se comparten con terceros para entrenamiento de modelos públicos.
+b) Los datos personales jamás se transfieren a servidores centrales de Oportia Jobs IA
+   ni se comparten con terceros para comercialización ni entrenamiento no consentido.
 c) Toda la información puede ser purgada de inmediato mediante la función de borrado
    total ("Derecho de Supresión / Olvido", Art. 17 Ley N° 21.719).
 
 --------------------------------------------------------------------------------
 3. EXCLUSIÓN DE RESPONSABILIDAD Y FIDELIDAD DE DATOS (NO-ALUCINACIÓN)
 --------------------------------------------------------------------------------
-a) Nexus.Job AI es una herramienta tecnológica de asistencia técnica determinista.
+a) Oportia Jobs IA es una herramienta tecnológica de asistencia técnica y orientación.
    El sistema NO inventa credenciales, títulos académicos, experiencia laboral
    ni competencias que no consten en el documento analizado.
 b) El candidato es el único y exclusivo responsable de la veracidad, exactitud y
    legalidad de los antecedentes que decida postular ante terceros o empleadores.
-c) Nexus.Job AI no garantiza la obtención de empleo ni asume responsabilidad por
+c) Oportia Jobs IA no garantiza la obtención de empleo ni asume responsabilidad por
    las decisiones de selección, contratación o descarte tomadas por reclutadores
    o empresas empleadoras.
 

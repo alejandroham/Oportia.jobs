@@ -1,21 +1,26 @@
 {
-  "name": "Nexus.Job AI — Agente Autónomo de Búsqueda de Empleo",
-  "short_name": "Nexus.Job",
-  "description": "Ecosistema inteligente de búsqueda de empleo, radar geográfico y preparación profesional soberana.",
+  "name": "Oportia Jobs IA — Tu talento. Tus decisiones. Tus oportunidades.",
+  "short_name": "Oportia",
+  "description": "Ecosistema inteligente de búsqueda de empleo, radar geográfico y preparación profesional para potenciar tu desarrollo con autonomía y privacidad.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#000000",
-  "theme_color": "#0071E3",
+  "background_color": "#F4F7F9",
+  "theme_color": "#173B50",
   "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "/favicon-32x32.png",
-      "sizes": "32x32",
-      "type": "image/png"
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
     },
     {
-      "src": "/nexusjob-icon.png",
+      "src": "/oportia-icon.svg",
       "sizes": "150x150",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "/favicon-32x32.png",
+      "sizes": "32x32",
       "type": "image/png"
     },
     {

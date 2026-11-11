@@ -17,6 +17,20 @@ import type {
 
 const API_BASE = (import.meta.env.VITE_API_URL as string) || '/api';
 
+export async function safeFetchJson<T = any>(url: string, options?: RequestInit, fallback: T = null as any): Promise<T> {
+  try {
+    const res = await fetch(url, options);
+    const text = await res.text();
+    if (!text || text.trim().startsWith('<')) {
+      // Server returned HTML (e.g. Vercel SPA rewrite fallback or error page)
+      return fallback;
+    }
+    return JSON.parse(text) as T;
+  } catch {
+    return fallback;
+  }
+}
+
 export async function handleResponse<T = any>(res: Response, defaultError = 'Error en la petición'): Promise<T> {
   const text = await res.text();
   let parsed: any = null;
@@ -26,7 +40,8 @@ export async function handleResponse<T = any>(res: Response, defaultError = 'Err
     if (!res.ok) {
       throw new Error(`Error del servidor (${res.status}): ${text.slice(0, 150) || res.statusText || defaultError}`);
     }
-    throw new Error(`Respuesta no válida del servidor (${res.status}): ${text.slice(0, 100)}`);
+    // Return empty object instead of crashing if HTML was returned
+    return ({} as unknown) as T;
   }
 
   if (!res.ok) {
@@ -40,8 +55,7 @@ export async function handleResponse<T = any>(res: Response, defaultError = 'Err
 export const api = {
   // Profile
   getProfile: async (): Promise<CandidateProfile> => {
-    const res = await fetch(`${API_BASE}/profile`);
-    return res.json();
+    return safeFetchJson<CandidateProfile>(`${API_BASE}/profile`, undefined, null as any);
   },
   updateProfile: async (profile: CandidateProfile): Promise<CandidateProfile> => {
     const res = await fetch(`${API_BASE}/profile`, {
@@ -132,8 +146,7 @@ export const api = {
 
   // Preferences & Cognitive AI Memory
   getPreferences: async (): Promise<UserPreferences> => {
-    const res = await fetch(`${API_BASE}/preferences`);
-    return res.json();
+    return safeFetchJson<UserPreferences>(`${API_BASE}/preferences`, undefined, null as any);
   },
   updatePreferences: async (prefs: UserPreferences): Promise<UserPreferences> => {
     const res = await fetch(`${API_BASE}/preferences`, {
@@ -196,8 +209,7 @@ export const api = {
   // Jobs
   getJobs: async (status?: string): Promise<JobPosting[]> => {
     const url = status ? `${API_BASE}/jobs?status=${status}` : `${API_BASE}/jobs`;
-    const res = await fetch(url);
-    return res.json();
+    return safeFetchJson<JobPosting[]>(url, undefined, []);
   },
   trackJob: async (job_id: string): Promise<JobPosting> => {
     const res = await fetch(`${API_BASE}/jobs/${job_id}/track`, {
@@ -348,8 +360,7 @@ export const api = {
     return res.json();
   },
   getApplications: async (): Promise<ApplicationDraft[]> => {
-    const res = await fetch(`${API_BASE}/applications`);
-    return res.json();
+    return safeFetchJson<ApplicationDraft[]>(`${API_BASE}/applications`, undefined, []);
   },
   getApplicationByJob: async (job_id: string): Promise<ApplicationDraft | null> => {
     const res = await fetch(`${API_BASE}/applications/${job_id}`);
@@ -451,8 +462,15 @@ export const api = {
 
   // Settings & Security Purge
   getSettings: async (): Promise<LLMSettings> => {
-    const res = await fetch(`${API_BASE}/settings`);
-    return handleResponse<LLMSettings>(res, 'Error al obtener la configuración de IA');
+    return safeFetchJson<LLMSettings>(`${API_BASE}/settings`, undefined, {
+      provider: 'gemini',
+      has_gemini_key: false,
+      has_openai_key: false,
+      has_claude_key: false,
+      gemini_model: 'gemini-3.5-flash',
+      openai_model: 'gpt-4o',
+      claude_model: 'claude-3-5-sonnet-20241022'
+    });
   },
   updateSettings: async (payload: { provider: string; api_key?: string; model_name?: string }) => {
     const res = await fetch(`${API_BASE}/settings`, {

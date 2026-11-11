@@ -1,5 +1,5 @@
 """
-Standard Model Context Protocol (MCP) Server for NexusJob AI.
+Standard Model Context Protocol (MCP) Server for Oportia Jobs IA.
 Allows calling this autonomous job agent from Gemini, Claude Code, Cursor, or ChatGPT!
 """
 

@@ -98,10 +98,16 @@ const DEFAULT_EMPTY_PREFERENCES: UserPreferences = {
 
 export function App() {
   const [activeTab, setActiveTab] = useState<string>('welcome');
-  const [darkMode, setDarkMode] = useState<boolean>(true);
+  const [darkMode, setDarkMode] = useState<boolean>(() => {
+    const saved = localStorage.getItem('oportia_theme');
+    if (saved !== null) {
+      return saved === 'dark';
+    }
+    return false; // Modo día es el tema predeterminado para usuarios nuevos
+  });
   const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
   const [isPrivacyOpen, setIsPrivacyOpen] = useState<boolean>(false);
-  const [isNexusChatOpen, setIsNexusChatOpen] = useState<boolean>(false);
+  const [isOpiChatOpen, setIsOpiChatOpen] = useState<boolean>(false);
 
   // Core state
   const [profile, setProfile] = useState<CandidateProfile | null>(null);
@@ -119,12 +125,14 @@ export function App() {
   });
   const [loading, setLoading] = useState<boolean>(true);
 
-  // Sync dark mode class on document
+  // Sync dark mode class on document and persist preference
   useEffect(() => {
     if (darkMode) {
       document.documentElement.classList.add('dark');
+      localStorage.setItem('oportia_theme', 'dark');
     } else {
       document.documentElement.classList.remove('dark');
+      localStorage.setItem('oportia_theme', 'light');
     }
   }, [darkMode]);
 
@@ -201,6 +209,11 @@ export function App() {
 
   useEffect(() => {
     loadData();
+    // Safety fallback: ensure loading spinner never blocks the user if network/API hangs
+    const safetyTimer = setTimeout(() => {
+      setLoading(false);
+    }, 2500);
+    return () => clearTimeout(safetyTimer);
   }, []);
 
   // Auto-sync state changes to client-side IndexedDB
@@ -318,7 +331,8 @@ export function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FBFBFD] dark:bg-[#000000] text-[#1D1D1F] dark:text-[#F5F5F7] transition-colors duration-300">
+    <ErrorBoundary>
+      <div className="min-h-screen bg-[#FBFBFD] dark:bg-[#000000] text-[#1D1D1F] dark:text-[#F5F5F7] transition-colors duration-300">
       
       {/* Apple Frosted Navbar */}
       <Navbar
@@ -336,13 +350,13 @@ export function App() {
         {loading ? (
           <div className="flex flex-col items-center justify-center min-h-[50vh] space-y-4">
             <img
-              src="/nexusjob-icon.png"
-              alt="Nexus.Job"
-              className="w-14 h-14 rounded-2xl shadow-xl shadow-blue-500/25 animate-pulse object-contain"
+              src="/oportia-icon.svg"
+              alt="Oportia Jobs IA"
+              className="w-14 h-14 rounded-2xl shadow-xl shadow-[#20A88A]/20 animate-pulse object-contain"
             />
             <div className="flex items-center space-x-2">
-              <div className="w-4 h-4 rounded-full border-2 border-blue-600 border-t-transparent animate-spin" />
-              <p className="text-xs font-medium text-gray-500 dark:text-gray-400">Iniciando Agente Autónomo Nexus.Job AI...</p>
+              <div className="w-4 h-4 rounded-full border-2 border-[#20A88A] border-t-transparent animate-spin" />
+              <p className="text-xs font-medium text-gray-500 dark:text-gray-400">Iniciando Oportia Jobs IA...</p>
             </div>
           </div>
         ) : (
@@ -450,41 +464,45 @@ export function App() {
         onGoToWelcome={() => setActiveTab('welcome')}
       />
 
-      {/* Floating Nexus Coach Button (Ergonomic Cupertino Placement above iOS tab bar) */}
+      {/* Floating Opi Copilot Button (Ergonomic Cupertino Placement above iOS tab bar) */}
       <div className="no-print fixed bottom-20 right-4 sm:bottom-6 sm:right-6 z-40">
         <button
-          onClick={() => setIsNexusChatOpen(!isNexusChatOpen)}
-          className="flex items-center space-x-2 px-4 py-2.5 min-h-[44px] rounded-full bg-gradient-to-tr from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold text-xs shadow-xl hover:shadow-2xl hover:scale-105 active:scale-95 transition duration-200 border border-white/20 cursor-pointer"
-          title="Abrir chat con Nexus para mejorar tu CV o consultar ofertas"
+          onClick={() => setIsOpiChatOpen(!isOpiChatOpen)}
+          className="flex items-center space-x-2.5 px-4 py-2.5 min-h-[44px] rounded-full bg-gradient-to-tr from-[#173B50] via-[#1E3B50] to-[#20A88A] hover:opacity-95 text-white font-semibold text-xs shadow-xl hover:shadow-2xl hover:scale-105 active:scale-95 transition duration-200 border border-white/20 cursor-pointer"
+          title="Abrir chat con Opi, tu copiloto profesional"
         >
-          <Brain className="w-4 h-4 animate-pulse" />
-          <span>Nexus Asistente</span>
+          <img
+            src="/opi-avatar.svg"
+            alt="Opi"
+            className="w-5 h-5 rounded-full object-cover shrink-0"
+          />
+          <span>Opi Copiloto</span>
         </button>
       </div>
 
-      {/* Global Nexus Chat Slide-over Drawer */}
-      {isNexusChatOpen && (
+      {/* Global Opi Copilot Slide-over Drawer */}
+      {isOpiChatOpen && (
         <div className="fixed inset-0 z-50 flex justify-end bg-black/40 backdrop-blur-xs animate-fade-in no-print">
-          <div className="w-full max-w-xl h-full apple-glass bg-white/95 dark:bg-zinc-900/95 shadow-2xl flex flex-col border-l border-black/10 dark:border-white/10 overflow-hidden">
-            <div className="p-4 border-b border-black/5 dark:border-white/5 flex items-center justify-between bg-gray-50/50 dark:bg-zinc-800/50">
-              <div className="flex items-center space-x-2.5">
+          <div className="w-full max-w-xl h-full apple-glass bg-white/95 dark:bg-[#1E3B50]/95 shadow-2xl flex flex-col border-l border-black/10 dark:border-white/10 overflow-hidden">
+            <div className="p-4 border-b border-black/5 dark:border-white/5 flex items-center justify-between bg-gray-50/50 dark:bg-[#173B50]/50">
+              <div className="flex items-center space-x-3">
                 <img
-                  src="/nexusjob-icon.png"
-                  alt="Nexus.Job"
-                  className="w-8 h-8 rounded-xl object-contain shadow-xs shrink-0"
+                  src="/opi-avatar.svg"
+                  alt="Opi"
+                  className="w-9 h-9 rounded-2xl object-cover shadow-xs border border-[#20A88A]/40 shrink-0"
                 />
                 <div>
                   <h3 className="font-bold text-sm text-gray-900 dark:text-white">
-                    Nexus.Job — Asistente de Perfil Profesional
+                    Opi — Tu copiloto profesional
                   </h3>
-                  <p className="text-[10px] text-gray-500">
-                    Pregúntale cómo mejorar tu CV para subir tu Fit Score o consultar vacantes
+                  <p className="text-[10px] text-gray-500 dark:text-gray-300">
+                    La IA organiza y te orienta. Tú decides tu camino.
                   </p>
                 </div>
               </div>
               <button
-                onClick={() => setIsNexusChatOpen(false)}
-                className="p-1.5 rounded-full text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-zinc-800 transition cursor-pointer"
+                onClick={() => setIsOpiChatOpen(false)}
+                className="p-1.5 rounded-full text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-white/10 transition cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -507,6 +525,7 @@ export function App() {
       )}
 
     </div>
+    </ErrorBoundary>
   );
 }
 

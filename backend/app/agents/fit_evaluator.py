@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 class FitEvaluator:
     """
-    Comité de Evaluación IA de Nexus.Job.
+    Comité Oportia (Evaluación Asistida de Compatibilidad Laboral de Oportia Jobs IA).
     Simula 5 evaluadores especializados e independientes coordinados por un Agente Director Supervisor:
     1. Reclutador de Recursos Humanos (peso: 25%)
     2. Jefe Contratante o Hiring Manager (peso: 25%)
@@ -33,7 +33,7 @@ class FitEvaluator:
 
         # Prepare context for LLM multiagent evaluation
         system_instruction = (
-            "Eres el Director y Coordinador del Comité de Evaluación de Empleabilidad de Nexus.Job. "
+            "Eres el Director y Coordinador del Comité Oportia de Evaluación de Compatibilidad de Oportia Jobs IA. "
             "Tu misión es orquestar una deliberación multiagente objetiva, rigurosa y sin sesgo complaciente "
             "entre 5 evaluadores especializados e independientes, y luego sintetizar sus dictámenes.\n\n"
             "Los 5 evaluadores del Comité son:\n"
@@ -73,7 +73,7 @@ class FitEvaluator:
         }
 
         prompt = f"""
-EVALUACIÓN MULTIAGENTE DE COMPATIBILIDAD LABORAL (COMITÉ DE EVALUACIÓN NEXUS.JOB).
+EVALUACIÓN MULTIAGENTE DE COMPATIBILIDAD LABORAL (COMITÉ OPORTIA).
 
 PERFIL PROFESIONAL DEL CANDIDATO:
 {json.dumps(profile_summary, ensure_ascii=False, indent=2)}
