@@ -4,8 +4,8 @@ from pathlib import Path
 from datetime import datetime
 
 logger = logging.getLogger(__name__)
-from typing import Optional, List
-from fastapi import FastAPI, UploadFile, File, Form, HTTPException, BackgroundTasks
+from typing import Optional, List, Dict, Any
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException, BackgroundTasks, Request, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
@@ -16,7 +16,12 @@ from app.models.schemas import (
     FitEvaluation, ApplicationDraft, FeedbackAction, LLMConfig,
     OutcomeSubmission, UpskillPlan, CompetencyDiagnosticItem,
     LearningCourseResource, LearningPath, TutorPracticeChallenge,
-    TutorEvaluationResult
+    TutorEvaluationResult,
+    StatelessJobEvaluationRequest, StatelessApplicationDraftRequest,
+    StatelessInterviewPrepRequest, StatelessInterviewEvalRequest,
+    StatelessCoachDiagnosticRequest, StatelessLearningPathRequest,
+    StatelessTutorChallengeRequest, StatelessTutorEvalRequest,
+    StatelessChatOpiRequest, JobSearchRequest
 )
 from app.storage.db import db
 from app.agents.profile_analyzer import (
@@ -31,6 +36,9 @@ from app.agents.career_coach import career_coach
 from app.agents.outcome_agent import outcome_agent
 from app.agents.llm_provider import llm
 from app.agents.models import DEFAULT_GEMINI_MODEL, DEFAULT_OPENAI_MODEL, DEFAULT_CLAUDE_MODEL, CATALOG
+from app.agents.llm_context import current_llm_credentials, LLMCredentials
+from app.utils.cache import job_search_cache
+from app.utils.rate_limiter import ai_rate_limiter, search_rate_limiter
 from app.scrapers.remote_boards import RemoteBoardsScraper
 from app.scrapers.linkedin_guest import LinkedInGuestScraper
 from app.scrapers.url_parser import extract_job_from_url
@@ -44,14 +52,42 @@ from app.models.schemas import (
 
 app = FastAPI(title="Oportia Jobs IA API", version=settings.VERSION)
 
-# Enable CORS for frontend development
+# Restrict CORS to allowed origins (Task 1.6)
+allowed_origins_list = [o.strip() for o in settings.ALLOWED_ORIGINS.split(",") if o.strip()]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=allowed_origins_list,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["X-LLM-Provider", "X-LLM-Model"],
 )
+
+@app.middleware("http")
+async def extract_llm_credentials_middleware(request: Request, call_next):
+    """
+    Extracts ephemeral client-provided API keys from HTTP headers (Task 1.2).
+    Keys are held only in a request-scoped ContextVar and immediately reset.
+    Zero disk retention, zero logging.
+    """
+    provider = request.headers.get("X-LLM-Provider")
+    api_key = request.headers.get("X-LLM-Key")
+    model_name = request.headers.get("X-LLM-Model")
+    if api_key:
+        token = current_llm_credentials.set(
+            LLMCredentials(
+                provider=(provider or "gemini").lower(),
+                api_key=api_key.strip(),
+                model_name=model_name
+            )
+        )
+    else:
+        token = current_llm_credentials.set(None)
+    try:
+        response = await call_next(request)
+        return response
+    finally:
+        current_llm_credentials.reset(token)
 
 @app.middleware("http")
 async def ensure_api_prefix_middleware(request, call_next):
@@ -717,29 +753,26 @@ def get_targeted_interview_prep(data: dict):
 
 @app.get("/api/settings")
 def get_current_settings():
+    """
+    Returns available LLM catalog and current defaults.
+    Under Option A (Stateless), the server retains zero client keys.
+    """
     provider = settings.DEFAULT_PROVIDER
-    has_active_key = False
-    active_model_name = ""
-
-    if provider == "gemini":
-        has_active_key = bool(settings.GEMINI_API_KEY)
-        active_model_name = settings.GEMINI_MODEL or DEFAULT_GEMINI_MODEL
-    elif provider == "openai":
-        has_active_key = bool(settings.OPENAI_API_KEY)
-        active_model_name = settings.OPENAI_MODEL or DEFAULT_OPENAI_MODEL
-    elif provider == "claude":
-        has_active_key = bool(settings.ANTHROPIC_API_KEY)
-        active_model_name = settings.CLAUDE_MODEL or DEFAULT_CLAUDE_MODEL
+    active_model_name = (
+        settings.GEMINI_MODEL if provider == "gemini"
+        else settings.OPENAI_MODEL if provider == "openai"
+        else settings.CLAUDE_MODEL
+    ) or DEFAULT_GEMINI_MODEL
 
     return {
         "provider": provider,
-        "has_active_key": has_active_key,
+        "has_active_key": False,
         "active_model_name": active_model_name,
-        "status_label": f"{provider.capitalize()} ({active_model_name})" if has_active_key else "IA no conectada",
-        "status_color": "green" if has_active_key else "yellow",
-        "has_gemini_key": bool(settings.GEMINI_API_KEY),
-        "has_openai_key": bool(settings.OPENAI_API_KEY),
-        "has_claude_key": bool(settings.ANTHROPIC_API_KEY),
+        "status_label": "IA no conectada",
+        "status_color": "yellow",
+        "has_gemini_key": False,
+        "has_openai_key": False,
+        "has_claude_key": False,
         "gemini_model": settings.GEMINI_MODEL or DEFAULT_GEMINI_MODEL,
         "openai_model": settings.OPENAI_MODEL or DEFAULT_OPENAI_MODEL,
         "claude_model": settings.CLAUDE_MODEL or DEFAULT_CLAUDE_MODEL,
@@ -748,23 +781,23 @@ def get_current_settings():
 
 @app.post("/api/settings")
 def update_llm_settings(config: LLMConfig):
-    if config.api_key is not None:
-        llm.update_keys(config.provider, config.api_key, config.model_name)
-    else:
-        settings.DEFAULT_PROVIDER = config.provider
-        if config.model_name:
-            if config.provider == "gemini":
-                settings.GEMINI_MODEL = config.model_name
-            elif config.provider == "openai":
-                settings.OPENAI_MODEL = config.model_name
-            elif config.provider == "claude":
-                settings.CLAUDE_MODEL = config.model_name
-        settings.save_persisted_llm_settings()
-    return {"message": "Configuración de IA actualizada y guardada localmente"}
+    """
+    Stateless Option A: Updates default provider and model preference in server RAM only.
+    Zero disk retention. Never saves api_key to disk.
+    """
+    settings.DEFAULT_PROVIDER = config.provider
+    if config.model_name:
+        if config.provider == "gemini":
+            settings.GEMINI_MODEL = config.model_name
+        elif config.provider == "openai":
+            settings.OPENAI_MODEL = config.model_name
+        elif config.provider == "claude":
+            settings.CLAUDE_MODEL = config.model_name
+    return {"message": "Configuración de modelos actualizada en memoria"}
 
 @app.post("/api/settings/purge")
 def purge_settings_and_keys():
-    """Wipes all API keys and removes stored credentials from memory and disk."""
+    """Wipes all API keys and resets in-memory provider state."""
     llm.reset_provider()
     return {"message": "Claves de API y configuración eliminadas completamente"}
 

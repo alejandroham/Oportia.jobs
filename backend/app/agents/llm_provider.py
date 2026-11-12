@@ -4,6 +4,7 @@ import os
 from typing import Optional, Dict, Any
 from app.config import settings
 from app.agents.models import DEFAULT_GEMINI_MODEL, DEFAULT_OPENAI_MODEL, DEFAULT_CLAUDE_MODEL
+from app.agents.llm_context import current_llm_credentials
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +41,6 @@ class UnifiedLLMProvider:
             if model_name:
                 settings.CLAUDE_MODEL = model_name
         settings.DEFAULT_PROVIDER = provider
-        settings.save_persisted_llm_settings()
 
     def reset_provider(self):
         """Wipes active API clients and memory instances."""
@@ -48,55 +48,61 @@ class UnifiedLLMProvider:
         settings.purge_keys()
 
     def generate_text(self, prompt: str, system_instruction: Optional[str] = None, provider: Optional[str] = None) -> str:
-        prov = provider or settings.DEFAULT_PROVIDER
-        
+        creds = current_llm_credentials.get()
+        prov = (creds.provider if creds else (provider or settings.DEFAULT_PROVIDER)).lower()
+
         # 1. Google Gemini
         if prov == "gemini":
-            api_key = settings.GEMINI_API_KEY or os.environ.get("GEMINI_API_KEY", "")
-            if api_key and self._gemini_client:
+            api_key = (creds.api_key if creds else (settings.GEMINI_API_KEY or os.environ.get("GEMINI_API_KEY", "")))
+            if api_key:
                 import time
-                primary_model = settings.GEMINI_MODEL or DEFAULT_GEMINI_MODEL
+                try:
+                    from google import genai
+                    client = genai.Client(api_key=api_key)
+                except Exception as e:
+                    logger.warning(f"Failed to create ephemeral genai client: {e}")
+                    client = self._gemini_client
 
-                # Resilience chain with active models
-                models_to_try = [primary_model]
-                for candidate in [DEFAULT_GEMINI_MODEL, "gemini-1.5-flash", "gemini-2.5-flash", "gemini-3.5-flash"]:
-                    if candidate not in models_to_try:
-                        models_to_try.append(candidate)
+                if client:
+                    primary_model = (creds.model_name if creds and creds.model_name else None) or settings.GEMINI_MODEL or DEFAULT_GEMINI_MODEL
 
-                last_err = None
-                for candidate_model in models_to_try:
-                    try:
-                        contents = prompt
-                        config = {}
-                        if system_instruction:
-                            config["system_instruction"] = system_instruction
-                        
-                        response = self._gemini_client.models.generate_content(
-                            model=candidate_model,
-                            contents=contents,
-                            config=config if config else None
-                        )
-                        if response and response.text:
-                            if settings.GEMINI_MODEL != candidate_model:
-                                settings.GEMINI_MODEL = candidate_model
-                                settings.save_persisted_llm_settings()
-                            return response.text
-                    except Exception as e:
-                        last_err = e
-                        err_str = str(e)
-                        logger.warning(f"Error calling Gemini model '{candidate_model}': {err_str}. Trying fallback...")
-                        if "503" in err_str or "UNAVAILABLE" in err_str or "high demand" in err_str:
-                            time.sleep(1.0)
+                    # Resilience chain with active models
+                    models_to_try = [primary_model]
+                    for candidate in [DEFAULT_GEMINI_MODEL, "gemini-1.5-flash", "gemini-2.5-flash", "gemini-3.5-flash"]:
+                        if candidate not in models_to_try:
+                            models_to_try.append(candidate)
 
-                logger.error(f"All Gemini models in fallback chain failed. Last error: {last_err}")
-                # fallback to heuristic if failed
+                    last_err = None
+                    for candidate_model in models_to_try:
+                        try:
+                            contents = prompt
+                            config = {}
+                            if system_instruction:
+                                config["system_instruction"] = system_instruction
+                            
+                            response = client.models.generate_content(
+                                model=candidate_model,
+                                contents=contents,
+                                config=config if config else None
+                            )
+                            if response and response.text:
+                                return response.text
+                        except Exception as e:
+                            last_err = e
+                            err_str = str(e)
+                            logger.warning(f"Error calling Gemini model '{candidate_model}': {err_str}. Trying fallback...")
+                            if "503" in err_str or "UNAVAILABLE" in err_str or "high demand" in err_str:
+                                time.sleep(1.0)
+
+                    logger.error(f"All Gemini models in fallback chain failed. Last error: {last_err}")
 
         # 2. OpenAI
         elif prov == "openai":
-            api_key = settings.OPENAI_API_KEY or os.environ.get("OPENAI_API_KEY", "")
+            api_key = (creds.api_key if creds else (settings.OPENAI_API_KEY or os.environ.get("OPENAI_API_KEY", "")))
             if api_key:
                 try:
                     import httpx
+                    model = (creds.model_name if creds and creds.model_name else None) or settings.OPENAI_MODEL or DEFAULT_OPENAI_MODEL
                     headers = {
                         "Authorization": f"Bearer {api_key}",
                         "Content-Type": "application/json"
@@ -110,7 +116,7 @@ class UnifiedLLMProvider:
                         "https://api.openai.com/v1/chat/completions",
                         headers=headers,
                         json={
-                            "model": settings.OPENAI_MODEL,
+                            "model": model,
                             "messages": messages,
                             "temperature": 0.3
                         },
@@ -123,17 +129,18 @@ class UnifiedLLMProvider:
 
         # 3. Anthropic Claude
         elif prov == "claude":
-            api_key = settings.ANTHROPIC_API_KEY or os.environ.get("ANTHROPIC_API_KEY", "")
+            api_key = (creds.api_key if creds else (settings.ANTHROPIC_API_KEY or os.environ.get("ANTHROPIC_API_KEY", "")))
             if api_key:
                 try:
                     import httpx
+                    model = (creds.model_name if creds and creds.model_name else None) or settings.CLAUDE_MODEL or DEFAULT_CLAUDE_MODEL
                     headers = {
                         "x-api-key": api_key,
                         "anthropic-version": "2023-06-01",
                         "Content-Type": "application/json"
                     }
                     payload = {
-                        "model": settings.CLAUDE_MODEL,
+                        "model": model,
                         "max_tokens": 4096,
                         "messages": [{"role": "user", "content": prompt}]
                     }

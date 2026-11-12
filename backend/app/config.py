@@ -62,48 +62,20 @@ class Settings:
     GEMINI_MODEL: str = os.getenv("GEMINI_MODEL", DEFAULT_GEMINI_MODEL)
     OPENAI_MODEL: str = os.getenv("OPENAI_MODEL", DEFAULT_OPENAI_MODEL)
     CLAUDE_MODEL: str = os.getenv("CLAUDE_MODEL", DEFAULT_CLAUDE_MODEL)
+    ALLOWED_ORIGINS: str = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000")
 
     def __init__(self):
         self.UPLOADS_DIR.mkdir(exist_ok=True)
+        # In Option A (Stateless), no credentials are loaded from or saved to disk
         self.load_persisted_llm_settings()
 
     def load_persisted_llm_settings(self):
-        if self.LLM_SETTINGS_FILE.exists():
-            try:
-                with open(self.LLM_SETTINGS_FILE, "r", encoding="utf-8") as f:
-                    data = json.load(f)
-                    if data.get("gemini_api_key"):
-                        self.GEMINI_API_KEY = _unmask_key(data["gemini_api_key"])
-                    if data.get("openai_api_key"):
-                        self.OPENAI_API_KEY = _unmask_key(data["openai_api_key"])
-                    if data.get("anthropic_api_key"):
-                        self.ANTHROPIC_API_KEY = _unmask_key(data["anthropic_api_key"])
-                    if data.get("provider"):
-                        self.DEFAULT_PROVIDER = data["provider"]
-                    if data.get("gemini_model"):
-                        self.GEMINI_MODEL = data["gemini_model"]
-                    if data.get("openai_model"):
-                        self.OPENAI_MODEL = data["openai_model"]
-                    if data.get("claude_model"):
-                        self.CLAUDE_MODEL = data["claude_model"]
-            except Exception:
-                pass
+        # Server only uses environment variables from .env if running in personal local mode
+        pass
 
     def save_persisted_llm_settings(self):
-        try:
-            data = {
-                "provider": self.DEFAULT_PROVIDER,
-                "gemini_api_key": _mask_key(self.GEMINI_API_KEY),
-                "openai_api_key": _mask_key(self.OPENAI_API_KEY),
-                "anthropic_api_key": _mask_key(self.ANTHROPIC_API_KEY),
-                "gemini_model": self.GEMINI_MODEL,
-                "openai_model": self.OPENAI_MODEL,
-                "claude_model": self.CLAUDE_MODEL
-            }
-            with open(self.LLM_SETTINGS_FILE, "w", encoding="utf-8") as f:
-                json.dump(data, f, ensure_ascii=False, indent=2)
-        except Exception:
-            pass
+        # Zero disk retention: never write user API keys to disk
+        pass
 
     def purge_keys(self):
         """Completely wipes all API keys and removes stored credentials from disk."""

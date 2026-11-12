@@ -207,39 +207,46 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     e.preventDefault();
     setIsSaving(true);
     try {
-      if (apiKey) {
-        const encryptedKey = await encryptApiKeyLocally(apiKey);
+      const trimmedKey = apiKey.trim();
+      if (trimmedKey) {
+        const encryptedKey = await encryptApiKeyLocally(trimmedKey);
         localStorage.setItem(`job_search_llm_key_${provider}`, encryptedKey);
+      } else {
+        localStorage.removeItem(`job_search_llm_key_${provider}`);
       }
       localStorage.setItem('job_search_default_provider', provider);
 
       const finalModelName = isCustomModel ? customModelText.trim() : selectedModel;
+      if (finalModelName) {
+        localStorage.setItem(`job_search_llm_model_${provider}`, finalModelName);
+      }
 
+      // Notify backend about preferred provider/model in RAM (never send api_key)
       try {
         await api.updateSettings({
           provider,
-          api_key: apiKey ? apiKey : undefined,
           model_name: finalModelName ? finalModelName : undefined
         });
-        const updated = await api.getSettings();
-        onSettingsUpdated(updated);
       } catch (netErr: any) {
         console.warn('Backend sync delayed or in cold start:', netErr);
-        // Fallback: Update UI state directly from sovereign local storage
-        onSettingsUpdated({
-          provider,
-          has_active_key: !!apiKey,
-          has_gemini_key: provider === 'gemini' ? !!apiKey : false,
-          has_openai_key: provider === 'openai' ? !!apiKey : false,
-          has_claude_key: provider === 'claude' ? !!apiKey : false,
-          active_model_name: finalModelName,
-          status_label: apiKey ? `${provider.charAt(0).toUpperCase() + provider.slice(1)} (${finalModelName})` : 'IA no conectada',
-          status_color: apiKey ? 'green' : 'yellow',
-          gemini_model: provider === 'gemini' ? finalModelName : 'gemini-2.0-flash',
-          openai_model: provider === 'openai' ? finalModelName : 'gpt-4o',
-          claude_model: provider === 'claude' ? finalModelName : 'claude-3-5-sonnet-latest'
-        });
       }
+
+      const hasKey = Boolean(trimmedKey);
+      const updatedSettings: LLMSettings = {
+        ...settings,
+        provider,
+        has_active_key: hasKey,
+        has_gemini_key: provider === 'gemini' ? hasKey : Boolean(localStorage.getItem('job_search_llm_key_gemini')),
+        has_openai_key: provider === 'openai' ? hasKey : Boolean(localStorage.getItem('job_search_llm_key_openai')),
+        has_claude_key: provider === 'claude' ? hasKey : Boolean(localStorage.getItem('job_search_llm_key_claude')),
+        active_model_name: finalModelName,
+        status_label: hasKey ? `${provider.charAt(0).toUpperCase() + provider.slice(1)} (${finalModelName})` : 'IA no conectada',
+        status_color: hasKey ? 'green' : 'yellow',
+        gemini_model: provider === 'gemini' ? finalModelName : (localStorage.getItem('job_search_llm_model_gemini') || 'gemini-2.0-flash'),
+        openai_model: provider === 'openai' ? finalModelName : (localStorage.getItem('job_search_llm_model_openai') || 'gpt-4o'),
+        claude_model: provider === 'claude' ? finalModelName : (localStorage.getItem('job_search_llm_model_claude') || 'claude-3-5-sonnet-latest')
+      };
+      onSettingsUpdated(updatedSettings);
 
       setSavedSuccess(true);
       toast.success('Configuración y clave de IA guardadas (Cifradas)');
@@ -260,13 +267,20 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       setApiKey('');
       await api.updateSettings({
         provider,
-        api_key: '',
         model_name: undefined
-      });
+      }).catch(() => {});
       await api.purgeSettings().catch(() => {});
-      const updated = await api.getSettings();
-      onSettingsUpdated(updated);
-      toast.info(`Clave de ${provider.toUpperCase()} purgada. Modo Offline Heurístico activo.`);
+      const updatedSettings: LLMSettings = {
+        ...settings,
+        has_active_key: false,
+        has_gemini_key: provider === 'gemini' ? false : Boolean(localStorage.getItem('job_search_llm_key_gemini')),
+        has_openai_key: provider === 'openai' ? false : Boolean(localStorage.getItem('job_search_llm_key_openai')),
+        has_claude_key: provider === 'claude' ? false : Boolean(localStorage.getItem('job_search_llm_key_claude')),
+        status_label: 'IA no conectada',
+        status_color: 'yellow'
+      };
+      onSettingsUpdated(updatedSettings);
+      toast.info(`Clave de ${provider.toUpperCase()} purgada del navegador. Modo sin IA activo.`);
     } catch (e: any) {
       toast.error('Error al borrar la clave: ' + (e?.message || e));
     }

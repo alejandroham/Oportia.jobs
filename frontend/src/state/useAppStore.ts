@@ -133,17 +133,51 @@ export const useAppStore = create<AppState>((set, get) => ({
         document.documentElement.classList.remove('dark');
       }
 
+      const provider = (localStorage.getItem('job_search_default_provider') || savedSettings?.provider || 'gemini') as 'gemini' | 'openai' | 'claude';
+      const hasKey = Boolean(localStorage.getItem(`job_search_llm_key_${provider}`));
+      const activeModel = localStorage.getItem(`job_search_llm_model_${provider}`) ||
+        (provider === 'gemini' ? (savedSettings?.gemini_model || 'gemini-2.0-flash') :
+         provider === 'openai' ? (savedSettings?.openai_model || 'gpt-4o') :
+         (savedSettings?.claude_model || 'claude-3-5-sonnet-latest'));
+
+      const initialSettings: LLMSettings = {
+        provider,
+        has_active_key: hasKey,
+        active_model_name: activeModel,
+        status_label: hasKey ? `${provider.charAt(0).toUpperCase() + provider.slice(1)} (${activeModel})` : 'IA no conectada',
+        status_color: hasKey ? 'green' : 'yellow',
+        has_gemini_key: Boolean(localStorage.getItem('job_search_llm_key_gemini')),
+        has_openai_key: Boolean(localStorage.getItem('job_search_llm_key_openai')),
+        has_claude_key: Boolean(localStorage.getItem('job_search_llm_key_claude')),
+        gemini_model: localStorage.getItem('job_search_llm_model_gemini') || savedSettings?.gemini_model || 'gemini-2.0-flash',
+        openai_model: localStorage.getItem('job_search_llm_model_openai') || savedSettings?.openai_model || 'gpt-4o',
+        claude_model: localStorage.getItem('job_search_llm_model_claude') || savedSettings?.claude_model || 'claude-3-5-sonnet-latest',
+        available_models: savedSettings?.available_models
+      };
+
       set({
         profile: savedProfile || null,
         preferences: savedPref || null,
         jobs: Array.isArray(savedJobs) ? savedJobs : [],
         applications: Array.isArray(savedApps) ? savedApps : [],
         coachData: savedCoach || DEFAULT_EMPTY_COACH_DATA,
-        settings: savedSettings ? { ...DEFAULT_LLM_SETTINGS, ...savedSettings } : DEFAULT_LLM_SETTINGS,
+        settings: initialSettings,
         darkMode: isDark,
         isInitialized: true,
         isLoading: false
       });
+
+      // Update backend models catalog asynchronously
+      fetch('/api/settings').then(res => res.json()).then(backendSettings => {
+        if (backendSettings?.available_models) {
+          set(state => ({
+            settings: {
+              ...state.settings,
+              available_models: backendSettings.available_models
+            }
+          }));
+        }
+      }).catch(() => {});
     } catch (e) {
       console.warn('[useAppStore] Error al inicializar store desde IndexedDB:', e);
       set({ isInitialized: true, isLoading: false });
