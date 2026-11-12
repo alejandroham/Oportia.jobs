@@ -379,3 +379,58 @@ class TutorEvaluationResult(BaseModel):
     areas_for_improvement: List[str] = []
     competency_validated: bool = False
     evidence_generated: Optional[str] = None
+
+# --- Stateless Pure Request Schemas (Option A: Zero Server Retention) ---
+
+class StatelessJobEvaluationRequest(BaseModel):
+    job: JobPosting
+    profile: CandidateProfile
+    preferences: Optional[UserPreferences] = None
+
+class StatelessApplicationDraftRequest(BaseModel):
+    job: JobPosting
+    profile: CandidateProfile
+    preferences: Optional[UserPreferences] = None
+
+class StatelessInterviewPrepRequest(BaseModel):
+    job: JobPosting
+    profile: CandidateProfile
+    interviewer_role: str = "all"
+
+class StatelessInterviewEvalRequest(BaseModel):
+    question: str
+    answer: str
+    job: Optional[JobPosting] = None
+    profile: Optional[CandidateProfile] = None
+    interviewer_role: str = "recruiter"
+
+class StatelessCoachDiagnosticRequest(BaseModel):
+    profile: CandidateProfile
+    jobs: Optional[List[JobPosting]] = None
+
+class StatelessLearningPathRequest(BaseModel):
+    profile: CandidateProfile
+    target_role: str
+    gaps: Optional[List[str]] = None
+
+class StatelessTutorChallengeRequest(BaseModel):
+    competency: str
+    profile: Optional[CandidateProfile] = None
+
+class StatelessTutorEvalRequest(BaseModel):
+    challenge: TutorPracticeChallenge
+    solution: str
+    profile: Optional[CandidateProfile] = None
+
+class StatelessChatOpiRequest(BaseModel):
+    message: str
+    profile: Optional[CandidateProfile] = None
+    preferences: Optional[UserPreferences] = None
+    history: Optional[List[Dict[str, Any]]] = None
+
+class JobSearchRequest(BaseModel):
+    keywords: str = ""
+    remote_only: bool = False
+    search_scope: str = "all"
+    region: Optional[str] = None
+    commune: Optional[str] = None

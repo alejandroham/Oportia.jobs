@@ -1,4 +1,5 @@
 import os
+import tempfile
 import logging
 from pathlib import Path
 from datetime import datetime
@@ -133,33 +134,57 @@ def update_profile(profile: CandidateProfile):
 
 @app.post("/api/profile/upload")
 async def upload_cv(file: UploadFile = File(...)):
-    file_path = settings.UPLOADS_DIR / file.filename
-    content = await file.read()
-    with open(file_path, "wb") as f:
-        f.write(content)
+    filename = file.filename or "cv.pdf"
+    suffix = Path(filename).suffix.lower()
+    if suffix not in [".pdf", ".docx", ".doc"]:
+        raise HTTPException(
+            status_code=400,
+            detail="Formato no compatible. Por favor sube tu currículum exclusivamente en formato PDF (.pdf) o Word (.docx, .doc)."
+        )
+    with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmp:
+        tmp_path = Path(tmp.name)
+        content = await file.read()
+        tmp.write(content)
 
-    text = extract_text_from_file(file_path)
+    try:
+        text = extract_text_from_file(tmp_path)
+    finally:
+        try:
+            if tmp_path.exists():
+                tmp_path.unlink()
+        except Exception as e:
+            logger.warning(f"Error unlinking temp file {tmp_path}: {e}")
+
     if not text:
         raise HTTPException(status_code=400, detail="No se pudo extraer texto del archivo subido.")
 
-    profile = analyze_cv_content(text)
+    # Option A: Do not save to DB (returns profile for client storage in IndexedDB)
+    profile = analyze_cv_content(text, save_to_db=False)
     return {"message": "CV analizado exitosamente", "profile": profile}
 
 @app.post("/api/profile/extract-preview")
 async def extract_profile_preview(file: UploadFile = File(...)):
     filename = file.filename or ""
-    ext = Path(filename).suffix.lower()
-    if ext not in [".pdf", ".docx", ".doc"]:
+    suffix = Path(filename).suffix.lower()
+    if suffix not in [".pdf", ".docx", ".doc"]:
         raise HTTPException(
             status_code=400,
             detail="Formato no compatible. Por favor sube tu currículum exclusivamente en formato PDF (.pdf) o Word (.docx, .doc)."
         )
-    file_path = settings.UPLOADS_DIR / filename
-    content = await file.read()
-    with open(file_path, "wb") as f:
-        f.write(content)
+    with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmp:
+        tmp_path = Path(tmp.name)
+        content = await file.read()
+        tmp.write(content)
 
-    text = extract_text_from_file(file_path)
+    try:
+        text = extract_text_from_file(tmp_path)
+    finally:
+        try:
+            if tmp_path.exists():
+                tmp_path.unlink()
+        except Exception as e:
+            logger.warning(f"Error unlinking temp file {tmp_path}: {e}")
+
     if not text:
         raise HTTPException(status_code=400, detail="No se pudo extraer texto del archivo subido.")
 
@@ -253,6 +278,31 @@ def delete_learned_star_story(story_id: str):
     db.save_preferences(prefs)
     return prefs
 
+@app.post("/api/chat/opi")
+def chat_opi_stateless(req: StatelessChatOpiRequest):
+    """
+    Stateless conversational Opi Copilot endpoint (Option A).
+    Accepts message, profile, preferences, history.
+    Zero server disk read/write.
+    """
+    creds = current_llm_credentials.get()
+    has_key = bool(creds and creds.api_key) or bool(settings.GEMINI_API_KEY or settings.OPENAI_API_KEY or settings.ANTHROPIC_API_KEY)
+    if not has_key:
+        raise HTTPException(
+            status_code=403,
+            detail=(
+                "Opi Copiloto requiere una clave de API activa (Google Gemini, OpenAI o Claude). "
+                "La clave se custodia exclusivamente en tu navegador y viaja de forma segura por petición."
+            )
+        )
+    return preference_learner.chat_and_learn(
+        message=req.message,
+        chat_history=req.history,
+        profile=req.profile,
+        prefs=req.preferences,
+        save_to_db=False
+    )
+
 @app.post("/api/memory/chat")
 def memory_chat(payload: dict):
     """Conversational Memory Coach to feed and enrich AI cognitive memory in real-time"""
@@ -261,16 +311,8 @@ def memory_chat(payload: dict):
     if not message:
         raise HTTPException(status_code=400, detail="El mensaje no puede estar vacío.")
 
-    # Opi Copiloto requires an active API key
-    provider = settings.DEFAULT_PROVIDER
-    has_key = False
-    if provider == "gemini":
-        has_key = bool(settings.GEMINI_API_KEY)
-    elif provider == "openai":
-        has_key = bool(settings.OPENAI_API_KEY)
-    elif provider == "claude":
-        has_key = bool(settings.ANTHROPIC_API_KEY)
-
+    creds = current_llm_credentials.get()
+    has_key = bool(creds and creds.api_key) or bool(settings.GEMINI_API_KEY or settings.OPENAI_API_KEY or settings.ANTHROPIC_API_KEY)
     if not has_key:
         raise HTTPException(
             status_code=403,
@@ -280,7 +322,19 @@ def memory_chat(payload: dict):
             )
         )
 
-    result = preference_learner.chat_and_learn(message, history)
+    profile_data = payload.get("profile")
+    prefs_data = payload.get("preferences")
+    profile = CandidateProfile(**profile_data) if profile_data else None
+    prefs = UserPreferences(**prefs_data) if prefs_data else None
+    save_to_db = not (profile or prefs)
+
+    result = preference_learner.chat_and_learn(
+        message=message,
+        chat_history=history,
+        profile=profile,
+        prefs=prefs,
+        save_to_db=save_to_db
+    )
     return result
 
 @app.post("/api/feedback")
@@ -489,6 +543,20 @@ def import_job_from_url(data: dict):
     db.save_jobs([job])
     return {"message": "Oferta importada exitosamente", "job": job}
 
+@app.post("/api/jobs/evaluate", response_model=FitEvaluation)
+def evaluate_job_stateless(req: StatelessJobEvaluationRequest):
+    """
+    Pure stateless fit evaluation (Option A).
+    Evaluates fit score directly from client-provided job, profile, and preferences.
+    Zero server disk read/write.
+    """
+    if not _has_analyzed_cv(req.profile):
+        raise HTTPException(
+            status_code=400,
+            detail="Para evaluar el Fit Score con IA primero debes cargar tu currículum vitae."
+        )
+    return fit_evaluator.evaluate(req.job, req.profile, req.preferences)
+
 @app.post("/api/jobs/{job_id}/evaluate", response_model=FitEvaluation)
 def evaluate_job(job_id: str):
     profile = db.get_profile()
@@ -611,6 +679,14 @@ def register_job_outcome(job_id: str, submission: OutcomeSubmission):
 
 # --- Drafter-Reviewer Application Endpoints ---
 
+@app.post("/api/applications/draft", response_model=ApplicationDraft)
+def draft_application_stateless(req: StatelessApplicationDraftRequest):
+    """
+    Pure stateless application generator (Option A).
+    Zero server database read/write.
+    """
+    return drafter_reviewer.generate_application(req.job, req.profile)
+
 @app.post("/api/jobs/{job_id}/apply", response_model=ApplicationDraft)
 def apply_to_job(job_id: str):
     job = db.get_job_by_id(job_id)
@@ -662,9 +738,16 @@ def evaluate_interview_answer(data: dict):
 
 # --- Coach IA Endpoints (Desarrollo y Crecimiento Profesional) ---
 
-@app.get("/api/coach/diagnostic", response_model=List[CompetencyDiagnosticItem])
-def get_coach_diagnostic():
-    profile = db.get_profile()
+@app.api_route("/api/coach/diagnostic", methods=["GET", "POST"], response_model=List[CompetencyDiagnosticItem])
+def get_coach_diagnostic(payload: Optional[dict] = None):
+    profile = None
+    if payload and payload.get("profile"):
+        try:
+            profile = CandidateProfile(**payload["profile"])
+        except Exception:
+            profile = None
+    if not profile:
+        profile = db.get_profile()
     return career_coach.generate_or_get_diagnostic(profile)
 
 @app.put("/api/coach/competencies/{comp_id}", response_model=CompetencyDiagnosticItem)
@@ -708,7 +791,8 @@ def search_coach_courses(query: Optional[str] = None, competency: Optional[str] 
 def generate_coach_learning_path(data: dict):
     target_role = data.get("target_role", "Especialista TI")
     gaps = data.get("gaps", [])
-    profile = db.get_profile()
+    profile_data = data.get("profile")
+    profile = CandidateProfile(**profile_data) if profile_data else db.get_profile()
     return career_coach.generate_learning_path(target_role, gaps, profile)
 
 @app.get("/api/coach/learning-paths", response_model=List[LearningPath])
@@ -741,13 +825,26 @@ def evaluate_tutor_solution(data: dict):
 
 @app.post("/api/coach/interview-prep")
 def get_targeted_interview_prep(data: dict):
-    job_id = data.get("job_id")
     interviewer_role = data.get("interviewer_role", "all")
+    job_data = data.get("job")
+    profile_data = data.get("profile")
+    if job_data and profile_data:
+        try:
+            job = JobPosting(**job_data)
+            profile = CandidateProfile(**profile_data)
+            return career_coach.generate_targeted_interview_prep(job, profile, interviewer_role)
+        except Exception as e:
+            logger.warning(f"Error in stateless interview prep: {e}")
+    job_id = data.get("job_id")
     job = db.get_job_by_id(job_id) if job_id else None
     if not job:
         raise HTTPException(status_code=404, detail="Empleo no encontrado")
     profile = db.get_profile()
     return career_coach.generate_targeted_interview_prep(job, profile, interviewer_role)
+
+@app.post("/api/coach/interview-eval")
+def evaluate_interview_eval_stateless(req: StatelessInterviewEvalRequest):
+    return interview_coach.evaluate_mock_answer(req.question, req.answer)
 
 # --- Settings & Keys Endpoints ---
 
