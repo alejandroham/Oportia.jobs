@@ -1665,10 +1665,10 @@ export const JobRadar: React.FC<JobRadarProps> = ({
                         })}
                       </div>
 
-                      {/* ATS Dorks Section */}
+                      {/* Búsqueda avanzada en portales de empresas */}
                       <div className="pt-3 border-t border-black/5 dark:border-white/5 space-y-2">
                         <span className="text-[10px] uppercase font-bold tracking-wider text-gray-400 block">
-                          Consultas Booleanas ATS Generadas (Google / DuckDuckGo Dorks)
+                          Búsqueda en portales de empresas (avanzado)
                         </span>
 
                         <div className="space-y-2">
@@ -1992,11 +1992,11 @@ export const JobRadar: React.FC<JobRadarProps> = ({
                     <Users className="w-4 h-4" />
                   </span>
                   <h3 className="text-base font-bold text-gray-900 dark:text-white">
-                    Comité Oportia
+                    Evaluación de compatibilidad
                   </h3>
                 </div>
                 <p className="text-xs text-gray-500 mt-0.5">
-                  Estimación orientativa de 5 evaluadores consolidados por el Director del Comité
+                  5 perspectivas profesionales evaluadas en simultáneo
                 </p>
               </div>
 
@@ -2352,14 +2352,14 @@ export const JobRadar: React.FC<JobRadarProps> = ({
                 <button
                   type="button"
                   onClick={() => {
-                    toast.success('Brechas transferidas al Coach IA para diseño de ruta y preparación de entrevistas.');
-                    if (onNavigateToTab) onNavigateToTab('preferences');
+                    toast.success('Brechas transferidas a Aprender para diseño de ruta y preparación.');
+                    if (onNavigateToTab) onNavigateToTab('aprender');
                     setSelectedEvaluation(null);
                   }}
-                  className="flex-1 sm:flex-initial flex items-center justify-center space-x-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 hover:bg-blue-100 transition"
+                  className="flex-1 sm:flex-initial flex items-center justify-center space-x-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 hover:bg-blue-100 transition cursor-pointer"
                 >
                   <Sparkles className="w-3.5 h-3.5" />
-                  <span>Transferir al Coach IA</span>
+                  <span>Ver cómo cerrar estas brechas</span>
                 </button>
 
                 {evaluatingTargetJob && (

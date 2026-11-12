@@ -98,7 +98,7 @@ export const WelcomeHub: React.FC<WelcomeHubProps> = ({
               className="inline-flex items-center space-x-2 px-4 py-2.5 rounded-2xl bg-white dark:bg-[#1E3B50] hover:bg-gray-100 dark:hover:bg-[#243F55] text-gray-900 dark:text-white text-xs font-semibold border border-black/5 dark:border-white/5 transition"
             >
               <Compass className="w-4 h-4 text-[#20A88A]" />
-              <span>Explorar Oportia Radar</span>
+              <span>Buscar empleo</span>
             </button>
 
             <button
@@ -106,7 +106,7 @@ export const WelcomeHub: React.FC<WelcomeHubProps> = ({
               className="inline-flex items-center space-x-2 px-4 py-2.5 rounded-2xl bg-[#EDF3F5] dark:bg-[#243F55] hover:opacity-90 text-[#173B50] dark:text-[#8AD9C4] text-xs font-semibold border border-[#DCE5EA] dark:border-[#365368] transition"
             >
               <GraduationCap className="w-4 h-4 text-[#20A88A]" />
-              <span>Opi Coach & Oportia Aprende</span>
+              <span>Aprender</span>
             </button>
 
             <button
@@ -196,7 +196,7 @@ export const WelcomeHub: React.FC<WelcomeHubProps> = ({
                 2. Radar de Empleo (16 Regiones & Remoto)
               </h4>
               <p className="text-[11px] text-gray-600 dark:text-gray-400 leading-relaxed">
-                Doble nivel de búsqueda: <strong>Cobertura Nacional continua</strong> combinada con <strong>Prioridad Regional Inteligente</strong>. Indexa Get on Board, CompuTrabajo, ChileTrabajos, Laborum, LinkedIn y portales ATS limpios vía ATS Dorks.
+                Doble nivel de búsqueda: <strong>Cobertura Nacional continua</strong> combinada con <strong>Prioridad Regional Inteligente</strong>. Indexa Get on Board, CompuTrabajo, ChileTrabajos, Laborum, LinkedIn y portales de empresas.
               </p>
             </div>
             <div className="text-[10px] text-indigo-600 dark:text-indigo-400 font-semibold flex items-center justify-between pt-1 border-t border-black/5 dark:border-white/5">
@@ -293,7 +293,7 @@ export const WelcomeHub: React.FC<WelcomeHubProps> = ({
                 <Brain className="w-5 h-5" />
               </div>
               <h4 className="font-bold text-xs text-gray-900 dark:text-white group-hover:text-amber-600 dark:group-hover:text-amber-400">
-                6. Oportia Skills & ADN Profesional
+                6. Mi Perfil, Logros & Lo que Opi sabe de ti
               </h4>
               <p className="text-[11px] text-gray-600 dark:text-gray-400 leading-relaxed">
                 Cerebro que aprende de tus interacciones: infiere tu tono y seniority, extrae historias de éxito bajo el método STAR (Situación, Tarea, Acción, Resultado) y asiste mediante el chat con "Opi Copiloto" con reinicio seguro.

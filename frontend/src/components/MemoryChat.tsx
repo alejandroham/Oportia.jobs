@@ -63,8 +63,8 @@ const ACTIONABLE_SUGGESTIONS = [
   },
   {
     icon: Briefcase,
-    label: 'Ofertas top del Radar',
-    prompt: '¿Cuáles son las vacantes laborales actualmente indexadas en mi Oportia Radar que presentan mayor afinidad con mi experiencia y perfil?'
+    label: 'Ofertas con mayor afinidad',
+    prompt: '¿Cuáles son las vacantes laborales actualmente disponibles en Buscar empleo que presentan mayor afinidad con mi experiencia y perfil?'
   },
   {
     icon: Lightbulb,
