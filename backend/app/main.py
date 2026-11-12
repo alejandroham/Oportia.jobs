@@ -971,10 +971,16 @@ def purge_settings_and_keys():
 
 @app.post("/api/purge-all")
 def purge_all_data():
-    """Wipes all candidate profiles, preferences, jobs, applications, and API keys."""
+    """
+    Stateless Option A: Clears server RAM caches (search cache, rate limiters, LLM credentials).
+    Under stateless architecture, all user data resides exclusively in client IndexedDB.
+    """
     llm.reset_provider()
+    job_search_cache.clear()
+    ai_rate_limiter.clear()
+    search_rate_limiter.clear()
     db.purge_all_data()
-    return {"message": "Todos los datos y claves han sido purgados exitosamente"}
+    return {"message": "Caché de servidor purgada exitosamente. Todo dato de usuario reside exclusivamente en tu navegador."}
 
 # Serve frontend build if present
 FRONTEND_DIST = settings.BASE_DIR / "frontend" / "dist"
