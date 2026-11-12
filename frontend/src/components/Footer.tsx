@@ -1,5 +1,6 @@
 import React from 'react';
-import { Heart, Instagram, Github, ExternalLink, ShieldCheck, Sparkles, GraduationCap, Compass, Briefcase, User, Brain } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Heart, Instagram, ExternalLink, ShieldCheck, GraduationCap, Settings as SettingsIcon } from 'lucide-react';
 
 interface FooterProps {
   onNavigateToTab?: (tab: string) => void;
@@ -63,48 +64,47 @@ export const Footer: React.FC<FooterProps> = ({ onNavigateToTab }) => {
           </div>
         </div>
 
-        {/* Middle row: Quick Navigation & Modules */}
-        {onNavigateToTab && (
-          <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-6 gap-y-2 text-[11px] font-medium">
-            <button
-              onClick={() => onNavigateToTab('welcome')}
-              className="hover:text-[#20A88A] dark:hover:text-[#8AD9C4] transition"
-            >
-              Mi Oportia
-            </button>
-            <button
-              onClick={() => onNavigateToTab('radar')}
-              className="hover:text-[#20A88A] dark:hover:text-[#8AD9C4] transition"
-            >
-              Oportia Radar
-            </button>
-            <button
-              onClick={() => onNavigateToTab('tracker')}
-              className="hover:text-[#20A88A] dark:hover:text-[#8AD9C4] transition"
-            >
-              Mis postulaciones
-            </button>
-            <button
-              onClick={() => onNavigateToTab('coach')}
-              className="hover:text-[#20A88A] dark:hover:text-[#8AD9C4] transition flex items-center space-x-1 text-[#20A88A] dark:text-[#8AD9C4] font-semibold"
-            >
-              <GraduationCap className="w-3 h-3" />
-              <span>Opi Coach</span>
-            </button>
-            <button
-              onClick={() => onNavigateToTab('profile')}
-              className="hover:text-[#20A88A] dark:hover:text-[#8AD9C4] transition"
-            >
-              Perfil & CV
-            </button>
-            <button
-              onClick={() => onNavigateToTab('preferences')}
-              className="hover:text-[#20A88A] dark:hover:text-[#8AD9C4] transition"
-            >
-              Oportia Skills
-            </button>
-          </div>
-        )}
+        {/* Middle row: Quick Navigation */}
+        <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-6 gap-y-2 text-[11px] font-medium">
+          <Link
+            to="/"
+            className="hover:text-[#20A88A] dark:hover:text-[#8AD9C4] transition"
+          >
+            Inicio
+          </Link>
+          <Link
+            to="/empleos"
+            className="hover:text-[#20A88A] dark:hover:text-[#8AD9C4] transition"
+          >
+            Buscar empleo
+          </Link>
+          <Link
+            to="/postulaciones"
+            className="hover:text-[#20A88A] dark:hover:text-[#8AD9C4] transition"
+          >
+            Mis postulaciones
+          </Link>
+          <Link
+            to="/aprender"
+            className="hover:text-[#20A88A] dark:hover:text-[#8AD9C4] transition flex items-center space-x-1 text-[#20A88A] dark:text-[#8AD9C4] font-semibold"
+          >
+            <GraduationCap className="w-3 h-3" />
+            <span>Aprender</span>
+          </Link>
+          <Link
+            to="/perfil"
+            className="hover:text-[#20A88A] dark:hover:text-[#8AD9C4] transition"
+          >
+            Mi perfil
+          </Link>
+          <Link
+            to="/ajustes"
+            className="hover:text-[#20A88A] dark:hover:text-[#8AD9C4] transition flex items-center space-x-1"
+          >
+            <SettingsIcon className="w-3 h-3" />
+            <span>Ajustes</span>
+          </Link>
+        </div>
 
         {/* Bottom row: Credits and Legal Compliance */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2 text-[11px] text-gray-500 dark:text-gray-400">

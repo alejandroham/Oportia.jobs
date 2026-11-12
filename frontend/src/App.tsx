@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from 'react';
+import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { Navbar } from './components/Navbar';
 import { JobRadar } from './components/JobRadar';
 import { PipelineTracker } from './components/PipelineTracker';
-import { ProfileStudio } from './components/ProfileStudio';
-import { PreferencesCenter } from './components/PreferencesCenter';
 import { CoachStudio } from './components/CoachStudio';
-import { Footer } from './components/Footer';
-import { SettingsModal } from './components/SettingsModal';
-import { SessionPrivacyModal } from './components/SessionPrivacyModal';
+import { ProfileView } from './components/ProfileView';
+import { SettingsView } from './components/SettingsView';
 import { WelcomeHub } from './components/WelcomeHub';
+import { Footer } from './components/Footer';
 import { MemoryChat } from './components/MemoryChat';
 import { X } from 'lucide-react';
 import { useToast } from './components/Toast';
@@ -56,31 +55,22 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { has
 }
 
 export function App() {
+  const navigate = useNavigate();
   const {
     profile,
     setProfile,
     preferences,
     setPreferences,
     jobs,
-    setJobs,
     addOrUpdateJob,
     applications,
-    setApplications,
     addOrUpdateApplication,
     settings,
-    setSettings,
-    activeTab,
-    setActiveTab,
-    darkMode,
-    setDarkMode,
     isLoading,
     initStore,
-    clearAllLocalData,
     importBackupBundle
   } = useAppStore();
 
-  const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
-  const [isPrivacyOpen, setIsPrivacyOpen] = useState<boolean>(false);
   const [isOpiChatOpen, setIsOpiChatOpen] = useState<boolean>(false);
   const toast = useToast();
 
@@ -109,9 +99,24 @@ export function App() {
     init();
   }, [initStore, importBackupBundle, toast]);
 
+  // Unified navigation helper translating legacy tab keys to declarative routes
+  const handleNavigate = (target: string) => {
+    const routeMap: Record<string, string> = {
+      welcome: '/',
+      radar: '/empleos',
+      tracker: '/postulaciones',
+      coach: '/aprender',
+      profile: '/perfil',
+      preferences: '/perfil?tab=busqueda',
+      settings: '/ajustes'
+    };
+    const dest = routeMap[target] || target;
+    navigate(dest);
+  };
+
   const handleApplyToJob = async (job: JobPosting) => {
     try {
-      setActiveTab('tracker');
+      navigate('/postulaciones');
       const draft = await api.applyJob(job.id);
       await addOrUpdateApplication(draft);
 
@@ -128,37 +133,13 @@ export function App() {
     }
   };
 
-  const handleRestoreData = async (bundle: {
-    profile: any;
-    preferences: any;
-    jobs: any[];
-    applications: any[];
-  }) => {
-    await importBackupBundle(bundle);
-    toast.success('Datos restaurados con éxito desde el archivo de respaldo');
-  };
-
-  const handlePurgeData = async () => {
-    await clearAllLocalData();
-    setIsPrivacyOpen(false);
-    toast.info('Todos los datos locales han sido eliminados de tu navegador');
-  };
-
   return (
     <ErrorBoundary>
       <div className="min-h-screen bg-[#FBFBFD] dark:bg-[#000000] text-[#1D1D1F] dark:text-[#F5F5F7] transition-colors duration-300">
-        {/* Apple Frosted Navbar */}
-        <Navbar
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-          darkMode={darkMode}
-          setDarkMode={setDarkMode}
-          openSettings={() => setIsSettingsOpen(true)}
-          openPrivacyModal={() => setIsPrivacyOpen(true)}
-          llmSettings={settings}
-        />
+        {/* Apple Frosted Navbar with 5 semantic tabs + AI status indicator */}
+        <Navbar llmSettings={settings} />
 
-        {/* Main Content Area */}
+        {/* Main Routed Content Area */}
         <main className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8 pb-24 md:pb-8">
           {isLoading ? (
             <div className="flex flex-col items-center justify-center min-h-[50vh] space-y-4">
@@ -177,99 +158,91 @@ export function App() {
           ) : (
             <ErrorBoundary>
               <div className="animate-fade-in">
-                {activeTab === 'welcome' && (
-                  <WelcomeHub
-                    profile={profile}
-                    llmSettings={settings}
-                    onNavigateToTab={(tab) => setActiveTab(tab)}
-                    onOpenPrivacyModal={() => setIsPrivacyOpen(true)}
-                    onOpenSettings={() => setIsSettingsOpen(true)}
-                    onUploadCVClick={() => setActiveTab('profile')}
+                <Routes>
+                  <Route
+                    path="/"
+                    element={
+                      <WelcomeHub
+                        profile={profile}
+                        llmSettings={settings}
+                        onNavigateToTab={handleNavigate}
+                        onOpenPrivacyModal={() => navigate('/ajustes')}
+                        onOpenSettings={() => navigate('/ajustes')}
+                        onUploadCVClick={() => navigate('/perfil')}
+                      />
+                    }
                   />
-                )}
 
-                {activeTab === 'radar' && (
-                  <JobRadar
-                    jobs={jobs}
-                    profile={profile}
-                    hasActiveKey={Boolean(settings.has_active_key)}
-                    onOpenSettings={() => setIsSettingsOpen(true)}
-                    onRefresh={async () => {
-                      // Stateless refresh from client store
-                    }}
-                    onApply={handleApplyToJob}
-                    onNavigateToTracker={() => setActiveTab('tracker')}
-                    onNavigateToTab={(t) => setActiveTab(t)}
+                  <Route
+                    path="/empleos"
+                    element={
+                      <JobRadar
+                        jobs={jobs}
+                        profile={profile}
+                        hasActiveKey={Boolean(settings.has_active_key)}
+                        onOpenSettings={() => navigate('/ajustes')}
+                        onRefresh={async () => {}}
+                        onApply={handleApplyToJob}
+                        onNavigateToTracker={() => navigate('/postulaciones')}
+                        onNavigateToTab={handleNavigate}
+                      />
+                    }
                   />
-                )}
 
-                {activeTab === 'tracker' && (
-                  <PipelineTracker
-                    jobs={jobs}
-                    applications={applications}
-                    profile={profile}
-                    onRefresh={async () => {
-                      // Stateless refresh
-                    }}
-                    onApply={handleApplyToJob}
+                  <Route
+                    path="/postulaciones"
+                    element={
+                      <PipelineTracker
+                        jobs={jobs}
+                        applications={applications}
+                        profile={profile}
+                        onRefresh={async () => {}}
+                        onApply={handleApplyToJob}
+                      />
+                    }
                   />
-                )}
 
-                {activeTab === 'coach' && (
-                  <CoachStudio
-                    profile={profile}
-                    jobs={jobs}
-                    llmSettings={settings}
-                    onOpenSettings={() => setIsSettingsOpen(true)}
-                    onNavigateToTab={(t) => setActiveTab(t)}
+                  <Route
+                    path="/aprender"
+                    element={
+                      <CoachStudio
+                        profile={profile}
+                        jobs={jobs}
+                        llmSettings={settings}
+                        onOpenSettings={() => navigate('/ajustes')}
+                        onNavigateToTab={handleNavigate}
+                      />
+                    }
                   />
-                )}
 
-                {activeTab === 'profile' && (
-                  <ProfileStudio
-                    profile={profile || DEFAULT_EMPTY_PROFILE}
-                    onProfileUpdated={(p) => setProfile(p)}
+                  <Route
+                    path="/perfil"
+                    element={
+                      <ProfileView
+                        profile={profile || DEFAULT_EMPTY_PROFILE}
+                        onProfileUpdated={setProfile}
+                        preferences={preferences || DEFAULT_EMPTY_PREFERENCES}
+                        onPreferencesUpdated={setPreferences}
+                        llmSettings={settings}
+                        onOpenSettings={() => navigate('/ajustes')}
+                      />
+                    }
                   />
-                )}
 
-                {activeTab === 'preferences' && (
-                  <PreferencesCenter
-                    onPreferencesUpdated={(p) => setPreferences(p)}
-                    preferences={preferences || DEFAULT_EMPTY_PREFERENCES}
-                    llmSettings={settings}
-                    onOpenSettings={() => setIsSettingsOpen(true)}
-                  />
-                )}
+                  <Route path="/ajustes" element={<SettingsView />} />
+
+                  {/* Catch-all redirect to Inicio */}
+                  <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
               </div>
             </ErrorBoundary>
           )}
         </main>
 
         {/* Global Apple-styled Footer with Instagram & Sponsor CTA */}
-        <Footer onNavigateToTab={(tab) => setActiveTab(tab)} />
+        <Footer onNavigateToTab={handleNavigate} />
 
-        {/* Settings Modal */}
-        <SettingsModal
-          isOpen={isSettingsOpen}
-          onClose={() => setIsSettingsOpen(false)}
-          settings={settings}
-          onSettingsUpdated={(s) => setSettings(s)}
-        />
-
-        {/* Sovereign Session & Privacy Exit Modal */}
-        <SessionPrivacyModal
-          isOpen={isPrivacyOpen}
-          onClose={() => setIsPrivacyOpen(false)}
-          profile={profile}
-          preferences={preferences}
-          jobs={jobs}
-          applications={applications}
-          onRestoreData={handleRestoreData}
-          onPurgeData={handlePurgeData}
-          onGoToWelcome={() => setActiveTab('welcome')}
-        />
-
-        {/* Floating Opi Copilot Button (Ergonomic Cupertino Placement above iOS tab bar) */}
+        {/* Floating Opi Copilot Button (Ergonomic placement above bottom tab bar on mobile) */}
         <div className="no-print fixed bottom-20 right-4 sm:bottom-6 sm:right-6 z-40">
           <button
             onClick={() => setIsOpiChatOpen(!isOpiChatOpen)}
@@ -285,7 +258,7 @@ export function App() {
           </button>
         </div>
 
-        {/* Global Opi Copilot Slide-over Drawer */}
+        {/* Global Opi Copilot Slide-over Drawer (The ONLY conversational Opi access) */}
         {isOpiChatOpen && (
           <div className="fixed inset-0 z-50 flex justify-end bg-black/40 backdrop-blur-xs animate-fade-in no-print">
             <div className="w-full max-w-xl h-full apple-glass bg-white/95 dark:bg-[#1E3B50]/95 shadow-2xl flex flex-col border-l border-black/10 dark:border-white/10 overflow-hidden">
@@ -318,7 +291,10 @@ export function App() {
                   preferences={preferences || DEFAULT_EMPTY_PREFERENCES}
                   onPreferencesUpdated={(updated) => setPreferences(updated)}
                   llmSettings={settings}
-                  onOpenSettings={() => setIsSettingsOpen(true)}
+                  onOpenSettings={() => {
+                    setIsOpiChatOpen(false);
+                    navigate('/ajustes');
+                  }}
                   className="h-full flex-1 min-h-0"
                 />
               </div>
