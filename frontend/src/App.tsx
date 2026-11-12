@@ -3,7 +3,6 @@ import { Navbar } from './components/Navbar';
 import { JobRadar } from './components/JobRadar';
 import { PipelineTracker } from './components/PipelineTracker';
 import { ProfileStudio } from './components/ProfileStudio';
-import { ApplicationStudio } from './components/ApplicationStudio';
 import { PreferencesCenter } from './components/PreferencesCenter';
 import { CoachStudio } from './components/CoachStudio';
 import { Footer } from './components/Footer';
@@ -430,10 +429,6 @@ export function App() {
                   profile={profile || DEFAULT_EMPTY_PROFILE}
                   onProfileUpdated={(p) => setProfile(p)}
                 />
-              )}
-
-              {activeTab === 'applications' && (
-                <ApplicationStudio applications={applications} />
               )}
 
               {activeTab === 'preferences' && (
