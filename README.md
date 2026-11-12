@@ -45,7 +45,7 @@ flowchart TD
     end
 
     subgraph Inteligencia ["2. Agentes Cognitivos & Comité Colegiado"]
-        Profile["📄 Perfil Universal & CV Maestro\n(Extracción multiformato sin alucinaciones)"]
+        Profile["📄 Perfil Universal & CV Maestro\n(Extracción multiformato verificable)"]
         Committee["👥 Comité de Evaluación IA\n• 1. Reclutador RRHH (25%)\n• 2. Hiring Manager (25%)\n• 3. Experto Técnico (25%)\n• 4. Filtro ATS (15%)\n• 5. Estratega Carrera (10%)\n• Director de Selección (Síntesis)\n• Dual Score (Actual vs Potencial)"]
         CoachIA["🎓 Coach IA & Tutor Práctico\n• Diagnóstico de Brechas Formativas\n• Catálogo Verificado (Microsoft, AWS, Google, Cisco, SENCE)\n• Rutas de Aprendizaje por Hitos\n• Tutor de Casos Prácticos de Industria\n• Simulador de Entrevistas STAR por Rol"]
         Drafter["📝 Drafter-Reviewer Formal\n(CV adaptado .formal-justify y Carta Persuasiva)"]
@@ -81,11 +81,11 @@ flowchart TD
 | Módulo | Icono | Descripción Funcional |
 | :--- | :---: | :--- |
 | **Mi Oportia (Welcome Hub)** | 🏠 | Monitor de estado del sistema, acceso rápido a los módulos, acciones en 1 clic y garantías de privacidad. |
-| **Perfil & CV Studio** | 👤 | Carga inteligente de currículum (PDF/Word), extracción sin alucinaciones y taxonomía universal de profesiones. |
+| **Perfil & CV Studio** | 👤 | Carga inteligente de currículum (PDF/Word), extracción verificable y taxonomía universal de profesiones. |
 | **Oportia Radar** | 🛰️ | Exploración en las 16 regiones de Chile y remotas globales, orden descendente por Compatibilidad Oportia. |
 | **Comité Oportia** | 👥 | Evaluación asistida con 5 evaluadores, veredicto del Director y matriz de fortalezas y brechas. |
 | **Opi Coach & Oportia Aprende** | 🎓 | Diagnóstico de brechas, catálogo de cursos gratuitos certificados, rutas por hitos, tutor de casos y simulador STAR. |
-| **Mis postulaciones** | 🎯 | Flujo 360° con CV adaptado `.formal-justify`, carta de presentación, selector de papel formal y bitácora inviolable. |
+| **Mis postulaciones** | 🎯 | Flujo 360° con CV adaptado `.formal-justify`, carta de presentación, selector de papel formal y bitácora transparente. |
 | **Oportia Skills & Memoria** | 🧠 | Cerebro que acumula tu ADN profesional, biblioteca de logros STAR validados y copiloto conversacional Opi. |
 
 👉 Para conocer a fondo cada pantalla con recomendaciones visuales, consulta el **[Manual de Usuario](docs/MANUAL_DE_USUARIO.md)**.
@@ -138,13 +138,14 @@ El módulo de **Opi Coach** acompaña al candidato durante todo su desarrollo pr
 
 ---
 
-## 🛡️ Privacidad, Cifrado Militar & Ley N° 21.719 de Chile
+## 🛡️ Privacidad, Arquitectura sin Estado & Ley N° 21.719 de Chile
 
-Oportia Jobs IA implementa los más altos estándares de **Privacy by Design**:
-- **Soberanía y Local-First:** Tus datos se guardan en tu navegador (IndexedDB) y en tu máquina local (`data/`). Cero recolección oculta en servidores externos.
-- **Cifrado AES-256 en Respaldos (`.oportia`):** Exporta e importa tus datos protegidos con **AES-GCM de 256 bits y derivación PBKDF2** bajo tu propia clave (compatible también con archivos legacy `.nexusjob`).
-- **Derecho al Olvido (Art. 17 Ley 21.719):** Un botón de purga total elimina permanentemente el 100% de tus datos con una sola acción.
-- **Custodia Segura de Claves:** Tus API Keys de Gemini, OpenAI o Claude nunca se exponen ni se guardan en texto plano.
+Oportia Jobs IA implementa una arquitectura **Backend sin Estado (Stateless)** y los más altos estándares de **Privacy by Design**:
+- **Tus datos viven exclusivamente en tu navegador (IndexedDB):** Tu perfil, preferencias, postulaciones y memoria residen solo en tu equipo. El backend no tiene base de datos, cuentas de usuario ni persistencia en disco.
+- **Custodia de Claves de IA en el Cliente:** Tu clave de API se guarda cifrada en tu navegador (WebCrypto) y viaja en headers HTTP únicamente cuando ejecutas una función con IA. El backend la usa para esa petición y la descarta de inmediato en memoria.
+- **Respaldos Cifrados (`.oportia`):** Exporta e importa tus datos protegidos con **AES-GCM de 256 bits y derivación PBKDF2** bajo tu propia contraseña (compatible también con respaldos legacy `.nexusjob`).
+- **Derecho al Olvido y Purga Total (Art. 17 Ley 21.719):** Un botón de purga total elimina permanentemente el 100% de tus datos con un solo clic.
+- **Transparencia en IA:** La IA puede cometer errores; revisa siempre los antecedentes y sugerencias antes de postular.
 
 ---
 

@@ -233,7 +233,7 @@ export const SessionPrivacyModal: React.FC<SessionPrivacyModalProps> = ({
               <Lock className="w-6 h-6" />
               <div>
                 <h3 className="text-sm font-bold text-gray-900 dark:text-white">
-                  Archivo Protegido con Cifrado Militar AES-256
+                  Archivo Protegido con Cifrado AES-256 (WebCrypto)
                 </h3>
                 <p className="text-[11px] text-gray-500">
                   Ingresa la contraseña con la que creaste este respaldo para descifrar tus datos.
@@ -342,7 +342,7 @@ export const SessionPrivacyModal: React.FC<SessionPrivacyModalProps> = ({
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-1.5 text-xs font-bold text-blue-900 dark:text-blue-200">
                   <Lock className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
-                  <span>Cifrado Militar AES-256 de Respaldo</span>
+                  <span>Cifrado Local AES-256 de Respaldo</span>
                 </div>
                 <span className="text-[10px] text-blue-600 dark:text-blue-400 font-semibold uppercase">Recomendado</span>
               </div>

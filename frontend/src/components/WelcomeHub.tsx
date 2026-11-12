@@ -246,7 +246,7 @@ export const WelcomeHub: React.FC<WelcomeHubProps> = ({
                 4. Mis Postulaciones & Laboratorio CV
               </h4>
               <p className="text-[11px] text-gray-600 dark:text-gray-400 leading-relaxed">
-                Genera tu CV adaptado a la vacante con tipografía formal justificada (<code>.formal-justify</code>), carta de presentación persuasiva, bitácora cronológica inviolable y postulación soberana en 1 clic oficial sin riesgo de baneo.
+                Genera tu CV adaptado a la vacante con tipografía formal justificada (<code>.formal-justify</code>), carta de presentación persuasiva, bitácora cronológica transparente y postulación soberana en 1 clic oficial sin riesgo de baneo.
               </p>
             </div>
             <div className="text-[10px] text-sky-600 dark:text-sky-400 font-semibold flex items-center justify-between pt-1 border-t border-black/5 dark:border-white/5">
@@ -430,7 +430,7 @@ export const WelcomeHub: React.FC<WelcomeHubProps> = ({
               <span>Almacenamiento Local Soberano</span>
             </div>
             <p className="text-gray-600 dark:text-gray-300 text-[11px] leading-relaxed">
-              Tus datos de contacto, historial laboral y postulaciones residen exclusivamente en la base de datos local de tu navegador (IndexedDB). No existen bases de datos centrales en la nube recopilando tu información personal ni custodia de terceros (<strong className="text-gray-900 dark:text-white font-semibold">Art. 12 Ley 21.719</strong>).
+              Tus datos de contacto, historial laboral y postulaciones residen exclusivamente en la base de datos local de tu navegador (IndexedDB). El servidor no tiene base de datos ni recopila tu información personal (<strong className="text-gray-900 dark:text-white font-semibold">Art. 12 Ley 21.719</strong>).
             </p>
           </div>
 
@@ -439,7 +439,7 @@ export const WelcomeHub: React.FC<WelcomeHubProps> = ({
               <span className="p-1.5 rounded-lg bg-[#20A88A]/10 dark:bg-[#20A88A]/20 text-[#20A88A] dark:text-[#8AD9C4]">
                 <Key className="w-4 h-4" />
               </span>
-              <span>Cifrado Militar AES-256 en Respaldos</span>
+              <span>Cifrado Local AES-256 en Respaldos</span>
             </div>
             <p className="text-gray-600 dark:text-gray-300 text-[11px] leading-relaxed">
               Los archivos de respaldo exportados (<code className="px-1.5 py-0.5 rounded bg-[#EDF3F5] dark:bg-white/10 text-[#173B50] dark:text-[#8AD9C4] font-mono font-semibold">.oportia</code>) se cifran mediante <strong className="text-gray-900 dark:text-white font-semibold">AES-GCM de 256 bits</strong> con derivación PBKDF2 bajo tu contraseña personal. Nadie puede leer su contenido sin tu clave.
@@ -451,10 +451,10 @@ export const WelcomeHub: React.FC<WelcomeHubProps> = ({
               <span className="p-1.5 rounded-lg bg-[#20A88A]/10 dark:bg-[#20A88A]/20 text-[#20A88A] dark:text-[#8AD9C4]">
                 <ShieldCheck className="w-4 h-4" />
               </span>
-              <span>Gestión Protegida de Claves de IA</span>
+              <span>Custodia Segura de Claves de IA</span>
             </div>
             <p className="text-gray-600 dark:text-gray-300 text-[11px] leading-relaxed">
-              Tus claves API (Google Gemini, OpenAI, Anthropic) se guardan cifradas en tu navegador y nunca en texto plano. Se comunican directamente con los proveedores y se destruyen en memoria al purgar o cerrar sesión.
+              Tus claves de API (Google Gemini, OpenAI, Anthropic) se guardan cifradas en tu navegador (WebCrypto) y nunca en disco del servidor. Viajan temporalmente por petición y se descartan en memoria tras su uso.
             </p>
           </div>
 
