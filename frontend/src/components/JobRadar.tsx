@@ -56,6 +56,7 @@ import type {
   CompanyDirectoryItem
 } from '../types';
 import { api } from '../api';
+import { useAppStore } from '../state/useAppStore';
 import { formatDisplayDate, getOfferExpirationBadge } from '../utils/dateUtils';
 import { CHILE_REGIONS, detectJobRegionAndCommune, getGeographicBadge } from '../utils/chileRegions';
 import { useToast } from './Toast';
@@ -333,8 +334,21 @@ export const JobRadar: React.FC<JobRadarProps> = ({
     setIsScraping(true);
     try {
       const searchKw = searchTerm.trim() || (profile?.primary_profession || (profile?.equivalent_roles?.[0] || ''));
-      await api.scrapeJobs(searchKw, remoteOnly, searchScope);
-      toast.success('Búsqueda completada con éxito');
+      const found = await api.searchJobs({
+        keywords: searchKw,
+        remote_only: remoteOnly,
+        search_scope: searchScope,
+        region: selectedRegion || undefined,
+        commune: selectedCommune || undefined
+      });
+      if (Array.isArray(found) && found.length > 0) {
+        const store = useAppStore.getState();
+        const existingTracked = store.jobs.filter(j => j.status && j.status !== 'discovered');
+        const existingIds = new Set(existingTracked.map(j => j.id));
+        const merged = [...existingTracked, ...found.filter(j => !existingIds.has(j.id))];
+        await store.setJobs(merged);
+      }
+      toast.success(`Búsqueda completada: ${found.length} ofertas encontradas`);
       onRefresh();
     } catch (e: any) {
       toast.error('Error al escanear empleos: ' + (e?.message || e));

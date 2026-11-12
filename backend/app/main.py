@@ -443,6 +443,77 @@ def list_jobs(status: Optional[str] = None):
 
     return jobs
 
+@app.post("/api/jobs/search", response_model=List[JobPosting])
+def search_jobs_stateless(req: JobSearchRequest):
+    """
+    Stateless job search across Chilean portals, Remote boards, and ATS corporativo (Option A).
+    Results are cached in server RAM for 15 minutes.
+    Zero server disk retention (db.save_jobs is NEVER called).
+    """
+    cache_key = f"{req.keywords.lower()}:{req.remote_only}:{req.search_scope}:{req.region}:{req.commune}"
+    cached = job_search_cache.get(cache_key)
+    if cached is not None:
+        return cached
+
+    kw = req.keywords.strip()
+    jobs: List[JobPosting] = []
+
+    # 1. Global / Remote boards
+    if req.search_scope in ("global", "all"):
+        try:
+            remote_scraper = RemoteBoardsScraper()
+            jobs.extend(remote_scraper.search(keywords=kw, remote_only=req.remote_only, limit=20))
+        except Exception as e:
+            logger.warning(f"Remote boards error: {e}")
+
+        try:
+            linkedin_scraper = LinkedInGuestScraper()
+            jobs.extend(linkedin_scraper.search(keywords=kw, remote_only=req.remote_only, limit=8))
+        except Exception:
+            pass
+
+    # 2. Chilean Portals
+    if req.search_scope in ("chile", "all"):
+        try:
+            chile_scraper = ChilePortalsScraper()
+            jobs.extend(chile_scraper.search(keywords=kw, remote_only=req.remote_only, limit=40))
+        except Exception as e:
+            logger.warning(f"Chile portals error: {e}")
+
+    # 3. Direct ATS Corporativo
+    try:
+        ats_jobs = ats_scraper.search(keywords=kw, remote_only=req.remote_only, limit=15)
+        jobs.extend(ats_jobs)
+    except Exception as e:
+        logger.warning(f"ATS direct error: {e}")
+
+    # Annotate region, commune, and modality
+    for j in jobs:
+        geo_cat, _, reg, comm = calculate_geographic_priority(
+            j.location,
+            user_region=req.region,
+            user_commune=req.commune
+        )
+        if reg and not j.region:
+            j.region = reg
+        if comm and not j.commune:
+            j.commune = comm
+        j.is_user_region = (geo_cat == "user_region")
+        if not j.modality:
+            j.modality = "Remoto" if j.is_remote else "Presencial"
+
+    # Deduplicate by url or title+company
+    seen = set()
+    deduped: List[JobPosting] = []
+    for j in jobs:
+        uniq = j.url or f"{j.title}:{j.company}".lower()
+        if uniq not in seen:
+            seen.add(uniq)
+            deduped.append(j)
+
+    job_search_cache.set(cache_key, deduped)
+    return deduped
+
 @app.post("/api/jobs/scrape")
 def trigger_scrape(keywords: Optional[str] = None, remote_only: bool = False, scope: str = "chile"):
     """

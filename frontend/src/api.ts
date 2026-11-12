@@ -330,15 +330,28 @@ export const api = {
     const res = await fetch(`${API_BASE}/regions`);
     return res.json();
   },
-  scrapeJobs: async (keywords?: string, remote_only: boolean = false, scope: string = 'chile') => {
-    const params = new URLSearchParams();
-    params.set('remote_only', String(remote_only));
-    params.set('scope', scope);
-    if (keywords) params.set('keywords', keywords);
-    const res = await fetch(`${API_BASE}/jobs/scrape?${params.toString()}`, {
-      method: 'POST'
+  searchJobs: async (req: {
+    keywords?: string;
+    remote_only?: boolean;
+    search_scope?: string;
+    region?: string;
+    commune?: string;
+  }): Promise<JobPosting[]> => {
+    const res = await fetch(`${API_BASE}/jobs/search`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        keywords: req.keywords || '',
+        remote_only: Boolean(req.remote_only),
+        search_scope: req.search_scope || 'all',
+        region: req.region,
+        commune: req.commune
+      })
     });
-    return res.json();
+    return handleResponse<JobPosting[]>(res, 'Error al buscar empleos');
+  },
+  scrapeJobs: async (keywords?: string, remote_only: boolean = false, scope: string = 'chile') => {
+    return api.searchJobs({ keywords, remote_only, search_scope: scope });
   },
   importJobUrl: async (url: string): Promise<{ message: string; job: JobPosting }> => {
     const res = await fetch(`${API_BASE}/jobs/import-url`, {
