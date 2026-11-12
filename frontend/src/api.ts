@@ -622,5 +622,15 @@ export const api = {
       method: 'POST'
     });
     return handleResponse(res, 'Error al purgar datos del servidor');
+  },
+  checkLegacyExport: async (): Promise<{
+    found: boolean;
+    profile?: CandidateProfile;
+    preferences?: UserPreferences;
+    jobs?: JobPosting[];
+    applications?: ApplicationDraft[];
+    coach_data?: any;
+  }> => {
+    return safeFetchJson(`${API_BASE}/legacy-export`, undefined, { found: false });
   }
 };

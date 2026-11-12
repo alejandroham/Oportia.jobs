@@ -1,4 +1,5 @@
 import os
+import json
 import tempfile
 import logging
 from pathlib import Path
@@ -981,6 +982,85 @@ def purge_all_data():
     search_rate_limiter.clear()
     db.purge_all_data()
     return {"message": "Caché de servidor purgada exitosamente. Todo dato de usuario reside exclusivamente en tu navegador."}
+
+@app.get("/api/legacy-export")
+def get_legacy_export():
+    """
+    Stateless Migration Helper (Task 1.8).
+    Transfers pre-existing server disk data to the client's browser (IndexedDB) once.
+    Renames the local legacy files to .bak after export so they are never read again.
+    """
+    profile_path = settings.PROFILE_FILE
+    if not profile_path.exists():
+        return {"found": False}
+
+    try:
+        with open(profile_path, "r", encoding="utf-8") as f:
+            profile_data = json.load(f)
+    except Exception:
+        profile_data = None
+
+    if not profile_data or not profile_data.get("name") or profile_data.get("name").strip().lower() == "candidato":
+        return {"found": False}
+
+    preferences_data = None
+    if settings.PREFERENCES_FILE.exists():
+        try:
+            with open(settings.PREFERENCES_FILE, "r", encoding="utf-8") as f:
+                preferences_data = json.load(f)
+        except Exception:
+            pass
+
+    jobs_data = []
+    if settings.JOBS_FILE.exists():
+        try:
+            with open(settings.JOBS_FILE, "r", encoding="utf-8") as f:
+                jobs_data = json.load(f)
+        except Exception:
+            pass
+
+    applications_data = []
+    if settings.APPLICATIONS_FILE.exists():
+        try:
+            with open(settings.APPLICATIONS_FILE, "r", encoding="utf-8") as f:
+                applications_data = json.load(f)
+        except Exception:
+            pass
+
+    coach_data = None
+    if settings.COACH_DATA_FILE.exists():
+        try:
+            with open(settings.COACH_DATA_FILE, "r", encoding="utf-8") as f:
+                coach_data = json.load(f)
+        except Exception:
+            pass
+
+    # Rename legacy files to .bak so they are archived and not re-read
+    legacy_files = [
+        settings.PROFILE_FILE,
+        settings.PREFERENCES_FILE,
+        settings.JOBS_FILE,
+        settings.APPLICATIONS_FILE,
+        settings.COACH_DATA_FILE,
+        settings.EVALUATIONS_FILE,
+        settings.FEEDBACK_FILE
+    ]
+    for p in legacy_files:
+        if p.exists():
+            try:
+                bak_path = p.with_suffix(p.suffix + ".bak")
+                p.rename(bak_path)
+            except Exception as e:
+                logger.warning(f"Could not rename legacy file {p} to .bak: {e}")
+
+    return {
+        "found": True,
+        "profile": profile_data,
+        "preferences": preferences_data,
+        "jobs": jobs_data,
+        "applications": applications_data,
+        "coach_data": coach_data
+    }
 
 # Serve frontend build if present
 FRONTEND_DIST = settings.BASE_DIR / "frontend" / "dist"

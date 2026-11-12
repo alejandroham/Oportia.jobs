@@ -85,8 +85,29 @@ export function App() {
   const toast = useToast();
 
   useEffect(() => {
-    initStore();
-  }, [initStore]);
+    const init = async () => {
+      await initStore();
+      const currentProfile = useAppStore.getState().profile;
+      if (!currentProfile || !currentProfile.name || currentProfile.name.trim().toLowerCase() === 'candidato') {
+        try {
+          const legacy = await api.checkLegacyExport();
+          if (legacy?.found && legacy.profile) {
+            await importBackupBundle({
+              profile: legacy.profile,
+              preferences: legacy.preferences,
+              jobs: legacy.jobs,
+              applications: legacy.applications,
+              coachData: legacy.coach_data
+            });
+            toast.info('Se migraron tus datos previos del equipo al almacenamiento seguro del navegador.');
+          }
+        } catch (e) {
+          console.warn('Error al verificar exportación legacy:', e);
+        }
+      }
+    };
+    init();
+  }, [initStore, importBackupBundle, toast]);
 
   const handleApplyToJob = async (job: JobPosting) => {
     try {
