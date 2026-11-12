@@ -458,3 +458,9 @@ export interface TutorEvaluationResult {
   competency_validated: boolean;
   evidence_generated?: string | null;
 }
+
+export interface CoachDataStore {
+  competencies: CompetencyDiagnosticItem[];
+  learningPaths: LearningPath[];
+  completedChallenges: TutorPracticeChallenge[];
+}

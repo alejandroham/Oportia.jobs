@@ -24,7 +24,7 @@ const STORE_NAME = 'client_session';
 
 export interface SessionBackupBundle {
   app: 'Oportia Jobs IA' | 'NexusJob AI';
-  format_version: '1.0';
+  format_version: '1.0' | '1.1';
   exported_at: string;
   candidate_name?: string;
   payload: {
@@ -32,6 +32,7 @@ export interface SessionBackupBundle {
     preferences: UserPreferences | null;
     jobs: JobPosting[];
     applications: ApplicationDraft[];
+    coach_data?: any;
   };
 }
 
@@ -149,20 +150,22 @@ export async function exportSessionBackupFile(
   preferences: UserPreferences | null,
   jobs: JobPosting[],
   applications: ApplicationDraft[],
+  coachData?: any,
   passphrase?: string,
   hint?: string
 ): Promise<void> {
   const dateStr = new Date().toISOString().split('T')[0];
   const bundle: SessionBackupBundle = {
     app: 'Oportia Jobs IA',
-    format_version: '1.0',
+    format_version: '1.1',
     exported_at: new Date().toISOString(),
     candidate_name: profile?.name || 'Candidato',
     payload: {
       profile,
       preferences,
       jobs,
-      applications
+      applications,
+      coach_data: coachData || undefined
     }
   };
 
@@ -232,7 +235,8 @@ export async function parseSessionBackupFile(
       profile: parsed.payload.profile || null,
       preferences: parsed.payload.preferences || null,
       jobs: Array.isArray(parsed.payload.jobs) ? parsed.payload.jobs : [],
-      applications: Array.isArray(parsed.payload.applications) ? parsed.payload.applications : []
+      applications: Array.isArray(parsed.payload.applications) ? parsed.payload.applications : [],
+      coach_data: parsed.payload.coach_data || null
     };
   }
 
@@ -242,7 +246,8 @@ export async function parseSessionBackupFile(
       profile: parsed as CandidateProfile,
       preferences: null,
       jobs: [],
-      applications: []
+      applications: [],
+      coach_data: null
     };
   }
 
