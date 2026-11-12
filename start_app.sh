@@ -77,4 +77,4 @@ echo "=================================================="
 ) &
 
 # 5. Launch FastAPI backend
-exec ./venv/bin/python backend/run.py
+exec ./venv/bin/python run.py

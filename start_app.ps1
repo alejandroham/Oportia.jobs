@@ -13,4 +13,4 @@ if (-not (Test-Path "venv\Scripts\python.exe")) {
 
 Write-Host "Iniciando servidor en http://localhost:8000..." -ForegroundColor Green
 Start-Process "http://localhost:8000"
-& .\venv\Scripts\python.exe backend\run.py
+& .\venv\Scripts\python.exe run.py

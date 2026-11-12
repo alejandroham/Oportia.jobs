@@ -167,15 +167,19 @@ El instalador configura el entorno virtual, compila la interfaz y abre el sistem
 # 1. Backend (FastAPI)
 python -m venv venv
 source venv/bin/activate  # En Windows: .\venv\Scripts\activate
-pip install -r backend/requirements.txt
-cd backend
-python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
+pip install -r requirements.txt
+python run.py             # Servidor iniciado en http://localhost:8000
 
-# 2. Frontend (React + Vite + TailwindCSS)
+# 2. Frontend (React + Vite + TailwindCSS - en otra terminal)
 cd frontend
 npm install
-npm run dev
+npm run dev               # Interfaz disponible en http://localhost:3000
 ```
+
+### Despliegue Oficial en la Nube
+
+- **Vercel:** Configuración oficial centralizada en `/vercel.json` en la raíz. Construye el cliente web (`frontend/dist`) y rutea llamadas API a la función serverless en `api/index.py`. Ver guía detallada en [docs/DESPLIEGUE_VERCEL.md](docs/DESPLIEGUE_VERCEL.md).
+- **Render:** Configuración oficial mediante `/render.yaml`. Levanta el servicio web ejecutando Uvicorn en el puerto asignado.
 
 Abre **http://localhost:3000** en tu navegador.
 

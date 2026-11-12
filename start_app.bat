@@ -14,5 +14,5 @@ if not exist "venv\Scripts\python.exe" (
 
 echo Iniciando servidor en http://localhost:8000...
 start http://localhost:8000
-venv\Scripts\python.exe backend\run.py
+venv\Scripts\python.exe run.py
 pause
