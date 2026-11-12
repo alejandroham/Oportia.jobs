@@ -363,6 +363,14 @@ export interface ApplicationDraft {
   created_at: string;
 }
 
+export interface ModelOption {
+  id: string;
+  name: string;
+  tag: string;
+  status: 'recommended' | 'active' | 'legacy';
+  description: string;
+}
+
 export interface LLMSettings {
   provider: 'gemini' | 'openai' | 'claude';
   has_active_key: boolean;
@@ -375,6 +383,7 @@ export interface LLMSettings {
   gemini_model: string;
   openai_model: string;
   claude_model: string;
+  available_models?: Record<'gemini' | 'openai' | 'claude', ModelOption[]>;
 }
 
 // Modelos del Coach IA (Desarrollo y Crecimiento Profesional)

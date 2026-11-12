@@ -3,6 +3,7 @@ import logging
 import os
 from typing import Optional, Dict, Any
 from app.config import settings
+from app.agents.models import DEFAULT_GEMINI_MODEL, DEFAULT_OPENAI_MODEL, DEFAULT_CLAUDE_MODEL
 
 logger = logging.getLogger(__name__)
 
@@ -54,13 +55,11 @@ class UnifiedLLMProvider:
             api_key = settings.GEMINI_API_KEY or os.environ.get("GEMINI_API_KEY", "")
             if api_key and self._gemini_client:
                 import time
-                primary_model = settings.GEMINI_MODEL or "gemini-3.5-flash"
-                if primary_model in ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"]:
-                    primary_model = "gemini-3.5-flash"
+                primary_model = settings.GEMINI_MODEL or DEFAULT_GEMINI_MODEL
 
-                # Resilience chain with verified active models
+                # Resilience chain with active models
                 models_to_try = [primary_model]
-                for candidate in ["gemini-3.5-flash", "gemini-3.5-flash-lite", "gemini-3.1-flash-lite", "gemini-3.8-flash"]:
+                for candidate in [DEFAULT_GEMINI_MODEL, "gemini-1.5-flash", "gemini-2.5-flash", "gemini-3.5-flash"]:
                     if candidate not in models_to_try:
                         models_to_try.append(candidate)
 

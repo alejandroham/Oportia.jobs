@@ -123,9 +123,9 @@ export function App() {
     has_gemini_key: false,
     has_openai_key: false,
     has_claude_key: false,
-    gemini_model: 'gemini-3.5-flash',
+    gemini_model: 'gemini-2.0-flash',
     openai_model: 'gpt-4o',
-    claude_model: 'claude-3-5-sonnet-20241022'
+    claude_model: 'claude-3-5-sonnet-latest'
   });
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -329,9 +329,9 @@ export function App() {
       has_gemini_key: false,
       has_openai_key: false,
       has_claude_key: false,
-      gemini_model: 'gemini-3.5-flash',
+      gemini_model: 'gemini-2.0-flash',
       openai_model: 'gpt-4o',
-      claude_model: 'claude-3-5-sonnet-20241022'
+      claude_model: 'claude-3-5-sonnet-latest'
     });
     await clearClientStore();
     setActiveTab('welcome');

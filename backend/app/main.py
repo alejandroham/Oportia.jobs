@@ -30,6 +30,7 @@ from app.agents.interview_coach import interview_coach
 from app.agents.career_coach import career_coach
 from app.agents.outcome_agent import outcome_agent
 from app.agents.llm_provider import llm
+from app.agents.models import DEFAULT_GEMINI_MODEL, DEFAULT_OPENAI_MODEL, DEFAULT_CLAUDE_MODEL, CATALOG
 from app.scrapers.remote_boards import RemoteBoardsScraper
 from app.scrapers.linkedin_guest import LinkedInGuestScraper
 from app.scrapers.url_parser import extract_job_from_url
@@ -722,26 +723,27 @@ def get_current_settings():
 
     if provider == "gemini":
         has_active_key = bool(settings.GEMINI_API_KEY)
-        active_model_name = settings.GEMINI_MODEL or "gemini-3.5-flash"
+        active_model_name = settings.GEMINI_MODEL or DEFAULT_GEMINI_MODEL
     elif provider == "openai":
         has_active_key = bool(settings.OPENAI_API_KEY)
-        active_model_name = settings.OPENAI_MODEL or "gpt-4o"
+        active_model_name = settings.OPENAI_MODEL or DEFAULT_OPENAI_MODEL
     elif provider == "claude":
         has_active_key = bool(settings.ANTHROPIC_API_KEY)
-        active_model_name = settings.CLAUDE_MODEL or "claude-3-5-sonnet-20241022"
+        active_model_name = settings.CLAUDE_MODEL or DEFAULT_CLAUDE_MODEL
 
     return {
         "provider": provider,
         "has_active_key": has_active_key,
         "active_model_name": active_model_name,
-        "status_label": f"{provider.capitalize()} ({active_model_name})" if has_active_key else "Modo Offline Heurístico",
+        "status_label": f"{provider.capitalize()} ({active_model_name})" if has_active_key else "IA no conectada",
         "status_color": "green" if has_active_key else "yellow",
         "has_gemini_key": bool(settings.GEMINI_API_KEY),
         "has_openai_key": bool(settings.OPENAI_API_KEY),
         "has_claude_key": bool(settings.ANTHROPIC_API_KEY),
-        "gemini_model": settings.GEMINI_MODEL,
-        "openai_model": settings.OPENAI_MODEL,
-        "claude_model": settings.CLAUDE_MODEL
+        "gemini_model": settings.GEMINI_MODEL or DEFAULT_GEMINI_MODEL,
+        "openai_model": settings.OPENAI_MODEL or DEFAULT_OPENAI_MODEL,
+        "claude_model": settings.CLAUDE_MODEL or DEFAULT_CLAUDE_MODEL,
+        "available_models": CATALOG
     }
 
 @app.post("/api/settings")

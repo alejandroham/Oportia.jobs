@@ -14,48 +14,33 @@ import {
   Shield,
   Lock
 } from 'lucide-react';
-import type { LLMSettings } from '../types';
+import type { LLMSettings, ModelOption } from '../types';
 import { api } from '../api';
 import { useToast } from './Toast';
 import { encryptApiKeyLocally, decryptApiKeyLocally } from '../utils/crypto';
 
-interface ModelOption {
-  id: string;
-  name: string;
-  tag: string;
-  status: 'recommended' | 'active' | 'legacy';
-  description: string;
-}
-
-const PROVIDER_MODELS: Record<'gemini' | 'openai' | 'claude', ModelOption[]> = {
+const DEFAULT_PROVIDER_MODELS: Record<'gemini' | 'openai' | 'claude', ModelOption[]> = {
   gemini: [
     {
-      id: 'gemini-3.5-flash',
-      name: 'Gemini 3.5 Flash',
+      id: 'gemini-2.0-flash',
+      name: 'Gemini 2.0 Flash',
       tag: 'Recomendado Estable',
       status: 'recommended',
-      description: 'Modelo oficial de alta disponibilidad y 1M tokens de contexto. Cero problemas de saturación o demanda.'
+      description: 'Modelo insignia oficial de Google de última generación, baja latencia y alta cuota.'
     },
     {
-      id: 'gemini-3.5-flash-lite',
-      name: 'Gemini 3.5 Flash Lite',
-      tag: 'Ultra Rápido',
+      id: 'gemini-1.5-flash',
+      name: 'Gemini 1.5 Flash',
+      tag: 'Rápido & Eficiente',
       status: 'active',
-      description: 'Velocidad de respuesta instantánea para análisis de CV y generación de documentos.'
+      description: 'Excelente velocidad para parseo rápido de CV y resúmenes ejecutivos.'
     },
     {
-      id: 'gemini-3.1-flash-lite',
-      name: 'Gemini 3.1 Flash Lite',
-      tag: 'Estable & Ligero',
+      id: 'gemini-2.5-flash',
+      name: 'Gemini 2.5 Flash',
+      tag: 'Avanzado',
       status: 'active',
-      description: 'Modelo ligero altamente eficiente con cuota completa en el plan estándar.'
-    },
-    {
-      id: 'gemini-3.8-flash',
-      name: 'Gemini 3.8 Flash',
-      tag: 'Última Generación',
-      status: 'active',
-      description: 'Modelo más reciente de Google (puede presentar picos ocasionales de alta demanda global).'
+      description: 'Capacidad analítica ampliada para evaluaciones complejas de compatibilidad.'
     }
   ],
   openai: [
@@ -86,36 +71,29 @@ const PROVIDER_MODELS: Record<'gemini' | 'openai' | 'claude', ModelOption[]> = {
       tag: 'Nuevo • STEM & Lógica',
       status: 'active',
       description: 'Razonamiento ágil y optimizado para lógica estructurada y preparación de entrevistas.'
-    },
-    {
-      id: 'gpt-4-turbo',
-      name: 'GPT-4 Turbo',
-      tag: 'Generación Previa',
-      status: 'legacy',
-      description: 'Modelo clásico de generación anterior (activo pero con mayor latencia).'
     }
   ],
   claude: [
     {
-      id: 'claude-3-5-sonnet-20241022',
+      id: 'claude-3-5-sonnet-latest',
       name: 'Claude 3.5 Sonnet',
       tag: 'Recomendado',
       status: 'recommended',
       description: 'El modelo más elogiado para redacción elegante de cartas de presentación y personalización de CVs.'
     },
     {
-      id: 'claude-3-5-haiku-20241022',
+      id: 'claude-3-5-haiku-latest',
       name: 'Claude 3.5 Haiku',
       tag: 'Ultra Rápido',
       status: 'active',
       description: 'Velocidad de respuesta casi instantánea con excelente sintaxis y análisis.'
     },
     {
-      id: 'claude-3-opus-20240229',
-      name: 'Claude 3 Opus',
-      tag: 'Profundidad Cognitiva',
+      id: 'claude-3-7-sonnet-latest',
+      name: 'Claude 3.7 Sonnet',
+      tag: 'Última Generación',
       status: 'active',
-      description: 'Modelo de máxima capacidad cognitiva para evaluaciones exhaustivas y complejas.'
+      description: 'Modelo híbrido de razonamiento profundo y respuesta rápida para preparación de entrevistas.'
     }
   ]
 };
@@ -142,10 +120,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const [isSaving, setIsSaving] = useState(false);
   const [savedSuccess, setSavedSuccess] = useState(false);
 
+  const getProviderModels = (p: 'gemini' | 'openai' | 'claude'): ModelOption[] => {
+    return settings.available_models?.[p] || DEFAULT_PROVIDER_MODELS[p];
+  };
+
   const getCurrentDefaultModel = (p: 'gemini' | 'openai' | 'claude'): string => {
-    if (p === 'gemini') return settings.gemini_model || 'gemini-3.5-flash';
+    if (p === 'gemini') return settings.gemini_model || 'gemini-2.0-flash';
     if (p === 'openai') return settings.openai_model || 'gpt-4o';
-    return settings.claude_model || 'claude-3-5-sonnet-20241022';
+    return settings.claude_model || 'claude-3-5-sonnet-latest';
   };
 
   useEffect(() => {
@@ -161,7 +143,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       }
 
       const activeModel = getCurrentDefaultModel(curProvider);
-      const isKnown = PROVIDER_MODELS[curProvider].some(m => m.id === activeModel);
+      const isKnown = getProviderModels(curProvider).some(m => m.id === activeModel);
       if (isKnown) {
         setSelectedModel(activeModel);
         setIsCustomModel(false);
@@ -187,7 +169,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     }
 
     const activeModel = getCurrentDefaultModel(p);
-    const isKnown = PROVIDER_MODELS[p].some(m => m.id === activeModel);
+    const models = getProviderModels(p);
+    const isKnown = models.some(m => m.id === activeModel);
     if (isKnown) {
       setSelectedModel(activeModel);
       setIsCustomModel(false);
@@ -213,7 +196,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   };
 
   const handleResetRecommended = () => {
-    const recommended = PROVIDER_MODELS[provider].find(m => m.status === 'recommended') || PROVIDER_MODELS[provider][0];
+    const models = getProviderModels(provider);
+    const recommended = models.find(m => m.status === 'recommended') || models[0];
     setSelectedModel(recommended.id);
     setIsCustomModel(false);
     setCustomModelText('');
@@ -251,9 +235,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           active_model_name: finalModelName,
           status_label: apiKey ? `${provider.charAt(0).toUpperCase() + provider.slice(1)} (${finalModelName})` : 'IA no conectada',
           status_color: apiKey ? 'green' : 'yellow',
-          gemini_model: provider === 'gemini' ? finalModelName : 'gemini-3.5-flash',
+          gemini_model: provider === 'gemini' ? finalModelName : 'gemini-2.0-flash',
           openai_model: provider === 'openai' ? finalModelName : 'gpt-4o',
-          claude_model: provider === 'claude' ? finalModelName : 'claude-3-5-sonnet-20241022'
+          claude_model: provider === 'claude' ? finalModelName : 'claude-3-5-sonnet-latest'
         });
       }
 
@@ -288,7 +272,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     }
   };
 
-  const currentModelInfo = PROVIDER_MODELS[provider].find(m => m.id === selectedModel);
+  const currentModelInfo = getProviderModels(provider).find(m => m.id === selectedModel);
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/40 backdrop-blur-md animate-fade-in">
@@ -382,7 +366,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 className="w-full px-3 py-2 text-xs rounded-xl bg-gray-100 dark:bg-zinc-800 border border-black/5 dark:border-white/5 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/40 cursor-pointer"
               >
                 <optgroup label={`Modelos Oficiales Vigentes (${provider.toUpperCase()})`}>
-                  {PROVIDER_MODELS[provider].map((m) => (
+                  {getProviderModels(provider).map((m) => (
                     <option key={m.id} value={m.id}>
                       {m.name} — [{m.tag}]
                     </option>
@@ -434,7 +418,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 {currentModelInfo.status === 'legacy' && (
                   <p className="text-[10px] text-amber-600 dark:text-amber-400 flex items-center space-x-1 pt-0.5">
                     <AlertTriangle className="w-3 h-3 shrink-0" />
-                    <span>Nota: Este modelo pertenece a una generación previa. Se recomienda usar {PROVIDER_MODELS[provider][0].name}.</span>
+                    <span>Nota: Este modelo pertenece a una generación previa. Se recomienda usar {getProviderModels(provider)[0].name}.</span>
                   </p>
                 )}
               </div>
@@ -519,6 +503,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 )}
               </button>
             </div>
+          </div>
+
+          {/* Footer Info / Version */}
+          <div className="pt-2 border-t border-black/5 dark:border-white/5 text-center">
+            <span className="text-[11px] font-mono text-gray-400 dark:text-gray-500">
+              Oportia Jobs IA · v1.0.1
+            </span>
           </div>
         </form>
 
