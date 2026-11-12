@@ -278,7 +278,7 @@ def delete_learned_star_story(story_id: str):
     db.save_preferences(prefs)
     return prefs
 
-@app.post("/api/chat/opi")
+@app.post("/api/chat/opi", dependencies=[Depends(ai_rate_limiter)])
 def chat_opi_stateless(req: StatelessChatOpiRequest):
     """
     Stateless conversational Opi Copilot endpoint (Option A).
@@ -443,7 +443,7 @@ def list_jobs(status: Optional[str] = None):
 
     return jobs
 
-@app.post("/api/jobs/search", response_model=List[JobPosting])
+@app.post("/api/jobs/search", response_model=List[JobPosting], dependencies=[Depends(search_rate_limiter)])
 def search_jobs_stateless(req: JobSearchRequest):
     """
     Stateless job search across Chilean portals, Remote boards, and ATS corporativo (Option A).
@@ -614,7 +614,7 @@ def import_job_from_url(data: dict):
     db.save_jobs([job])
     return {"message": "Oferta importada exitosamente", "job": job}
 
-@app.post("/api/jobs/evaluate", response_model=FitEvaluation)
+@app.post("/api/jobs/evaluate", response_model=FitEvaluation, dependencies=[Depends(ai_rate_limiter)])
 def evaluate_job_stateless(req: StatelessJobEvaluationRequest):
     """
     Pure stateless fit evaluation (Option A).
@@ -750,7 +750,7 @@ def register_job_outcome(job_id: str, submission: OutcomeSubmission):
 
 # --- Drafter-Reviewer Application Endpoints ---
 
-@app.post("/api/applications/draft", response_model=ApplicationDraft)
+@app.post("/api/applications/draft", response_model=ApplicationDraft, dependencies=[Depends(ai_rate_limiter)])
 def draft_application_stateless(req: StatelessApplicationDraftRequest):
     """
     Pure stateless application generator (Option A).
