@@ -413,7 +413,7 @@ export const api = {
     const res = await fetch(`${API_BASE}/coach/diagnostic`);
     return handleResponse<CompetencyDiagnosticItem[]>(res, 'Error al obtener diagnóstico de competencias');
   },
-  updateCoachCompetency: async (compId: string, data: Partial<CompetencyDiagnosticItem>): Promise<CompetencyDiagnosticItem> => {
+  updateCoachCompetency: async (compId: string, data: Partial<CompetencyDiagnosticItem> & { evidence?: string }): Promise<CompetencyDiagnosticItem> => {
     const res = await fetch(`${API_BASE}/coach/competencies/${compId}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -484,6 +484,10 @@ export const api = {
   getSettings: async (): Promise<LLMSettings> => {
     return safeFetchJson<LLMSettings>(`${API_BASE}/settings`, undefined, {
       provider: 'gemini',
+      has_active_key: false,
+      active_model_name: '',
+      status_label: 'IA no conectada',
+      status_color: 'yellow',
       has_gemini_key: false,
       has_openai_key: false,
       has_claude_key: false,

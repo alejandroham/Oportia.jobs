@@ -330,7 +330,7 @@ export const SessionPrivacyModal: React.FC<SessionPrivacyModalProps> = ({
                 </div>
                 <div className="bg-white/80 dark:bg-zinc-800/80 p-2 rounded-xl text-center">
                   <span className="block font-bold text-gray-900 dark:text-white text-xs">
-                    {preferences?.learned_stories?.length || 0}
+                    {preferences?.learned_star_stories?.length || 0}
                   </span>
                   Historias STAR
                 </div>

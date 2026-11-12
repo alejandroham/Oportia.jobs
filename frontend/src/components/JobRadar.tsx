@@ -332,7 +332,7 @@ export const JobRadar: React.FC<JobRadarProps> = ({
   const handleScrape = async () => {
     setIsScraping(true);
     try {
-      const searchKw = searchTerm.trim() || (profile?.primary_profession || (profile?.target_roles?.[0] || ''));
+      const searchKw = searchTerm.trim() || (profile?.primary_profession || (profile?.equivalent_roles?.[0] || ''));
       await api.scrapeJobs(searchKw, remoteOnly, searchScope);
       toast.success('Búsqueda completada con éxito');
       onRefresh();

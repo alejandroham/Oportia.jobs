@@ -89,11 +89,12 @@ const DEFAULT_EMPTY_PREFERENCES: UserPreferences = {
   geographic_scope: 'all',
   remote_only: false,
   target_roles: [],
+  preferred_locations: [],
+  preferred_technologies: [],
+  auto_learned_insights: [],
   min_salary_usd: 0,
   deal_breakers: [],
-  learned_preferences: [],
-  learned_stories: [],
-  market_insights: []
+  learned_star_stories: []
 };
 
 export function App() {
@@ -116,6 +117,10 @@ export function App() {
   const [applications, setApplications] = useState<ApplicationDraft[]>([]);
   const [settings, setSettings] = useState<LLMSettings>({
     provider: 'gemini',
+    has_active_key: false,
+    active_model_name: '',
+    status_label: 'IA no conectada',
+    status_color: 'yellow',
     has_gemini_key: false,
     has_openai_key: false,
     has_claude_key: false,
@@ -318,6 +323,10 @@ export function App() {
     setApplications([]);
     setSettings({
       provider: 'gemini',
+      has_active_key: false,
+      active_model_name: '',
+      status_label: 'IA no conectada',
+      status_color: 'yellow',
       has_gemini_key: false,
       has_openai_key: false,
       has_claude_key: false,

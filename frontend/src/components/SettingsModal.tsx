@@ -249,6 +249,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           has_openai_key: provider === 'openai' ? !!apiKey : false,
           has_claude_key: provider === 'claude' ? !!apiKey : false,
           active_model_name: finalModelName,
+          status_label: apiKey ? `${provider.charAt(0).toUpperCase() + provider.slice(1)} (${finalModelName})` : 'IA no conectada',
+          status_color: apiKey ? 'green' : 'yellow',
           gemini_model: provider === 'gemini' ? finalModelName : 'gemini-3.5-flash',
           openai_model: provider === 'openai' ? finalModelName : 'gpt-4o',
           claude_model: provider === 'claude' ? finalModelName : 'claude-3-5-sonnet-20241022'

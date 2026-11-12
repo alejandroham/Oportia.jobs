@@ -95,7 +95,7 @@ export function xorDeobfuscate(base64Str: string, seed: string): string {
 
 // ── Key Derivation (PBKDF2) ──────────────────────────────────────────────
 
-async function deriveKey(passphrase: string, salt: Uint8Array, iterations = 100000): Promise<CryptoKey> {
+async function deriveKey(passphrase: string, salt: BufferSource, iterations = 100000): Promise<CryptoKey> {
   const enc = new TextEncoder();
   const keyMaterial = await window.crypto.subtle.importKey(
     'raw',
@@ -131,7 +131,7 @@ export async function encryptText(plainText: string, passphrase: string, hint?: 
     try {
       const salt = getSafeRandomBytes(16);
       const iv = getSafeRandomBytes(12);
-      const key = await deriveKey(passphrase, salt, 100000);
+      const key = await deriveKey(passphrase, salt as BufferSource, 100000);
 
       const enc = new TextEncoder();
       const plainBuffer = enc.encode(plainText);
@@ -139,7 +139,7 @@ export async function encryptText(plainText: string, passphrase: string, hint?: 
       const ciphertextBuffer = await window.crypto.subtle.encrypt(
         {
           name: 'AES-GCM',
-          iv
+          iv: iv as BufferSource
         },
         key,
         plainBuffer
@@ -213,7 +213,7 @@ export async function decryptPackage(pkg: EncryptedPackage, passphrase: string):
     const decryptedBuffer = await window.crypto.subtle.decrypt(
       {
         name: 'AES-GCM',
-        iv
+        iv: iv as BufferSource
       },
       key,
       ciphertext
