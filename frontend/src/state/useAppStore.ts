@@ -66,11 +66,13 @@ interface AppState {
   settings: LLMSettings;
   activeTab: string;
   darkMode: boolean;
+  hasCompletedOnboarding: boolean;
   isInitialized: boolean;
   isLoading: boolean;
 
   // Actions
   initStore: () => Promise<void>;
+  setOnboardingCompleted: (completed: boolean) => Promise<void>;
   setProfile: (profile: CandidateProfile | null) => Promise<void>;
   setPreferences: (preferences: UserPreferences | null) => Promise<void>;
   setJobs: (jobs: JobPosting[]) => Promise<void>;
@@ -104,6 +106,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   settings: DEFAULT_LLM_SETTINGS,
   activeTab: 'welcome',
   darkMode: false,
+  hasCompletedOnboarding: false,
   isInitialized: false,
   isLoading: true,
 
@@ -115,15 +118,19 @@ export const useAppStore = create<AppState>((set, get) => ({
         savedJobs,
         savedApps,
         savedCoach,
-        savedSettings
+        savedSettings,
+        savedOnboarding
       ] = await Promise.all([
         getClientStore<CandidateProfile>('profile'),
         getClientStore<UserPreferences>('preferences'),
         getClientStore<JobPosting[]>('jobs'),
         getClientStore<ApplicationDraft[]>('applications'),
         getClientStore<CoachDataStore>('coach_data'),
-        getClientStore<LLMSettings>('llm_settings')
+        getClientStore<LLMSettings>('llm_settings'),
+        getClientStore<boolean>('onboarding_completed')
       ]);
+
+      const isCompleted = savedOnboarding === true || Boolean(savedProfile?.name && savedProfile.name.trim().toLowerCase() !== 'candidato');
 
       const savedTheme = localStorage.getItem('oportia_theme');
       const isDark = savedTheme === 'dark';
@@ -163,6 +170,7 @@ export const useAppStore = create<AppState>((set, get) => ({
         coachData: savedCoach || DEFAULT_EMPTY_COACH_DATA,
         settings: initialSettings,
         darkMode: isDark,
+        hasCompletedOnboarding: isCompleted,
         isInitialized: true,
         isLoading: false
       });
@@ -182,6 +190,11 @@ export const useAppStore = create<AppState>((set, get) => ({
       console.warn('[useAppStore] Error al inicializar store desde IndexedDB:', e);
       set({ isInitialized: true, isLoading: false });
     }
+  },
+
+  setOnboardingCompleted: async (completed: boolean) => {
+    await saveClientStore('onboarding_completed', completed);
+    set({ hasCompletedOnboarding: completed });
   },
 
   setProfile: async (profile) => {
@@ -303,6 +316,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       applications: [],
       coachData: DEFAULT_EMPTY_COACH_DATA,
       settings: DEFAULT_LLM_SETTINGS,
+      hasCompletedOnboarding: false,
       activeTab: 'welcome'
     });
   },
