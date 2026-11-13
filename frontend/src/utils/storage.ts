@@ -201,10 +201,10 @@ export async function exportSessionBackupFile(
 }
 
 export async function parseSessionBackupFile(
-  file: File,
+  file: File | Blob | string,
   passphrase?: string
 ): Promise<SessionBackupBundle['payload']> {
-  const text = await file.text();
+  const text = typeof file === 'string' ? file : await file.text();
   let parsed: any;
   try {
     parsed = JSON.parse(text);

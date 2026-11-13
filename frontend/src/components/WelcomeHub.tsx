@@ -16,7 +16,17 @@ import {
 import type { CandidateProfile, LLMSettings } from '../types';
 import { useAppStore } from '../state/useAppStore';
 
-export interface WelcomeHubProps {
+import { computeNextStep } from '../utils/nextStep';
+
+const ICON_MAP = {
+  TrendingUp,
+  FileText,
+  Target,
+  Compass,
+  Briefcase
+};
+
+interface WelcomeHubProps {
   profile?: CandidateProfile | null;
   llmSettings?: LLMSettings;
   onNavigateToTab?: (tab: string) => void;
@@ -53,57 +63,8 @@ export const WelcomeHub: React.FC<WelcomeHubProps> = ({
   const hasApplications = applications.length > 0;
   const interviewJob = jobs.find(j => j.status === 'interview_scheduled' || j.status === 'interview_done');
 
-  // Compute primary next action
-  let nextAction: { title: string; description: string; cta: string; route: string; icon: React.FC<{ className?: string }> };
-  if (interviewJob) {
-    nextAction = {
-      title: 'Prepara tu próxima entrevista',
-      description: `Tienes una postulación activa en etapa de entrevista para ${interviewJob.title} en ${interviewJob.company}. Practica preguntas con Opi.`,
-      cta: 'Preparar entrevista',
-      route: '/postulaciones',
-      icon: TrendingUp
-    };
-  } else if (!hasCV) {
-    nextAction = {
-      title: 'Sube tu currículum',
-      description: 'Extrae tu experiencia y habilidades para que Oportia calibre las ofertas a tu medida sin inventar datos.',
-      cta: 'Subir mi CV',
-      route: '/perfil?tab=cv',
-      icon: FileText
-    };
-  } else if (!hasPrefs) {
-    nextAction = {
-      title: 'Define qué estás buscando',
-      description: 'Configura tus cargos objetivo, región y modalidad preferida para filtrar oportunidades exactas.',
-      cta: 'Definir qué busco',
-      route: '/perfil?tab=busqueda',
-      icon: Target
-    };
-  } else if (!hasJobs) {
-    nextAction = {
-      title: 'Busca tus primeras ofertas',
-      description: 'Explora ofertas laborales activas en portales chilenos y remotos con tu perfil.',
-      cta: 'Buscar empleos',
-      route: '/empleos',
-      icon: Compass
-    };
-  } else if (!hasApplications) {
-    nextAction = {
-      title: 'Revisa tus ofertas y postula',
-      description: `Tienes ${jobs.length} ofertas disponibles en tu radar. Elige una y genera tu CV adaptado.`,
-      cta: 'Revisar ofertas recomendadas',
-      route: '/empleos',
-      icon: Compass
-    };
-  } else {
-    nextAction = {
-      title: 'Monitorea tus postulaciones',
-      description: `Tienes ${applications.length} postulaciones registradas. Revisa el estado de tus procesos.`,
-      cta: 'Ver mis postulaciones',
-      route: '/postulaciones',
-      icon: Briefcase
-    };
-  }
+  const nextAction = computeNextStep({ profile, preferences, jobs, applications, llmSettings });
+  const ActionIcon = ICON_MAP[nextAction.iconName] || Compass;
 
   // Progress Checklist calculation
   const checklist = [
@@ -114,8 +75,6 @@ export const WelcomeHub: React.FC<WelcomeHubProps> = ({
   ];
   const completedCount = checklist.filter(c => c.done).length;
   const progressPct = Math.round((completedCount / checklist.length) * 100);
-
-  const ActionIcon = nextAction.icon;
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto pb-16 animate-fade-in text-xs">
