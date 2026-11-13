@@ -485,19 +485,14 @@ export const api = {
   },
 
   // Applications
-  applyJob: async (jobOrId: string | JobPosting, profile?: CandidateProfile, preferences?: UserPreferences): Promise<ApplicationDraft> => {
+  // Opción A (sin estado): siempre se envían la oferta y el perfil completos desde el navegador.
+  // No usar /jobs/{id}/apply: ese endpoint busca la oferta en el disco del servidor.
+  applyJob: async (job: JobPosting, profile: CandidateProfile, preferences?: UserPreferences | null): Promise<ApplicationDraft> => {
     const llmHeaders = await getLLMHeaders();
-    if (typeof jobOrId === 'object') {
-      const res = await fetch(`${API_BASE}/applications/draft`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...llmHeaders },
-        body: JSON.stringify({ job: jobOrId, profile, preferences })
-      });
-      return handleResponse<ApplicationDraft>(res, 'Error al generar postulación');
-    }
-    const res = await fetch(`${API_BASE}/jobs/${jobOrId}/apply`, {
+    const res = await fetch(`${API_BASE}/applications/draft`, {
       method: 'POST',
-      headers: { ...llmHeaders }
+      headers: { 'Content-Type': 'application/json', ...llmHeaders },
+      body: JSON.stringify({ job, profile, preferences: preferences ?? null })
     });
     return handleResponse<ApplicationDraft>(res, 'Error al generar postulación');
   },

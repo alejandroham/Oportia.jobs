@@ -27,7 +27,7 @@ export const ApplicationsPage: React.FC<ApplicationsPageProps> = ({
 }) => {
   const navigate = useNavigate();
   const toast = useToast();
-  const { addOrUpdateJob, removeJob, addOrUpdateApplication } = useAppStore();
+  const { addOrUpdateJob, removeJob, addOrUpdateApplication, preferences } = useAppStore();
 
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
@@ -83,9 +83,13 @@ export const ApplicationsPage: React.FC<ApplicationsPageProps> = ({
   // Adaptar CV con IA para la postulación activa
   const handleAdaptCv = async () => {
     if (!activeJob) return;
+    if (!profile) {
+      toast.error('Primero sube tu CV en Mi perfil para adaptar la postulación.');
+      return;
+    }
     setIsAdapting(true);
     try {
-      const draft = await api.applyJob(activeJob.id);
+      const draft = await api.applyJob(activeJob, profile, preferences);
       await addOrUpdateApplication(draft);
       const updatedJob: JobPosting = {
         ...activeJob,

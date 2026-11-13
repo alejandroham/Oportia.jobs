@@ -127,9 +127,14 @@ export function App() {
   };
 
   const handleApplyToJob = async (job: JobPosting) => {
+    if (!profile) {
+      toast.error('Primero sube tu CV en Mi perfil para adaptar la postulación.');
+      navigate('/perfil');
+      return;
+    }
     try {
       navigate('/postulaciones');
-      const draft = await api.applyJob(job.id);
+      const draft = await api.applyJob(job, profile, preferences);
       await addOrUpdateApplication(draft);
 
       const updatedJob: JobPosting = {
