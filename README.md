@@ -2,6 +2,7 @@
 
 <div align="center">
 
+[![CI — Integración Continua](https://github.com/alejandroham/Oportia.jobs/actions/workflows/ci.yml/badge.svg)](https://github.com/alejandroham/Oportia.jobs/actions/workflows/ci.yml)
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Falejandroham%2FOportia.jobs)
 [![Guía Vercel](https://img.shields.io/badge/Deploy%20en%20Vercel-Gu%C3%ADa%20Paso%20a%20Paso-black.svg?style=for-the-badge&logo=vercel)](docs/DESPLIEGUE_VERCEL.md)
 [![Version](https://img.shields.io/badge/Versi%C3%B3n-1.0.1%20Official-blue.svg?style=for-the-badge)](CHANGELOG.md)
