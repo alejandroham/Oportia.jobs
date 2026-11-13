@@ -112,7 +112,7 @@ export const JobSearchBar: React.FC<JobSearchBarProps> = ({
                 className="w-full px-3.5 py-2 text-left hover:bg-gray-50 dark:hover:bg-zinc-800 text-gray-700 dark:text-gray-200 flex items-center gap-2.5"
               >
                 <Link2 className="w-4 h-4 text-gray-400" />
-                <span>Importar oferta por enlace (URL)</span>
+                <span>Importar oferta por URL</span>
               </button>
 
               <button
@@ -124,8 +124,8 @@ export const JobSearchBar: React.FC<JobSearchBarProps> = ({
                 disabled={isBatchRanking}
                 className="w-full px-3.5 py-2 text-left hover:bg-gray-50 dark:hover:bg-zinc-800 text-gray-700 dark:text-gray-200 flex items-center gap-2.5 disabled:opacity-50"
               >
-                <Sparkles className="w-4 h-4 text-emerald-500" />
-                <span>Clasificar con IA (Mayor ajuste primero)</span>
+                <Sparkles className="w-4 h-4 text-brand" />
+                <span>Ordenar ofertas con IA</span>
               </button>
 
               <button
@@ -137,7 +137,7 @@ export const JobSearchBar: React.FC<JobSearchBarProps> = ({
                 className="w-full px-3.5 py-2 text-left hover:bg-gray-50 dark:hover:bg-zinc-800 text-gray-700 dark:text-gray-200 flex items-center gap-2.5"
               >
                 <Building2 className="w-4 h-4 text-gray-400" />
-                <span>Búsqueda en portales de empresas</span>
+                <span>Explorar portales de empresas</span>
               </button>
 
               <div className="border-t border-gray-100 dark:border-zinc-800 my-1" />
@@ -151,7 +151,7 @@ export const JobSearchBar: React.FC<JobSearchBarProps> = ({
                 className="w-full px-3.5 py-2 text-left hover:bg-rose-50 dark:hover:bg-rose-950/40 text-rose-600 dark:text-rose-400 flex items-center gap-2.5"
               >
                 <Trash2 className="w-4 h-4" />
-                <span>Vaciar resultados del radar</span>
+                <span>Vaciar ofertas del radar</span>
               </button>
             </div>
           )}

@@ -69,7 +69,7 @@ export const AchievementsTab: React.FC<AchievementsTabProps> = ({
       <div className="p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-gray-200/80 dark:border-zinc-800 shadow-sm flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="text-base font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-            <Award className="w-4 h-4 text-[#20A88A]" />
+            <Award className="w-4 h-4 text-brand" />
             Mis Logros (Método STAR)
           </h2>
           <p className="text-xs text-gray-500">
@@ -80,7 +80,7 @@ export const AchievementsTab: React.FC<AchievementsTabProps> = ({
         <button
           type="button"
           onClick={() => setIsAdding(!isAdding)}
-          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#20A88A] hover:bg-[#18856d] text-white text-xs font-semibold shadow-xs transition"
+          className="inline-flex items-center gap-1.5 px-4 py-2 min-h-[44px] rounded-xl bg-brand hover:bg-brand-600 text-white text-xs font-semibold shadow-xs transition"
         >
           <Plus className="w-3.5 h-3.5" />
           <span>{isAdding ? 'Cancelar' : 'Agregar nuevo logro'}</span>
@@ -91,7 +91,7 @@ export const AchievementsTab: React.FC<AchievementsTabProps> = ({
       {isAdding && (
         <form onSubmit={handleSaveStory} className="p-6 rounded-2xl bg-white dark:bg-zinc-900 border border-gray-200/80 dark:border-zinc-800 shadow-md space-y-4 animate-fade-in text-xs">
           <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-[#20A88A]" />
+            <Sparkles className="w-4 h-4 text-brand" />
             Nuevo Logro Profesional Guiado
           </h3>
 

@@ -71,9 +71,9 @@ export const CvEditor: React.FC<CvEditorProps> = ({ profile, onProfileUpdated })
 
         <div className="flex items-center gap-2">
           {/* Subir CV */}
-          <label className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-xs font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-100 cursor-pointer transition">
-            {isUploading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5 text-[#20A88A]" />}
-            <span>{isUploading ? 'Procesando...' : 'Subir PDF / Word'}</span>
+          <label className="inline-flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-xl border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-xs font-semibold text-ink dark:text-gray-300 hover:bg-gray-100 cursor-pointer transition">
+            {isUploading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5 text-brand" />}
+            <span>{isUploading ? 'Procesando...' : 'Subir CV (PDF/Word)'}</span>
             <input type="file" accept=".pdf,.docx,.doc" onChange={handleFileUpload} className="hidden" />
           </label>
 
@@ -81,7 +81,7 @@ export const CvEditor: React.FC<CvEditorProps> = ({ profile, onProfileUpdated })
           <button
             type="button"
             onClick={() => setIsPreviewOpen(true)}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-teal-50 dark:bg-teal-950/40 text-[#20A88A] border border-teal-200 dark:border-teal-800/60 text-xs font-semibold hover:bg-teal-100 transition"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 min-h-[44px] rounded-xl bg-brand-50 dark:bg-brand-950/40 text-brand border border-brand-200 dark:border-brand-800/60 text-xs font-semibold hover:bg-brand-100 transition"
           >
             <Eye className="w-3.5 h-3.5" />
             <span>Ver mi CV</span>
@@ -91,10 +91,10 @@ export const CvEditor: React.FC<CvEditorProps> = ({ profile, onProfileUpdated })
           <button
             type="button"
             onClick={handleSave}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#20A88A] hover:bg-[#18856d] text-white text-xs font-semibold shadow-xs transition"
+            className="inline-flex items-center gap-1.5 px-4 py-2 min-h-[44px] rounded-xl bg-brand hover:bg-brand-600 text-white text-xs font-semibold shadow-xs transition"
           >
             <Save className="w-3.5 h-3.5" />
-            <span>Guardar</span>
+            <span>Guardar cambios</span>
           </button>
         </div>
       </div>
