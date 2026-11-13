@@ -80,19 +80,19 @@ export const ApplicationList: React.FC<ApplicationListProps> = ({
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="space-y-1 min-w-0 flex-1">
-                    <span className="text-[11px] font-semibold text-gray-500 truncate block">
+                    <span className="text-xs font-semibold text-gray-500 truncate block">
                       {job.company}
                     </span>
                     <h4 className="text-xs sm:text-sm font-bold text-gray-900 dark:text-gray-100 line-clamp-1">
                       {job.title}
                     </h4>
                   </div>
-                  <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold border ${badge.color}`}>
+                  <span className={`shrink-0 px-2 py-0.5 rounded-full text-xs font-bold border ${badge.color}`}>
                     {badge.label}
                   </span>
                 </div>
 
-                <div className="flex items-center justify-between text-[11px] text-gray-400 pt-2 mt-1 border-t border-gray-100 dark:border-zinc-800/80">
+                <div className="flex items-center justify-between text-xs text-gray-400 pt-2 mt-1 border-t border-gray-100 dark:border-zinc-800/80">
                   <span className="truncate">{job.location || 'Chile'}</span>
                   <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
                 </div>

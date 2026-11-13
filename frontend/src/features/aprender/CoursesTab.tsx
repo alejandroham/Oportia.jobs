@@ -85,10 +85,10 @@ export const CoursesTab: React.FC<CoursesTabProps> = ({
             >
               <div className="space-y-2">
                 <div className="flex items-center justify-between gap-2">
-                  <span className="font-bold text-[#20A88A] uppercase tracking-wider text-[10px]">
+                  <span className="font-bold text-[#20A88A] uppercase tracking-wider text-xs">
                     {course.platform}
                   </span>
-                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                  <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
                     course.cost?.toLowerCase().includes('gratis') ? 'bg-emerald-50 text-emerald-700' : 'bg-gray-100 text-gray-600'
                   }`}>
                     {course.cost || 'Gratis'}
@@ -103,7 +103,7 @@ export const CoursesTab: React.FC<CoursesTabProps> = ({
                   {course.description}
                 </p>
 
-                <div className="flex flex-wrap items-center gap-3 text-gray-500 text-[11px] pt-1">
+                <div className="flex flex-wrap items-center gap-3 text-gray-500 text-xs pt-1">
                   {course.duration && (
                     <span className="flex items-center gap-1">
                       <Clock className="w-3 h-3 text-gray-400" />

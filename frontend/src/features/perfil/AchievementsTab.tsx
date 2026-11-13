@@ -216,7 +216,7 @@ export const AchievementsTab: React.FC<AchievementsTabProps> = ({
                     {story.title}
                   </h4>
                   {story.created_at && (
-                    <span className="text-[11px] text-gray-400">
+                    <span className="text-xs text-gray-400">
                       Registrada el {new Date(story.created_at).toLocaleDateString('es-CL')}
                     </span>
                   )}
@@ -250,7 +250,7 @@ export const AchievementsTab: React.FC<AchievementsTabProps> = ({
                   {story.key_skills.map((sk, i) => (
                     <span
                       key={i}
-                      className="px-2 py-0.5 rounded text-[11px] font-medium bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-zinc-700"
+                      className="px-2 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-zinc-700"
                     >
                       {sk}
                     </span>

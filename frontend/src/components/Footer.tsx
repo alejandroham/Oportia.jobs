@@ -24,11 +24,11 @@ export const Footer: React.FC<FooterProps> = ({ onNavigateToTab }) => {
                 <span className="font-bold text-gray-900 dark:text-white text-sm">
                   Oportia Jobs IA
                 </span>
-                <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-[#20A88A]/10 dark:bg-[#20A88A]/20 text-[#20A88A] dark:text-[#8AD9C4] border border-[#20A88A]/30">
+                <span className="text-xs font-mono font-bold px-2 py-0.5 rounded-full bg-[#20A88A]/10 dark:bg-[#20A88A]/20 text-[#20A88A] dark:text-[#8AD9C4] border border-[#20A88A]/30">
                   v1.0.1
                 </span>
               </div>
-              <p className="text-[11px] text-gray-500 dark:text-gray-400">
+              <p className="text-xs text-gray-500 dark:text-gray-400">
                 Tu talento. Tus decisiones. Tus oportunidades.
               </p>
             </div>
@@ -65,7 +65,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigateToTab }) => {
         </div>
 
         {/* Middle row: Quick Navigation */}
-        <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-6 gap-y-2 text-[11px] font-medium">
+        <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-6 gap-y-2 text-xs font-medium">
           <Link
             to="/"
             className="hover:text-[#20A88A] dark:hover:text-[#8AD9C4] transition"
@@ -107,7 +107,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigateToTab }) => {
         </div>
 
         {/* Bottom row: Credits and Legal Compliance */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2 text-[11px] text-gray-500 dark:text-gray-400">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2 text-xs text-gray-500 dark:text-gray-400">
           <div className="flex items-center space-x-1.5">
             <span>Creado y diseñado por</span>
             <a
@@ -121,7 +121,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigateToTab }) => {
             <span>• Código abierto bajo Licencia MIT</span>
           </div>
 
-          <div className="flex items-center space-x-2 text-[10px]">
+          <div className="flex items-center space-x-2 text-xs">
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
             <span>Soberanía Digital 100% Local-First & Cumplimiento Ley N° 21.719 (Chile)</span>
           </div>

@@ -61,7 +61,7 @@ export const FitScoreBadge: React.FC<FitScoreBadgeProps> = ({
       <span className={`w-1.5 h-1.5 rounded-full ${dotColor}`} />
       <span>{score}% · {label}</span>
       {showPotential && delta > 0 && (
-        <span className="inline-flex items-center gap-0.5 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 bg-white/70 dark:bg-zinc-900/70 px-1 rounded-full border border-emerald-200/50">
+        <span className="inline-flex items-center gap-0.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-white/70 dark:bg-zinc-900/70 px-1 rounded-full border border-emerald-200/50">
           <Sparkles className="w-2.5 h-2.5" />
           +{delta}%
         </span>

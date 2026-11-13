@@ -76,7 +76,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
               {icon}
               <div className="flex-1 min-w-0 pr-1">
                 {toast.title && (
-                  <p className="text-[11px] font-semibold tracking-tight">{toast.title}</p>
+                  <p className="text-xs font-semibold tracking-tight">{toast.title}</p>
                 )}
                 <p className="text-xs leading-snug">{toast.message}</p>
               </div>

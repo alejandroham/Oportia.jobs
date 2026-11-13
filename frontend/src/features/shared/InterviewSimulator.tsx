@@ -118,7 +118,7 @@ export const InterviewSimulator: React.FC<InterviewSimulatorProps> = ({
         </div>
 
         {/* Guía metodológica rápida */}
-        <div className="hidden sm:flex items-center gap-1 text-[11px] font-semibold text-gray-500">
+        <div className="hidden sm:flex items-center gap-1 text-xs font-semibold text-gray-500">
           <span className="px-1.5 py-0.5 rounded bg-blue-50 text-blue-700">S: Situación</span>
           <span className="px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700">T: Tarea</span>
           <span className="px-1.5 py-0.5 rounded bg-teal-50 text-teal-700">A: Acción</span>
@@ -128,7 +128,7 @@ export const InterviewSimulator: React.FC<InterviewSimulatorProps> = ({
 
       {/* Pregunta a responder */}
       <div className="p-3.5 rounded-xl bg-gray-50 dark:bg-zinc-800/60 border border-gray-200/60 dark:border-zinc-700/60">
-        <label className="block text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1 flex items-center gap-1">
+        <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1 flex items-center gap-1">
           <HelpCircle className="w-3.5 h-3.5 text-[#20A88A]" />
           Pregunta de la entrevista:
         </label>
@@ -149,7 +149,7 @@ export const InterviewSimulator: React.FC<InterviewSimulatorProps> = ({
               className="w-full text-xs sm:text-sm p-3.5 rounded-xl border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800/80 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-[#20A88A]/30 resize-none leading-relaxed"
             />
             {isRecording && (
-              <div className="absolute top-2 right-2 flex items-center gap-1.5 bg-rose-50 text-rose-600 px-2 py-0.5 rounded-full text-[11px] font-medium border border-rose-200 animate-pulse">
+              <div className="absolute top-2 right-2 flex items-center gap-1.5 bg-rose-50 text-rose-600 px-2 py-0.5 rounded-full text-xs font-medium border border-rose-200 animate-pulse">
                 <span className="w-2 h-2 rounded-full bg-rose-600" />
                 Grabando audio...
               </div>

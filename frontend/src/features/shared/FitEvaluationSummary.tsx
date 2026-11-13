@@ -96,7 +96,7 @@ export const FitEvaluationSummary: React.FC<FitEvaluationSummaryProps> = ({
 
       {/* Nota de transparencia y CTA a evaluación completa */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pt-2 border-t border-gray-100 dark:border-zinc-800">
-        <span className="text-[11px] text-gray-400 dark:text-gray-500 flex items-center gap-1">
+        <span className="text-xs text-gray-400 dark:text-gray-500 flex items-center gap-1">
           <Info className="w-3 h-3" />
           Orientación estimada con IA, no es una decisión final
         </span>

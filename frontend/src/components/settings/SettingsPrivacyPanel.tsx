@@ -87,7 +87,7 @@ export const SettingsPrivacyPanel: React.FC = () => {
               <Download className="w-4 h-4 text-blue-600" />
               Descargar respaldo
             </h3>
-            <p className="text-[11px] text-gray-500 leading-relaxed">
+            <p className="text-xs text-gray-500 leading-relaxed">
               Exporta todo tu perfil, postulaciones, ofertas guardadas y memoria en un archivo descargable.
             </p>
             <div className="space-y-2">
@@ -116,7 +116,7 @@ export const SettingsPrivacyPanel: React.FC = () => {
                 <UploadCloud className="w-4 h-4 text-emerald-600" />
                 Restaurar respaldo
               </h3>
-              <p className="text-[11px] text-gray-500 leading-relaxed mt-1">
+              <p className="text-xs text-gray-500 leading-relaxed mt-1">
                 Restaura un archivo previamente descargado (.oportia o .nexusjob) en tu navegador.
               </p>
             </div>
@@ -145,7 +145,7 @@ export const SettingsPrivacyPanel: React.FC = () => {
         <div className="pt-4 border-t border-black/5 dark:border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <h3 className="text-xs font-bold text-red-600 dark:text-red-400">Derecho al Olvido (Borrar Todo)</h3>
-            <p className="text-[11px] text-gray-500">Elimina de forma permanente todo dato personal, CV y claves de este navegador.</p>
+            <p className="text-xs text-gray-500">Elimina de forma permanente todo dato personal, CV y claves de este navegador.</p>
           </div>
           <button
             type="button"

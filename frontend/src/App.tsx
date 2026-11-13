@@ -282,7 +282,7 @@ export function App() {
                     <h3 className="font-bold text-sm text-gray-900 dark:text-white">
                       Opi — Tu copiloto profesional
                     </h3>
-                    <p className="text-[10px] text-gray-500 dark:text-gray-300">
+                    <p className="text-xs text-gray-500 dark:text-gray-300">
                       La IA organiza y te orienta. Tú decides tu camino.
                     </p>
                   </div>

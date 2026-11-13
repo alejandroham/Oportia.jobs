@@ -99,7 +99,7 @@ export const ApplicationTimelineTab: React.FC<ApplicationTimelineTabProps> = ({
                   <span className="font-semibold text-gray-900 dark:text-gray-100">
                     {evt.title}
                   </span>
-                  <span className="text-[11px] text-gray-400">
+                  <span className="text-xs text-gray-400">
                     {formatDate(evt.timestamp || evt.date)}
                   </span>
                 </div>

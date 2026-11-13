@@ -81,10 +81,10 @@ export const CompanyPortalsModal: React.FC<CompanyPortalsModalProps> = ({
                 <span className="font-bold text-gray-900 dark:text-gray-100 block">
                   {dork.platform}
                 </span>
-                <p className="text-gray-500 dark:text-gray-400 text-[11px] truncate">
+                <p className="text-gray-500 dark:text-gray-400 text-xs truncate">
                   {dork.description}
                 </p>
-                <code className="text-[10px] text-gray-400 font-mono block truncate">
+                <code className="text-xs text-gray-400 font-mono block truncate">
                   {dork.query}
                 </code>
               </div>

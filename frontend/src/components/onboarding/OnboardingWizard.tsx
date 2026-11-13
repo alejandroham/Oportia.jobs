@@ -153,7 +153,7 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
         <div className="p-5 border-b border-black/5 dark:border-white/5 flex items-center justify-between bg-gray-50/60 dark:bg-zinc-800/40">
           <div>
             <div className="flex items-center space-x-2">
-              <span className="text-[11px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">
+              <span className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">
                 Paso {step} de 3
               </span>
               <span className="text-gray-300 dark:text-gray-700">•</span>

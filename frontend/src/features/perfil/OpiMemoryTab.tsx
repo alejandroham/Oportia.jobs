@@ -63,7 +63,7 @@ export const OpiMemoryTab: React.FC<OpiMemoryTabProps> = ({
       {dna && (
         <div className="p-5 rounded-2xl bg-teal-50/50 dark:bg-teal-950/30 border border-teal-200/60 dark:border-teal-800/40 space-y-3 text-xs">
           <div className="flex items-center justify-between">
-            <h3 className="font-bold text-teal-900 dark:text-teal-200 uppercase tracking-wider text-[11px] flex items-center gap-1.5">
+            <h3 className="font-bold text-teal-900 dark:text-teal-200 uppercase tracking-wider text-xs flex items-center gap-1.5">
               <Sparkles className="w-3.5 h-3.5 text-[#20A88A]" />
               Resumen de Personalidad Profesional
             </h3>

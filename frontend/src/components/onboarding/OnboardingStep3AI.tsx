@@ -64,7 +64,7 @@ export const OnboardingStep3AI: React.FC<OnboardingStep3AIProps> = ({
           </button>
         </div>
 
-        <p className="text-[11px] text-gray-500 dark:text-gray-400">
+        <p className="text-xs text-gray-500 dark:text-gray-400">
           Si no tienes una clave ahora, puedes continuar en modo sin IA y conectarla más tarde desde Ajustes.
         </p>
       </div>

@@ -115,7 +115,7 @@ export const LearningPathsTab: React.FC<LearningPathsTabProps> = ({
 
               {/* Hitos secuenciales */}
               <div className="space-y-2.5 pt-1">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-gray-400 block">
+                <span className="text-xs font-bold uppercase tracking-wider text-gray-400 block">
                   Hitos de la Ruta ({path.milestones?.length || 0})
                 </span>
 
@@ -142,7 +142,7 @@ export const LearningPathsTab: React.FC<LearningPathsTabProps> = ({
                           {milestone.objective}
                         </p>
                         {milestone.practical_activity && (
-                          <p className="text-[11px] text-teal-700 dark:text-teal-300 bg-teal-50/50 dark:bg-teal-950/30 p-2 rounded-lg border border-teal-100 dark:border-teal-900/40">
+                          <p className="text-xs text-teal-700 dark:text-teal-300 bg-teal-50/50 dark:bg-teal-950/30 p-2 rounded-lg border border-teal-100 dark:border-teal-900/40">
                             <strong>Actividad práctica:</strong> {milestone.practical_activity}
                           </p>
                         )}

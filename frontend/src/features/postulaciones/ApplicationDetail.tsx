@@ -187,7 +187,7 @@ export const ApplicationDetail: React.FC<ApplicationDetailProps> = ({
           </div>
 
           {job.applied_date && (
-            <span className="text-[11px] text-gray-400">
+            <span className="text-xs text-gray-400">
               Enviada el: {new Date(job.applied_date).toLocaleDateString('es-CL')}
             </span>
           )}

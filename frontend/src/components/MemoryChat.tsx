@@ -258,18 +258,18 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
                 Opi — Tu copiloto profesional
               </h3>
               {hasKey ? (
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-300/60 dark:border-emerald-800/60 flex items-center gap-1">
+                <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-300/60 dark:border-emerald-800/60 flex items-center gap-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                   <span>{llmSettings?.provider?.toUpperCase() || 'IA Activa'}</span>
                 </span>
               ) : (
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-300/60 dark:border-amber-800/60 flex items-center gap-1">
+                <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-300/60 dark:border-amber-800/60 flex items-center gap-1">
                   <Lock className="w-2.5 h-2.5" />
                   <span>Clave Requerida</span>
                 </span>
               )}
             </div>
-            <p className="text-[11px] text-[#86868B] dark:text-[#A1A1A6] truncate max-w-[240px] sm:max-w-md">
+            <p className="text-xs text-[#86868B] dark:text-[#A1A1A6] truncate max-w-[240px] sm:max-w-md">
               La IA organiza y te orienta. Tú decides tu camino.
             </p>
           </div>
@@ -278,7 +278,7 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
         <div className="flex items-center space-x-2 shrink-0">
           {historyCount > 0 && (
             <span
-              className="hidden md:inline-flex items-center space-x-1 px-2.5 py-1 rounded-full text-[10px] font-semibold bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 border border-blue-200/60 dark:border-blue-800/60"
+              className="hidden md:inline-flex items-center space-x-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 border border-blue-200/60 dark:border-blue-800/60"
               title="El asistente mantiene el contexto completo de preguntas y respuestas de esta conversación"
             >
               <Brain className="w-3 h-3 shrink-0" />
@@ -289,7 +289,7 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
           {historyCount > 0 && (
             <button
               onClick={handleClearHistory}
-              className="px-2.5 py-1 rounded-xl text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-zinc-800 text-[11px] font-medium transition flex items-center space-x-1 cursor-pointer"
+              className="px-2.5 py-1 rounded-xl text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-zinc-800 text-xs font-medium transition flex items-center space-x-1 cursor-pointer"
               title="Reiniciar conversación y comenzar un nuevo tema"
             >
               <RotateCcw className="w-3 h-3 shrink-0" />
@@ -298,7 +298,7 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
           )}
 
           <div className="text-right hidden sm:block shrink-0 border-l border-black/10 dark:border-white/10 pl-3">
-            <span className="text-[11px] font-medium text-[#86868B] dark:text-[#A1A1A6]">Madurez:</span>
+            <span className="text-xs font-medium text-[#86868B] dark:text-[#A1A1A6]">Madurez:</span>
             <span className="ml-1 font-bold text-blue-600 dark:text-blue-400 text-xs">
               {preferences.memory_stats?.maturity_percentage || 0}%
             </span>
@@ -334,7 +334,7 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
               <ShieldCheck className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
               <span>Soberanía Digital & Privacidad por Diseño</span>
             </div>
-            <p className="text-[11px] text-blue-900/90 dark:text-blue-200/90 leading-relaxed">
+            <p className="text-xs text-blue-900/90 dark:text-blue-200/90 leading-relaxed">
               <strong>Tu clave de API NO es guardada por la aplicación en servidores externos</strong> ni transferida a terceros. Se mantiene 100% cifrada y segura exclusivamente en tu propio equipo local.
             </p>
           </div>
@@ -353,7 +353,7 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
               href="https://aistudio.google.com/app/apikey"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center justify-center space-x-1.5 text-[11px] font-medium text-blue-600 dark:text-blue-400 hover:underline pt-1"
+              className="inline-flex items-center justify-center space-x-1.5 text-xs font-medium text-blue-600 dark:text-blue-400 hover:underline pt-1"
             >
               <span>Obtener clave gratis en Google AI Studio (Gemini)</span>
               <ExternalLink className="w-3 h-3" />
@@ -395,7 +395,7 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
                   {/* Detected STAR Story Badge Card */}
                   {msg.learnedStory && (
                     <div className="w-full max-w-[88%] sm:max-w-[80%] rounded-2xl p-3.5 bg-amber-50/90 dark:bg-amber-950/30 border border-amber-200/80 dark:border-amber-800/60 text-xs text-amber-900 dark:text-amber-200 space-y-1.5 animate-fade-in shadow-xs">
-                      <div className="flex items-center space-x-1.5 font-bold text-[11px] text-amber-700 dark:text-amber-300">
+                      <div className="flex items-center space-x-1.5 font-bold text-xs text-amber-700 dark:text-amber-300">
                         <Star className="w-4 h-4 fill-amber-500 text-amber-500 shrink-0" />
                         <span>¡Caso de éxito extraído y guardado en memoria!</span>
                       </div>
@@ -403,7 +403,7 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
                         {msg.learnedStory.title}
                       </div>
                       {msg.learnedStory.result_and_metrics && (
-                        <p className="text-[11px] text-gray-700 dark:text-gray-300">
+                        <p className="text-xs text-gray-700 dark:text-gray-300">
                           <strong className="text-amber-600 dark:text-amber-400 font-semibold">Métrica: </strong>
                           {msg.learnedStory.result_and_metrics}
                         </p>
@@ -413,7 +413,7 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
 
                   {/* Detected Insights Badge */}
                   {msg.learnedInsights && msg.learnedInsights.length > 0 && (
-                    <div className="w-full max-w-[88%] sm:max-w-[80%] rounded-2xl p-3 bg-indigo-50/90 dark:bg-indigo-950/30 border border-indigo-200/60 dark:border-indigo-800/60 text-[11px] text-indigo-900 dark:text-indigo-200 space-y-1 animate-fade-in">
+                    <div className="w-full max-w-[88%] sm:max-w-[80%] rounded-2xl p-3 bg-indigo-50/90 dark:bg-indigo-950/30 border border-indigo-200/60 dark:border-indigo-800/60 text-xs text-indigo-900 dark:text-indigo-200 space-y-1 animate-fade-in">
                       <div className="flex items-center space-x-1.5 font-bold text-indigo-700 dark:text-indigo-300">
                         <Lightbulb className="w-3.5 h-3.5 text-indigo-500" />
                         <span>Regla de afinidad aprendida:</span>
@@ -428,7 +428,7 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
 
                   {/* Detected Deal-Breakers Badge */}
                   {msg.learnedDealBreakers && msg.learnedDealBreakers.length > 0 && (
-                    <div className="w-full max-w-[88%] sm:max-w-[80%] rounded-2xl p-3 bg-rose-50/90 dark:bg-rose-950/30 border border-rose-200/60 dark:border-rose-800/60 text-[11px] text-rose-900 dark:text-rose-200 space-y-1 animate-fade-in">
+                    <div className="w-full max-w-[88%] sm:max-w-[80%] rounded-2xl p-3 bg-rose-50/90 dark:bg-rose-950/30 border border-rose-200/60 dark:border-rose-800/60 text-xs text-rose-900 dark:text-rose-200 space-y-1 animate-fade-in">
                       <div className="flex items-center space-x-1.5 font-bold text-rose-700 dark:text-rose-300">
                         <ShieldAlert className="w-3.5 h-3.5 text-rose-500" />
                         <span>Límite / Deal-Breaker innegociable registrado:</span>
@@ -451,7 +451,7 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
                           disabled={isLoading}
                           className="min-h-[36px] px-3.5 py-1.5 rounded-full bg-blue-50/90 dark:bg-blue-950/50 hover:bg-blue-100 dark:hover:bg-blue-900/60 text-blue-700 dark:text-blue-300 border border-blue-200/80 dark:border-blue-800/60 text-xs font-semibold transition active:scale-95 shadow-2xs flex items-center space-x-1.5 cursor-pointer disabled:opacity-50"
                         >
-                          <span className="text-[11px]">💬</span>
+                          <span className="text-xs">💬</span>
                           <span>{qr}</span>
                         </button>
                       ))}
@@ -477,7 +477,7 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
                 scrollToBottom('smooth');
                 setShowScrollBottomBtn(false);
               }}
-              className="absolute bottom-3 left-1/2 -translate-x-1/2 px-3.5 py-1.5 rounded-full bg-blue-600/90 hover:bg-blue-600 text-white text-[11px] font-semibold shadow-lg backdrop-blur-md transition-all active:scale-95 flex items-center space-x-1.5 z-10 animate-fade-in cursor-pointer border border-white/20"
+              className="absolute bottom-3 left-1/2 -translate-x-1/2 px-3.5 py-1.5 rounded-full bg-blue-600/90 hover:bg-blue-600 text-white text-xs font-semibold shadow-lg backdrop-blur-md transition-all active:scale-95 flex items-center space-x-1.5 z-10 animate-fade-in cursor-pointer border border-white/20"
             >
               <ChevronDown className="w-3.5 h-3.5 animate-bounce" />
               <span>Ir a los últimos mensajes</span>
@@ -489,7 +489,7 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
       {/* Suggested Prompt Pills (Only active when key is configured) */}
       {hasKey && (
         <div className="px-3.5 sm:px-4 py-2 border-t border-black/6 dark:border-white/8 bg-gray-50/60 dark:bg-zinc-900/60 overflow-x-auto no-scrollbar flex items-center space-x-2 shrink-0">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-[#86868B] dark:text-[#A1A1A6] shrink-0 flex items-center gap-1">
+          <span className="text-xs font-bold uppercase tracking-wider text-[#86868B] dark:text-[#A1A1A6] shrink-0 flex items-center gap-1">
             <Sparkles className="w-3 h-3 text-blue-500" />
             <span>Sugerencias:</span>
           </span>

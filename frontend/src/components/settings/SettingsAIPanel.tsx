@@ -193,7 +193,7 @@ export const SettingsAIPanel: React.FC = () => {
               {showKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             </button>
           </div>
-          <p className="text-[11px] text-gray-400">Tu clave nunca se guarda en el servidor. Solo viaja por petición cuando usas IA.</p>
+          <p className="text-xs text-gray-400">Tu clave nunca se guarda en el servidor. Solo viaja por petición cuando usas IA.</p>
         </div>
 
         <div className="flex items-center justify-between pt-2 border-t border-black/5 dark:border-white/5">

@@ -162,7 +162,7 @@ export const FitEvaluationModal: React.FC<FitEvaluationModalProps> = ({
                       {ev.justification}
                     </p>
                     {ev.key_question && (
-                      <div className="text-[11px] text-gray-500 italic bg-white dark:bg-zinc-900 p-2 rounded-lg border border-gray-100 dark:border-zinc-800">
+                      <div className="text-xs text-gray-500 italic bg-white dark:bg-zinc-900 p-2 rounded-lg border border-gray-100 dark:border-zinc-800">
                         <strong>Pregunta clave que evaluó:</strong> "{ev.key_question}"
                       </div>
                     )}
@@ -184,7 +184,7 @@ export const FitEvaluationModal: React.FC<FitEvaluationModalProps> = ({
                       <span className="font-bold text-xs text-gray-900 dark:text-gray-100">
                         {item.requirement}
                       </span>
-                      <span className={`px-2 py-0.5 rounded text-[11px] font-semibold ${
+                      <span className={`px-2 py-0.5 rounded text-xs font-semibold ${
                         item.status === 'cumplido' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'
                       }`}>
                         {item.status}

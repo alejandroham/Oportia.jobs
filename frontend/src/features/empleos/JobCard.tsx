@@ -66,7 +66,7 @@ export const JobCard: React.FC<JobCardProps> = ({
               {job.company || 'Empresa confidencial'}
             </span>
             {isRegional && (
-              <span className="shrink-0 px-2 py-0.5 text-[11px] font-semibold text-teal-700 dark:text-teal-300 bg-teal-50 dark:bg-teal-950/50 rounded-full border border-teal-200/60 dark:border-teal-800/40">
+              <span className="shrink-0 px-2 py-0.5 text-xs font-semibold text-teal-700 dark:text-teal-300 bg-teal-50 dark:bg-teal-950/50 rounded-full border border-teal-200/60 dark:border-teal-800/40">
                 Tu región
               </span>
             )}

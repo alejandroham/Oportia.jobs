@@ -146,7 +146,7 @@ export const WelcomeHub: React.FC<WelcomeHubProps> = ({
       {/* Tarjeta Hero: "Tu siguiente paso" */}
       <div className="apple-glass apple-card p-6 rounded-3xl border-blue-500/20 bg-gradient-to-br from-blue-50/60 via-white to-indigo-50/40 dark:from-blue-950/20 dark:via-zinc-900/40 dark:to-zinc-900/60 shadow-lg space-y-4">
         <div className="flex items-center space-x-2">
-          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300">
+          <span className="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300">
             Tu siguiente paso
           </span>
         </div>
@@ -187,7 +187,7 @@ export const WelcomeHub: React.FC<WelcomeHubProps> = ({
               <CheckCircle2 className="w-4 h-4 text-emerald-500" />
               <span>Progreso de preparación ({progressPct}%)</span>
             </h3>
-            <span className="text-[11px] font-semibold text-gray-400">
+            <span className="text-xs font-semibold text-gray-400">
               {completedCount} de {checklist.length} listos
             </span>
           </div>
@@ -236,7 +236,7 @@ export const WelcomeHub: React.FC<WelcomeHubProps> = ({
                 <Compass className="w-5 h-5" />
               </div>
               <div>
-                <span className="text-[10px] uppercase font-bold text-gray-400 block">Ofertas en Radar</span>
+                <span className="text-xs uppercase font-bold text-gray-400 block">Ofertas en Radar</span>
                 <span className="text-base font-bold text-gray-900 dark:text-white">{jobs.length} disponibles</span>
               </div>
             </div>
@@ -252,7 +252,7 @@ export const WelcomeHub: React.FC<WelcomeHubProps> = ({
                 <Briefcase className="w-5 h-5" />
               </div>
               <div>
-                <span className="text-[10px] uppercase font-bold text-gray-400 block">Postulaciones</span>
+                <span className="text-xs uppercase font-bold text-gray-400 block">Postulaciones</span>
                 <span className="text-base font-bold text-gray-900 dark:text-white">{applications.length} en seguimiento</span>
               </div>
             </div>
@@ -268,7 +268,7 @@ export const WelcomeHub: React.FC<WelcomeHubProps> = ({
                 <Cpu className="w-5 h-5" />
               </div>
               <div>
-                <span className="text-[10px] uppercase font-bold text-gray-400 block">Estado de Inteligencia Artificial</span>
+                <span className="text-xs uppercase font-bold text-gray-400 block">Estado de Inteligencia Artificial</span>
                 <span className="text-xs font-bold text-gray-900 dark:text-white">
                   {hasAI ? 'IA Conectada' : 'Modo sin IA'}
                 </span>

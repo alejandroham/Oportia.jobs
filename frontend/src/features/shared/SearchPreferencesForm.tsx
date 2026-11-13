@@ -114,7 +114,7 @@ export const SearchPreferencesForm: React.FC<SearchPreferencesFormProps> = ({
         </label>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label className="block text-[11px] font-medium text-gray-500 mb-1">Región</label>
+            <label className="block text-xs font-medium text-gray-500 mb-1">Región</label>
             <select
               value={preferences.preferred_region || ''}
               onChange={(e) => {
@@ -137,7 +137,7 @@ export const SearchPreferencesForm: React.FC<SearchPreferencesFormProps> = ({
           </div>
 
           <div>
-            <label className="block text-[11px] font-medium text-gray-500 mb-1">Comuna</label>
+            <label className="block text-xs font-medium text-gray-500 mb-1">Comuna</label>
             <select
               value={preferences.preferred_communes?.[0] || ''}
               disabled={!preferences.preferred_region}
@@ -165,7 +165,7 @@ export const SearchPreferencesForm: React.FC<SearchPreferencesFormProps> = ({
         <div className="p-3 rounded-xl bg-gray-50 dark:bg-zinc-800/60 border border-gray-200 dark:border-zinc-700/60 flex items-center justify-between">
           <div>
             <span className="text-xs font-bold text-gray-800 dark:text-gray-200 block">Solo Remoto</span>
-            <span className="text-[11px] text-gray-500">Filtrar exclusivamente ofertas 100% remotas</span>
+            <span className="text-xs text-gray-500">Filtrar exclusivamente ofertas 100% remotas</span>
           </div>
           <button
             type="button"

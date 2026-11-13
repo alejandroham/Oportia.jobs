@@ -48,13 +48,13 @@ export const GapsTab: React.FC<GapsTabProps> = ({
                     <span className="font-bold text-sm text-gray-900 dark:text-gray-100">
                       {comp.name}
                     </span>
-                    <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-gray-300">
+                    <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-gray-300">
                       {comp.category || 'Técnica'}
                     </span>
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <span className="text-gray-500 text-[11px]">
+                    <span className="text-gray-500 text-xs">
                       Nivel: <strong>{comp.declared_level || 'Básico'}</strong>
                     </span>
                     <button
@@ -71,7 +71,7 @@ export const GapsTab: React.FC<GapsTabProps> = ({
                 {/* Evidencias en CV */}
                 {comp.evidences && comp.evidences.length > 0 && (
                   <div className="space-y-1">
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-gray-400 block">
+                    <span className="text-xs font-bold uppercase tracking-wider text-gray-400 block">
                       Evidencias demostradas en tu CV:
                     </span>
                     <ul className="space-y-1 pl-1 text-gray-600 dark:text-gray-300">
@@ -88,11 +88,11 @@ export const GapsTab: React.FC<GapsTabProps> = ({
                 {/* Ofertas de donde proviene la brecha */}
                 {hasGaps && (
                   <div className="p-3 rounded-xl bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200/50 space-y-1 text-amber-900 dark:text-amber-200">
-                    <span className="font-bold text-[11px] flex items-center gap-1">
+                    <span className="font-bold text-xs flex items-center gap-1">
                       <Briefcase className="w-3 h-3 text-amber-600" />
                       Detectada como brecha en las siguientes vacantes:
                     </span>
-                    <p className="text-[11px] leading-relaxed">
+                    <p className="text-xs leading-relaxed">
                       {comp.source_job_gaps.join(', ')}
                     </p>
                   </div>

@@ -100,7 +100,7 @@ export const SettingsView: React.FC = () => {
                 <Sun className="w-5 h-5 text-amber-500" />
                 <div>
                   <p className="text-xs font-bold">Modo Claro</p>
-                  <p className="text-[11px] text-gray-500">Fondo limpio y tipografía de alto contraste.</p>
+                  <p className="text-xs text-gray-500">Fondo limpio y tipografía de alto contraste.</p>
                 </div>
               </button>
               <button
@@ -115,7 +115,7 @@ export const SettingsView: React.FC = () => {
                 <Moon className="w-5 h-5 text-indigo-400" />
                 <div>
                   <p className="text-xs font-bold">Modo Oscuro</p>
-                  <p className="text-[11px] text-gray-400">Reduce la fatiga visual en entornos con poca luz.</p>
+                  <p className="text-xs text-gray-400">Reduce la fatiga visual en entornos con poca luz.</p>
                 </div>
               </button>
             </div>

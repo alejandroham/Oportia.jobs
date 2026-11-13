@@ -131,7 +131,7 @@ export const PracticeTab: React.FC<PracticeTabProps> = ({ profile }) => {
           {challenge && (
             <div className="p-5 sm:p-6 rounded-2xl bg-white dark:bg-zinc-900 border border-gray-200/80 dark:border-zinc-800 shadow-sm space-y-4 text-xs animate-fade-in">
               <div className="space-y-1">
-                <span className="text-[10px] uppercase font-bold text-[#20A88A] tracking-wider">
+                <span className="text-xs uppercase font-bold text-[#20A88A] tracking-wider">
                   Caso Asignado ({challenge.difficulty || 'Intermedio'})
                 </span>
                 <h4 className="text-sm sm:text-base font-bold text-gray-900 dark:text-gray-100">

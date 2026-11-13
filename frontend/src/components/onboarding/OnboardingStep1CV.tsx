@@ -41,7 +41,7 @@ export const OnboardingStep1CV: React.FC<OnboardingStep1CVProps> = ({
         <span className="font-semibold text-gray-800 dark:text-gray-200">
           {isUploading ? 'Analizando CV...' : 'Selecciona o arrastra tu archivo PDF o Word'}
         </span>
-        <span className="text-[11px] text-gray-400 mt-0.5">PDF, DOCX o TXT (máximo 10 MB)</span>
+        <span className="text-xs text-gray-400 mt-0.5">PDF, DOCX o TXT (máximo 10 MB)</span>
         <input
           type="file"
           accept=".pdf,.docx,.doc,.txt"
@@ -54,13 +54,13 @@ export const OnboardingStep1CV: React.FC<OnboardingStep1CVProps> = ({
       {/* Extracted preview card */}
       {(tempName || tempTitle) && (
         <div className="p-4 rounded-2xl bg-gray-50 dark:bg-zinc-800/60 border border-black/5 dark:border-white/5 space-y-3">
-          <span className="text-[10px] uppercase font-bold tracking-wider text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+          <span className="text-xs uppercase font-bold tracking-wider text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
             <CheckCircle2 className="w-3.5 h-3.5" />
             Información detectada en tu currículum
           </span>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <div>
-              <label className="text-[10px] text-gray-400 font-semibold uppercase">Tu Nombre</label>
+              <label className="text-xs text-gray-400 font-semibold uppercase">Tu Nombre</label>
               <input
                 type="text"
                 value={tempName}
@@ -69,7 +69,7 @@ export const OnboardingStep1CV: React.FC<OnboardingStep1CVProps> = ({
               />
             </div>
             <div>
-              <label className="text-[10px] text-gray-400 font-semibold uppercase">Titular / Cargo</label>
+              <label className="text-xs text-gray-400 font-semibold uppercase">Titular / Cargo</label>
               <input
                 type="text"
                 value={tempTitle}
@@ -80,14 +80,14 @@ export const OnboardingStep1CV: React.FC<OnboardingStep1CVProps> = ({
           </div>
 
           <div>
-            <label className="text-[10px] text-gray-400 font-semibold uppercase block mb-1">
+            <label className="text-xs text-gray-400 font-semibold uppercase block mb-1">
               Habilidades clave ({tempSkills.length})
             </label>
             <div className="flex flex-wrap gap-1.5">
               {tempSkills.map((s, idx) => (
                 <span
                   key={idx}
-                  className="px-2 py-0.5 rounded-lg bg-white dark:bg-zinc-700 text-gray-700 dark:text-gray-300 border border-black/5 flex items-center gap-1 text-[11px]"
+                  className="px-2 py-0.5 rounded-lg bg-white dark:bg-zinc-700 text-gray-700 dark:text-gray-300 border border-black/5 flex items-center gap-1 text-xs"
                 >
                   {s}
                   <button

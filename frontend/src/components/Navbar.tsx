@@ -85,7 +85,7 @@ export const Navbar: React.FC<NavbarProps> = ({ llmSettings }) => {
             <button
               type="button"
               onClick={() => navigate('/ajustes')}
-              className="flex items-center space-x-2 min-h-[38px] sm:min-h-[40px] px-3.5 py-1.5 rounded-full text-[11px] sm:text-xs font-medium bg-gray-100/90 dark:bg-zinc-800/90 hover:bg-gray-200 dark:hover:bg-zinc-700 text-[#1D1D1F] dark:text-[#F5F5F7] border border-black/6 dark:border-white/8 transition shadow-xs cursor-pointer active:scale-95"
+              className="flex items-center space-x-2 min-h-[38px] sm:min-h-[40px] px-3.5 py-1.5 rounded-full text-xs sm:text-xs font-medium bg-gray-100/90 dark:bg-zinc-800/90 hover:bg-gray-200 dark:hover:bg-zinc-700 text-[#1D1D1F] dark:text-[#F5F5F7] border border-black/6 dark:border-white/8 transition shadow-xs cursor-pointer active:scale-95"
               title="Configuración de Inteligencia Artificial (Ajustes)"
             >
               <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${dotColor} ${!hasKey ? 'opacity-70' : ''}`} />
@@ -131,7 +131,7 @@ export const Navbar: React.FC<NavbarProps> = ({ llmSettings }) => {
               {({ isActive }) => (
                 <>
                   <IconComp className={`w-4 h-4 mb-0.5 ${isActive ? 'stroke-[2.5px] scale-110' : 'stroke-2'}`} />
-                  <span className="text-[11px] font-medium tracking-tight leading-none">{tab.shortLabel}</span>
+                  <span className="text-xs font-medium tracking-tight leading-none">{tab.shortLabel}</span>
                 </>
               )}
             </NavLink>
