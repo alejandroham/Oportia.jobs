@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { api } from '../../api';
+import { api, isAINotConnectedError, getHumanErrorMessage } from '../../api';
 import { useToast } from '../../components/Toast';
+import { AINotConnectedBanner } from './AINotConnectedBanner';
 import { Mic, MicOff, Send, Sparkles, RotateCcw, CheckCircle2, AlertCircle, HelpCircle } from 'lucide-react';
 import type { JobPosting, CandidateProfile } from '../../types';
 
@@ -33,6 +34,7 @@ export const InterviewSimulator: React.FC<InterviewSimulatorProps> = ({
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [isRecording, setIsRecording] = useState<boolean>(false);
   const [evaluationResult, setEvaluationResult] = useState<any>(null);
+  const [aiNotConnected, setAiNotConnected] = useState<boolean>(false);
 
   // Reconocimiento de voz simple si está disponible
   const handleToggleVoice = () => {
@@ -83,10 +85,16 @@ export const InterviewSimulator: React.FC<InterviewSimulatorProps> = ({
         profile
       );
       setEvaluationResult(res);
+      setAiNotConnected(false);
       if (onAnswerEvaluated) onAnswerEvaluated(res);
       toast.success('Respuesta evaluada con éxito');
     } catch (e: any) {
-      toast.error('Error al evaluar respuesta: ' + (e?.message || e));
+      if (isAINotConnectedError(e)) {
+        setAiNotConnected(true);
+        toast.info('Para evaluar tus respuestas con IA, conecta tu clave en Ajustes.');
+      } else {
+        toast.error('Error al evaluar respuesta: ' + getHumanErrorMessage(e));
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -102,7 +110,7 @@ export const InterviewSimulator: React.FC<InterviewSimulatorProps> = ({
       {/* Cabecera del simulador */}
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-gray-100 dark:border-zinc-800 pb-3">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-xl bg-teal-50 dark:bg-teal-950/50 flex items-center justify-center text-[#20A88A]">
+          <div className="w-8 h-8 rounded-xl bg-brand-50 dark:bg-brand-950/50 flex items-center justify-center text-brand">
             <Sparkles className="w-4 h-4" />
           </div>
           <div>
@@ -129,7 +137,7 @@ export const InterviewSimulator: React.FC<InterviewSimulatorProps> = ({
       {/* Pregunta a responder */}
       <div className="p-3.5 rounded-xl bg-gray-50 dark:bg-zinc-800/60 border border-gray-200/60 dark:border-zinc-700/60">
         <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1 flex items-center gap-1">
-          <HelpCircle className="w-3.5 h-3.5 text-[#20A88A]" />
+          <HelpCircle className="w-3.5 h-3.5 text-brand" />
           Pregunta de la entrevista:
         </label>
         <p className="text-xs sm:text-sm font-semibold text-gray-800 dark:text-gray-200">
@@ -138,6 +146,14 @@ export const InterviewSimulator: React.FC<InterviewSimulatorProps> = ({
       </div>
 
       {/* Área de respuesta o Resultados */}
+      {aiNotConnected && (
+        <AINotConnectedBanner
+          title="Conecta la IA para evaluar tu respuesta"
+          description="Para recibir retroalimentación metodológica bajo el marco STAR y sugerencias de mejora con IA, conecta tu clave en Ajustes."
+          actionText="Conectar clave de IA"
+        />
+      )}
+
       {!evaluationResult ? (
         <div className="space-y-3">
           <div className="relative">
@@ -146,7 +162,7 @@ export const InterviewSimulator: React.FC<InterviewSimulatorProps> = ({
               value={answer}
               onChange={(e) => setAnswer(e.target.value)}
               placeholder="Describe la Situación inicial, la Tarea o desafío que enfrentaste, las Acciones concretas que lideraste y los Resultados medibles que obtuviste..."
-              className="w-full text-xs sm:text-sm p-3.5 rounded-xl border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800/80 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-[#20A88A]/30 resize-none leading-relaxed"
+              className="w-full text-xs sm:text-sm p-3.5 rounded-xl border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800/80 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-brand/30 resize-none leading-relaxed"
             />
             {isRecording && (
               <div className="absolute top-2 right-2 flex items-center gap-1.5 bg-rose-50 text-rose-600 px-2 py-0.5 rounded-full text-xs font-medium border border-rose-200 animate-pulse">
@@ -174,7 +190,7 @@ export const InterviewSimulator: React.FC<InterviewSimulatorProps> = ({
               type="button"
               onClick={handleEvaluate}
               disabled={isSubmitting || !answer.trim()}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#20A88A] hover:bg-[#18856d] text-white text-xs font-semibold shadow-sm transition disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 px-4 py-2 min-h-[44px] rounded-xl bg-brand hover:bg-brand-600 text-white text-xs font-semibold shadow-xs transition disabled:opacity-50"
             >
               <Send className="w-3.5 h-3.5" />
               <span>{isSubmitting ? 'Evaluando...' : 'Evaluar mi respuesta'}</span>
@@ -186,7 +202,7 @@ export const InterviewSimulator: React.FC<InterviewSimulatorProps> = ({
         <div className="space-y-4 pt-1 animate-fade-in">
           <div className="flex items-center justify-between p-3 rounded-xl bg-teal-50 dark:bg-teal-950/40 border border-teal-200/60 dark:border-teal-800/40">
             <div className="flex items-center gap-2">
-              <span className="text-xl font-bold text-[#20A88A]">
+              <span className="text-xl font-bold text-brand">
                 {evaluationResult.score ?? evaluationResult.star_score ?? 85}%
               </span>
               <span className="text-xs font-medium text-teal-900 dark:text-teal-200">

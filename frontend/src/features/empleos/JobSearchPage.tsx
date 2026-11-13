@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import type { JobPosting, CandidateProfile, FitEvaluation } from '../../types';
 import { useAppStore } from '../../state/useAppStore';
-import { api } from '../../api';
+import { api, isAINotConnectedError, getHumanErrorMessage } from '../../api';
 import { useToast } from '../../components/Toast';
 import { JobSearchBar } from './JobSearchBar';
 import { JobAdvancedFilters } from './JobAdvancedFilters';
@@ -122,7 +122,12 @@ export const JobSearchPage: React.FC<JobSearchPageProps> = ({
       setSelectedJobForDetail(updatedJob);
       toast.success(`Compatibilidad evaluada: ${evaluation.overall_score}%`);
     } catch (e: any) {
-      toast.error('Error al evaluar: ' + (e?.message || e));
+      if (isAINotConnectedError(e)) {
+        toast.info('Para evaluar compatibilidad con IA, conecta tu clave en Ajustes.');
+        if (onOpenSettings) onOpenSettings();
+      } else {
+        toast.error('Error al evaluar: ' + getHumanErrorMessage(e));
+      }
     } finally {
       setIsLoadingEvaluation(false);
     }
@@ -262,6 +267,8 @@ export const JobSearchPage: React.FC<JobSearchPageProps> = ({
         job={selectedJobForDetail}
         evaluation={selectedEvaluation}
         isLoadingEvaluation={isLoadingEvaluation}
+        hasActiveKey={hasActiveKey}
+        onOpenSettings={onOpenSettings}
         onEvaluate={handleEvaluate}
         onOpenFullEvaluation={() => setIsFullEvaluationOpen(true)}
         onApply={onApply}
@@ -278,6 +285,7 @@ export const JobSearchPage: React.FC<JobSearchPageProps> = ({
         onClose={() => setIsFullEvaluationOpen(false)}
         evaluation={selectedEvaluation}
         job={selectedJobForDetail}
+        onConnectAI={onOpenSettings}
       />
 
       {/* Modal Importar por URL */}

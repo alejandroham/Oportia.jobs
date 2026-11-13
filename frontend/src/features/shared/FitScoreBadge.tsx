@@ -5,6 +5,8 @@ interface FitScoreBadgeProps {
   score?: number | null;
   potentialScore?: number | null;
   showPotential?: boolean;
+  isAIBased?: boolean;
+  calculationType?: 'ai' | 'basic';
   size?: 'sm' | 'md' | 'lg';
   onClick?: () => void;
   className?: string;
@@ -14,6 +16,8 @@ export const FitScoreBadge: React.FC<FitScoreBadgeProps> = ({
   score,
   potentialScore,
   showPotential = false,
+  isAIBased = true,
+  calculationType = 'ai',
   size = 'md',
   onClick,
   className = ''
@@ -28,6 +32,45 @@ export const FitScoreBadge: React.FC<FitScoreBadgeProps> = ({
         <span>Sin evaluar</span>
       </span>
     );
+  }
+
+  const isBasic = !isAIBased || calculationType === 'basic';
+
+  if (isBasic) {
+    const sizeClasses =
+      size === 'sm'
+        ? 'px-2 py-0.5 text-[12px] gap-1'
+        : size === 'lg'
+        ? 'px-3.5 py-1.5 text-sm gap-2 font-semibold'
+        : 'px-2.5 py-1 text-xs gap-1.5 font-medium';
+
+    const basicContent = (
+      <span
+        className={`inline-flex items-center rounded-full border bg-slate-50 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 border-slate-200 dark:border-zinc-700 transition-all ${sizeClasses} ${
+          onClick ? 'cursor-pointer hover:shadow-xs hover:opacity-95' : ''
+        } ${className}`}
+        title="Estimación básica calculada determinísticamente por coincidencia de palabras clave (sin IA)."
+      >
+        <span className="w-1.5 h-1.5 rounded-full bg-slate-400 dark:bg-zinc-500" />
+        <span>{score}% · Estimación básica (sin IA)</span>
+      </span>
+    );
+
+    if (onClick) {
+      return (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onClick();
+          }}
+          className="focus:outline-none focus:ring-2 focus:ring-brand/40 rounded-full"
+        >
+          {basicContent}
+        </button>
+      );
+    }
+    return basicContent;
   }
 
   const isHigh = score >= 80;
@@ -54,9 +97,9 @@ export const FitScoreBadge: React.FC<FitScoreBadgeProps> = ({
   const content = (
     <span
       className={`inline-flex items-center rounded-full border transition-all ${colorStyles} ${sizeClasses} ${
-        onClick ? 'cursor-pointer hover:shadow-sm hover:opacity-95' : ''
+        onClick ? 'cursor-pointer hover:shadow-xs hover:opacity-95' : ''
       } ${className}`}
-      title={`Compatibilidad estimada: ${score}% (${label})${delta > 0 ? ` · Potencial: ${potentialScore}%` : ''}`}
+      title={`Evaluación con IA: ${score}% (${label})${delta > 0 ? ` · Potencial: ${potentialScore}%` : ''}`}
     >
       <span className={`w-1.5 h-1.5 rounded-full ${dotColor}`} />
       <span>{score}% · {label}</span>
@@ -77,7 +120,7 @@ export const FitScoreBadge: React.FC<FitScoreBadgeProps> = ({
           e.stopPropagation();
           onClick();
         }}
-        className="focus:outline-none focus:ring-2 focus:ring-[#20A88A]/40 rounded-full"
+        className="focus:outline-none focus:ring-2 focus:ring-brand/40 rounded-full"
       >
         {content}
       </button>

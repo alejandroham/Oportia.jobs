@@ -6,7 +6,7 @@ import { ApplicationDetail } from './ApplicationDetail';
 import { EmptyState } from '../../components/common/EmptyState';
 import { Briefcase, Plus, Send } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { api } from '../../api';
+import { api, isAINotConnectedError, getHumanErrorMessage } from '../../api';
 import { useToast } from '../../components/Toast';
 
 interface ApplicationsPageProps {
@@ -95,7 +95,11 @@ export const ApplicationsPage: React.FC<ApplicationsPageProps> = ({
       await addOrUpdateJob(updatedJob);
       toast.success('CV y carta adaptados con IA');
     } catch (e: any) {
-      toast.error('Error al adaptar documentos: ' + (e?.message || e));
+      if (isAINotConnectedError(e)) {
+        toast.info('Para adaptar tu CV con IA, conecta tu clave en Ajustes.');
+      } else {
+        toast.error('Error al adaptar documentos: ' + getHumanErrorMessage(e));
+      }
     } finally {
       setIsAdapting(false);
     }

@@ -1,12 +1,15 @@
 import React, { useEffect } from 'react';
 import type { JobPosting, FitEvaluation } from '../../types';
 import { FitEvaluationSummary } from '../shared/FitEvaluationSummary';
+import { AINotConnectedBanner } from '../shared/AINotConnectedBanner';
 import { X, ExternalLink, Bookmark, BookmarkCheck, Sparkles, Building2, MapPin, DollarSign, Send } from 'lucide-react';
 
 interface JobDetailModalProps {
   job: JobPosting | null;
   evaluation?: FitEvaluation | null;
   isLoadingEvaluation?: boolean;
+  hasActiveKey?: boolean;
+  onOpenSettings?: () => void;
   onEvaluate: (job: JobPosting) => void;
   onOpenFullEvaluation: () => void;
   onApply: (job: JobPosting) => void;
@@ -18,6 +21,8 @@ export const JobDetailModal: React.FC<JobDetailModalProps> = ({
   job,
   evaluation,
   isLoadingEvaluation = false,
+  hasActiveKey = true,
+  onOpenSettings,
   onEvaluate,
   onOpenFullEvaluation,
   onApply,
@@ -106,6 +111,13 @@ export const JobDetailModal: React.FC<JobDetailModalProps> = ({
                 <FitEvaluationSummary
                   evaluation={evaluation}
                   onOpenFullModal={onOpenFullEvaluation}
+                />
+              ) : !hasActiveKey ? (
+                <AINotConnectedBanner
+                  title="Conecta la IA para evaluar compatibilidad"
+                  description="Compara tus habilidades y experiencia contra esta vacante mediante 5 perspectivas de selección."
+                  actionText="Conectar IA"
+                  onConnect={onOpenSettings}
                 />
               ) : (
                 <div className="p-4 rounded-2xl border border-dashed border-gray-300 dark:border-zinc-700 text-center space-y-2">

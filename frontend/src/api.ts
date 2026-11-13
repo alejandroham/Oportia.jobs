@@ -72,6 +72,48 @@ export async function safeFetchJson<T = any>(url: string, options?: RequestInit,
   }
 }
 
+export class ApiError extends Error {
+  code?: string;
+  status?: number;
+  provider?: string;
+
+  constructor(message: string, code?: string, status?: number, provider?: string) {
+    super(message);
+    this.name = 'ApiError';
+    this.code = code;
+    this.status = status;
+    this.provider = provider;
+  }
+}
+
+export function isAINotConnectedError(error: any): boolean {
+  if (!error) return false;
+  if (error.code === 'ai_not_connected') return true;
+  const msg = typeof error === 'string' ? error : (error.message || '');
+  return msg.toLowerCase().includes('conecta una clave') || msg.toLowerCase().includes('ai_not_connected');
+}
+
+export function getHumanErrorMessage(error: any): string {
+  if (!error) return 'Ocurrió un error inesperado.';
+  const code = error.code;
+  if (code === 'ai_not_connected') {
+    return 'Conecta una clave de API en Ajustes para obtener esta función con IA.';
+  }
+  if (code === 'invalid_key') {
+    return 'Tu clave de API no es válida o fue revocada. Revisa la clave en Ajustes.';
+  }
+  if (code === 'quota_exceeded') {
+    return 'Has alcanzado el límite de cuota de tu proveedor de IA. Espera unos momentos o cambia de modelo en Ajustes.';
+  }
+  if (code === 'timeout') {
+    return 'El proveedor de IA tardó demasiado en responder (tiempo de espera agotado). Intenta nuevamente.';
+  }
+  if (code === 'service_unavailable') {
+    return 'El proveedor de IA no está disponible en este momento. Intenta más tarde.';
+  }
+  return error.message || String(error);
+}
+
 export async function handleResponse<T = any>(res: Response, defaultError = 'Error en la petición'): Promise<T> {
   const text = await res.text();
   let parsed: any = null;
@@ -80,20 +122,25 @@ export async function handleResponse<T = any>(res: Response, defaultError = 'Err
   } catch {
     if (!res.ok) {
       if (res.status === 404 || res.status === 405) {
-        throw new Error(`Ruta de backend no encontrada (${res.status}). Verifica que el backend en Render esté activo.`);
+        throw new ApiError(`Ruta de backend no encontrada (${res.status}). Verifica que el backend esté activo.`, 'not_found', res.status);
       }
       if (res.status === 502 || res.status === 503 || res.status === 504) {
-        throw new Error(`El backend en Render está iniciando (Cold Start: 30-50s). Espera un instante y reintenta.`);
+        throw new ApiError(`El backend está iniciando o no responde. Espera un instante y reintenta.`, 'service_unavailable', res.status);
       }
-      throw new Error(`Error del servidor (${res.status}): ${text.slice(0, 150) || res.statusText || defaultError}`);
+      throw new ApiError(`Error del servidor (${res.status}): ${text.slice(0, 150) || res.statusText || defaultError}`, 'server_error', res.status);
     }
     // Return empty object instead of crashing if HTML was returned
     return ({} as unknown) as T;
   }
 
   if (!res.ok) {
-    const detail = parsed?.detail || parsed?.message || defaultError;
-    throw new Error(detail);
+    const code = parsed?.error || (typeof parsed?.detail === 'object' ? parsed?.detail?.error : undefined);
+    const message = (typeof parsed?.detail === 'string' ? parsed.detail : undefined) ||
+      parsed?.message ||
+      (typeof parsed?.detail === 'object' ? parsed?.detail?.message : undefined) ||
+      defaultError;
+    const provider = parsed?.provider || (typeof parsed?.detail === 'object' ? parsed?.detail?.provider : undefined);
+    throw new ApiError(message, code, res.status, provider);
   }
 
   return parsed as T;
@@ -379,7 +426,7 @@ export const api = {
       method: 'POST',
       headers: { ...llmHeaders }
     });
-    return res.json();
+    return handleResponse<FitEvaluation>(res, 'Error al evaluar compatibilidad');
   },
   getJobEvaluation: async (job_id: string): Promise<FitEvaluation | null> => {
     try {
@@ -396,7 +443,7 @@ export const api = {
       method: 'POST',
       headers: { ...llmHeaders }
     });
-    return res.json();
+    return handleResponse(res, 'Error al clasificar ofertas');
   },
 
   // ATS Companies & Dynamic Role Recommendations (Radar Inteligente)
@@ -447,7 +494,7 @@ export const api = {
       method: 'POST',
       headers: { ...llmHeaders }
     });
-    return res.json();
+    return handleResponse<ApplicationDraft>(res, 'Error al generar postulación');
   },
   getApplications: async (): Promise<ApplicationDraft[]> => {
     return safeFetchJson<ApplicationDraft[]>(`${API_BASE}/applications`, undefined, []);
@@ -478,7 +525,7 @@ export const api = {
       method: 'POST',
       headers: { ...llmHeaders }
     });
-    return res.json();
+    return handleResponse(res, 'Error al preparar entrevista');
   },
   evaluateInterviewAnswer: async (question: string, answer: string, company?: string, job?: JobPosting, profile?: CandidateProfile) => {
     const llmHeaders = await getLLMHeaders();

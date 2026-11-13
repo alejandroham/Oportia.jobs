@@ -44,7 +44,7 @@ export const ApplicationDocumentsTab: React.FC<ApplicationDocumentsTabProps> = (
             onClick={() => setActiveDoc('cv')}
             className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition ${
               activeDoc === 'cv'
-                ? 'bg-[#20A88A] text-white shadow-xs'
+                ? 'bg-brand text-white shadow-xs'
                 : 'text-gray-600 dark:text-gray-300 hover:text-gray-900'
             }`}
           >
@@ -56,7 +56,7 @@ export const ApplicationDocumentsTab: React.FC<ApplicationDocumentsTabProps> = (
             onClick={() => setActiveDoc('cover_letter')}
             className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition ${
               activeDoc === 'cover_letter'
-                ? 'bg-[#20A88A] text-white shadow-xs'
+                ? 'bg-brand text-white shadow-xs'
                 : 'text-gray-600 dark:text-gray-300 hover:text-gray-900'
             }`}
           >
@@ -70,7 +70,7 @@ export const ApplicationDocumentsTab: React.FC<ApplicationDocumentsTabProps> = (
           type="button"
           onClick={onAdaptCv}
           disabled={isAdapting}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-teal-50 dark:bg-teal-950/40 text-[#20A88A] border border-teal-200 dark:border-teal-800/60 font-semibold hover:bg-teal-100 transition disabled:opacity-50"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 min-h-[36px] rounded-xl bg-brand-50 dark:bg-brand-950/40 text-brand border border-brand-200 dark:border-brand-800/60 font-semibold hover:bg-brand-100 transition disabled:opacity-50"
         >
           {isAdapting ? (
             <>

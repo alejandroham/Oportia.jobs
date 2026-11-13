@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import type { CandidateProfile, TutorPracticeChallenge, TutorEvaluationResult } from '../../types';
 import { InterviewSimulator } from '../shared/InterviewSimulator';
+import { AINotConnectedBanner } from '../shared/AINotConnectedBanner';
 import { Sparkles, Terminal, Send, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
-import { api } from '../../api';
+import { api, isAINotConnectedError, getHumanErrorMessage } from '../../api';
 import { useToast } from '../../components/Toast';
 
 interface PracticeTabProps {
@@ -17,6 +18,7 @@ export const PracticeTab: React.FC<PracticeTabProps> = ({ profile }) => {
   const [solution, setSolution] = useState('');
   const [isEvaluating, setIsEvaluating] = useState(false);
   const [evaluationResult, setEvaluationResult] = useState<TutorEvaluationResult | null>(null);
+  const [aiNotConnected, setAiNotConnected] = useState<boolean>(false);
   const toast = useToast();
 
   const handleGenerateChallenge = async () => {
@@ -27,9 +29,15 @@ export const PracticeTab: React.FC<PracticeTabProps> = ({ profile }) => {
     try {
       const res = await api.generateTutorChallenge(competencyInput.trim(), 'Intermedio', profile || undefined);
       setChallenge(res);
+      setAiNotConnected(false);
       toast.success('Desafío práctico generado con éxito');
     } catch (e: any) {
-      toast.error('Error al generar caso: ' + (e?.message || e));
+      if (isAINotConnectedError(e)) {
+        setAiNotConnected(true);
+        toast.info('Para generar desafíos con el Tutor IA, conecta tu clave en Ajustes.');
+      } else {
+        toast.error('Error al generar caso: ' + getHumanErrorMessage(e));
+      }
     } finally {
       setIsGeneratingChallenge(false);
     }
@@ -41,9 +49,15 @@ export const PracticeTab: React.FC<PracticeTabProps> = ({ profile }) => {
     try {
       const res = await api.evaluateTutorSolution(challenge, solution.trim(), profile || undefined);
       setEvaluationResult(res);
+      setAiNotConnected(false);
       toast.success('Solución evaluada por el Tutor IA');
     } catch (e: any) {
-      toast.error('Error al evaluar solución: ' + (e?.message || e));
+      if (isAINotConnectedError(e)) {
+        setAiNotConnected(true);
+        toast.info('Para evaluar tu solución con el Tutor IA, conecta tu clave en Ajustes.');
+      } else {
+        toast.error('Error al evaluar solución: ' + getHumanErrorMessage(e));
+      }
     } finally {
       setIsEvaluating(false);
     }
@@ -55,7 +69,7 @@ export const PracticeTab: React.FC<PracticeTabProps> = ({ profile }) => {
       <div className="flex flex-wrap items-center justify-between gap-3 p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200/80 dark:border-zinc-800 shadow-sm">
         <div>
           <h2 className="text-base font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-[#20A88A]" />
+            <Sparkles className="w-4 h-4 text-brand" />
             Entrenamiento Activo y Práctica
           </h2>
           <p className="text-xs text-gray-500">
@@ -91,9 +105,17 @@ export const PracticeTab: React.FC<PracticeTabProps> = ({ profile }) => {
       ) : (
         /* Caso Práctico */
         <div className="space-y-4">
+          {aiNotConnected && (
+            <AINotConnectedBanner
+              title="Conecta la IA para interactuar con el Tutor"
+              description="Para generar casos prácticos interactivos basados en tus brechas y evaluar tus soluciones con IA, conecta tu clave en Ajustes."
+              actionText="Conectar clave de IA"
+            />
+          )}
+
           <div className="p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-gray-200/80 dark:border-zinc-800 shadow-sm space-y-3 text-xs">
             <div className="flex items-center gap-2">
-              <Terminal className="w-4 h-4 text-[#20A88A]" />
+              <Terminal className="w-4 h-4 text-brand" />
               <h3 className="font-bold text-gray-900 dark:text-gray-100 text-sm">
                 Generador de Casos y Retos de Estudio
               </h3>

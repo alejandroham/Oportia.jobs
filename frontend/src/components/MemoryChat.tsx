@@ -18,7 +18,7 @@ import {
   ChevronDown
 } from 'lucide-react';
 import type { UserPreferences, LLMSettings } from '../types';
-import { api } from '../api';
+import { api, getHumanErrorMessage } from '../api';
 import { useToast } from './Toast';
 import { saveClientStore, getClientStore } from '../utils/storage';
 
@@ -233,7 +233,7 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
         toast.success('Preferencia registrada en tu memoria IA');
       }
     } catch (e: any) {
-      toast.error('Error al comunicarse con Opi: ' + (e?.message || e));
+      toast.error('Error al comunicarse con Opi: ' + getHumanErrorMessage(e));
     } finally {
       setIsLoading(false);
     }
