@@ -7,6 +7,7 @@ import { Card } from '../components/ui/Card';
 import { Dialog } from '../components/ui/Dialog';
 import { AINotConnectedBanner } from '../features/shared/AINotConnectedBanner';
 import { FitScoreBadge } from '../features/shared/FitScoreBadge';
+import { FailedSourcesBanner } from '../features/empleos/FailedSourcesBanner';
 
 describe('Sistema de Componentes UI Base', () => {
   describe('Button', () => {
@@ -136,6 +137,44 @@ describe('Sistema de Componentes UI Base', () => {
       render(<FitScoreBadge score={70} calculationType="basic" />);
       expect(screen.getByText(/70%/)).toBeInTheDocument();
       expect(screen.getByText(/estimación básica \(sin ia\)/i)).toBeInTheDocument();
+    });
+  });
+
+  describe('FailedSourcesBanner', () => {
+    it('no renderiza nada cuando sourcesFailed está vacío', () => {
+      const { container } = render(
+        <FailedSourcesBanner
+          sourcesFailed={[]}
+          isScanning={false}
+          onRetry={vi.fn()}
+          onDismiss={vi.fn()}
+        />
+      );
+      expect(container.firstChild).toBeNull();
+    });
+
+    it('renderiza fuentes fallidas y dispara eventos de reintentar y descartar', () => {
+      const handleRetry = vi.fn();
+      const handleDismiss = vi.fn();
+
+      render(
+        <FailedSourcesBanner
+          sourcesFailed={['LinkedIn Empleos', 'RemoteOK']}
+          isScanning={false}
+          onRetry={handleRetry}
+          onDismiss={handleDismiss}
+        />
+      );
+
+      expect(screen.getByRole('alert')).toBeInTheDocument();
+      expect(screen.getByText(/2 fuentes no respondieron/i)).toBeInTheDocument();
+      expect(screen.getByText(/LinkedIn Empleos, RemoteOK/i)).toBeInTheDocument();
+
+      fireEvent.click(screen.getByRole('button', { name: /reintentar/i }));
+      expect(handleRetry).toHaveBeenCalledTimes(1);
+
+      fireEvent.click(screen.getByRole('button', { name: /descartar/i }));
+      expect(handleDismiss).toHaveBeenCalledTimes(1);
     });
   });
 });

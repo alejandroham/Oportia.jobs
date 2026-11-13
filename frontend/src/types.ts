@@ -262,6 +262,12 @@ export interface JobPosting {
   upskill_recommendations?: string[];
 }
 
+export interface JobSearchResponse {
+  jobs: JobPosting[];
+  sources_failed: string[];
+  total: number;
+}
+
 export interface OutcomeSubmission {
   job_id: string;
   status: 'applied' | 'interviewing' | 'offer' | 'rejected';

@@ -125,13 +125,14 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
       // Initial search
       const query = targetRoles[0] || tempTitle || '';
       try {
-        const found = await api.searchJobs({
+        const searchRes = await api.searchJobs({
           keywords: query,
           region: isRemoteOnly ? undefined : preferredRegion,
           remote_only: isRemoteOnly
         });
-        if (found && found.length > 0) {
-          await setJobs(found);
+        const foundJobs = Array.isArray(searchRes) ? searchRes : (searchRes?.jobs || []);
+        if (foundJobs.length > 0) {
+          await setJobs(foundJobs);
         }
       } catch (searchErr) {
         console.warn('Initial search error:', searchErr);

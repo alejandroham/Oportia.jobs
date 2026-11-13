@@ -6,6 +6,7 @@ import { useToast } from '../../components/Toast';
 import { JobSearchBar } from './JobSearchBar';
 import { JobAdvancedFilters } from './JobAdvancedFilters';
 import { JobResultsFeed } from './JobResultsFeed';
+import { FailedSourcesBanner } from './FailedSourcesBanner';
 import { JobDetailModal } from './JobDetailModal';
 import { FitEvaluationModal } from './FitEvaluationModal';
 import { ImportUrlModal } from './ImportUrlModal';
@@ -46,6 +47,7 @@ export const JobSearchPage: React.FC<JobSearchPageProps> = ({
   const [selectedSource, setSelectedSource] = useState('all');
   const [isScanning, setIsScanning] = useState(false);
   const [isBatchRanking, setIsBatchRanking] = useState(false);
+  const [sourcesFailed, setSourcesFailed] = useState<string[]>([]);
   const [pageSize, setPageSize] = useState(12);
   const [page, setPage] = useState(1);
 
@@ -64,7 +66,7 @@ export const JobSearchPage: React.FC<JobSearchPageProps> = ({
     setIsScanning(true);
     try {
       const searchKw = searchTerm.trim() || (profile?.primary_profession || profile?.headline || '');
-      const found = await api.searchJobs({
+      const searchRes = await api.searchJobs({
         keywords: searchKw,
         remote_only: modalityFilter === 'Remoto',
         search_scope: regionFilter === 'user_region' ? 'regional' : 'all',
@@ -72,7 +74,11 @@ export const JobSearchPage: React.FC<JobSearchPageProps> = ({
         commune: selectedCommune || undefined
       });
 
-      if (Array.isArray(found) && found.length > 0) {
+      const found = Array.isArray(searchRes) ? searchRes : (searchRes?.jobs || []);
+      const failed = Array.isArray(searchRes) ? [] : (searchRes?.sources_failed || []);
+      setSourcesFailed(failed);
+
+      if (found.length > 0) {
         const store = useAppStore.getState();
         const existingTracked = store.jobs.filter((j) => j.status && j.status !== 'discovered');
         const existingIds = new Set(existingTracked.map((j) => j.id));
@@ -92,12 +98,11 @@ export const JobSearchPage: React.FC<JobSearchPageProps> = ({
   // Toggle tracking
   const handleToggleTrack = async (job: JobPosting) => {
     const isTracked = job.status && job.status !== 'discovered';
-    const updated: JobPosting = {
+    await addOrUpdateJob({
       ...job,
       status: isTracked ? 'discovered' : 'applied_no_response',
       tracked_at: isTracked ? undefined : new Date().toISOString()
-    };
-    await addOrUpdateJob(updated);
+    });
     toast.success(isTracked ? 'Oferta quitada de seguimiento' : 'Oferta guardada en seguimiento');
   };
 
@@ -124,7 +129,7 @@ export const JobSearchPage: React.FC<JobSearchPageProps> = ({
     } catch (e: any) {
       if (isAINotConnectedError(e)) {
         toast.info('Para evaluar compatibilidad con IA, conecta tu clave en Ajustes.');
-        if (onOpenSettings) onOpenSettings();
+        onOpenSettings?.();
       } else {
         toast.error('Error al evaluar: ' + getHumanErrorMessage(e));
       }
@@ -137,7 +142,7 @@ export const JobSearchPage: React.FC<JobSearchPageProps> = ({
   const handleBatchRank = async () => {
     if (!hasActiveKey) {
       toast.info('Conecta tu clave de IA en Ajustes para clasificar automáticamente con IA.');
-      if (onOpenSettings) onOpenSettings();
+      onOpenSettings?.();
       return;
     }
     setIsBatchRanking(true);
@@ -161,12 +166,8 @@ export const JobSearchPage: React.FC<JobSearchPageProps> = ({
   };
 
   const handleResetFilters = () => {
-    setSelectedRegion('');
-    setSelectedCommune('');
-    setMinSalary(undefined);
-    setSelectedSource('all');
-    setModalityFilter('all');
-    setRegionFilter('all');
+    setSelectedRegion(''); setSelectedCommune(''); setMinSalary(undefined);
+    setSelectedSource('all'); setModalityFilter('all'); setRegionFilter('all');
   };
 
   // Filter and sort jobs
@@ -249,6 +250,14 @@ export const JobSearchPage: React.FC<JobSearchPageProps> = ({
         />
       )}
 
+      {/* Alerta de fuentes no disponibles */}
+      <FailedSourcesBanner
+        sourcesFailed={sourcesFailed}
+        isScanning={isScanning}
+        onRetry={handleScan}
+        onDismiss={() => setSourcesFailed([])}
+      />
+
       {/* Feed de resultados y paginación */}
       <JobResultsFeed
         jobs={paginatedJobs}
@@ -262,7 +271,7 @@ export const JobSearchPage: React.FC<JobSearchPageProps> = ({
         onScan={handleScan}
       />
 
-      {/* Modal de Detalle */}
+      {/* Modales de Detalle, Evaluación y Portales */}
       <JobDetailModal
         job={selectedJobForDetail}
         evaluation={selectedEvaluation}
@@ -273,13 +282,8 @@ export const JobSearchPage: React.FC<JobSearchPageProps> = ({
         onOpenFullEvaluation={() => setIsFullEvaluationOpen(true)}
         onApply={onApply}
         onToggleTrack={handleToggleTrack}
-        onClose={() => {
-          setSelectedJobForDetail(null);
-          setSelectedEvaluation(null);
-        }}
+        onClose={() => { setSelectedJobForDetail(null); setSelectedEvaluation(null); }}
       />
-
-      {/* Modal de Comité / 5 perspectivas */}
       <FitEvaluationModal
         isOpen={isFullEvaluationOpen}
         onClose={() => setIsFullEvaluationOpen(false)}
@@ -287,20 +291,8 @@ export const JobSearchPage: React.FC<JobSearchPageProps> = ({
         job={selectedJobForDetail}
         onConnectAI={onOpenSettings}
       />
-
-      {/* Modal Importar por URL */}
-      <ImportUrlModal
-        isOpen={isImportUrlOpen}
-        onClose={() => setIsImportUrlOpen(false)}
-        onImportSuccess={async () => {}}
-      />
-
-      {/* Modal Búsqueda en Portales ATS */}
-      <CompanyPortalsModal
-        isOpen={isCompanyPortalsOpen}
-        onClose={() => setIsCompanyPortalsOpen(false)}
-        profile={profile}
-      />
+      <ImportUrlModal isOpen={isImportUrlOpen} onClose={() => setIsImportUrlOpen(false)} onImportSuccess={async () => {}} />
+      <CompanyPortalsModal isOpen={isCompanyPortalsOpen} onClose={() => setIsCompanyPortalsOpen(false)} profile={profile} />
     </div>
   );
 };

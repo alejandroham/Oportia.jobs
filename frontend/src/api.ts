@@ -2,6 +2,7 @@ import type {
   CandidateProfile,
   UserPreferences,
   JobPosting,
+  JobSearchResponse,
   FitEvaluation,
   ApplicationDraft,
   LLMSettings,
@@ -383,7 +384,7 @@ export const api = {
     search_scope?: string;
     region?: string;
     commune?: string;
-  }): Promise<JobPosting[]> => {
+  }): Promise<JobSearchResponse> => {
     const res = await fetch(`${API_BASE}/jobs/search`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -395,7 +396,11 @@ export const api = {
         commune: req.commune
       })
     });
-    return handleResponse<JobPosting[]>(res, 'Error al buscar empleos');
+    const data = await handleResponse<JobSearchResponse | JobPosting[]>(res, 'Error al buscar empleos');
+    if (Array.isArray(data)) {
+      return { jobs: data, sources_failed: [], total: data.length };
+    }
+    return data;
   },
   scrapeJobs: async (keywords?: string, remote_only: boolean = false, scope: string = 'chile') => {
     return api.searchJobs({ keywords, remote_only, search_scope: scope });

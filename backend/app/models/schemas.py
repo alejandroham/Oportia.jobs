@@ -178,6 +178,11 @@ class JobPosting(BaseModel):
     outcome_reason: Optional[str] = None
     outcome_feedback: Optional[str] = None
     outcome_date: Optional[str] = None
+
+class JobSearchResponse(BaseModel):
+    jobs: List[JobPosting] = []
+    sources_failed: List[str] = []
+    total: int = 0
     upskill_recommendations: List[str] = []
 
 class OutcomeSubmission(BaseModel):
