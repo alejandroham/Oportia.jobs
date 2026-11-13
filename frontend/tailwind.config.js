@@ -8,6 +8,46 @@ export default {
   theme: {
     extend: {
       colors: {
+        brand: {
+          50: '#F0FDF9',
+          100: '#E6F6F2',
+          200: '#C2EBE1',
+          300: '#8AD9C4',
+          400: '#4EBDA4',
+          500: '#20A88A', // Color Primario Oficial
+          600: '#18856D', // Hover / Enfoque
+          700: '#146B58',
+          800: '#125647',
+          900: '#0F473B',
+          DEFAULT: '#20A88A'
+        },
+        ink: {
+          DEFAULT: '#173B50',
+          muted: '#64748B',
+          light: '#F4F7F9',
+          dark: '#142B3D'
+        },
+        surface: {
+          DEFAULT: '#FFFFFF',
+          dark: '#142B3D',
+          card: '#FFFFFF',
+          darkCard: '#1E3B50'
+        },
+        success: {
+          DEFAULT: '#10B981',
+          light: '#ECFDF5',
+          dark: '#065F46'
+        },
+        warning: {
+          DEFAULT: '#F59E0B',
+          light: '#FFFBEB',
+          dark: '#92400E'
+        },
+        danger: {
+          DEFAULT: '#EF4444',
+          light: '#FEF2F2',
+          dark: '#991B1B'
+        },
         oportia: {
           petrol: '#173B50',
           jade: '#20A88A',

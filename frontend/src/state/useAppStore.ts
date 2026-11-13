@@ -133,7 +133,8 @@ export const useAppStore = create<AppState>((set, get) => ({
       const isCompleted = savedOnboarding === true || Boolean(savedProfile?.name && savedProfile.name.trim().toLowerCase() !== 'candidato');
 
       const savedTheme = localStorage.getItem('oportia_theme');
-      const isDark = savedTheme === 'dark';
+      const prefersDark = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const isDark = savedTheme !== null ? savedTheme === 'dark' : prefersDark;
       if (isDark) {
         document.documentElement.classList.add('dark');
       } else {
