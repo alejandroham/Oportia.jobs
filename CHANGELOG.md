@@ -5,6 +5,63 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
 
 ---
 
+## [1.1.0] - 2026-11-13 — *Consolidación de Arquitectura Local-First, Calidad, Accesibilidad y CI*
+
+### 🔒 Arquitectura Local-First & Privacidad Soberana (Opción A)
+- **Persistencia 100% en el Navegador (`IndexedDB`):**
+  - Implementación de `useAppStore` con Zustand y `idb-keyval` para alojar perfiles, preferencias, empleos descubiertos, postulaciones y memoria del copiloto exclusivamente en el equipo del candidato.
+  - Transformación del backend FastAPI a un servicio puramente sin estado (Stateless): eliminación de persistencia en disco de postulaciones y CVs (`db.save_jobs` no es llamado en búsquedas).
+  - Custodia de claves de API en el cliente mediante **WebCrypto API**: cifrado AES-GCM de 256 bits y derivación de clave PBKDF2 (100.000 iteraciones).
+  - Transmisión efímera de credenciales en memoria a través de encabezados HTTPS (`X-LLM-Key`, `X-LLM-Provider`) con destrucción inmediata tras cada inferencia.
+  - Rate limiting por IP en memoria para proteger endpoints de IA (10 req/min) y búsqueda de empleos (20 req/min).
+  - Restricción de CORS a orígenes autorizados (`ALLOWED_ORIGINS`).
+  - Creación de [PRIVACY.md](PRIVACY.md) y [SECURITY.md](SECURITY.md) detallando el marco normativo de la Ley N° 21.719 de Chile y el modelo de amenazas.
+
+### 🧭 Navegación, Usabilidad & Experiencia Móvil
+- **Enrutamiento Declarativo SPA (`react-router-dom`):**
+  - 5 secciones primarias unificadas: `/` (Inicio), `/empleos` (Buscar empleo), `/postulaciones` (Mis postulaciones), `/aprender` (Aprender), `/perfil` (Mi perfil) y `/ajustes` (Ajustes).
+  - Barra de navegación inferior móvil fija (`md:hidden`) con accesos táctiles $\ge 44$ px y soporte de zona segura (`env(safe-area-inset-bottom)`).
+  - Copiloto conversacional **Opi** centralizado en panel flotante global accesible en cualquier vista con biblioteca de comandos rápidos.
+  - Estandarización de UX Writing en español de Chile, verbos de acción en tiempo presente y segunda persona singular ("tú").
+
+### 🚀 Asistente de Bienvenida (Onboarding) & Panel de Control
+- **Asistente Inicial en 3 Pasos (`OnboardingWizard.tsx`):**
+  - Paso 1: Objetivo y cargo buscado con modalidades preferidas y región.
+  - Paso 2: Carga o creación de currículum con extracción de habilidades.
+  - Paso 3: Conexión opcional de proveedor de IA (Gemini, Claude, OpenAI) o modo sin IA.
+- **Panel de Inicio Útil (`WelcomeHub.tsx`):**
+  - Tarjeta dinámica de "Siguiente paso recomendado" calculada por lógica pura determinista (`nextStep.ts`).
+  - Lista de verificación interactiva de progreso del candidato.
+  - Métricas de postulaciones activas y accesos directos de un clic.
+
+### 🧩 Modularización de Pantallas (Límite $\le 300$ líneas)
+- Descomposición de monolitos en componentes enfocados y mantenibles:
+  - **Mi Perfil (`ProfileView.tsx`):** Editor de CV por bloques plegables (Datos, Resumen, Experiencias, Educación, Habilidades, Idiomas) y preferencias unificadas.
+  - **Mis Postulaciones (`ApplicationsPage.tsx`):** Embudo estructurado en 3 pestañas (En proceso, Finalizadas, Todas) con selector de estado en 1 clic y modal de documentos adaptados.
+  - **Aprender (`LearningPage.tsx`):** 4 pestañas especializadas (Cursos gratuitos verificados, Diagnóstico de brechas, Rutas de aprendizaje por hitos y Simulador STAR).
+  - **Buscar Empleo (`JobSearchPage.tsx`):** Barra de búsqueda reactiva, filtros rápidos y avanzados, feed paginado y modal de detalle.
+
+### 🎨 Sistema de Diseño & Accesibilidad (Cupertino HIG & WCAG AA)
+- Definición de tokens semánticos `brand` (`#20A88A`), `ink` (`#173B50`) y superficies traslúcidas Glassmorphism.
+- Biblioteca de componentes base accesibles: `Button`, `Badge`, `Card`, `Dialog`, `EmptyState`, `AINotConnectedBanner`, `FitScoreBadge`, `FailedSourcesBanner`.
+- Erradicación de elementos no accesibles (`div onClick`), adición de roles semánticos y atributos `aria-label`.
+- Escala tipográfica estandarizada a mínimo 12px (eliminando tamaños ilegibles de 10px y 11px).
+- Soporte automático de modo claro y oscuro respetando `prefers-color-scheme`.
+
+### 🛡️ IA Honesta & Transparencia en Evaluaciones
+- Erradicación absoluta de simulaciones de compatibilidad engañosas (`_heuristic_fallback`). Si no hay clave configurada, la aplicación devuelve `AINotConnectedError` con orientación explícita.
+- Banners no intrusivos de estado de IA que permiten al usuario continuar trabajando manualmente o conectar su clave en Ajustes.
+- Evaluación de compatibilidad con citas textuales verificables extraídas del currículum del candidato para requisitos cumplidos, parciales y no cumplidos.
+
+### 🧪 Calidad, Pruebas Automatizadas & CI
+- **Suite de Backend (Pytest):** 22 pruebas unitarias y de integración offline con fixtures de base de datos aislada en directorio temporal y mock LLM determinista.
+- **Suite de Frontend (Vitest):** 32 pruebas unitarias en entorno `happy-dom` validando WebCrypto, IndexedDB, cálculo de siguiente paso y componentes de interfaz.
+- **Flujo Crítico End-to-End (Playwright):** Prueba automatizada en Chromium que recorre onboarding, búsqueda de empleo, guardado en seguimiento y verificación en postulaciones.
+- **Integración Continua con GitHub Actions:** Pipeline automatizado en `.github/workflows/ci.yml` ejecutando validaciones de frontend y backend en paralelo.
+- **Scrapers Robustos & Paralelizados:** Ejecución concurrente con `ThreadPoolExecutor`, timeout estricto de 5.0s por portal y componente `FailedSourcesBanner` en UI para alertar sobre fuentes caídas o lentas sin interrumpir la experiencia.
+
+---
+
 ## [1.0.1] - 2026-11-10 — *Actualización y Rebranding Oficial a Oportia Jobs IA*
 
 ### 🎨 Rebranding & Identidad de Marca
