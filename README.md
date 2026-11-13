@@ -3,22 +3,20 @@
 <div align="center">
 
 [![CI — Integración Continua](https://github.com/alejandroham/Oportia.jobs/actions/workflows/ci.yml/badge.svg)](https://github.com/alejandroham/Oportia.jobs/actions/workflows/ci.yml)
+[![Version](https://img.shields.io/badge/Versi%C3%B3n-1.1.0%20Official-blue.svg?style=for-the-badge)](CHANGELOG.md)
+[![Privacy: Ley 21.719](https://img.shields.io/badge/Privacidad-Ley%2021.719%20Chile-emerald.svg?style=for-the-badge)](PRIVACY.md)
+[![Security Policy](https://img.shields.io/badge/Seguridad-Security%20Policy-blueviolet.svg?style=for-the-badge)](SECURITY.md)
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Falejandroham%2FOportia.jobs)
-[![Guía Vercel](https://img.shields.io/badge/Deploy%20en%20Vercel-Gu%C3%ADa%20Paso%20a%20Paso-black.svg?style=for-the-badge&logo=vercel)](docs/DESPLIEGUE_VERCEL.md)
-[![Version](https://img.shields.io/badge/Versi%C3%B3n-1.0.1%20Official-blue.svg?style=for-the-badge)](CHANGELOG.md)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](LICENSE)
 [![GitHub Sponsors](https://img.shields.io/badge/Sponsor%20❤️-alejandroham-ff69b4.svg?style=for-the-badge&logo=github)](https://github.com/sponsors/alejandroham)
 [![Instagram](https://img.shields.io/badge/Instagram-@not.kano-E4405F.svg?style=for-the-badge&logo=instagram)](https://www.instagram.com/not.kano/)
-[![Manual de Usuario](https://img.shields.io/badge/📖%20Manual%20de%20Usuario-Ver%20Guía-blue.svg?style=for-the-badge)](docs/MANUAL_DE_USUARIO.md)
-[![Changelog](https://img.shields.io/badge/Changelog-Ver%20Cambios-indigo.svg?style=for-the-badge)](CHANGELOG.md)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](LICENSE)
-[![Local First](https://img.shields.io/badge/Privacy-100%25%20Local--First-emerald.svg?style=for-the-badge)](docs/MANUAL_DE_USUARIO.md#9-privacidad-respaldos-cifrados-aes-256--ley-n-21719)
 
 <p align="center">
   <strong>El ecosistema inteligente que automatiza tu búsqueda laboral, protege tu información y te acompaña en tu desarrollo profesional.</strong><br>
-  Equipado con el copiloto <strong>Opi</strong>, <strong>Comité Oportia (5 Evaluadores)</strong>, <strong>Opi Coach y Oportia Aprende</strong>, <strong>Oportia Radar</strong>, diseño con <strong>Modo Día predeterminado y Modo Noche</strong>, cumplimiento con la <strong>Ley N° 21.719 de Chile</strong> y servidor nativo <strong>Model Context Protocol (MCP)</strong>.
+  Equipado con el copiloto <strong>Opi</strong>, <strong>Comité Oportia (5 Evaluadores)</strong>, <strong>Opi Coach y Oportia Aprende</strong>, <strong>Oportia Radar</strong>, arquitectura <strong>Local-First sin estado</strong>, cumplimiento estricto con la <strong>Ley N° 21.719 de Chile</strong> y servidor nativo <strong>Model Context Protocol (MCP)</strong>.
 </p>
 
-[**📖 Leer el Manual de Usuario Completo »**](docs/MANUAL_DE_USUARIO.md)
+[**📖 Leer el Manual de Usuario »**](docs/MANUAL_DE_USUARIO.md) · [**🛡️ Política de Privacidad »**](PRIVACY.md) · [**🔒 Política de Seguridad »**](SECURITY.md) · [**📝 Registro de Cambios »**](CHANGELOG.md)
 
 </div>
 
@@ -26,78 +24,75 @@
 
 ## 🧭 ¿Qué es Oportia Jobs IA?
 
-**Oportia Jobs IA** resuelve la fragmentación y falta de transparencia del mercado laboral moderno. La idea fundamental es:
+**Oportia Jobs IA** resuelve la fragmentación, el spam de postulaciones y la falta de privacidad en el mercado laboral contemporáneo:
+
 > **La IA organiza y te orienta. Tú decides tu camino.**
 
-- **Automatización con autonomía humana:** Rastrea ofertas en Chile y el mundo, convoca al **Comité Oportia**, estima la **Compatibilidad Oportia**, adapta tu CV y carta a la medida con logros STAR reales y te conecta con recursos de **Oportia Aprende**.
-- **Tú mantienes el 100% del control sobre tus decisiones:** No usamos bots a ciegas que arriesguen tu cuenta. Tú validas tus antecedentes bajo la Ley N° 21.719 y postulas en **1 clic en el enlace oficial de la empresa**, incluso en portales estatales que exigen ClaveÚnica.
+- **Automatización asistida con autonomía humana:** Rastrea vacantes en las 16 regiones de Chile y remotas globales, convoca al **Comité Oportia**, calcula la **Compatibilidad Oportia** con citas textuales verificables de tu currículum, redacta CVs y cartas adaptadas con logros STAR y te conecta con cursos gratuitos certificados.
+- **Soberanía y control absoluto:** No usamos bots que arriesguen tus cuentas ni compartimos tus datos con terceros. Postulas siempre en **1 clic en el enlace oficial de la empresa o portal estatal con ClaveÚnica**.
 
 ---
 
-## 🏗️ Arquitectura General del Ecosistema
+## 🏗️ Arquitectura Local-First y Backend sin Estado (Opción A)
 
 ```mermaid
 flowchart TD
-    subgraph Fuentes ["1. Fuentes & Búsqueda Soberana"]
-        Chile["🇨🇱 Cobertura Chile (16 Regiones)\n(Get on Board, CompuTrabajo,\nChileTrabajos, Laborum)"]
-        Global["🌍 Remoto Global\n(RemoteOK, Arbeitnow,\nRemotive, LinkedIn)"]
-        Dorks["🔎 Motor ATS Dorks Limpio\n(Greenhouse, Lever, Ashby,\nWorkday, SmartRecruiters, Taleo)"]
-        URL["🔗 Importador Seguro URL\n(Sanitización anti-inyecciones)"]
+    subgraph Navegador ["💻 Tu Dispositivo (Cliente Local-First)"]
+        UI["⚛️ Interfaz React 18 + Vite + Tailwind\n(Cupertino HIG / Modo Día y Noche)"]
+        Store["📦 useAppStore (Zustand)\n(Reactividad en memoria)"]
+        IDB[("🗄️ IndexedDB (oportia_jobs_db)\n• Perfil y CV Maestro\n• Preferencias\n• Radar y Postulaciones\n• Memoria de Opi")]
+        Crypto["🔐 WebCrypto API\n(AES-GCM 256 bits + PBKDF2)\nCustodia local de API Keys"]
     end
 
-    subgraph Inteligencia ["2. Agentes Cognitivos & Comité Colegiado"]
-        Profile["📄 Perfil Universal & CV Maestro\n(Extracción multiformato verificable)"]
-        Committee["👥 Comité de Evaluación IA\n• 1. Reclutador RRHH (25%)\n• 2. Hiring Manager (25%)\n• 3. Experto Técnico (25%)\n• 4. Filtro ATS (15%)\n• 5. Estratega Carrera (10%)\n• Director de Selección (Síntesis)\n• Dual Score (Actual vs Potencial)"]
-        CoachIA["🎓 Coach IA & Tutor Práctico\n• Diagnóstico de Brechas Formativas\n• Catálogo Verificado (Microsoft, AWS, Google, Cisco, SENCE)\n• Rutas de Aprendizaje por Hitos\n• Tutor de Casos Prácticos de Industria\n• Simulador de Entrevistas STAR por Rol"]
-        Drafter["📝 Drafter-Reviewer Formal\n(CV adaptado .formal-justify y Carta Persuasiva)"]
-        MemoryEngine["🧠 Cerebro Cognitivo Continuo\n(ADN Profesional, Historias STAR y Calibración)"]
+    subgraph Backend ["⚡ Servidor FastAPI sin Estado (Stateless)"]
+        API["🚀 Endpoints Computacionales Efímeros\n(Cero persistencia en disco)"]
+        Guard["🛡️ Anti-Prompt Injection Guardian\n& Sanitizador de URLs (Anti-SSRF)"]
+        Limiter["⏱️ Rate Limiter por IP\n(Memoria volátil)"]
+        Cache["🧠 Caché Volátil de Ofertas (15 min)"]
     end
 
-    subgraph Presentacion ["3. Interfaz de Usuario (Apple Cupertino HIG)"]
-        WelcomeUI["🏠 Welcome Hub\n(Control de mando, estado y 6 módulos)"]
-        RadarUI["🛰️ Radar de Empleo\n(Paginación [6|12|24], orden por Fit Score)"]
-        TrackerUI["🎯 Mis Postulaciones (360°)\n(Master-Detail, Documentos, Bitácora)"]
-        CoachUI["🎓 Coach Studio\n(Diagnóstico, Cursos, Rutas, Tutor, Simulador)"]
-        ProfileUI["👤 Perfil Studio\n(Editor, trayectoria, habilidades universales)"]
-        MemoryUI["💡 Memoria Cognitiva\n(ADN profesional, calibración, reinicio seguro)"]
-        FooterUI["🦶 Footer Global\n(Instagram @not.kano y GitHub Sponsors)"]
+    subgraph Externo ["🌐 Proveedores Externos & Fuentes"]
+        LLM["🤖 Proveedores de IA (BYOK)\n• Google Gemini\n• Anthropic Claude\n• OpenAI GPT"]
+        Scrapers["🔎 Radar Concurrente (Timeout 5s)\n• Arbeitnow, Remotive, RemoteOK\n• Portales Chile (ChileTrabajos, Laborum, BNE)\n• Direct ATS (Greenhouse, Lever, Workday)"]
     end
 
-    Fuentes --> RadarUI
-    Profile --> Committee
-    RadarUI --> Committee
-    Committee -->|Brechas Sincronizadas| CoachIA
-    Committee --> TrackerUI
-    TrackerUI --> Drafter
-    CoachIA --> MemoryEngine
-    TrackerUI --> MemoryEngine
-    MemoryEngine --> Drafter
-    MemoryEngine --> MemoryUI
+    UI <--> Store
+    Store <--> IDB
+    Store <--> Crypto
+    UI -->|Petición HTTPS + Encabezados X-LLM efímeros| API
+    API --> Guard
+    API --> Limiter
+    API --> Cache
+    API -->|Llamada con clave en memoria (descartada post-respuesta)| LLM
+    API -->|Búsqueda paralela con fallback| Scrapers
 ```
+
+### Garantías Principales de la Arquitectura
+1. **Tus datos nunca tocan el disco del servidor:** Tu perfil, experiencias, postulaciones y memoria residen exclusivamente en el motor `IndexedDB` de tu navegador.
+2. **Custodia de Claves de IA en el Cliente:** Tus claves de API se cifran localmente con `WebCrypto` (AES-GCM de 256 bits). Viajan protegidas en encabezados HTTPS solo al invocar funciones de IA y el backend las descarta de memoria inmediatamente tras recibir la respuesta del proveedor.
+3. **Cero bases de datos remotas:** El servidor backend es una herramienta de cálculo puro sin base de datos relacional de candidatos ni almacenamiento de currículums.
 
 ---
 
 ## 🌟 Los Módulos del Sistema
 
-| Módulo | Icono | Descripción Funcional |
-| :--- | :---: | :--- |
-| **Mi Oportia (Welcome Hub)** | 🏠 | Monitor de estado del sistema, acceso rápido a los módulos, acciones en 1 clic y garantías de privacidad. |
-| **Perfil & CV Studio** | 👤 | Carga inteligente de currículum (PDF/Word), extracción verificable y taxonomía universal de profesiones. |
-| **Oportia Radar** | 🛰️ | Exploración en las 16 regiones de Chile y remotas globales, orden descendente por Compatibilidad Oportia. |
-| **Comité Oportia** | 👥 | Evaluación asistida con 5 evaluadores, veredicto del Director y matriz de fortalezas y brechas. |
-| **Opi Coach & Oportia Aprende** | 🎓 | Diagnóstico de brechas, catálogo de cursos gratuitos certificados, rutas por hitos, tutor de casos y simulador STAR. |
-| **Mis postulaciones** | 🎯 | Flujo 360° con CV adaptado `.formal-justify`, carta de presentación, selector de papel formal y bitácora transparente. |
-| **Oportia Skills & Memoria** | 🧠 | Cerebro que acumula tu ADN profesional, biblioteca de logros STAR validados y copiloto conversacional Opi. |
-
-👉 Para conocer a fondo cada pantalla con recomendaciones visuales, consulta el **[Manual de Usuario](docs/MANUAL_DE_USUARIO.md)**.
+| Módulo | Ruta | Icono | Descripción Funcional |
+| :--- | :---: | :---: | :--- |
+| **Inicio** | `/` | 🏠 | Panel de control con tarjeta inteligente de *Siguiente paso recomendado*, checklist de avance del candidato y métricas en tiempo real. |
+| **Buscar empleo** | `/empleos` | 🛰️ | Radar de empleo en Chile (16 regiones) y remoto global, filtros por modalidad y región, orden por compatibilidad y alerta de resiliencia ante caídas de fuentes. |
+| **Mis postulaciones** | `/postulaciones` | 🎯 | Embudo de postulaciones en 3 pestañas (*En proceso*, *Finalizadas*, *Todas*), actualización de estados en 1 clic y generador de CV adaptado y carta formal. |
+| **Aprender** | `/aprender` | 🎓 | 4 pestañas especializadas: Cursos gratuitos oficiales (Microsoft, AWS, Google, Cisco, SENCE), diagnóstico de brechas, rutas de aprendizaje y simulador de entrevistas STAR. |
+| **Mi perfil** | `/perfil` | 👤 | Editor de currículum modular por bloques plegables, extractor automático multiformato (PDF/Word) y preferencias laborales unificadas. |
+| **Ajustes** | `/ajustes` | ⚙️ | Configuración de proveedores de IA (BYOK), selector de apariencia (Claro/Oscuro/Sistema), respaldos cifrados `.oportia` y botón de purga total inmediata. |
+| **Copiloto Opi** | Flotante | 💬 | Asistente conversacional inteligente disponible en todo momento con biblioteca de sugerencias rápidas contextuales. |
 
 ---
 
-## 👥 Comité Oportia (5 Evaluadores + Director)
+## 👥 Comité Oportia (5 Evaluadores Colegiados)
 
-A diferencia de los analizadores tradicionales con puntuaciones ciegas, Oportia Jobs IA reúne al **Comité Oportia**:
+Oportia Jobs IA evalúa cada oferta convocando a 5 perspectivas colegiadas con ponderación transparente:
 
-```
+```text
                        ┌────────────────────────────┐
                        │   Director del Comité      │
                        │   (Síntesis y Veredicto)   │
@@ -112,47 +107,19 @@ A diferencia de los analizadores tradicionales con puntuaciones ciegas, Oportia 
    └───────────┘  └───────────┘    └───────────┘  └───────────┘  └───────────┘
 ```
 
-- **Dual Score de Compatibilidad Oportia:**
-  - **Compatibilidad Actual (0-100%):** Lo que demuestras hoy en tu currículum frente a la vacante.
-  - **Compatibilidad Potencial (0-100%):** Tu proyección alcanzable al completar las capacitaciones recomendadas por Opi Coach.
-- **Matriz de Requisitos vs CV:** Evidencias textuales categorizadas en *Cumplido*, *Parcial* o *No Cumplido*.
-- **Veredicto del Director:** Dictamen ejecutivo (*Postular Inmediatamente*, *Con Ajustes*, *Brecha Crítica* o *Descartar*).
-- **Acción Inmediata:** Botón **"Transferir al Coach IA"** que envía las brechas detectadas al plan de capacitación con 1 clic.
-
----
-
-## 🎓 Opi Coach & Centro de Superación Profesional
-
-El módulo de **Opi Coach** acompaña al candidato durante todo su desarrollo profesional:
-
-1. **Diagnóstico de Competencias:** Mapeo de brechas con indicadores de nivel actual vs requerido e impacto proyectado en puntos.
-2. **Catálogo de Cursos Verificados (Oportia Aprende):** Enlaces oficiales y gratuitos sin enlaces rotos:
-   - **Microsoft Learn** (Azure, DevOps, IA, C#).
-   - **AWS Skill Builder** (Cloud, Arquitectura, Serverless).
-   - **Cisco Networking Academy** (Ciberseguridad, Redes, Linux).
-   - **Google Cloud Skills Boost** (Cloud Computing, Big Data, Gemini).
-   - **SENCE Chile / Talento Digital** (Capacitación gratuita para Chile con código SENCE).
-   - **Coursera & edX** (Especializaciones universitarias).
-3. **Rutas de Aprendizaje por Hitos:** Planes estructurados paso a paso con objetivos, horas sugeridas y proyectos prácticos.
-4. **Tutor de Casos Prácticos:** Resuelve desafíos reales de la industria y recibe una evaluación instantánea con nota `/100` y la solución recomendada.
-5. **Simulador de Entrevistas por Rol:** Entrena con preguntas conductuales y técnicas frente al Reclutador de RRHH, el Líder Técnico, el Hiring Manager o el Director con retroalimentación **STAR**.
-
----
-
-## 🛡️ Privacidad, Arquitectura sin Estado & Ley N° 21.719 de Chile
-
-Oportia Jobs IA implementa una arquitectura **Backend sin Estado (Stateless)** y los más altos estándares de **Privacy by Design**:
-- **Tus datos viven exclusivamente en tu navegador (IndexedDB):** Tu perfil, preferencias, postulaciones y memoria residen solo en tu equipo. El backend no tiene base de datos, cuentas de usuario ni persistencia en disco.
-- **Custodia de Claves de IA en el Cliente:** Tu clave de API se guarda cifrada en tu navegador (WebCrypto) y viaja en headers HTTP únicamente cuando ejecutas una función con IA. El backend la usa para esa petición y la descarta de inmediato en memoria.
-- **Respaldos Cifrados (`.oportia`):** Exporta e importa tus datos protegidos con **AES-GCM de 256 bits y derivación PBKDF2** bajo tu propia contraseña (compatible también con respaldos legacy `.nexusjob`).
-- **Derecho al Olvido y Purga Total (Art. 17 Ley 21.719):** Un botón de purga total elimina permanentemente el 100% de tus datos con un solo clic.
-- **Transparencia en IA:** La IA puede cometer errores; revisa siempre los antecedentes y sugerencias antes de postular.
+- **Dual Score:** Puntaje Actual (lo demostrado hoy) vs Puntaje Potencial (proyección tras capacitarse).
+- **Evidencias Citadas:** Citas textuales de tu CV justificando requisitos cumplidos, parciales y no cumplidos.
+- **IA Honesta:** Si no tienes clave configurada, no se inventan puntuaciones falsas; el sistema te orienta con transparencia para continuar manualmente o conectar tu proveedor preferido.
 
 ---
 
 ## 🚀 Inicio Rápido
 
-### Opción A: Lanzador en 1 Clic (Recomendado)
+### Requisitos del Sistema
+- **Node.js:** v20.0.0 o superior (con `npm`)
+- **Python:** v3.11 o superior (con `pip` y soporte de `venv`)
+
+### Opción 1: Lanzador Rápido en 1 Clic (Recomendado)
 
 - **macOS / Linux:**
   ```bash
@@ -161,35 +128,61 @@ Oportia Jobs IA implementa una arquitectura **Backend sin Estado (Stateless)** y
 - **Windows:**
   Haz doble clic en `start_app.bat` (o ejecuta `./start_app.ps1` en PowerShell).
 
-El instalador configura el entorno virtual, compila la interfaz y abre el sistema automáticamente en `http://localhost:8000`.
+El lanzador valida dependencias, compila el frontend y levanta la aplicación en `http://localhost:8000` (o `http://localhost:3000` en desarrollo).
 
-### Opción B: Ejecución Manual
+### Opción 2: Inicio Manual
+
+1. **Backend (FastAPI):**
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # En Windows: .\venv\Scripts\activate
+   pip install -r requirements.txt
+   python run.py             # Servidor iniciado en http://localhost:8000
+   ```
+
+2. **Frontend (React + Vite + Tailwind — en otra terminal):**
+   ```bash
+   cd frontend
+   npm install
+   npm run dev               # Interfaz disponible en http://localhost:3000
+   ```
+
+---
+
+## 🧪 Pruebas Automatizadas y Calidad Continua
+
+El proyecto cuenta con una suite integral de pruebas con **100% de ejecución offline** y cero dependencias de red externa:
 
 ```bash
-# 1. Backend (FastAPI)
-python -m venv venv
-source venv/bin/activate  # En Windows: .\venv\Scripts\activate
-pip install -r requirements.txt
-python run.py             # Servidor iniciado en http://localhost:8000
+# 1. Pruebas de Backend (Pytest — 22 pruebas unitarias y de integración offline)
+pytest backend/tests -v
 
-# 2. Frontend (React + Vite + TailwindCSS - en otra terminal)
-cd frontend
-npm install
-npm run dev               # Interfaz disponible en http://localhost:3000
+# 2. Pruebas de Frontend (Vitest — 32 pruebas unitarias en entorno happy-dom)
+cd frontend && npm test
+
+# 3. Flujo Crítico End-to-End (Playwright — Chromium headless)
+cd frontend && npm run test:e2e
+
+# 4. Verificación de Tipos TypeScript y Build de Producción
+cd frontend && npm run build
 ```
 
-### Despliegue Oficial en la Nube
+El pipeline de **GitHub Actions** ([.github/workflows/ci.yml](.github/workflows/ci.yml)) ejecuta automáticamente estas suites en cada commit y pull request en ramas de desarrollo.
 
-- **Vercel:** Configuración oficial centralizada en `/vercel.json` en la raíz. Construye el cliente web (`frontend/dist`) y rutea llamadas API a la función serverless en `api/index.py`. Ver guía detallada en [docs/DESPLIEGUE_VERCEL.md](docs/DESPLIEGUE_VERCEL.md).
-- **Render:** Configuración oficial mediante `/render.yaml`. Levanta el servicio web ejecutando Uvicorn en el puerto asignado.
+---
 
-Abre **http://localhost:3000** en tu navegador.
+## ☁️ Despliegue en Producción
+
+- **Vercel (Frontend Estático / Serverless):** Configuración oficial en `vercel.json`. Construye el paquete cliente en `frontend/dist` y enruta llamadas `/api/*` a la función serverless en `api/index.py`. Ver [docs/DESPLIEGUE_VERCEL.md](docs/DESPLIEGUE_VERCEL.md).
+- **Render / Railway / Fly.io (Backend Completo):**
+  - Render: Configurado mediante `render.yaml`.
+  - Docker / Contenedores: Ejecuta `python run.py` escuchando en el puerto `$PORT` asignado por la plataforma.
 
 ---
 
 ## 🔌 Servidor Model Context Protocol (MCP)
 
-Conecta Oportia Jobs IA como backend de datos de empleo para **Claude Desktop**, **Cursor** o **Gemini CLI**:
+Oportia Jobs IA incluye un servidor nativo **MCP** para integrar tu radar y postulaciones como herramienta de contexto en clientes como **Claude Desktop**, **Cursor** o **Gemini CLI**:
 
 ```json
 {
@@ -208,17 +201,24 @@ Conecta Oportia Jobs IA como backend de datos de empleo para **Claude Desktop**,
 
 ---
 
-## 💖 Comunidad, Autor y Patrocinio (GitHub Sponsors)
+## 🛡️ Privacidad y Seguridad
 
-Oportia Jobs IA es desarrollado con dedicación por **Alejandro Ham** como una herramienta de código abierto para devolver el control y la transparencia laboral a las personas.
+- Consulta los detalles normativos de la **Ley N° 21.719 de Chile**, el modelo de datos Local-First y los derechos ARCO en [PRIVACY.md](PRIVACY.md).
+- Revisa el modelo de amenazas, las defensas anti-prompt injection, mitigaciones SSRF y la política de divulgación responsable en [SECURITY.md](SECURITY.md).
 
-- 📸 **Instagram Oficial:** [https://www.instagram.com/not.kano/](https://www.instagram.com/not.kano/) — Sigue a **`@not.kano`** para novedades de desarrollo, tips de empleabilidad y retroalimentación directa.
-- ❤️ **Conviértete en Sponsor:** [https://github.com/sponsors/alejandroham](https://github.com/sponsors/alejandroham) — Tu patrocinio financia servidores de prueba, conectores de empleo actualizados y nuevas capacidades de IA libres para todos.
-- 🐙 **Repositorio GitHub Oficial:** [https://github.com/alejandroham/Oportia.jobs](https://github.com/alejandroham/Oportia.jobs)
+---
+
+## 💖 Comunidad, Autor y Patrocinio
+
+**Oportia Jobs IA** es un proyecto de código abierto creado y mantenido con dedicación por **Alejandro Ham** para devolver el control, la dignidad y la transparencia a las personas que buscan trabajo.
+
+- 📸 **Instagram Oficial:** [https://www.instagram.com/not.kano/](https://www.instagram.com/not.kano/) — Sigue a **`@not.kano`** para novedades, consejos de empleabilidad y contacto directo.
+- ❤️ **GitHub Sponsors:** [https://github.com/sponsors/alejandroham](https://github.com/sponsors/alejandroham) — Tu patrocinio financia infraestructura de pruebas y el desarrollo continuo de herramientas libres.
+- 🐙 **Repositorio Oficial:** [https://github.com/alejandroham/Oportia.jobs](https://github.com/alejandroham/Oportia.jobs)
 - 📖 **Manual de Usuario:** [docs/MANUAL_DE_USUARIO.md](docs/MANUAL_DE_USUARIO.md)
 
 ---
 
 ## 📄 Licencia
 
-Distribuido bajo la Licencia **MIT**. Consulta [LICENSE](LICENSE) para más detalles.
+Distribuido bajo los términos de la Licencia **MIT**. Consulta el archivo [LICENSE](LICENSE) para más detalles.
