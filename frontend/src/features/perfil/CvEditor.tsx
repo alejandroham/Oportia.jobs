@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import type { CandidateProfile, WorkExperience, EducationItem } from '../../types';
-import { CvPreview } from '../shared/CvPreview';
-import { Upload, Eye, CheckCircle2, Circle, ChevronDown, ChevronUp, Plus, Trash2, Save, Loader2, X } from 'lucide-react';
+import type { CandidateProfile } from '../../types';
+import { CvExperienceSection } from './CvExperienceSection';
+import { CvSkillsSection } from './CvSkillsSection';
+import { CvPreviewModal } from './CvPreviewModal';
+import { Upload, Eye, CheckCircle2, Circle, ChevronDown, ChevronUp, Save, Loader2 } from 'lucide-react';
 import { api } from '../../api';
 import { useToast } from '../../components/Toast';
 
@@ -13,11 +15,7 @@ interface CvEditorProps {
 export const CvEditor: React.FC<CvEditorProps> = ({ profile, onProfileUpdated }) => {
   const [formData, setFormData] = useState<CandidateProfile>(profile);
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
-    personal: true,
-    summary: false,
-    experience: false,
-    education: false,
-    skills: false
+    personal: true, summary: false, experience: false, skills: false
   });
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -247,49 +245,11 @@ export const CvEditor: React.FC<CvEditorProps> = ({ profile, onProfileUpdated })
           </button>
 
           {openSections.experience && (
-            <div className="p-4 pt-0 border-t border-gray-100 dark:border-zinc-800 space-y-4 text-xs animate-fade-in">
-              {formData.experiences?.map((exp, idx) => (
-                <div key={exp.id || idx} className="p-3.5 rounded-xl bg-gray-50 dark:bg-zinc-800/60 border border-gray-200/70 dark:border-zinc-700/60 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="font-bold text-gray-900 dark:text-gray-100 text-xs">
-                      {exp.role} en {exp.company}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const next = formData.experiences.filter((_, i) => i !== idx);
-                        setFormData({ ...formData, experiences: next });
-                      }}
-                      className="text-gray-400 hover:text-rose-600"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                  <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
-                    {exp.description}
-                  </p>
-                </div>
-              ))}
-
-              <button
-                type="button"
-                onClick={() => {
-                  const newExp: WorkExperience = {
-                    id: 'exp_' + Date.now(),
-                    company: 'Nueva Empresa',
-                    role: 'Cargo',
-                    start_date: '2023',
-                    is_remote: false,
-                    description: '',
-                    technologies: [],
-                    bullet_achievements: []
-                  };
-                  setFormData({ ...formData, experiences: [newExp, ...(formData.experiences || [])] });
-                }}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-gray-200 dark:border-zinc-700 text-xs font-semibold hover:bg-gray-50"
-              >
-                <Plus className="w-3.5 h-3.5" /> Agregar experiencia
-              </button>
+            <div className="p-4 pt-0 border-t border-gray-100 dark:border-zinc-800 animate-fade-in">
+              <CvExperienceSection
+                experiences={formData.experiences || []}
+                onChange={(experiences) => setFormData({ ...formData, experiences })}
+              />
             </div>
           )}
         </div>
@@ -315,68 +275,24 @@ export const CvEditor: React.FC<CvEditorProps> = ({ profile, onProfileUpdated })
           </button>
 
           {openSections.skills && (
-            <div className="p-4 pt-0 border-t border-gray-100 dark:border-zinc-800 space-y-3 text-xs animate-fade-in">
-              <div>
-                <label className="block text-gray-600 dark:text-gray-400 font-medium mb-1">
-                  Habilidades Técnicas (separadas por coma)
-                </label>
-                <input
-                  type="text"
-                  value={formData.technical_skills?.join(', ') || ''}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      technical_skills: e.target.value.split(',').map((s) => s.trim()).filter(Boolean)
-                    })
-                  }
-                  placeholder="Python, React, SQL, TypeScript..."
-                  className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-gray-900 dark:text-gray-100"
-                />
-              </div>
-
-              <div>
-                <label className="block text-gray-600 dark:text-gray-400 font-medium mb-1">
-                  Habilidades Blandas (separadas por coma)
-                </label>
-                <input
-                  type="text"
-                  value={formData.soft_skills?.join(', ') || ''}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      soft_skills: e.target.value.split(',').map((s) => s.trim()).filter(Boolean)
-                    })
-                  }
-                  placeholder="Liderazgo, Comunicación asertiva, Negociación..."
-                  className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-gray-900 dark:text-gray-100"
-                />
-              </div>
+            <div className="p-4 pt-0 border-t border-gray-100 dark:border-zinc-800 animate-fade-in">
+              <CvSkillsSection
+                technicalSkills={formData.technical_skills || []}
+                softSkills={formData.soft_skills || []}
+                onChangeTechnical={(technical_skills) => setFormData({ ...formData, technical_skills })}
+                onChangeSoft={(soft_skills) => setFormData({ ...formData, soft_skills })}
+              />
             </div>
           )}
         </div>
       </div>
 
       {/* Modal Vista Previa de CV */}
-      {isPreviewOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
-          <div onClick={() => setIsPreviewOpen(false)} className="fixed inset-0 bg-black/50 backdrop-blur-xs" />
-          <div className="relative w-full max-w-4xl rounded-3xl bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 shadow-2xl p-6 z-10 space-y-4 max-h-[92vh] overflow-y-auto animate-fade-in">
-            <div className="flex items-center justify-between border-b border-gray-100 dark:border-zinc-800 pb-3">
-              <h3 className="text-base font-bold text-gray-900 dark:text-gray-100">
-                Vista Previa de tu Currículum Vitae
-              </h3>
-              <button
-                type="button"
-                onClick={() => setIsPreviewOpen(false)}
-                className="p-1 rounded-lg text-gray-400 hover:text-gray-700"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            <CvPreview profile={formData} showControls={true} />
-          </div>
-        </div>
-      )}
+      <CvPreviewModal
+        isOpen={isPreviewOpen}
+        onClose={() => setIsPreviewOpen(false)}
+        profile={formData}
+      />
     </div>
   );
 };

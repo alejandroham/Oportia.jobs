@@ -5,13 +5,12 @@ import { api } from '../../api';
 import { useToast } from '../../components/Toast';
 import { JobSearchBar } from './JobSearchBar';
 import { JobAdvancedFilters } from './JobAdvancedFilters';
-import { JobCard } from './JobCard';
+import { JobResultsFeed } from './JobResultsFeed';
 import { JobDetailModal } from './JobDetailModal';
 import { FitEvaluationModal } from './FitEvaluationModal';
 import { ImportUrlModal } from './ImportUrlModal';
 import { CompanyPortalsModal } from './CompanyPortalsModal';
-import { EmptyState } from '../../components/common/EmptyState';
-import { Info, HelpCircle } from 'lucide-react';
+import { HelpCircle } from 'lucide-react';
 
 interface JobSearchPageProps {
   jobs: JobPosting[];
@@ -156,34 +155,26 @@ export const JobSearchPage: React.FC<JobSearchPageProps> = ({
     }
   };
 
+  const handleResetFilters = () => {
+    setSelectedRegion('');
+    setSelectedCommune('');
+    setMinSalary(undefined);
+    setSelectedSource('all');
+    setModalityFilter('all');
+    setRegionFilter('all');
+  };
+
   // Filter and sort jobs
   const filteredJobs = useMemo(() => {
     return jobs.filter((j) => {
       if (j.in_radar === false) return false;
       const term = searchTerm.toLowerCase().trim();
-      if (term) {
-        const matchesTerm =
-          j.title?.toLowerCase().includes(term) ||
-          j.company?.toLowerCase().includes(term) ||
-          j.description?.toLowerCase().includes(term) ||
-          j.tags?.some((t) => t.toLowerCase().includes(term));
-        if (!matchesTerm) return false;
-      }
-      if (modalityFilter !== 'all') {
-        const mod = (j.modality || (j.is_remote ? 'Remoto' : 'Presencial')).toLowerCase();
-        if (modalityFilter === 'Remoto' && !j.is_remote && !mod.includes('remoto')) return false;
-        if (modalityFilter === 'Presencial' && j.is_remote) return false;
-        if (modalityFilter === 'Híbrido' && !mod.includes('híbrido') && !mod.includes('hibrido')) return false;
-      }
-      if (regionFilter === 'user_region' && userRegion && !j.location?.toLowerCase().includes(userRegion.toLowerCase()) && !j.is_user_region) {
-        return false;
-      }
-      if (selectedRegion && !j.location?.toLowerCase().includes(selectedRegion.toLowerCase()) && j.region !== selectedRegion) {
-        return false;
-      }
-      if (selectedSource !== 'all' && j.source?.toLowerCase() !== selectedSource.toLowerCase()) {
-        return false;
-      }
+      if (term && !(j.title?.toLowerCase().includes(term) || j.company?.toLowerCase().includes(term) || j.description?.toLowerCase().includes(term) || j.tags?.some((t) => t.toLowerCase().includes(term)))) return false;
+      if (modalityFilter === 'Remoto' && !j.is_remote) return false;
+      if (modalityFilter === 'Presencial' && j.is_remote) return false;
+      if (regionFilter === 'user_region' && userRegion && !j.location?.toLowerCase().includes(userRegion.toLowerCase()) && !j.is_user_region) return false;
+      if (selectedRegion && !j.location?.toLowerCase().includes(selectedRegion.toLowerCase()) && j.region !== selectedRegion) return false;
+      if (selectedSource !== 'all' && j.source?.toLowerCase() !== selectedSource.toLowerCase()) return false;
       return true;
     }).sort((a, b) => {
       if (sortBy === 'fit_desc') return (b.fit_score ?? -1) - (a.fit_score ?? -1);
@@ -249,67 +240,22 @@ export const JobSearchPage: React.FC<JobSearchPageProps> = ({
           onMinSalaryChange={setMinSalary}
           selectedSource={selectedSource}
           onSourceChange={setSelectedSource}
-          onResetFilters={() => {
-            setSelectedRegion('');
-            setSelectedCommune('');
-            setMinSalary(undefined);
-            setSelectedSource('all');
-            setModalityFilter('all');
-            setRegionFilter('all');
-          }}
+          onResetFilters={handleResetFilters}
         />
       )}
 
-      {/* Grid de resultados */}
-      {paginatedJobs.length > 0 ? (
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {paginatedJobs.map((job) => (
-              <JobCard
-                key={job.id}
-                job={job}
-                userRegion={userRegion}
-                onViewDetail={(j) => setSelectedJobForDetail(j)}
-                onToggleTrack={handleToggleTrack}
-                onDiscard={handleDiscard}
-              />
-            ))}
-          </div>
-
-          {/* Paginación simple */}
-          {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-3 pt-4">
-              <button
-                type="button"
-                disabled={page <= 1}
-                onClick={() => setPage(page - 1)}
-                className="px-3.5 py-1.5 rounded-xl border border-gray-200 dark:border-zinc-700 text-xs font-semibold disabled:opacity-40"
-              >
-                Anterior
-              </button>
-              <span className="text-xs text-gray-500">
-                Página {page} de {totalPages}
-              </span>
-              <button
-                type="button"
-                disabled={page >= totalPages}
-                onClick={() => setPage(page + 1)}
-                className="px-3.5 py-1.5 rounded-xl border border-gray-200 dark:border-zinc-700 text-xs font-semibold disabled:opacity-40"
-              >
-                Siguiente
-              </button>
-            </div>
-          )}
-        </div>
-      ) : (
-        <EmptyState
-          icon={Info}
-          title="Sin ofertas encontradas"
-          description="Prueba con otros términos de búsqueda o haz clic en 'Buscar' para escanear portales chilenos."
-          actionLabel="Buscar ofertas ahora"
-          onAction={handleScan}
-        />
-      )}
+      {/* Feed de resultados y paginación */}
+      <JobResultsFeed
+        jobs={paginatedJobs}
+        userRegion={userRegion}
+        onViewDetail={(j) => setSelectedJobForDetail(j)}
+        onToggleTrack={handleToggleTrack}
+        onDiscard={handleDiscard}
+        page={page}
+        totalPages={totalPages}
+        onPageChange={setPage}
+        onScan={handleScan}
+      />
 
       {/* Modal de Detalle */}
       <JobDetailModal
