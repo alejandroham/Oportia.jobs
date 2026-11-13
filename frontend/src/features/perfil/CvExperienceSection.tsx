@@ -43,7 +43,8 @@ export const CvExperienceSection: React.FC<CvExperienceSectionProps> = ({
             <button
               type="button"
               onClick={() => handleRemove(idx)}
-              className="text-gray-400 hover:text-rose-600 transition"
+              aria-label={`Eliminar experiencia ${exp.role} en ${exp.company}`}
+              className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center text-ink-muted hover:text-rose-600 transition cursor-pointer rounded-lg focus-visible:ring-2 focus-visible:ring-rose-500/40 focus-visible:outline-none"
               title="Eliminar experiencia"
             >
               <Trash2 className="w-3.5 h-3.5" />
@@ -60,7 +61,7 @@ export const CvExperienceSection: React.FC<CvExperienceSectionProps> = ({
       <button
         type="button"
         onClick={handleAdd}
-        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-gray-200 dark:border-zinc-700 text-xs font-semibold hover:bg-gray-50 dark:hover:bg-zinc-800 transition"
+        className="inline-flex items-center gap-1.5 px-3.5 py-2 min-h-[44px] rounded-xl border border-gray-200 dark:border-zinc-700 text-xs font-semibold text-ink dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-zinc-800 transition cursor-pointer active:scale-95 focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
       >
         <Plus className="w-3.5 h-3.5" /> Agregar experiencia
       </button>

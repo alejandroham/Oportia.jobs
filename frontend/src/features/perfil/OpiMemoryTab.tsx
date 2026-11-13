@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import type { UserPreferences } from '../../types';
 import { Brain, Trash2, RotateCcw, Sparkles, CheckCircle2, Shield, Info } from 'lucide-react';
 import { useToast } from '../../components/Toast';
+import { Dialog } from '../../components/ui/Dialog';
+import { Button } from '../../components/ui/Button';
 
 interface OpiMemoryTabProps {
   preferences: UserPreferences;
@@ -115,52 +117,50 @@ export const OpiMemoryTab: React.FC<OpiMemoryTabProps> = ({
                 <button
                   type="button"
                   onClick={() => handleForgetInsight(idx)}
-                  className="p-1.5 rounded-lg text-gray-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition shrink-0"
+                  aria-label={`Olvidar aprendizaje: ${insight}`}
+                  className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl text-ink-muted hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition shrink-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-rose-500/40 focus-visible:outline-none"
                   title="Olvidar este dato"
                 >
-                  <Trash2 className="w-3.5 h-3.5" />
+                  <Trash2 className="w-4 h-4" />
                 </button>
               </div>
             ))}
           </div>
         ) : (
-          <div className="p-8 text-center rounded-2xl border border-dashed border-gray-200 dark:border-zinc-800 text-xs text-gray-400 space-y-1">
-            <Info className="w-5 h-5 mx-auto text-gray-400" />
+          <div className="p-8 text-center rounded-2xl border border-dashed border-gray-200 dark:border-zinc-800 text-xs text-ink-muted space-y-1">
+            <Info className="w-5 h-5 mx-auto text-ink-muted" />
             <p>Opi aún no ha memorizado patrones adicionales sobre ti.</p>
           </div>
         )}
       </div>
 
       {/* Modal de confirmación para reiniciar memoria */}
-      {showConfirmReset && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div onClick={() => setShowConfirmReset(false)} className="fixed inset-0 bg-black/40 backdrop-blur-xs" />
-          <div className="relative w-full max-w-sm rounded-3xl bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 p-6 z-10 space-y-4 shadow-2xl text-xs">
-            <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100">
-              ¿Reiniciar la memoria de Opi?
-            </h3>
-            <p className="text-gray-500 leading-relaxed">
-              Esta acción borrará los insights aprendidos y el ADN profesional deducido. Tu currículum y preferencias guardadas se mantendrán intactos.
-            </p>
-            <div className="flex justify-end gap-2 pt-2">
-              <button
-                type="button"
-                onClick={() => setShowConfirmReset(false)}
-                className="px-3.5 py-2 rounded-xl text-gray-500 hover:bg-gray-100"
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                onClick={handleResetMemory}
-                className="px-4 py-2 rounded-xl bg-rose-600 text-white font-semibold hover:bg-rose-700 transition"
-              >
-                Sí, reiniciar memoria
-              </button>
-            </div>
-          </div>
+      <Dialog
+        isOpen={showConfirmReset}
+        onClose={() => setShowConfirmReset(false)}
+        title="¿Reiniciar la memoria de Opi?"
+        description="Esta acción borrará los insights aprendidos y el ADN profesional deducido. Tu currículum y preferencias guardadas se mantendrán intactos."
+        maxWidth="sm"
+      >
+        <div className="flex justify-end gap-2 pt-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="md"
+            onClick={() => setShowConfirmReset(false)}
+          >
+            Cancelar
+          </Button>
+          <Button
+            type="button"
+            variant="danger"
+            size="md"
+            onClick={handleResetMemory}
+          >
+            Reiniciar memoria
+          </Button>
         </div>
-      )}
+      </Dialog>
     </div>
   );
 };

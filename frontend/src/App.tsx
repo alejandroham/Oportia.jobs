@@ -43,8 +43,9 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { has
             {this.state.error?.message || String(this.state.error)}
           </pre>
           <button
+            type="button"
             onClick={() => window.location.reload()}
-            className="px-4 py-2 bg-blue-600 text-white text-xs font-semibold rounded-xl"
+            className="px-4 py-2 min-h-[44px] bg-brand-500 hover:bg-brand-600 text-white text-xs font-semibold rounded-xl shadow-xs transition cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
           >
             Recargar aplicación
           </button>
@@ -254,8 +255,10 @@ export function App() {
         {/* Floating Opi Copilot Button (Ergonomic placement above bottom tab bar on mobile) */}
         <div className="no-print fixed bottom-20 right-4 sm:bottom-6 sm:right-6 z-40">
           <button
+            type="button"
             onClick={() => setIsOpiChatOpen(!isOpiChatOpen)}
-            className="flex items-center space-x-2.5 px-4 py-2.5 min-h-[44px] rounded-full bg-gradient-to-tr from-[#173B50] via-[#1E3B50] to-[#20A88A] hover:opacity-95 text-white font-semibold text-xs shadow-xl hover:shadow-2xl hover:scale-105 active:scale-95 transition duration-200 border border-white/20 cursor-pointer"
+            aria-label={isOpiChatOpen ? 'Cerrar chat con Opi' : 'Abrir chat con Opi, tu copiloto profesional'}
+            className="flex items-center space-x-2.5 px-4 py-2.5 min-h-[44px] rounded-full bg-gradient-to-tr from-ink via-ink-surface to-brand hover:opacity-95 text-white font-semibold text-xs shadow-xl hover:shadow-2xl hover:scale-105 active:scale-95 transition duration-200 border border-white/20 cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
             title="Abrir chat con Opi, tu copiloto profesional"
           >
             <img
@@ -269,27 +272,37 @@ export function App() {
 
         {/* Global Opi Copilot Slide-over Drawer (The ONLY conversational Opi access) */}
         {isOpiChatOpen && (
-          <div className="fixed inset-0 z-50 flex justify-end bg-black/40 backdrop-blur-xs animate-fade-in no-print">
-            <div className="w-full max-w-xl h-full apple-glass bg-white/95 dark:bg-[#1E3B50]/95 shadow-2xl flex flex-col border-l border-black/10 dark:border-white/10 overflow-hidden">
-              <div className="p-4 border-b border-black/5 dark:border-white/5 flex items-center justify-between bg-gray-50/50 dark:bg-[#173B50]/50">
+          <div
+            className="fixed inset-0 z-50 flex justify-end bg-ink/50 backdrop-blur-xs animate-fade-in no-print"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Asistente Opi"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) setIsOpiChatOpen(false);
+            }}
+          >
+            <div className="w-full max-w-xl h-full apple-glass bg-white/95 dark:bg-ink-surface/95 shadow-2xl flex flex-col border-l border-gray-200 dark:border-ink-border overflow-hidden">
+              <div className="p-4 border-b border-gray-100 dark:border-ink-border flex items-center justify-between bg-gray-50/50 dark:bg-ink/50">
                 <div className="flex items-center space-x-3">
                   <img
                     src="/opi-avatar.svg"
                     alt="Opi"
-                    className="w-9 h-9 rounded-2xl object-cover shadow-xs border border-[#20A88A]/40 shrink-0"
+                    className="w-9 h-9 rounded-2xl object-cover shadow-xs border border-brand/40 shrink-0"
                   />
                   <div>
-                    <h3 className="font-bold text-sm text-gray-900 dark:text-white">
+                    <h3 className="font-bold text-sm text-ink dark:text-white">
                       Opi — Tu copiloto profesional
                     </h3>
-                    <p className="text-xs text-gray-500 dark:text-gray-300">
+                    <p className="text-xs text-ink-muted dark:text-gray-300">
                       La IA organiza y te orienta. Tú decides tu camino.
                     </p>
                   </div>
                 </div>
                 <button
+                  type="button"
                   onClick={() => setIsOpiChatOpen(false)}
-                  className="p-1.5 rounded-full text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-white/10 transition cursor-pointer"
+                  aria-label="Cerrar chat de Opi"
+                  className="p-2 min-h-[44px] min-w-[44px] rounded-full text-ink-muted hover:text-ink dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10 transition cursor-pointer flex items-center justify-center focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
                 >
                   <X className="w-5 h-5" />
                 </button>

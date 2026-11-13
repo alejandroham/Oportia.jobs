@@ -112,7 +112,7 @@ export const AchievementsTab: React.FC<AchievementsTabProps> = ({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {/* Situación */}
             <div>
-              <label className="block text-blue-700 dark:text-blue-400 font-bold mb-1">
+              <label className="block text-brand-700 dark:text-brand-400 font-bold mb-1">
                 S — Situación (Contexto y desafío inicial)
               </label>
               <textarea
@@ -224,7 +224,8 @@ export const AchievementsTab: React.FC<AchievementsTabProps> = ({
                 <button
                   type="button"
                   onClick={() => handleDeleteStory(story.id)}
-                  className="p-1 rounded-lg text-gray-400 hover:text-rose-600 hover:bg-rose-50"
+                  aria-label={`Eliminar historia: ${story.title}`}
+                  className="p-2 min-h-[44px] min-w-[44px] rounded-xl text-ink-muted hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 flex items-center justify-center transition cursor-pointer focus-visible:ring-2 focus-visible:ring-rose-500/40 focus-visible:outline-none"
                   title="Eliminar historia"
                 >
                   <Trash2 className="w-4 h-4" />

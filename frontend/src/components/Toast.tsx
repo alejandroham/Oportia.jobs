@@ -57,14 +57,14 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             success: <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />,
             error: <AlertCircle className="w-4 h-4 text-rose-500 shrink-0" />,
             warning: <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0" />,
-            info: <Info className="w-4 h-4 text-blue-500 shrink-0" />
+            info: <Info className="w-4 h-4 text-brand-500 shrink-0" />
           }[toast.type || 'info'];
 
           const borderStyle = {
             success: 'border-emerald-500/20 dark:border-emerald-500/30',
             error: 'border-rose-500/20 dark:border-rose-500/30',
             warning: 'border-amber-500/20 dark:border-amber-500/30',
-            info: 'border-blue-500/20 dark:border-blue-500/30'
+            info: 'border-brand-500/20 dark:border-brand-500/30'
           }[toast.type || 'info'];
 
           return (
@@ -81,8 +81,10 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
                 <p className="text-xs leading-snug">{toast.message}</p>
               </div>
               <button
+                type="button"
                 onClick={() => removeToast(toast.id)}
-                className="p-1 rounded-full text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition"
+                aria-label="Cerrar notificación"
+                className="p-1.5 min-h-[36px] min-w-[36px] flex items-center justify-center rounded-full text-ink-muted hover:text-ink dark:hover:text-white transition cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
               >
                 <X className="w-3.5 h-3.5" />
               </button>

@@ -39,9 +39,15 @@ export const JobCard: React.FC<JobCardProps> = ({
   const relativeDate = formatRelativeDate(job.posted_at || job.discovered_at);
 
   return (
-    <div
+    <article
+      tabIndex={0}
+      role="article"
+      aria-label={`Oferta: ${job.title} en ${job.company}`}
       onClick={() => onViewDetail(job)}
-      className="group relative flex flex-col justify-between p-4 sm:p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-gray-200/80 dark:border-zinc-800 shadow-xs hover:shadow-md hover:border-[#20A88A]/50 transition-all cursor-pointer text-left"
+      onKeyDown={(e) => {
+        if (e.key === 'Enter') onViewDetail(job);
+      }}
+      className="group relative flex flex-col justify-between p-4 sm:p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-gray-200/80 dark:border-zinc-800 shadow-xs hover:shadow-md hover:border-brand-500/50 transition-all cursor-pointer text-left focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
     >
       {/* Botón de descarte sutil en esquina superior derecha */}
       <button
@@ -51,7 +57,8 @@ export const JobCard: React.FC<JobCardProps> = ({
           onDiscard(job.id);
         }}
         title="Descartar del radar"
-        className="absolute top-3.5 right-3.5 p-1 rounded-lg text-gray-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 opacity-0 group-hover:opacity-100 transition-opacity focus:opacity-100"
+        aria-label={`Descartar oferta ${job.title} de ${job.company}`}
+        className="absolute top-2.5 right-2.5 p-2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl text-ink-muted hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 opacity-0 group-hover:opacity-100 transition-opacity focus:opacity-100 focus-visible:ring-2 focus-visible:ring-rose-500/40 focus-visible:outline-none"
       >
         <X className="w-4 h-4" />
       </button>
@@ -59,14 +66,14 @@ export const JobCard: React.FC<JobCardProps> = ({
       {/* Contenido principal */}
       <div className="space-y-3">
         {/* Fila superior: Empresa, insignia regional y Badge de compatibilidad */}
-        <div className="flex flex-wrap items-center justify-between gap-2 pr-6">
+        <div className="flex flex-wrap items-center justify-between gap-2 pr-8">
           <div className="flex items-center gap-1.5 min-w-0">
-            <Building2 className="w-3.5 h-3.5 text-gray-400 shrink-0" />
-            <span className="text-sm font-semibold text-gray-700 dark:text-gray-300 truncate">
+            <Building2 className="w-3.5 h-3.5 text-ink-muted shrink-0" />
+            <span className="text-sm font-semibold text-ink dark:text-gray-300 truncate">
               {job.company || 'Empresa confidencial'}
             </span>
             {isRegional && (
-              <span className="shrink-0 px-2 py-0.5 text-xs font-semibold text-teal-700 dark:text-teal-300 bg-teal-50 dark:bg-teal-950/50 rounded-full border border-teal-200/60 dark:border-teal-800/40">
+              <span className="shrink-0 px-2 py-0.5 text-xs font-semibold text-brand-700 dark:text-brand-300 bg-brand-50 dark:bg-brand-950/50 rounded-full border border-brand-200/60 dark:border-brand-800/40">
                 Tu región
               </span>
             )}
@@ -76,20 +83,20 @@ export const JobCard: React.FC<JobCardProps> = ({
         </div>
 
         {/* Título de la vacante */}
-        <h3 className="text-base font-bold text-gray-900 dark:text-gray-100 group-hover:text-[#20A88A] transition-colors leading-snug line-clamp-2">
+        <h3 className="text-base font-bold text-ink dark:text-gray-100 group-hover:text-brand transition-colors leading-snug line-clamp-2">
           {job.title}
         </h3>
 
         {/* Metadatos: Ubicación, Modalidad, Salario, Fecha */}
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500 dark:text-gray-400">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-ink-muted">
           <span className="flex items-center gap-1">
-            <MapPin className="w-3.5 h-3.5 text-gray-400" />
+            <MapPin className="w-3.5 h-3.5" />
             <span>{job.location || 'Chile'}</span>
           </span>
 
           <span>•</span>
 
-          <span className="font-medium text-gray-700 dark:text-gray-300">
+          <span className="font-medium text-ink dark:text-gray-300">
             {job.modality || (job.is_remote ? 'Remoto' : 'Presencial')}
           </span>
 
@@ -104,21 +111,21 @@ export const JobCard: React.FC<JobCardProps> = ({
           ) : (
             <>
               <span>•</span>
-              <span className="text-gray-400 italic">Renta no publicada</span>
+              <span className="italic">Renta no publicada</span>
             </>
           )}
 
           {relativeDate && (
             <>
               <span>•</span>
-              <span className="text-gray-400">{relativeDate}</span>
+              <span>{relativeDate}</span>
             </>
           )}
         </div>
 
         {/* Breve extracto de descripción */}
         {job.description && (
-          <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2 leading-relaxed">
+          <p className="text-xs text-ink-muted line-clamp-2 leading-relaxed">
             {job.description}
           </p>
         )}
@@ -132,13 +139,14 @@ export const JobCard: React.FC<JobCardProps> = ({
             e.stopPropagation();
             onToggleTrack(job);
           }}
-          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition min-h-[38px] ${
+          aria-label={isTracked ? `Dejar de seguir ${job.title}` : `Guardar y seguir ${job.title}`}
+          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition min-h-[44px] cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none ${
             isTracked
-              ? 'bg-teal-50 dark:bg-teal-950/40 text-[#20A88A] border-teal-200 dark:border-teal-800/60'
-              : 'bg-white dark:bg-zinc-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-zinc-700 hover:bg-gray-50'
+              ? 'bg-brand-50 dark:bg-brand-950/40 text-brand-700 dark:text-brand-300 border-brand-200 dark:border-brand-800/60'
+              : 'bg-white dark:bg-zinc-800 text-ink dark:text-gray-300 border-gray-200 dark:border-zinc-700 hover:bg-gray-50'
           }`}
         >
-          {isTracked ? <BookmarkCheck className="w-3.5 h-3.5" /> : <Bookmark className="w-3.5 h-3.5" />}
+          {isTracked ? <BookmarkCheck className="w-3.5 h-3.5 text-brand" /> : <Bookmark className="w-3.5 h-3.5" />}
           <span>{isTracked ? 'En seguimiento' : 'Guardar'}</span>
         </button>
 
@@ -148,11 +156,11 @@ export const JobCard: React.FC<JobCardProps> = ({
             e.stopPropagation();
             onViewDetail(job);
           }}
-          className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-[#20A88A] hover:bg-[#18856d] text-white text-xs font-semibold shadow-xs transition min-h-[38px]"
+          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-brand hover:bg-brand-600 text-white text-xs font-semibold shadow-xs transition min-h-[44px] cursor-pointer active:scale-95 focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
         >
           <span>Ver detalle</span>
         </button>
       </div>
-    </div>
+    </article>
   );
 };

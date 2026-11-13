@@ -1,12 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import type { FitEvaluation, JobPosting } from '../../types';
-import { X, Sparkles, UserCheck, ShieldCheck, Cpu, Search, Briefcase, Award } from 'lucide-react';
+import { Award, CheckCircle2, AlertTriangle, ShieldAlert, Sparkles } from 'lucide-react';
+import { Dialog } from '../../components/ui/Dialog';
+import { Tabs } from '../../components/ui/Tabs';
+import type { TabItem } from '../../components/ui/Tabs';
+import { Button } from '../../components/ui/Button';
 
 interface FitEvaluationModalProps {
   isOpen: boolean;
   onClose: () => void;
   evaluation: FitEvaluation | null;
-  job: JobPosting | null;
+  job?: JobPosting | null;
 }
 
 export const FitEvaluationModal: React.FC<FitEvaluationModalProps> = ({
@@ -17,126 +21,86 @@ export const FitEvaluationModal: React.FC<FitEvaluationModalProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<'director' | 'evaluators' | 'matrix' | 'potential'>('director');
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
-    if (isOpen) window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose]);
-
-  if (!isOpen || !evaluation) return null;
+  if (!evaluation) return null;
 
   const evaluators = evaluation.committee_evaluations || [];
   const matrix = evaluation.requirements_matrix || [];
   const director = evaluation.director_synthesis;
   const potential = evaluation.potential_projection;
 
+  const tabItems: TabItem[] = [
+    { id: 'director', label: 'Dictamen del Director' },
+    { id: 'evaluators', label: '5 Evaluadores' },
+    { id: 'matrix', label: `Requisitos vs CV (${matrix.length})` },
+    { id: 'potential', label: 'Proyección Potencial' }
+  ];
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
-      {/* Backdrop */}
-      <div onClick={onClose} className="fixed inset-0 bg-black/50 backdrop-blur-xs transition-opacity" />
-
-      {/* Modal Dialog */}
-      <div className="relative w-full max-w-3xl rounded-3xl bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 shadow-2xl overflow-hidden flex flex-col max-h-[90vh] z-10 animate-fade-in">
-        {/* Cabecera */}
-        <div className="p-5 border-b border-gray-100 dark:border-zinc-800 flex items-center justify-between gap-3 bg-gray-50/70 dark:bg-zinc-800/40">
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="text-xl font-bold text-[#20A88A]">{evaluation.overall_score}%</span>
-              <h3 className="text-base font-bold text-gray-900 dark:text-gray-100">
-                Evaluación de Compatibilidad (5 Perspectivas)
-              </h3>
-            </div>
-            {job && (
-              <p className="text-xs text-gray-500 truncate max-w-md">
-                {job.title} en {job.company}
-              </p>
-            )}
-          </div>
-
-          <button
-            type="button"
-            onClick={onClose}
-            className="p-2 rounded-xl text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-zinc-800 transition"
-          >
-            <X className="w-5 h-5" />
-          </button>
+    <Dialog
+      isOpen={isOpen}
+      onClose={onClose}
+      title={
+        <div className="flex items-center gap-2">
+          <span className="text-xl font-bold text-brand">{evaluation.overall_score}%</span>
+          <span className="text-base font-bold text-ink dark:text-white">
+            Evaluación de Compatibilidad (5 Perspectivas)
+          </span>
         </div>
+      }
+      description={job ? `${job.title} en ${job.company}` : undefined}
+      maxWidth="3xl"
+    >
+      <div className="space-y-4">
+        {/* Navigation Tabs */}
+        <Tabs
+          items={tabItems}
+          activeId={activeTab}
+          onChange={(id) => setActiveTab(id as any)}
+          variant="segmented"
+        />
 
-        {/* Sub-navegación por pestañas */}
-        <div className="flex border-b border-gray-100 dark:border-zinc-800 bg-gray-50/40 dark:bg-zinc-900 px-4 gap-2 text-xs overflow-x-auto">
-          <button
-            type="button"
-            onClick={() => setActiveTab('director')}
-            className={`py-3 px-3 font-semibold border-b-2 transition whitespace-nowrap ${
-              activeTab === 'director'
-                ? 'border-[#20A88A] text-[#20A88A]'
-                : 'border-transparent text-gray-500 hover:text-gray-700'
-            }`}
-          >
-            Dictamen del Director
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab('evaluators')}
-            className={`py-3 px-3 font-semibold border-b-2 transition whitespace-nowrap ${
-              activeTab === 'evaluators'
-                ? 'border-[#20A88A] text-[#20A88A]'
-                : 'border-transparent text-gray-500 hover:text-gray-700'
-            }`}
-          >
-            5 Evaluadores Especializados
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab('matrix')}
-            className={`py-3 px-3 font-semibold border-b-2 transition whitespace-nowrap ${
-              activeTab === 'matrix'
-                ? 'border-[#20A88A] text-[#20A88A]'
-                : 'border-transparent text-gray-500 hover:text-gray-700'
-            }`}
-          >
-            Requisitos vs CV ({matrix.length})
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab('potential')}
-            className={`py-3 px-3 font-semibold border-b-2 transition whitespace-nowrap ${
-              activeTab === 'potential'
-                ? 'border-[#20A88A] text-[#20A88A]'
-                : 'border-transparent text-gray-500 hover:text-gray-700'
-            }`}
-          >
-            Proyección Potencial
-          </button>
-        </div>
-
-        {/* Contenido scrolleable */}
-        <div className="flex-1 overflow-y-auto p-5 sm:p-6 text-xs sm:text-sm space-y-4">
-          {/* TAB 1: Dictamen */}
+        {/* Content Area */}
+        <div className="max-h-[58vh] overflow-y-auto space-y-4 pr-1">
           {activeTab === 'director' && (
-            <div className="space-y-4 leading-relaxed">
-              <div className="p-4 rounded-2xl bg-teal-50/50 dark:bg-teal-950/30 border border-teal-200/60 dark:border-teal-800/40 space-y-2">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-teal-800 dark:text-teal-300">
-                  Resumen Ejecutivo
-                </h4>
-                <p className="text-gray-800 dark:text-gray-200">
+            <div className="space-y-3">
+              <div className="p-4 rounded-2xl bg-brand-50/50 dark:bg-brand-950/30 border border-brand-200/50 dark:border-brand-800/40 space-y-2">
+                <span className="text-xs uppercase font-bold text-brand-700 dark:text-brand-300 flex items-center gap-1.5">
+                  <Award className="w-4 h-4 text-brand" />
+                  Síntesis del Director de Empleabilidad
+                </span>
+                <p className="text-xs text-ink dark:text-gray-200 leading-relaxed font-medium">
                   {director?.summary || evaluation.recommendation_summary}
                 </p>
+                {director?.final_recommendation && (
+                  <p className="text-xs text-brand-800 dark:text-brand-200 font-semibold pt-1">
+                    Recomendación final: {director.final_recommendation}
+                  </p>
+                )}
               </div>
 
-              {director?.suggested_actions && director.suggested_actions.length > 0 && (
-                <div className="space-y-2">
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-gray-500">
-                    Acciones sugeridas antes de enviar tu postulación:
+              {evaluation.strengths && evaluation.strengths.length > 0 && (
+                <div className="p-4 rounded-2xl bg-white dark:bg-zinc-800/60 border border-gray-200/80 dark:border-zinc-700/60 space-y-2">
+                  <h4 className="text-xs font-bold text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                    Fortalezas clave del postulante
                   </h4>
-                  <ul className="space-y-1.5 pl-2">
-                    {director.suggested_actions.map((act, i) => (
-                      <li key={i} className="flex items-start gap-2 text-gray-700 dark:text-gray-300">
-                        <span className="text-[#20A88A] font-bold">✓</span>
-                        <span>{act}</span>
-                      </li>
+                  <ul className="text-xs text-ink-muted dark:text-gray-300 space-y-1 list-disc pl-5">
+                    {evaluation.strengths.map((str, idx) => (
+                      <li key={idx}>{str}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {evaluation.missing_skills && evaluation.missing_skills.length > 0 && (
+                <div className="p-4 rounded-2xl bg-white dark:bg-zinc-800/60 border border-gray-200/80 dark:border-zinc-700/60 space-y-2">
+                  <h4 className="text-xs font-bold text-amber-700 dark:text-amber-400 flex items-center gap-1.5">
+                    <AlertTriangle className="w-4 h-4 text-amber-600" />
+                    Habilidades faltantes o por desarrollar
+                  </h4>
+                  <ul className="text-xs text-ink-muted dark:text-gray-300 space-y-1 list-disc pl-5">
+                    {evaluation.missing_skills.map((skill, idx) => (
+                      <li key={idx}>{skill}</li>
                     ))}
                   </ul>
                 </div>
@@ -144,81 +108,86 @@ export const FitEvaluationModal: React.FC<FitEvaluationModalProps> = ({
             </div>
           )}
 
-          {/* TAB 2: 5 Evaluadores */}
           {activeTab === 'evaluators' && (
             <div className="space-y-3">
-              {evaluators.length > 0 ? (
-                evaluators.map((ev, i) => (
-                  <div key={i} className="p-4 rounded-2xl bg-gray-50 dark:bg-zinc-800/60 border border-gray-200/70 dark:border-zinc-700/60 space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="font-bold text-gray-900 dark:text-gray-100 text-xs sm:text-sm">
+              {evaluators.map((ev, idx) => (
+                <div
+                  key={idx}
+                  className="p-4 rounded-2xl bg-gray-50 dark:bg-zinc-800/50 border border-gray-200/80 dark:border-zinc-700/60 space-y-2"
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="text-xs font-bold text-ink dark:text-white">
                         {ev.role_name}
-                      </span>
-                      <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 text-[#20A88A]">
-                        {ev.score}%
-                      </span>
+                      </h4>
+                      <span className="text-[12px] text-ink-muted block">Peso: {ev.weight_percentage}%</span>
                     </div>
-                    <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed">
-                      {ev.justification}
-                    </p>
-                    {ev.key_question && (
-                      <div className="text-xs text-gray-500 italic bg-white dark:bg-zinc-900 p-2 rounded-lg border border-gray-100 dark:border-zinc-800">
-                        <strong>Pregunta clave que evaluó:</strong> "{ev.key_question}"
-                      </div>
-                    )}
+                    <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-white dark:bg-zinc-700 text-ink dark:text-white shadow-2xs border border-gray-200 dark:border-zinc-600">
+                      {ev.score}%
+                    </span>
                   </div>
-                ))
-              ) : (
-                <p className="text-xs text-gray-400 italic">Desglose por evaluadores no disponible.</p>
-              )}
-            </div>
-          )}
 
-          {/* TAB 3: Matriz Requisitos vs CV */}
-          {activeTab === 'matrix' && (
-            <div className="space-y-2">
-              {matrix.length > 0 ? (
-                matrix.map((item, idx) => (
-                  <div key={idx} className="p-3 rounded-xl border border-gray-200 dark:border-zinc-800 space-y-1">
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="font-bold text-xs text-gray-900 dark:text-gray-100">
-                        {item.requirement}
-                      </span>
-                      <span className={`px-2 py-0.5 rounded text-xs font-semibold ${
-                        item.status === 'cumplido' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'
-                      }`}>
-                        {item.status}
-                      </span>
-                    </div>
-                    <p className="text-xs text-gray-600 dark:text-gray-400">
-                      Evidencia en CV: {item.cv_evidence || 'No detectada explícitamente'}
-                    </p>
-                  </div>
-                ))
-              ) : (
-                <p className="text-xs text-gray-400 italic">Matriz detallada no generada.</p>
-              )}
-            </div>
-          )}
-
-          {/* TAB 4: Potencial */}
-          {activeTab === 'potential' && (
-            <div className="space-y-4">
-              <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200/60 dark:border-emerald-800/40 flex items-center justify-between">
-                <div>
-                  <h4 className="text-xs font-bold text-emerald-800 dark:text-emerald-300">
-                    Compatibilidad Potencial tras Aprendizaje
-                  </h4>
-                  <p className="text-xs text-emerald-700 dark:text-emerald-400">
-                    Cerrando las brechas con los módulos de Aprender
+                  <p className="text-xs text-ink-muted dark:text-gray-300 leading-relaxed">
+                    {ev.justification}
                   </p>
                 </div>
-                <span className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
-                  {potential?.potential_score || evaluation.potential_fit_score || evaluation.overall_score}%
-                </span>
-              </div>
+              ))}
+            </div>
+          )}
+
+          {activeTab === 'matrix' && (
+            <div className="space-y-2">
+              {matrix.map((req, idx) => {
+                const isMet = req.status === 'cumplido';
+                const isCritical = req.importance === 'excluyente';
+                return (
+                  <div
+                    key={idx}
+                    className="p-3.5 rounded-2xl bg-gray-50 dark:bg-zinc-800/50 border border-gray-200/80 dark:border-zinc-700/60 flex items-start gap-3"
+                  >
+                    {isMet ? (
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                    ) : isCritical ? (
+                      <ShieldAlert className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
+                    ) : (
+                      <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+                    )}
+                    <div className="space-y-0.5 flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold text-ink dark:text-white">
+                          {req.requirement}
+                        </span>
+                        {isCritical && (
+                          <span className="px-1.5 py-0.5 rounded text-[12px] font-bold bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300">
+                            Excluyente
+                          </span>
+                        )}
+                      </div>
+                      {req.cv_evidence && (
+                        <p className="text-xs text-ink-muted dark:text-gray-400">
+                          {req.cv_evidence}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {activeTab === 'potential' && (
+            <div className="p-4 rounded-2xl bg-purple-50/50 dark:bg-purple-950/30 border border-purple-200/60 dark:border-purple-800/40 space-y-2">
+              <span className="text-xs uppercase font-bold text-purple-700 dark:text-purple-300 flex items-center gap-1.5">
+                <Sparkles className="w-4 h-4 text-purple-600" />
+                Proyección Potencial y Crecimiento
+              </span>
+              {potential?.potential_score && (
+                <div className="text-xl font-bold text-purple-700 dark:text-purple-300">
+                  Potencial: {potential.potential_score}% (Delta: +{potential.score_delta}%)
+                </div>
+              )}
               {potential?.reasoning && (
-                <p className="text-xs text-gray-700 dark:text-gray-300 leading-relaxed">
+                <p className="text-xs text-ink-muted dark:text-gray-300 leading-relaxed">
                   {potential.reasoning}
                 </p>
               )}
@@ -226,17 +195,12 @@ export const FitEvaluationModal: React.FC<FitEvaluationModalProps> = ({
           )}
         </div>
 
-        {/* Footer */}
-        <div className="p-4 border-t border-gray-100 dark:border-zinc-800 bg-gray-50/50 dark:bg-zinc-900/50 flex justify-end">
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-4 py-2 rounded-xl bg-gray-200 dark:bg-zinc-800 text-gray-800 dark:text-gray-200 text-xs font-semibold hover:bg-gray-300 transition"
-          >
+        <div className="flex justify-end pt-3 border-t border-gray-100 dark:border-ink-border">
+          <Button variant="outline" size="md" onClick={onClose}>
             Cerrar evaluación
-          </button>
+          </Button>
         </div>
       </div>
-    </div>
+    </Dialog>
   );
 };

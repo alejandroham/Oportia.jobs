@@ -116,9 +116,9 @@ export const JobDetailModal: React.FC<JobDetailModalProps> = ({
                     type="button"
                     onClick={() => onEvaluate(job)}
                     disabled={isLoadingEvaluation}
-                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-teal-50 dark:bg-teal-950/40 text-[#20A88A] hover:bg-teal-100 text-xs font-semibold border border-teal-200/80 transition disabled:opacity-50"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 min-h-[44px] rounded-xl bg-brand-50 dark:bg-brand-950/40 text-brand-700 dark:text-brand-300 hover:bg-brand-100 text-xs font-semibold border border-brand-200/80 transition cursor-pointer active:scale-95 disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
                   >
-                    <Sparkles className="w-3.5 h-3.5" />
+                    <Sparkles className="w-3.5 h-3.5 text-brand" />
                     <span>{isLoadingEvaluation ? 'Evaluando con IA...' : 'Evaluar compatibilidad con IA'}</span>
                   </button>
                 </div>
@@ -161,13 +161,14 @@ export const JobDetailModal: React.FC<JobDetailModalProps> = ({
               <button
                 type="button"
                 onClick={() => onToggleTrack(job)}
-                className={`inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-xs font-semibold border transition ${
+                aria-label={isTracked ? `Dejar de seguir ${job.title}` : `Guardar y seguir ${job.title}`}
+                className={`inline-flex items-center gap-1.5 px-3.5 py-2.5 min-h-[44px] rounded-xl text-xs font-semibold border transition cursor-pointer active:scale-95 focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none ${
                   isTracked
-                    ? 'bg-teal-50 dark:bg-teal-950/40 text-[#20A88A] border-teal-200 dark:border-teal-800/60'
-                    : 'bg-white dark:bg-zinc-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-zinc-700 hover:bg-gray-50'
+                    ? 'bg-brand-50 dark:bg-brand-950/40 text-brand-700 dark:text-brand-300 border-brand-200 dark:border-brand-800/60'
+                    : 'bg-white dark:bg-zinc-800 text-ink dark:text-gray-300 border-gray-200 dark:border-zinc-700 hover:bg-gray-50'
                 }`}
               >
-                {isTracked ? <BookmarkCheck className="w-4 h-4" /> : <Bookmark className="w-4 h-4" />}
+                {isTracked ? <BookmarkCheck className="w-4 h-4 text-brand" /> : <Bookmark className="w-4 h-4" />}
                 <span>{isTracked ? 'En seguimiento' : 'Guardar'}</span>
               </button>
 
@@ -176,7 +177,7 @@ export const JobDetailModal: React.FC<JobDetailModalProps> = ({
                   href={job.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 px-3 py-2.5 rounded-xl border border-gray-200 dark:border-zinc-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-zinc-800 text-xs font-medium transition"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2.5 min-h-[44px] rounded-xl border border-gray-200 dark:border-zinc-700 text-ink dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-zinc-800 text-xs font-medium transition focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
                 >
                   <ExternalLink className="w-3.5 h-3.5" />
                   <span className="hidden sm:inline">Oferta original</span>
@@ -190,7 +191,7 @@ export const JobDetailModal: React.FC<JobDetailModalProps> = ({
                 onApply(job);
                 onClose();
               }}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#20A88A] hover:bg-[#18856d] text-white text-xs sm:text-sm font-semibold shadow-md transition"
+              className="inline-flex items-center gap-2 px-5 py-2.5 min-h-[44px] rounded-xl bg-brand hover:bg-brand-600 text-white text-xs sm:text-sm font-semibold shadow-md transition cursor-pointer active:scale-95 focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
             >
               <Send className="w-4 h-4" />
               <span>Postular con CV adaptado</span>

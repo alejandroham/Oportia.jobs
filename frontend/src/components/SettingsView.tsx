@@ -91,31 +91,31 @@ export const SettingsView: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setDarkMode(false)}
-                className={`p-4 rounded-2xl border text-left flex items-center gap-3 transition cursor-pointer ${
+                className={`p-4 min-h-[44px] rounded-2xl border text-left flex items-center gap-3 transition cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none ${
                   !darkMode
-                    ? 'border-blue-500 bg-blue-50/50 dark:bg-blue-950/30 text-blue-900 dark:text-blue-200 font-bold shadow-xs'
-                    : 'border-black/8 dark:border-white/8 hover:bg-gray-50 dark:hover:bg-zinc-800 text-gray-600 dark:text-gray-400'
+                    ? 'border-brand-500 bg-brand-50/50 dark:bg-brand-950/30 text-ink dark:text-brand-200 font-bold shadow-xs'
+                    : 'border-black/8 dark:border-white/8 hover:bg-gray-50 dark:hover:bg-zinc-800 text-ink-muted'
                 }`}
               >
                 <Sun className="w-5 h-5 text-amber-500" />
                 <div>
                   <p className="text-xs font-bold">Modo Claro</p>
-                  <p className="text-xs text-gray-500">Fondo limpio y tipografía de alto contraste.</p>
+                  <p className="text-xs text-ink-muted">Fondo limpio y tipografía de alto contraste.</p>
                 </div>
               </button>
               <button
                 type="button"
                 onClick={() => setDarkMode(true)}
-                className={`p-4 rounded-2xl border text-left flex items-center gap-3 transition cursor-pointer ${
+                className={`p-4 min-h-[44px] rounded-2xl border text-left flex items-center gap-3 transition cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none ${
                   darkMode
-                    ? 'border-blue-500 bg-zinc-800 text-white font-bold shadow-xs'
-                    : 'border-black/8 dark:border-white/8 hover:bg-gray-50 dark:hover:bg-zinc-800 text-gray-600 dark:text-gray-400'
+                    ? 'border-brand-500 bg-zinc-800 text-white font-bold shadow-xs'
+                    : 'border-black/8 dark:border-white/8 hover:bg-gray-50 dark:hover:bg-zinc-800 text-ink-muted'
                 }`}
               >
-                <Moon className="w-5 h-5 text-indigo-400" />
+                <Moon className="w-5 h-5 text-teal-400" />
                 <div>
                   <p className="text-xs font-bold">Modo Oscuro</p>
-                  <p className="text-xs text-gray-400">Reduce la fatiga visual en entornos con poca luz.</p>
+                  <p className="text-xs text-ink-muted">Reduce la fatiga visual en entornos con poca luz.</p>
                 </div>
               </button>
             </div>
@@ -125,12 +125,12 @@ export const SettingsView: React.FC = () => {
         {activeSubTab === 'about' && (
           <div className="apple-glass apple-card p-6 rounded-2xl space-y-4">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-blue-50 dark:bg-zinc-800 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-xl bg-brand-50 dark:bg-brand-950/40 text-brand-600 dark:text-brand-400 flex items-center justify-center">
                 <Info className="w-4 h-4" />
               </div>
               <div>
-                <h2 className="text-sm font-bold text-gray-900 dark:text-white">Acerca de Oportia Jobs IA</h2>
-                <p className="text-xs text-gray-500">Versión 1.0.1 — Ecosistema inteligente de empleabilidad y desarrollo profesional.</p>
+                <h2 className="text-sm font-bold text-ink dark:text-white">Acerca de Oportia Jobs IA</h2>
+                <p className="text-xs text-ink-muted">Versión 1.0.1 — Ecosistema inteligente de empleabilidad y desarrollo profesional.</p>
               </div>
             </div>
 

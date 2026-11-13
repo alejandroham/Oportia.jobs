@@ -60,10 +60,10 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
           <button
             type="button"
             onClick={() => handleTabChange('cv')}
-            className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl transition ${
+            className={`inline-flex items-center gap-1.5 px-3.5 py-2 min-h-[44px] rounded-xl transition cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none ${
               activeTab === 'cv'
-                ? 'bg-white dark:bg-zinc-900 text-gray-900 dark:text-white shadow-xs'
-                : 'text-gray-500 hover:text-gray-800'
+                ? 'bg-white dark:bg-zinc-900 text-ink dark:text-white shadow-xs font-bold'
+                : 'text-ink-muted hover:text-ink dark:hover:text-white'
             }`}
           >
             <FileText className="w-3.5 h-3.5" />
@@ -73,10 +73,10 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
           <button
             type="button"
             onClick={() => handleTabChange('busqueda')}
-            className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl transition ${
+            className={`inline-flex items-center gap-1.5 px-3.5 py-2 min-h-[44px] rounded-xl transition cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none ${
               activeTab === 'busqueda'
-                ? 'bg-white dark:bg-zinc-900 text-gray-900 dark:text-white shadow-xs'
-                : 'text-gray-500 hover:text-gray-800'
+                ? 'bg-white dark:bg-zinc-900 text-ink dark:text-white shadow-xs font-bold'
+                : 'text-ink-muted hover:text-ink dark:hover:text-white'
             }`}
           >
             <Target className="w-3.5 h-3.5" />
@@ -86,10 +86,10 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
           <button
             type="button"
             onClick={() => handleTabChange('logros')}
-            className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl transition ${
+            className={`inline-flex items-center gap-1.5 px-3.5 py-2 min-h-[44px] rounded-xl transition cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none ${
               activeTab === 'logros'
-                ? 'bg-white dark:bg-zinc-900 text-gray-900 dark:text-white shadow-xs'
-                : 'text-gray-500 hover:text-gray-800'
+                ? 'bg-white dark:bg-zinc-900 text-ink dark:text-white shadow-xs font-bold'
+                : 'text-ink-muted hover:text-ink dark:hover:text-white'
             }`}
           >
             <Award className="w-3.5 h-3.5" />
@@ -99,10 +99,10 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
           <button
             type="button"
             onClick={() => handleTabChange('memoria')}
-            className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl transition ${
+            className={`inline-flex items-center gap-1.5 px-3.5 py-2 min-h-[44px] rounded-xl transition cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none ${
               activeTab === 'memoria'
-                ? 'bg-white dark:bg-zinc-900 text-gray-900 dark:text-white shadow-xs'
-                : 'text-gray-500 hover:text-gray-800'
+                ? 'bg-white dark:bg-zinc-900 text-ink dark:text-white shadow-xs font-bold'
+                : 'text-ink-muted hover:text-ink dark:hover:text-white'
             }`}
           >
             <Brain className="w-3.5 h-3.5" />

@@ -99,8 +99,8 @@ export const LearnPage: React.FC<LearnPageProps> = ({ profile }) => {
           <button
             type="button"
             onClick={() => setActiveTab('gaps')}
-            className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl transition ${
-              activeTab === 'gaps' ? 'bg-white dark:bg-zinc-900 text-gray-900 dark:text-white shadow-xs' : 'text-gray-500 hover:text-gray-800'
+            className={`inline-flex items-center gap-1.5 px-3.5 py-2 min-h-[44px] rounded-xl transition cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none ${
+              activeTab === 'gaps' ? 'bg-white dark:bg-zinc-900 text-ink dark:text-white shadow-xs font-bold' : 'text-ink-muted hover:text-ink dark:hover:text-white'
             }`}
           >
             <Target className="w-3.5 h-3.5" />
@@ -110,8 +110,8 @@ export const LearnPage: React.FC<LearnPageProps> = ({ profile }) => {
           <button
             type="button"
             onClick={() => setActiveTab('courses')}
-            className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl transition ${
-              activeTab === 'courses' ? 'bg-white dark:bg-zinc-900 text-gray-900 dark:text-white shadow-xs' : 'text-gray-500 hover:text-gray-800'
+            className={`inline-flex items-center gap-1.5 px-3.5 py-2 min-h-[44px] rounded-xl transition cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none ${
+              activeTab === 'courses' ? 'bg-white dark:bg-zinc-900 text-ink dark:text-white shadow-xs font-bold' : 'text-ink-muted hover:text-ink dark:hover:text-white'
             }`}
           >
             <BookOpen className="w-3.5 h-3.5" />
@@ -121,8 +121,8 @@ export const LearnPage: React.FC<LearnPageProps> = ({ profile }) => {
           <button
             type="button"
             onClick={() => setActiveTab('paths')}
-            className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl transition ${
-              activeTab === 'paths' ? 'bg-white dark:bg-zinc-900 text-gray-900 dark:text-white shadow-xs' : 'text-gray-500 hover:text-gray-800'
+            className={`inline-flex items-center gap-1.5 px-3.5 py-2 min-h-[44px] rounded-xl transition cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none ${
+              activeTab === 'paths' ? 'bg-white dark:bg-zinc-900 text-ink dark:text-white shadow-xs font-bold' : 'text-ink-muted hover:text-ink dark:hover:text-white'
             }`}
           >
             <Route className="w-3.5 h-3.5" />
@@ -132,8 +132,8 @@ export const LearnPage: React.FC<LearnPageProps> = ({ profile }) => {
           <button
             type="button"
             onClick={() => setActiveTab('practice')}
-            className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl transition ${
-              activeTab === 'practice' ? 'bg-white dark:bg-zinc-900 text-gray-900 dark:text-white shadow-xs' : 'text-gray-500 hover:text-gray-800'
+            className={`inline-flex items-center gap-1.5 px-3.5 py-2 min-h-[44px] rounded-xl transition cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none ${
+              activeTab === 'practice' ? 'bg-white dark:bg-zinc-900 text-ink dark:text-white shadow-xs font-bold' : 'text-ink-muted hover:text-ink dark:hover:text-white'
             }`}
           >
             <Dumbbell className="w-3.5 h-3.5" />

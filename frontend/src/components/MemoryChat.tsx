@@ -278,7 +278,7 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
         <div className="flex items-center space-x-2 shrink-0">
           {historyCount > 0 && (
             <span
-              className="hidden md:inline-flex items-center space-x-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 border border-blue-200/60 dark:border-blue-800/60"
+              className="hidden md:inline-flex items-center space-x-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-brand-50 dark:bg-brand-950/40 text-brand-700 dark:text-brand-300 border border-brand-200/60 dark:border-brand-800/60"
               title="El asistente mantiene el contexto completo de preguntas y respuestas de esta conversación"
             >
               <Brain className="w-3 h-3 shrink-0" />
@@ -288,18 +288,20 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
 
           {historyCount > 0 && (
             <button
+              type="button"
               onClick={handleClearHistory}
-              className="px-2.5 py-1 rounded-xl text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-zinc-800 text-xs font-medium transition flex items-center space-x-1 cursor-pointer"
+              aria-label="Reiniciar conversación y comenzar nuevo tema"
+              className="min-h-[44px] px-3 py-1 rounded-xl text-ink-muted hover:text-ink dark:hover:text-white hover:bg-gray-100 dark:hover:bg-zinc-800 text-xs font-medium transition flex items-center space-x-1 cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
               title="Reiniciar conversación y comenzar un nuevo tema"
             >
-              <RotateCcw className="w-3 h-3 shrink-0" />
+              <RotateCcw className="w-3.5 h-3.5 shrink-0" />
               <span className="hidden sm:inline">Limpiar chat</span>
             </button>
           )}
 
           <div className="text-right hidden sm:block shrink-0 border-l border-black/10 dark:border-white/10 pl-3">
-            <span className="text-xs font-medium text-[#86868B] dark:text-[#A1A1A6]">Madurez:</span>
-            <span className="ml-1 font-bold text-blue-600 dark:text-blue-400 text-xs">
+            <span className="text-xs font-medium text-ink-muted">Madurez:</span>
+            <span className="ml-1 font-bold text-brand-600 dark:text-brand-400 text-xs">
               {preferences.memory_stats?.maturity_percentage || 0}%
             </span>
           </div>
@@ -311,7 +313,7 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
         /* GATED LOCK SCREEN: Active API Key Required + Zero-Knowledge Guarantee */
         <div className="flex-1 flex flex-col items-center justify-center p-6 text-center space-y-4 my-auto animate-fade-in max-w-md mx-auto">
           <div className="relative">
-            <div className="w-16 h-16 rounded-3xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shadow-inner">
+            <div className="w-16 h-16 rounded-3xl bg-brand-50 dark:bg-brand-950/40 text-brand-600 dark:text-brand-400 flex items-center justify-center shadow-inner">
               <KeyRound className="w-8 h-8" />
             </div>
             <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-amber-500 text-white flex items-center justify-center shadow-md">
@@ -320,21 +322,21 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
           </div>
 
           <div className="space-y-1.5">
-            <h4 className="text-base font-bold text-[#1D1D1F] dark:text-[#F5F5F7]">
+            <h4 className="text-base font-bold text-ink dark:text-white">
               Opi Copiloto requiere una Clave de API
             </h4>
-            <p className="text-xs text-[#86868B] dark:text-[#A1A1A6] leading-relaxed">
+            <p className="text-xs text-ink-muted leading-relaxed">
               Para conversar en vivo, extraer logros STAR con métricas y orientar tu desarrollo profesional, el copiloto necesita estar conectado a un motor de inteligencia artificial.
             </p>
           </div>
 
           {/* Security & Sovereign Storage Guarantee Box */}
-          <div className="w-full text-left p-4 rounded-2xl bg-blue-50/80 dark:bg-blue-950/40 border border-blue-200/80 dark:border-blue-900/60 space-y-2 text-xs text-blue-950 dark:text-blue-200">
-            <div className="flex items-center space-x-2 font-bold text-blue-700 dark:text-blue-300">
-              <ShieldCheck className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
+          <div className="w-full text-left p-4 rounded-2xl bg-brand-50/80 dark:bg-brand-950/40 border border-brand-200/80 dark:border-brand-900/60 space-y-2 text-xs text-brand-950 dark:text-brand-200">
+            <div className="flex items-center space-x-2 font-bold text-brand-700 dark:text-brand-300">
+              <ShieldCheck className="w-4 h-4 text-brand-600 dark:text-brand-400 shrink-0" />
               <span>Soberanía Digital & Privacidad por Diseño</span>
             </div>
-            <p className="text-xs text-blue-900/90 dark:text-blue-200/90 leading-relaxed">
+            <p className="text-xs text-brand-900/90 dark:text-brand-200/90 leading-relaxed">
               <strong>Tu clave de API NO es guardada por la aplicación en servidores externos</strong> ni transferida a terceros. Se mantiene 100% cifrada y segura exclusivamente en tu propio equipo local.
             </p>
           </div>
@@ -342,8 +344,9 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
           {/* Actions */}
           <div className="w-full space-y-2.5 pt-1">
             <button
+              type="button"
               onClick={onOpenSettings}
-              className="w-full min-h-[44px] px-5 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs shadow-md shadow-blue-500/20 transition active:scale-95 flex items-center justify-center space-x-2 cursor-pointer"
+              className="w-full min-h-[44px] px-5 py-2.5 rounded-2xl bg-brand-500 hover:bg-brand-600 text-white font-semibold text-xs shadow-md shadow-brand-500/20 transition active:scale-95 flex items-center justify-center space-x-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
             >
               <KeyRound className="w-4 h-4" />
               <span>Conectar Clave de API Segura</span>
@@ -353,7 +356,7 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
               href="https://aistudio.google.com/app/apikey"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center justify-center space-x-1.5 text-xs font-medium text-blue-600 dark:text-blue-400 hover:underline pt-1"
+              className="inline-flex items-center justify-center space-x-1.5 text-xs font-medium text-brand-600 dark:text-brand-400 hover:underline pt-1"
             >
               <span>Obtener clave gratis en Google AI Studio (Gemini)</span>
               <ExternalLink className="w-3 h-3" />
@@ -378,14 +381,14 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
                   <div
                     className={`max-w-[88%] sm:max-w-[80%] rounded-2xl px-4 py-3 text-xs leading-relaxed shadow-xs transition ${
                       isUser
-                        ? 'bg-blue-600 text-white rounded-tr-none'
-                        : 'bg-gray-100/95 dark:bg-zinc-800/95 text-[#1D1D1F] dark:text-[#F5F5F7] rounded-tl-none border border-black/6 dark:border-white/8'
+                        ? 'bg-brand-500 text-white rounded-tr-none'
+                        : 'bg-gray-100/95 dark:bg-zinc-800/95 text-ink dark:text-gray-100 rounded-tl-none border border-black/6 dark:border-white/8'
                     }`}
                   >
                     <div className="whitespace-pre-wrap">{msg.content}</div>
                     <div
-                      className={`text-[9px] mt-1.5 text-right ${
-                        isUser ? 'text-blue-200' : 'text-[#86868B] dark:text-[#A1A1A6]'
+                      className={`text-[12px] mt-1.5 text-right ${
+                        isUser ? 'text-brand-100' : 'text-ink-muted'
                       }`}
                     >
                       {msg.timestamp}
@@ -399,11 +402,11 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
                         <Star className="w-4 h-4 fill-amber-500 text-amber-500 shrink-0" />
                         <span>¡Caso de éxito extraído y guardado en memoria!</span>
                       </div>
-                      <div className="font-semibold text-gray-900 dark:text-white text-xs">
+                      <div className="font-semibold text-ink dark:text-white text-xs">
                         {msg.learnedStory.title}
                       </div>
                       {msg.learnedStory.result_and_metrics && (
-                        <p className="text-xs text-gray-700 dark:text-gray-300">
+                        <p className="text-xs text-ink-muted dark:text-gray-300">
                           <strong className="text-amber-600 dark:text-amber-400 font-semibold">Métrica: </strong>
                           {msg.learnedStory.result_and_metrics}
                         </p>
@@ -413,13 +416,13 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
 
                   {/* Detected Insights Badge */}
                   {msg.learnedInsights && msg.learnedInsights.length > 0 && (
-                    <div className="w-full max-w-[88%] sm:max-w-[80%] rounded-2xl p-3 bg-indigo-50/90 dark:bg-indigo-950/30 border border-indigo-200/60 dark:border-indigo-800/60 text-xs text-indigo-900 dark:text-indigo-200 space-y-1 animate-fade-in">
-                      <div className="flex items-center space-x-1.5 font-bold text-indigo-700 dark:text-indigo-300">
-                        <Lightbulb className="w-3.5 h-3.5 text-indigo-500" />
+                    <div className="w-full max-w-[88%] sm:max-w-[80%] rounded-2xl p-3 bg-teal-50/90 dark:bg-teal-950/30 border border-teal-200/60 dark:border-teal-800/60 text-xs text-teal-900 dark:text-teal-200 space-y-1 animate-fade-in">
+                      <div className="flex items-center space-x-1.5 font-bold text-brand-700 dark:text-brand-300">
+                        <Lightbulb className="w-3.5 h-3.5 text-brand-500" />
                         <span>Regla de afinidad aprendida:</span>
                       </div>
                       {msg.learnedInsights.map((ins, i) => (
-                        <div key={i} className="text-gray-700 dark:text-gray-300 ml-4 list-disc">
+                        <div key={i} className="text-ink-muted dark:text-gray-300 ml-4 list-disc">
                           • {ins}
                         </div>
                       ))}
@@ -434,7 +437,7 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
                         <span>Límite / Deal-Breaker innegociable registrado:</span>
                       </div>
                       {msg.learnedDealBreakers.map((db_item, i) => (
-                        <div key={i} className="text-gray-700 dark:text-gray-300 ml-4 list-disc">
+                        <div key={i} className="text-ink-muted dark:text-gray-300 ml-4 list-disc">
                           • {db_item}
                         </div>
                       ))}
@@ -449,7 +452,7 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
                           type="button"
                           onClick={() => handleSend(qr)}
                           disabled={isLoading}
-                          className="min-h-[36px] px-3.5 py-1.5 rounded-full bg-blue-50/90 dark:bg-blue-950/50 hover:bg-blue-100 dark:hover:bg-blue-900/60 text-blue-700 dark:text-blue-300 border border-blue-200/80 dark:border-blue-800/60 text-xs font-semibold transition active:scale-95 shadow-2xs flex items-center space-x-1.5 cursor-pointer disabled:opacity-50"
+                          className="min-h-[44px] px-3.5 py-1.5 rounded-full bg-brand-50/90 dark:bg-brand-950/50 hover:bg-brand-100 dark:hover:bg-brand-900/60 text-brand-700 dark:text-brand-300 border border-brand-200/80 dark:border-brand-800/60 text-xs font-semibold transition active:scale-95 shadow-2xs flex items-center space-x-1.5 cursor-pointer disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
                         >
                           <span className="text-xs">💬</span>
                           <span>{qr}</span>
@@ -477,7 +480,8 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
                 scrollToBottom('smooth');
                 setShowScrollBottomBtn(false);
               }}
-              className="absolute bottom-3 left-1/2 -translate-x-1/2 px-3.5 py-1.5 rounded-full bg-blue-600/90 hover:bg-blue-600 text-white text-xs font-semibold shadow-lg backdrop-blur-md transition-all active:scale-95 flex items-center space-x-1.5 z-10 animate-fade-in cursor-pointer border border-white/20"
+              aria-label="Ir a los últimos mensajes"
+              className="absolute bottom-3 left-1/2 -translate-x-1/2 min-h-[44px] px-3.5 py-1.5 rounded-full bg-brand-500/95 hover:bg-brand-600 text-white text-xs font-semibold shadow-lg backdrop-blur-md transition-all active:scale-95 flex items-center space-x-1.5 z-10 animate-fade-in cursor-pointer border border-white/20 focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
             >
               <ChevronDown className="w-3.5 h-3.5 animate-bounce" />
               <span>Ir a los últimos mensajes</span>
@@ -489,8 +493,8 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
       {/* Suggested Prompt Pills (Only active when key is configured) */}
       {hasKey && (
         <div className="px-3.5 sm:px-4 py-2 border-t border-black/6 dark:border-white/8 bg-gray-50/60 dark:bg-zinc-900/60 overflow-x-auto no-scrollbar flex items-center space-x-2 shrink-0">
-          <span className="text-xs font-bold uppercase tracking-wider text-[#86868B] dark:text-[#A1A1A6] shrink-0 flex items-center gap-1">
-            <Sparkles className="w-3 h-3 text-blue-500" />
+          <span className="text-xs font-bold uppercase tracking-wider text-ink-muted shrink-0 flex items-center gap-1">
+            <Sparkles className="w-3 h-3 text-brand-500" />
             <span>Sugerencias:</span>
           </span>
           {ACTIONABLE_SUGGESTIONS.map((item, i) => {
@@ -498,12 +502,13 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
             return (
               <button
                 key={i}
+                type="button"
                 onClick={() => handleSend(item.prompt)}
                 disabled={isLoading}
-                className="min-h-[36px] px-3.5 py-1.5 rounded-full text-xs font-medium bg-white dark:bg-zinc-800 text-[#1D1D1F] dark:text-[#F5F5F7] border border-black/6 dark:border-white/8 hover:border-blue-500 hover:text-blue-600 dark:hover:text-blue-400 transition whitespace-nowrap shrink-0 shadow-2xs disabled:opacity-50 active:scale-95 cursor-pointer flex items-center space-x-1.5"
+                className="min-h-[44px] px-3.5 py-1.5 rounded-full text-xs font-medium bg-white dark:bg-zinc-800 text-ink dark:text-white border border-black/6 dark:border-white/8 hover:border-brand-500 hover:text-brand-600 dark:hover:text-brand-400 transition whitespace-nowrap shrink-0 shadow-2xs disabled:opacity-50 active:scale-95 cursor-pointer flex items-center space-x-1.5 focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
                 title={item.prompt}
               >
-                <IconComp className="w-3.5 h-3.5 text-blue-500 shrink-0" />
+                <IconComp className="w-3.5 h-3.5 text-brand-500 shrink-0" />
                 <span>{item.label}</span>
               </button>
             );
@@ -514,14 +519,15 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
       {/* Chat Input Box */}
       <div className="p-3 sm:p-4 border-t border-black/6 dark:border-white/8 bg-white/95 dark:bg-zinc-900/95 shrink-0">
         {!hasKey ? (
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-2 p-2.5 rounded-2xl bg-gray-100/70 dark:bg-zinc-800/60 border border-black/6 dark:border-white/8 text-xs text-[#86868B] dark:text-[#A1A1A6]">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-2 p-2.5 rounded-2xl bg-gray-100/70 dark:bg-zinc-800/60 border border-black/6 dark:border-white/8 text-xs text-ink-muted">
             <div className="flex items-center space-x-2">
               <Lock className="w-4 h-4 text-amber-500 shrink-0" />
               <span>Chat en pausa. Conecta tu API key para habilitar la conversación interactiva.</span>
             </div>
             <button
+              type="button"
               onClick={onOpenSettings}
-              className="min-h-[36px] px-4 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs shadow-xs transition shrink-0 cursor-pointer active:scale-95"
+              className="min-h-[44px] px-4 py-1.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-semibold text-xs shadow-xs transition shrink-0 cursor-pointer active:scale-95 focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
             >
               Conectar Clave
             </button>
@@ -548,14 +554,17 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
                 placeholder="Escribe a Opi: consulta ofertas, comparte un logro o define condiciones... (Enter para enviar)"
                 rows={1}
                 disabled={isLoading}
-                className="w-full max-h-32 min-h-[44px] px-4 py-3 rounded-2xl bg-gray-100/90 dark:bg-zinc-800/90 border border-black/6 dark:border-white/8 focus:border-blue-500 dark:focus:border-blue-500 focus:outline-hidden text-xs resize-none placeholder-[#86868B] dark:placeholder-[#A1A1A6] transition leading-relaxed text-[#1D1D1F] dark:text-[#F5F5F7]"
+                aria-label="Mensaje para el copiloto Opi"
+                className="w-full max-h-32 min-h-[44px] px-4 py-3 rounded-2xl bg-gray-100/90 dark:bg-zinc-800/90 border border-black/6 dark:border-white/8 focus:border-brand-500 dark:focus:border-brand-500 focus:outline-hidden text-xs resize-none placeholder-gray-400 dark:placeholder-gray-500 transition leading-relaxed text-ink dark:text-white"
               />
             </div>
 
             <button
+              type="button"
               onClick={() => handleSend()}
               disabled={!inputValue.trim() || isLoading}
-              className="min-h-[44px] min-w-[44px] rounded-2xl bg-[#173B50] hover:bg-[#1E3B50] dark:bg-[#20A88A] dark:hover:bg-[#1C967A] disabled:opacity-40 disabled:cursor-not-allowed text-white flex items-center justify-center shrink-0 shadow-md shadow-[#173B50]/20 transition cursor-pointer active:scale-95"
+              aria-label="Enviar mensaje a Opi"
+              className="min-h-[44px] min-w-[44px] rounded-2xl bg-brand hover:bg-brand-600 dark:bg-brand dark:hover:bg-brand-600 disabled:opacity-40 disabled:cursor-not-allowed text-white flex items-center justify-center shrink-0 shadow-md shadow-brand/20 transition cursor-pointer active:scale-95 focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
               title="Enviar mensaje a Opi"
             >
               <Send className="w-4 h-4" />

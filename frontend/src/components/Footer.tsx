@@ -114,7 +114,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigateToTab }) => {
               href="https://github.com/alejandroham"
               target="_blank"
               rel="noopener noreferrer"
-              className="font-bold text-gray-800 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 transition"
+              className="font-bold text-ink dark:text-gray-200 hover:text-brand-600 dark:hover:text-brand-400 transition"
             >
               Alejandro Ham
             </a>

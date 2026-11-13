@@ -30,20 +30,20 @@ export const ApplicationList: React.FC<ApplicationListProps> = ({
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'offer':
-        return { label: 'Oferta recibida', color: 'bg-emerald-50 text-emerald-700 border-emerald-200' };
+        return { label: 'Oferta recibida', color: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800/40' };
       case 'interview_scheduled':
       case 'interview_done':
       case 'final_stage':
       case 'contact_received':
-        return { label: 'En entrevista', color: 'bg-blue-50 text-blue-700 border-blue-200' };
+        return { label: 'En entrevista', color: 'bg-brand-50 text-brand-700 border-brand-200 dark:bg-brand-950/60 dark:text-brand-300 dark:border-brand-800/40' };
       case 'applied':
       case 'pending_send':
-        return { label: 'Postulada', color: 'bg-teal-50 text-teal-700 border-teal-200' };
+        return { label: 'Postulada', color: 'bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-950/60 dark:text-sky-300 dark:border-sky-800/40' };
       case 'rejected':
       case 'archived':
-        return { label: 'Cerrada', color: 'bg-gray-100 text-gray-600 border-gray-200' };
+        return { label: 'Cerrada', color: 'bg-gray-100 text-ink-muted border-gray-200 dark:bg-zinc-800 dark:text-gray-400 dark:border-zinc-700' };
       default:
-        return { label: 'Guardada', color: 'bg-amber-50 text-amber-700 border-amber-200' };
+        return { label: 'Guardada', color: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800/40' };
     }
   };
 
@@ -51,13 +51,14 @@ export const ApplicationList: React.FC<ApplicationListProps> = ({
     <div className={`space-y-3 ${className}`}>
       {/* Buscador de lista */}
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-ink-muted" />
         <input
           type="text"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           placeholder="Filtrar por cargo o empresa..."
-          className="w-full pl-9 pr-3 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 text-xs text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#20A88A]/30"
+          aria-label="Filtrar por cargo o empresa"
+          className="w-full pl-9 pr-3 py-2 min-h-[44px] rounded-xl bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 text-xs text-ink dark:text-gray-100 placeholder-ink-muted focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
         />
       </div>
 
@@ -69,12 +70,13 @@ export const ApplicationList: React.FC<ApplicationListProps> = ({
             const badge = getStatusBadge(job.status);
 
             return (
-              <div
+              <button
+                type="button"
                 key={job.id}
                 onClick={() => onSelectJob(job)}
-                className={`p-3.5 rounded-2xl border transition cursor-pointer text-left ${
+                className={`w-full p-3.5 min-h-[44px] rounded-2xl border transition cursor-pointer text-left focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none ${
                   isSelected
-                    ? 'bg-teal-50/60 dark:bg-teal-950/30 border-[#20A88A] shadow-xs'
+                    ? 'bg-brand-50/60 dark:bg-brand-950/30 border-brand shadow-xs'
                     : 'bg-white dark:bg-zinc-900 border-gray-200/80 dark:border-zinc-800 hover:border-gray-300 dark:hover:border-zinc-700'
                 }`}
               >
@@ -92,11 +94,11 @@ export const ApplicationList: React.FC<ApplicationListProps> = ({
                   </span>
                 </div>
 
-                <div className="flex items-center justify-between text-xs text-gray-400 pt-2 mt-1 border-t border-gray-100 dark:border-zinc-800/80">
+                <div className="flex items-center justify-between text-xs text-ink-muted pt-2 mt-1 border-t border-gray-100 dark:border-zinc-800/80">
                   <span className="truncate">{job.location || 'Chile'}</span>
-                  <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
+                  <ChevronRight className="w-3.5 h-3.5 text-ink-muted" />
                 </div>
-              </div>
+              </button>
             );
           })
         ) : (

@@ -118,11 +118,11 @@ export const InterviewSimulator: React.FC<InterviewSimulatorProps> = ({
         </div>
 
         {/* Guía metodológica rápida */}
-        <div className="hidden sm:flex items-center gap-1 text-xs font-semibold text-gray-500">
-          <span className="px-1.5 py-0.5 rounded bg-blue-50 text-blue-700">S: Situación</span>
-          <span className="px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700">T: Tarea</span>
-          <span className="px-1.5 py-0.5 rounded bg-teal-50 text-teal-700">A: Acción</span>
-          <span className="px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700">R: Resultado</span>
+        <div className="hidden sm:flex items-center gap-1 text-xs font-semibold text-ink-muted">
+          <span className="px-1.5 py-0.5 rounded bg-brand-50 text-brand-700 dark:bg-brand-950/60 dark:text-brand-300">S: Situación</span>
+          <span className="px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300">T: Tarea</span>
+          <span className="px-1.5 py-0.5 rounded bg-teal-50 text-teal-700 dark:bg-teal-950/60 dark:text-teal-300">A: Acción</span>
+          <span className="px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300">R: Resultado</span>
         </div>
       </div>
 

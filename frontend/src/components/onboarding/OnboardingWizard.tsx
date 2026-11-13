@@ -147,17 +147,22 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md p-4 animate-fade-in no-print text-xs">
-      <div className="w-full max-w-xl bg-white dark:bg-zinc-900 border border-black/10 dark:border-white/10 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="Guía de inicio paso a paso"
+        className="w-full max-w-xl bg-white dark:bg-zinc-900 border border-black/10 dark:border-white/10 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+      >
         
         {/* Header & Step Indicator */}
         <div className="p-5 border-b border-black/5 dark:border-white/5 flex items-center justify-between bg-gray-50/60 dark:bg-zinc-800/40">
           <div>
             <div className="flex items-center space-x-2">
-              <span className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">
+              <span className="text-xs font-bold text-brand-600 dark:text-brand-400 uppercase tracking-wider">
                 Paso {step} de 3
               </span>
               <span className="text-gray-300 dark:text-gray-700">•</span>
-              <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">
+              <span className="text-xs font-semibold text-ink dark:text-gray-300">
                 {step === 1 ? 'Tu currículum' : step === 2 ? 'Qué estás buscando' : 'Conecta la IA'}
               </span>
             </div>
@@ -167,7 +172,7 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
                   key={s}
                   className={`h-1.5 rounded-full transition-all duration-300 ${
                     s === step
-                      ? 'w-8 bg-blue-600'
+                      ? 'w-8 bg-brand-500'
                       : s < step
                       ? 'w-5 bg-emerald-500'
                       : 'w-5 bg-gray-200 dark:bg-zinc-700'
@@ -180,7 +185,8 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-full text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-zinc-800 transition cursor-pointer"
+            aria-label="Cerrar guía de inicio"
+            className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-full text-ink-muted hover:text-ink dark:hover:text-white hover:bg-gray-100 dark:hover:bg-zinc-800 transition cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
             title="Cerrar guía"
           >
             <X className="w-5 h-5" />
@@ -230,14 +236,14 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
               <button
                 type="button"
                 onClick={() => setStep(2)}
-                className="text-xs text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 font-medium cursor-pointer"
+                className="min-h-[44px] px-3 text-xs text-ink-muted hover:text-ink dark:hover:text-white font-medium cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none rounded-xl"
               >
                 Omitir por ahora
               </button>
               <button
                 type="button"
                 onClick={handleConfirmStep1}
-                className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs transition flex items-center gap-1.5 shadow-xs cursor-pointer active:scale-95"
+                className="px-5 py-2.5 min-h-[44px] rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-semibold text-xs transition flex items-center gap-1.5 shadow-xs cursor-pointer active:scale-95 focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
               >
                 <span>{tempName ? 'Se ve bien, continuar' : 'Continuar'}</span>
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -250,14 +256,14 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
               <button
                 type="button"
                 onClick={() => setStep(3)}
-                className="text-xs text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 font-medium cursor-pointer"
+                className="min-h-[44px] px-3 text-xs text-ink-muted hover:text-ink dark:hover:text-white font-medium cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none rounded-xl"
               >
                 Omitir por ahora
               </button>
               <button
                 type="button"
                 onClick={handleConfirmStep2}
-                className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs transition flex items-center gap-1.5 shadow-xs cursor-pointer active:scale-95"
+                className="px-5 py-2.5 min-h-[44px] rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-semibold text-xs transition flex items-center gap-1.5 shadow-xs cursor-pointer active:scale-95 focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
               >
                 <span>Guardar y continuar</span>
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -271,7 +277,7 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
                 type="button"
                 onClick={() => handleFinish(false)}
                 disabled={isSavingAI}
-                className="text-xs text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 font-semibold cursor-pointer"
+                className="min-h-[44px] px-3 text-xs text-ink-muted hover:text-ink dark:hover:text-white font-semibold cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none rounded-xl"
               >
                 Lo haré después
               </button>
@@ -279,7 +285,7 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
                 type="button"
                 onClick={() => handleFinish(true)}
                 disabled={isSavingAI}
-                className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs transition flex items-center gap-1.5 shadow-xs cursor-pointer active:scale-95"
+                className="px-5 py-2.5 min-h-[44px] rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs transition flex items-center gap-1.5 shadow-xs cursor-pointer active:scale-95 focus-visible:ring-2 focus-visible:ring-emerald-500/40 focus-visible:outline-none"
               >
                 <Sparkles className="w-3.5 h-3.5" />
                 <span>{apiKey.trim() ? 'Conectar y buscar ofertas' : 'Finalizar y buscar ofertas'}</span>

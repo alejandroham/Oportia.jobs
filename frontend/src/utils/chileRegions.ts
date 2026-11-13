@@ -235,7 +235,7 @@ export function getGeographicBadge(
     return {
       type: 'user_region',
       label: `📍 ${locText}`,
-      badgeClass: 'bg-blue-100 dark:bg-blue-950/60 text-blue-800 dark:text-blue-200 border border-blue-300 dark:border-blue-700 font-bold shadow-2xs',
+      badgeClass: 'bg-brand-100 dark:bg-brand-950/60 text-brand-800 dark:text-brand-200 border border-brand-300 dark:border-brand-700 font-bold shadow-2xs',
       detectedRegion: region,
       detectedCommune: commune
     };

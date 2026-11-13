@@ -136,12 +136,12 @@ export const SettingsAIPanel: React.FC = () => {
       <div className="apple-glass apple-card p-6 rounded-2xl space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-xl bg-brand-50 dark:bg-brand-950/60 text-brand-600 dark:text-brand-400 flex items-center justify-center">
               <Cpu className="w-4 h-4" />
             </div>
             <div>
-              <h2 className="text-sm font-bold text-gray-900 dark:text-white">Conexión con Inteligencia Artificial</h2>
-              <p className="text-xs text-gray-500">Tus claves se guardan cifradas exclusivamente en tu navegador.</p>
+              <h2 className="text-sm font-bold text-ink dark:text-white">Conexión con Inteligencia Artificial</h2>
+              <p className="text-xs text-ink-muted">Tus claves se guardan cifradas exclusivamente en tu navegador.</p>
             </div>
           </div>
           <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${settings.has_active_key ? 'bg-emerald-100 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-300' : 'bg-amber-100 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border border-amber-300'}`}>
@@ -155,7 +155,7 @@ export const SettingsAIPanel: React.FC = () => {
               type="button"
               key={p}
               onClick={() => handleProviderChange(p)}
-              className={`py-2 px-3 rounded-xl border text-xs font-semibold capitalize transition cursor-pointer ${provider === p ? 'border-blue-500 bg-blue-50/50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400' : 'border-black/8 dark:border-white/8 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-zinc-800'}`}
+              className={`min-h-[44px] py-2 px-3 rounded-xl border text-xs font-semibold capitalize transition cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none ${provider === p ? 'border-brand-500 bg-brand-50/50 dark:bg-brand-950/40 text-brand-700 dark:text-brand-300 shadow-xs' : 'border-black/8 dark:border-white/8 text-ink-muted hover:bg-gray-50 dark:hover:bg-zinc-800'}`}
             >
               {p === 'gemini' ? 'Google Gemini' : p === 'openai' ? 'OpenAI' : 'Anthropic Claude'}
             </button>
@@ -163,11 +163,12 @@ export const SettingsAIPanel: React.FC = () => {
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-xs font-semibold text-gray-700 dark:text-gray-300">Modelo Oficial</label>
+          <label htmlFor="ai-model-select" className="text-xs font-semibold text-ink dark:text-gray-300">Modelo Oficial</label>
           <select
+            id="ai-model-select"
             value={selectedModel}
             onChange={(e) => setSelectedModel(e.target.value)}
-            className="w-full text-xs px-3 py-2 rounded-xl bg-gray-50 dark:bg-zinc-800 border border-black/10 dark:border-white/10 text-gray-900 dark:text-white"
+            className="w-full text-xs min-h-[44px] px-3 py-2 rounded-xl bg-gray-50 dark:bg-zinc-800 border border-black/10 dark:border-white/10 text-ink dark:text-white focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
           >
             {providerModels.map((m: ModelOption) => (
               <option key={m.id} value={m.id}>{m.name} ({m.tag})</option>
@@ -176,24 +177,26 @@ export const SettingsAIPanel: React.FC = () => {
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-xs font-semibold text-gray-700 dark:text-gray-300">Clave de API ({provider.toUpperCase()})</label>
+          <label htmlFor="ai-api-key" className="text-xs font-semibold text-ink dark:text-gray-300">Clave de API ({provider.toUpperCase()})</label>
           <div className="relative">
             <input
+              id="ai-api-key"
               type={showKey ? 'text' : 'password'}
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
               placeholder={`Pega aquí tu clave de API de ${provider}...`}
-              className="w-full text-xs px-3 py-2 pr-10 rounded-xl bg-gray-50 dark:bg-zinc-800 border border-black/10 dark:border-white/10 text-gray-900 dark:text-white font-mono"
+              className="w-full text-xs min-h-[44px] px-3 py-2 pr-12 rounded-xl bg-gray-50 dark:bg-zinc-800 border border-black/10 dark:border-white/10 text-ink dark:text-white font-mono focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
             />
             <button
               type="button"
               onClick={() => setShowKey(!showKey)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 cursor-pointer"
+              aria-label={showKey ? 'Ocultar clave de API' : 'Mostrar clave de API'}
+              className="absolute right-2 top-1/2 -translate-y-1/2 p-2 min-h-[40px] min-w-[40px] flex items-center justify-center text-ink-muted hover:text-ink dark:hover:text-white cursor-pointer rounded-lg"
             >
               {showKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             </button>
           </div>
-          <p className="text-xs text-gray-400">Tu clave nunca se guarda en el servidor. Solo viaja por petición cuando usas IA.</p>
+          <p className="text-xs text-ink-muted">Tu clave nunca se guarda en el servidor. Solo viaja por petición cuando usas IA.</p>
         </div>
 
         <div className="flex items-center justify-between pt-2 border-t border-black/5 dark:border-white/5">
@@ -201,7 +204,8 @@ export const SettingsAIPanel: React.FC = () => {
             <button
               type="button"
               onClick={handleClearAIKey}
-              className="text-xs font-semibold text-red-600 hover:text-red-700 dark:text-red-400 flex items-center gap-1 cursor-pointer"
+              aria-label="Desconectar y eliminar clave de API"
+              className="min-h-[44px] text-xs font-semibold text-rose-600 hover:text-rose-700 dark:text-rose-400 flex items-center gap-1 cursor-pointer focus-visible:ring-2 focus-visible:ring-rose-500/40 focus-visible:outline-none"
             >
               <Trash2 className="w-3.5 h-3.5" />
               Desconectar clave
@@ -210,7 +214,7 @@ export const SettingsAIPanel: React.FC = () => {
           <button
             type="submit"
             disabled={isSavingAI}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-xl shadow-xs transition cursor-pointer"
+            className="px-4 py-2 min-h-[44px] bg-brand-500 hover:bg-brand-600 text-white text-xs font-semibold rounded-xl shadow-xs transition cursor-pointer active:scale-95 disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
           >
             {isSavingAI ? 'Guardando...' : 'Guardar configuración'}
           </button>

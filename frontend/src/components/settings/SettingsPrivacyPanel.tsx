@@ -83,11 +83,11 @@ export const SettingsPrivacyPanel: React.FC = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
           {/* Download backup card */}
           <div className="p-4 rounded-xl border border-black/8 dark:border-white/8 bg-gray-50/50 dark:bg-zinc-800/40 space-y-3">
-            <h3 className="text-xs font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
-              <Download className="w-4 h-4 text-blue-600" />
+            <h3 className="text-xs font-bold text-ink dark:text-white flex items-center gap-1.5">
+              <Download className="w-4 h-4 text-brand-600" />
               Descargar respaldo
             </h3>
-            <p className="text-xs text-gray-500 leading-relaxed">
+            <p className="text-xs text-ink-muted leading-relaxed">
               Exporta todo tu perfil, postulaciones, ofertas guardadas y memoria en un archivo descargable.
             </p>
             <div className="space-y-2">
@@ -96,13 +96,13 @@ export const SettingsPrivacyPanel: React.FC = () => {
                 placeholder="Contraseña de cifrado (opcional)..."
                 value={exportPassword}
                 onChange={(e) => setExportPassword(e.target.value)}
-                className="w-full text-xs px-2.5 py-1.5 rounded-lg bg-white dark:bg-zinc-800 border border-black/10 dark:border-white/10"
+                className="w-full text-xs min-h-[44px] px-3 py-2 rounded-xl bg-white dark:bg-zinc-800 border border-black/10 dark:border-white/10 text-ink dark:text-white focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
               />
               <button
                 type="button"
                 onClick={handleDownloadBackup}
                 disabled={isExporting}
-                className="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-xl transition cursor-pointer"
+                className="w-full min-h-[44px] py-2 bg-brand-500 hover:bg-brand-600 text-white text-xs font-semibold rounded-xl shadow-xs transition cursor-pointer active:scale-95 disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
               >
                 {isExporting ? 'Descargando...' : 'Descargar archivo (.oportia)'}
               </button>
@@ -112,11 +112,11 @@ export const SettingsPrivacyPanel: React.FC = () => {
           {/* Restore backup card */}
           <div className="p-4 rounded-xl border border-black/8 dark:border-white/8 bg-gray-50/50 dark:bg-zinc-800/40 space-y-3 flex flex-col justify-between">
             <div>
-              <h3 className="text-xs font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
+              <h3 className="text-xs font-bold text-ink dark:text-white flex items-center gap-1.5">
                 <UploadCloud className="w-4 h-4 text-emerald-600" />
                 Restaurar respaldo
               </h3>
-              <p className="text-xs text-gray-500 leading-relaxed mt-1">
+              <p className="text-xs text-ink-muted leading-relaxed mt-1">
                 Restaura un archivo previamente descargado (.oportia o .nexusjob) en tu navegador.
               </p>
             </div>
@@ -134,7 +134,7 @@ export const SettingsPrivacyPanel: React.FC = () => {
               type="button"
               onClick={() => fileInputRef.current?.click()}
               disabled={isImporting}
-              className="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl transition cursor-pointer"
+              className="w-full min-h-[44px] py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl shadow-xs transition cursor-pointer active:scale-95 disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-emerald-500/40 focus-visible:outline-none"
             >
               {isImporting ? 'Restaurando...' : 'Seleccionar archivo'}
             </button>
@@ -144,13 +144,13 @@ export const SettingsPrivacyPanel: React.FC = () => {
         {/* Right to be forgotten */}
         <div className="pt-4 border-t border-black/5 dark:border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <h3 className="text-xs font-bold text-red-600 dark:text-red-400">Derecho al Olvido (Borrar Todo)</h3>
-            <p className="text-xs text-gray-500">Elimina de forma permanente todo dato personal, CV y claves de este navegador.</p>
+            <h3 className="text-xs font-bold text-rose-600 dark:text-rose-400">Derecho al Olvido (Borrar Todo)</h3>
+            <p className="text-xs text-ink-muted">Elimina de forma permanente todo dato personal, CV y claves de este navegador.</p>
           </div>
           <button
             type="button"
             onClick={handlePurgeAll}
-            className="px-3.5 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold rounded-xl transition flex items-center gap-1.5 cursor-pointer shrink-0"
+            className="px-4 py-2 min-h-[44px] bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold rounded-xl shadow-xs transition flex items-center gap-1.5 cursor-pointer shrink-0 active:scale-95 focus-visible:ring-2 focus-visible:ring-rose-500/40 focus-visible:outline-none"
           >
             <Trash2 className="w-3.5 h-3.5" />
             Borrar todos mis datos

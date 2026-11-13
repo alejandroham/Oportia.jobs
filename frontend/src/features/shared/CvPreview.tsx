@@ -56,8 +56,8 @@ export const CvPreview: React.FC<CvPreviewProps> = ({
               <button
                 type="button"
                 onClick={() => setViewSource('profile')}
-                className={`px-2.5 py-1 rounded-lg font-medium transition ${
-                  viewSource === 'profile' ? 'bg-[#20A88A] text-white' : 'text-gray-600 dark:text-gray-300'
+                className={`px-3 py-1.5 min-h-[36px] rounded-lg font-semibold transition cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none ${
+                  viewSource === 'profile' ? 'bg-brand text-white shadow-xs' : 'text-ink-muted'
                 }`}
               >
                 CV Base
@@ -65,8 +65,8 @@ export const CvPreview: React.FC<CvPreviewProps> = ({
               <button
                 type="button"
                 onClick={() => setViewSource('tailored')}
-                className={`px-2.5 py-1 rounded-lg font-medium transition ${
-                  viewSource === 'tailored' ? 'bg-[#20A88A] text-white' : 'text-gray-600 dark:text-gray-300'
+                className={`px-3 py-1.5 min-h-[36px] rounded-lg font-semibold transition cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none ${
+                  viewSource === 'tailored' ? 'bg-brand text-white shadow-xs' : 'text-ink-muted'
                 }`}
               >
                 CV Adaptado
@@ -76,11 +76,12 @@ export const CvPreview: React.FC<CvPreviewProps> = ({
 
           {/* Selector de plantilla */}
           <div className="flex items-center gap-1.5">
-            <Layout className="w-3.5 h-3.5 text-gray-400" />
+            <Layout className="w-3.5 h-3.5 text-ink-muted" />
             <select
               value={template}
               onChange={(e) => setTemplate(e.target.value as any)}
-              className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-lg px-2 py-1 text-xs text-gray-700 dark:text-gray-200 focus:outline-none"
+              aria-label="Plantilla de currículum"
+              className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-lg px-2.5 py-1.5 min-h-[36px] text-xs text-ink dark:text-gray-200 focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
             >
               <option value="modern">Moderna</option>
               <option value="minimalist">Minimalista</option>
@@ -90,11 +91,12 @@ export const CvPreview: React.FC<CvPreviewProps> = ({
 
           {/* Selector de papel */}
           <div className="flex items-center gap-1.5">
-            <Palette className="w-3.5 h-3.5 text-gray-400" />
+            <Palette className="w-3.5 h-3.5 text-ink-muted" />
             <select
               value={paperTheme}
               onChange={(e) => setPaperTheme(e.target.value as any)}
-              className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-lg px-2 py-1 text-xs text-gray-700 dark:text-gray-200 focus:outline-none"
+              aria-label="Tono del papel"
+              className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-lg px-2.5 py-1.5 min-h-[36px] text-xs text-ink dark:text-gray-200 focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
             >
               <option value="white">Blanco puro</option>
               <option value="warm">Cálido suave</option>
@@ -107,7 +109,8 @@ export const CvPreview: React.FC<CvPreviewProps> = ({
             <button
               type="button"
               onClick={() => setAlign('left')}
-              className={`p-1 rounded ${align === 'left' ? 'bg-gray-200 dark:bg-zinc-700 text-gray-900 dark:text-white' : 'text-gray-400'}`}
+              aria-label="Alinear cabecera a la izquierda"
+              className={`p-1.5 min-h-[36px] min-w-[36px] flex items-center justify-center rounded-md cursor-pointer transition focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none ${align === 'left' ? 'bg-gray-200 dark:bg-zinc-700 text-ink dark:text-white' : 'text-ink-muted'}`}
               title="Alinear a la izquierda"
             >
               <AlignLeft className="w-3.5 h-3.5" />
@@ -115,7 +118,8 @@ export const CvPreview: React.FC<CvPreviewProps> = ({
             <button
               type="button"
               onClick={() => setAlign('center')}
-              className={`p-1 rounded ${align === 'center' ? 'bg-gray-200 dark:bg-zinc-700 text-gray-900 dark:text-white' : 'text-gray-400'}`}
+              aria-label="Centrar cabecera"
+              className={`p-1.5 min-h-[36px] min-w-[36px] flex items-center justify-center rounded-md cursor-pointer transition focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none ${align === 'center' ? 'bg-gray-200 dark:bg-zinc-700 text-ink dark:text-white' : 'text-ink-muted'}`}
               title="Centrar cabecera"
             >
               <AlignCenter className="w-3.5 h-3.5" />
@@ -126,7 +130,8 @@ export const CvPreview: React.FC<CvPreviewProps> = ({
           <button
             type="button"
             onClick={handlePrint}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#20A88A] hover:bg-[#18856d] text-white font-medium shadow-sm transition"
+            aria-label="Descargar o imprimir currículum en formato PDF"
+            className="inline-flex items-center gap-1.5 px-4 py-2 min-h-[44px] rounded-xl bg-brand hover:bg-brand-600 text-white font-medium shadow-xs transition cursor-pointer active:scale-95 focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
           >
             <Printer className="w-3.5 h-3.5" />
             <span>Imprimir / Guardar PDF</span>

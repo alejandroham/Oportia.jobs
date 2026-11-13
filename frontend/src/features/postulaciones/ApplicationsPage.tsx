@@ -154,8 +154,8 @@ export const ApplicationsPage: React.FC<ApplicationsPageProps> = ({
           <button
             type="button"
             onClick={() => setStatusFilter('all')}
-            className={`px-3 py-1.5 rounded-xl transition ${
-              statusFilter === 'all' ? 'bg-white dark:bg-zinc-900 text-gray-900 dark:text-white shadow-xs' : 'text-gray-500 hover:text-gray-800'
+            className={`px-3 py-2 min-h-[38px] rounded-xl transition cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none ${
+              statusFilter === 'all' ? 'bg-white dark:bg-zinc-900 text-ink dark:text-white shadow-xs font-bold' : 'text-ink-muted hover:text-ink dark:hover:text-white'
             }`}
           >
             Todas ({trackedJobs.length})
@@ -163,8 +163,8 @@ export const ApplicationsPage: React.FC<ApplicationsPageProps> = ({
           <button
             type="button"
             onClick={() => setStatusFilter('saved')}
-            className={`px-3 py-1.5 rounded-xl transition ${
-              statusFilter === 'saved' ? 'bg-white dark:bg-zinc-900 text-gray-900 dark:text-white shadow-xs' : 'text-gray-500 hover:text-gray-800'
+            className={`px-3 py-2 min-h-[38px] rounded-xl transition cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none ${
+              statusFilter === 'saved' ? 'bg-white dark:bg-zinc-900 text-ink dark:text-white shadow-xs font-bold' : 'text-ink-muted hover:text-ink dark:hover:text-white'
             }`}
           >
             Guardadas
@@ -172,8 +172,8 @@ export const ApplicationsPage: React.FC<ApplicationsPageProps> = ({
           <button
             type="button"
             onClick={() => setStatusFilter('applied')}
-            className={`px-3 py-1.5 rounded-xl transition ${
-              statusFilter === 'applied' ? 'bg-white dark:bg-zinc-900 text-gray-900 dark:text-white shadow-xs' : 'text-gray-500 hover:text-gray-800'
+            className={`px-3 py-2 min-h-[38px] rounded-xl transition cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none ${
+              statusFilter === 'applied' ? 'bg-white dark:bg-zinc-900 text-ink dark:text-white shadow-xs font-bold' : 'text-ink-muted hover:text-ink dark:hover:text-white'
             }`}
           >
             Postuladas
@@ -181,8 +181,8 @@ export const ApplicationsPage: React.FC<ApplicationsPageProps> = ({
           <button
             type="button"
             onClick={() => setStatusFilter('interview')}
-            className={`px-3 py-1.5 rounded-xl transition ${
-              statusFilter === 'interview' ? 'bg-white dark:bg-zinc-900 text-gray-900 dark:text-white shadow-xs' : 'text-gray-500 hover:text-gray-800'
+            className={`px-3 py-2 min-h-[38px] rounded-xl transition cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none ${
+              statusFilter === 'interview' ? 'bg-white dark:bg-zinc-900 text-ink dark:text-white shadow-xs font-bold' : 'text-ink-muted hover:text-ink dark:hover:text-white'
             }`}
           >
             En entrevista
@@ -190,8 +190,8 @@ export const ApplicationsPage: React.FC<ApplicationsPageProps> = ({
           <button
             type="button"
             onClick={() => setStatusFilter('offer')}
-            className={`px-3 py-1.5 rounded-xl transition ${
-              statusFilter === 'offer' ? 'bg-white dark:bg-zinc-900 text-gray-900 dark:text-white shadow-xs' : 'text-gray-500 hover:text-gray-800'
+            className={`px-3 py-2 min-h-[38px] rounded-xl transition cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none ${
+              statusFilter === 'offer' ? 'bg-white dark:bg-zinc-900 text-ink dark:text-white shadow-xs font-bold' : 'text-ink-muted hover:text-ink dark:hover:text-white'
             }`}
           >
             Oferta
@@ -199,8 +199,8 @@ export const ApplicationsPage: React.FC<ApplicationsPageProps> = ({
           <button
             type="button"
             onClick={() => setStatusFilter('closed')}
-            className={`px-3 py-1.5 rounded-xl transition ${
-              statusFilter === 'closed' ? 'bg-white dark:bg-zinc-900 text-gray-900 dark:text-white shadow-xs' : 'text-gray-500 hover:text-gray-800'
+            className={`px-3 py-2 min-h-[38px] rounded-xl transition cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none ${
+              statusFilter === 'closed' ? 'bg-white dark:bg-zinc-900 text-ink dark:text-white shadow-xs font-bold' : 'text-ink-muted hover:text-ink dark:hover:text-white'
             }`}
           >
             Cerradas

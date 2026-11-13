@@ -16,10 +16,11 @@ export const CvSkillsSection: React.FC<CvSkillsSectionProps> = ({
   return (
     <div className="space-y-3 text-xs">
       <div>
-        <label className="block text-gray-600 dark:text-gray-400 font-medium mb-1">
+        <label htmlFor="technical-skills-input" className="block text-ink-muted dark:text-gray-400 font-semibold mb-1">
           Habilidades Técnicas (separadas por coma)
         </label>
         <input
+          id="technical-skills-input"
           type="text"
           value={technicalSkills?.join(', ') || ''}
           onChange={(e) =>
@@ -28,15 +29,16 @@ export const CvSkillsSection: React.FC<CvSkillsSectionProps> = ({
             )
           }
           placeholder="Python, React, SQL, TypeScript..."
-          className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-gray-900 dark:text-gray-100"
+          className="w-full min-h-[44px] p-2.5 rounded-xl border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-ink dark:text-gray-100 placeholder-ink-muted focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
         />
       </div>
 
       <div>
-        <label className="block text-gray-600 dark:text-gray-400 font-medium mb-1">
+        <label htmlFor="soft-skills-input" className="block text-ink-muted dark:text-gray-400 font-semibold mb-1">
           Habilidades Blandas (separadas por coma)
         </label>
         <input
+          id="soft-skills-input"
           type="text"
           value={softSkills?.join(', ') || ''}
           onChange={(e) =>
@@ -45,7 +47,7 @@ export const CvSkillsSection: React.FC<CvSkillsSectionProps> = ({
             )
           }
           placeholder="Liderazgo, Comunicación asertiva, Negociación..."
-          className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-gray-900 dark:text-gray-100"
+          className="w-full min-h-[44px] p-2.5 rounded-xl border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-ink dark:text-gray-100 placeholder-ink-muted focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
         />
       </div>
     </div>
