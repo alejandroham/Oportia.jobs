@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { Navbar } from './components/Navbar';
-import { JobRadar } from './components/JobRadar';
-import { PipelineTracker } from './components/PipelineTracker';
-import { CoachStudio } from './components/CoachStudio';
-import { ProfileView } from './components/ProfileView';
+import { JobSearchPage } from './features/empleos/JobSearchPage';
+import { ApplicationsPage } from './features/postulaciones/ApplicationsPage';
+import { LearnPage } from './features/aprender/LearnPage';
+import { ProfilePage } from './features/perfil/ProfilePage';
 import { SettingsView } from './components/SettingsView';
 import { WelcomeHub } from './components/WelcomeHub';
 import { OnboardingWizard } from './components/onboarding/OnboardingWizard';
@@ -188,15 +188,13 @@ export function App() {
                   <Route
                     path="/empleos"
                     element={
-                      <JobRadar
+                      <JobSearchPage
                         jobs={jobs}
                         profile={profile}
                         hasActiveKey={Boolean(settings.has_active_key)}
                         onOpenSettings={() => navigate('/ajustes')}
-                        onRefresh={async () => {}}
                         onApply={handleApplyToJob}
                         onNavigateToTracker={() => navigate('/postulaciones')}
-                        onNavigateToTab={handleNavigate}
                       />
                     }
                   />
@@ -204,11 +202,10 @@ export function App() {
                   <Route
                     path="/postulaciones"
                     element={
-                      <PipelineTracker
+                      <ApplicationsPage
                         jobs={jobs}
                         applications={applications}
                         profile={profile}
-                        onRefresh={async () => {}}
                         onApply={handleApplyToJob}
                       />
                     }
@@ -217,7 +214,7 @@ export function App() {
                   <Route
                     path="/aprender"
                     element={
-                      <CoachStudio
+                      <LearnPage
                         profile={profile}
                         jobs={jobs}
                         llmSettings={settings}
@@ -230,7 +227,7 @@ export function App() {
                   <Route
                     path="/perfil"
                     element={
-                      <ProfileView
+                      <ProfilePage
                         profile={profile || DEFAULT_EMPTY_PROFILE}
                         onProfileUpdated={setProfile}
                         preferences={preferences || DEFAULT_EMPTY_PREFERENCES}
