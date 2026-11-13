@@ -7,6 +7,7 @@ import { CoachStudio } from './components/CoachStudio';
 import { ProfileView } from './components/ProfileView';
 import { SettingsView } from './components/SettingsView';
 import { WelcomeHub } from './components/WelcomeHub';
+import { OnboardingWizard } from './components/onboarding/OnboardingWizard';
 import { Footer } from './components/Footer';
 import { MemoryChat } from './components/MemoryChat';
 import { X } from 'lucide-react';
@@ -66,13 +67,23 @@ export function App() {
     applications,
     addOrUpdateApplication,
     settings,
+    hasCompletedOnboarding,
+    setOnboardingCompleted,
     isLoading,
     initStore,
     importBackupBundle
   } = useAppStore();
 
   const [isOpiChatOpen, setIsOpiChatOpen] = useState<boolean>(false);
+  const [isOnboardingOpen, setIsOnboardingOpen] = useState<boolean>(false);
   const toast = useToast();
+
+  // Auto-open onboarding on first visit once store initialized
+  useEffect(() => {
+    if (!isLoading && !hasCompletedOnboarding) {
+      setIsOnboardingOpen(true);
+    }
+  }, [isLoading, hasCompletedOnboarding]);
 
   useEffect(() => {
     const init = async () => {
@@ -169,6 +180,7 @@ export function App() {
                         onOpenPrivacyModal={() => navigate('/ajustes')}
                         onOpenSettings={() => navigate('/ajustes')}
                         onUploadCVClick={() => navigate('/perfil')}
+                        onOpenOnboarding={() => setIsOnboardingOpen(true)}
                       />
                     }
                   />
@@ -301,6 +313,19 @@ export function App() {
             </div>
           </div>
         )}
+
+        {/* 3-Step Guided Onboarding Wizard */}
+        <OnboardingWizard
+          isOpen={isOnboardingOpen}
+          onClose={() => {
+            setIsOnboardingOpen(false);
+            setOnboardingCompleted(true);
+          }}
+          onFinished={() => {
+            setIsOnboardingOpen(false);
+            navigate('/empleos');
+          }}
+        />
       </div>
     </ErrorBoundary>
   );
