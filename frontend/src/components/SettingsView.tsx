@@ -130,7 +130,7 @@ export const SettingsView: React.FC = () => {
               </div>
               <div>
                 <h2 className="text-sm font-bold text-ink dark:text-white">Acerca de Oportia Jobs IA</h2>
-                <p className="text-xs text-ink-muted">Versión 1.0.1 — Ecosistema inteligente de empleabilidad y desarrollo profesional.</p>
+                <p className="text-xs text-ink-muted">Versión 1.1.0 — Ecosistema inteligente de empleabilidad y desarrollo profesional.</p>
               </div>
             </div>
 
