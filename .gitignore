@@ -56,3 +56,8 @@ backups/
 *.zip
 .tools/
 test_clean_parse.py
+
+# Test outputs & caches
+frontend/test-results/
+frontend/playwright-report/
+.pytest_cache/

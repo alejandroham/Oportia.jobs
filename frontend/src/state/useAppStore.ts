@@ -130,7 +130,8 @@ export const useAppStore = create<AppState>((set, get) => ({
         getClientStore<boolean>('onboarding_completed')
       ]);
 
-      const isCompleted = savedOnboarding === true || Boolean(savedProfile?.name && savedProfile.name.trim().toLowerCase() !== 'candidato');
+      const localOnboarding = typeof window !== 'undefined' && localStorage.getItem('nexusjob_onboarding_completed') === 'true';
+      const isCompleted = savedOnboarding === true || localOnboarding || Boolean(savedProfile?.name && savedProfile.name.trim().toLowerCase() !== 'candidato');
 
       const savedTheme = localStorage.getItem('oportia_theme');
       const prefersDark = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
