@@ -1,6 +1,6 @@
 from typing import Dict, Any, Tuple
 from app.models.schemas import CandidateProfile, JobPosting, ApplicationDraft
-from app.agents.llm_provider import llm
+from app.agents.llm_provider import llm, LLMProviderError
 from app.storage.db import db
 import logging
 import json
@@ -128,9 +128,14 @@ RESPONDE EN JSON:
 }}
 """
         res = llm.generate_json(prompt, system_instruction=system_instruction)
-        score = res.get("ats_score", 88)
-        feedback = res.get("ats_feedback", ["Formato ATS optimizado", "Palabras clave relevantes integradas"])
-        critique = res.get("reviewer_critique", "Excelente alineación de competencias con el rol objetivo.")
+        if not res or "ats_score" not in res:
+            raise LLMProviderError(
+                code="review_failed",
+                message="No se pudo auditar la postulación con IA."
+            )
+        score = res.get("ats_score", 85)
+        feedback = res.get("ats_feedback", ["Formato legible para filtros ATS"])
+        critique = res.get("reviewer_critique", "Revisión completada.")
         return score, feedback, critique
 
     def _fallback_cv(self, profile: CandidateProfile, job: JobPosting) -> str:

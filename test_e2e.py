@@ -30,6 +30,7 @@ from app.agents.drafter_reviewer import drafter_reviewer
 from app.agents.preference_learner import preference_learner
 from app.agents.interview_coach import interview_coach
 from app.agents.career_coach import career_coach
+from app.agents.llm_provider import llm, AINotConnectedError
 from app.scrapers.remote_boards import RemoteBoardsScraper
 from app.scrapers.url_parser import sanitize_job_text
 from app.mcp_server import handle_tool_call, TOOLS_DEFINITION
@@ -112,6 +113,94 @@ def test_pipeline():
     # TEST 4: Evaluación de Ajuste en 5 Dimensiones
     print("\n[TEST 4/7] Probando Evaluador de Ajuste 5D (Fit Evaluator)...")
     prefs = db.get_preferences()
+
+    # Subtest 4a: Verificar honestidad sin API key (Fase 6 - Requisito 6.1)
+    has_rejected_without_key = False
+    try:
+        fit_evaluator.evaluate(target_job, profile, prefs)
+    except AINotConnectedError:
+        has_rejected_without_key = True
+        print("  ✓ Honestidad verificada: Sin API key, el sistema no inventa puntajes y lanza AINotConnectedError.")
+
+    if not has_rejected_without_key:
+        raise AssertionError("Se esperaba AINotConnectedError al no tener clave configurada.")
+
+    # Subtest 4b: Configurar Mock LLM controlado para evaluar el pipeline 5D, Drafter y Coach
+    def mock_generate_json(prompt, system_instruction=None):
+        prompt_lower = prompt.lower()
+        if "evaluar ajuste" in prompt_lower or "overall_score" in prompt_lower or "committee_evaluations" in prompt_lower:
+            return {
+                "committee_evaluations": [
+                    {"role_id": "rrhh", "role_name": "Reclutador RR. HH.", "score": 88, "weight_percentage": 25, "justification": "Perfil afín", "strengths": ["Experiencia sólida"], "gaps": [], "key_question": "¿Cumple?", "question_verdict": "Cumple ampliamente."},
+                    {"role_id": "hiring_manager", "role_name": "Jefe Contratante", "score": 84, "weight_percentage": 25, "justification": "Solvencia técnica", "strengths": ["Proyectos reales"], "gaps": [], "key_question": "¿Contrataría?", "question_verdict": "Sí."},
+                    {"role_id": "technical", "role_name": "Evaluador Técnico", "score": 86, "weight_percentage": 25, "justification": "Stack sólido", "strengths": ["Python y FastAPI"], "gaps": [], "key_question": "¿Conocimientos?", "question_verdict": "Sí."},
+                    {"role_id": "ats", "role_name": "Especialista ATS", "score": 92, "weight_percentage": 15, "justification": "Alta legibilidad", "strengths": ["Palabras clave"], "gaps": [], "key_question": "¿Legible?", "question_verdict": "Excelente."},
+                    {"role_id": "career_consultant", "role_name": "Consultor Estratégico", "score": 88, "weight_percentage": 10, "justification": "Buen avance", "strengths": ["Alineación"], "gaps": [], "key_question": "¿Buen paso?", "question_verdict": "Sí."}
+                ],
+                "requirements_matrix": [
+                    {"requirement": "Python & FastAPI", "cv_evidence": "Listado en habilidades y proyectos", "status": "cumplido", "importance": "excluyente"}
+                ],
+                "strengths": ["Python y desarrollo backend", "Arquitectura cloud"],
+                "missing_skills": ["Certificación específica"],
+                "deal_breakers_found": []
+            }
+        elif "vacante objetivo" in prompt_lower or "tailored_cv_markdown" in prompt_lower:
+            return {
+                "tailored_cv_markdown": f"# {profile.name}\n**Senior Engineer**\n- Experto en Python y FastAPI",
+                "cover_letter": f"Estimado equipo de {target_job.company},\nPresento mi postulación con entusiasmo para {target_job.title}."
+            }
+        elif "audita esta postulación" in prompt_lower or "ats_score" in prompt_lower:
+            return {
+                "ats_score": 94,
+                "ats_feedback": ["Estructura clara", "Palabras clave integradas"],
+                "reviewer_critique": "Excelente ajuste documental y alineación ATS."
+            }
+        elif "kit de preparación" in prompt_lower or "technical_questions" in prompt_lower:
+            return {
+                "company_focus": "Enfoque en arquitectura escalable y resolución de problemas",
+                "technical_questions": [{"question": "¿Cómo escalas una API con FastAPI?", "key_concepts": "AsyncIO, workers, pooling", "tip": "Cita métricas reales."}],
+                "behavioral_questions": [{"question": "Cuéntame de un desafío técnico complejo", "suggested_star_story": "Migración a microservicios", "focus": "Impacto"}],
+                "questions_to_ask_interviewer": ["¿Cuáles son los retos principales de este trimestre?"]
+            }
+        elif "competencia a evaluar" in prompt_lower:
+            return {
+                "scenario_title": "Contingencia de Red y Escalabilidad",
+                "scenario_context": "Una organización enfrenta requerimientos críticos de alta disponibilidad.",
+                "problem_statement": "Propón una arquitectura resiliente para mitigar fallos.",
+                "evaluation_rubric": ["Corrección técnica", "Viabilidad", "Gestión de riesgos"]
+            }
+        elif "desafío planteado" in prompt_lower:
+            return {
+                "score": 90,
+                "technical_correctness": "Arquitectura y fundamentación técnica sólida con GitOps y políticas de red.",
+                "feedback": "Excelente cobertura de alta disponibilidad y mitigación de riesgos.",
+                "strengths": ["Uso adecuado de ArgoCD", "Políticas de red con Calico"],
+                "areas_for_improvement": [],
+                "competency_validated": True
+            }
+        elif "ruta diseñada" in prompt_lower or "learning_path" in prompt_lower or "ruta de especialización" in prompt_lower:
+            return {
+                "title": "Ruta de Especialización hacia Lead Cloud & AI Engineer",
+                "overview": "Ruta diseñada para consolidar alta disponibilidad y arquitectura cloud.",
+                "estimated_weeks": 4,
+                "milestones": [
+                    {"step_number": 1, "title": "Fundamentos y Conceptos Clave", "objective": "Dominar conceptos de Kubernetes", "competencies_targeted": ["Kubernetes"], "practical_activity": "Laboratorio guiado", "evaluation_challenge": "Test conceptual"},
+                    {"step_number": 2, "title": "Implementación Práctica", "objective": "Desarrollar capacidades operativas", "competencies_targeted": ["Ciberseguridad"], "practical_activity": "Caso práctico", "evaluation_challenge": "Resolver caso"},
+                    {"step_number": 3, "title": "Integración y Proyecto", "objective": "Acreditar dominio integral", "competencies_targeted": ["Kubernetes", "Ciberseguridad"], "practical_activity": "Propuesta técnica", "evaluation_challenge": "Defensa"}
+                ]
+            }
+        elif "historial de acciones" in prompt_lower or "insights" in prompt_lower:
+            return {
+                "insights": [
+                    "Prioriza posiciones 100% remotas con compensación competitiva",
+                    "Preferencia por arquitecturas con Python, FastAPI e Inteligencia Artificial",
+                    "Afinidad por empresas con cultura asíncrona y autonomía técnica"
+                ]
+            }
+        return {}
+
+    llm.generate_json = mock_generate_json
+
     evaluation = fit_evaluator.evaluate(target_job, profile, prefs)
     print(f"  ✓ Ajuste General (Overall Score): {evaluation.overall_score}%")
     print(f"  ✓ Veredicto: {evaluation.verdict}")

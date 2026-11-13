@@ -6,7 +6,7 @@ from app.models.schemas import (
     CompetencyDiagnosticItem, LearningCourseResource, LearningPath,
     LearningPathMilestone, TutorPracticeChallenge, TutorEvaluationResult
 )
-from app.agents.llm_provider import llm
+from app.agents.llm_provider import llm, LLMProviderError
 from app.storage.db import db
 from datetime import datetime
 import uuid
@@ -432,6 +432,11 @@ Genera un caso práctico laboral desafiante con esta estructura JSON:
 }}
 """
         res = llm.generate_json(prompt, system_instruction=system_instruction)
+        if not res or not res.get("scenario_title"):
+            raise LLMProviderError(
+                code="generation_failed",
+                message="No se pudo generar el desafío de práctica con IA."
+            )
         return TutorPracticeChallenge(
             competency=competency,
             scenario_title=res.get("scenario_title", f"Caso de Aplicación Práctica: {competency}"),
@@ -469,6 +474,11 @@ EVALÚA EN FORMATO JSON:
 }}
 """
         res = llm.generate_json(prompt, system_instruction=system_instruction)
+        if not res or "score" not in res:
+            raise LLMProviderError(
+                code="evaluation_failed",
+                message="No se pudo evaluar la solución técnica con IA."
+            )
         score = res.get("score", 75)
         is_validated = score >= 80
 

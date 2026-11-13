@@ -10,7 +10,7 @@ from typing import Optional, List, Dict, Any
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException, BackgroundTasks, Request, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
 
 from app.config import settings
 from app.models.schemas import (
@@ -36,7 +36,7 @@ from app.agents.preference_learner import preference_learner
 from app.agents.interview_coach import interview_coach
 from app.agents.career_coach import career_coach
 from app.agents.outcome_agent import outcome_agent
-from app.agents.llm_provider import llm
+from app.agents.llm_provider import llm, LLMProviderError, AINotConnectedError
 from app.agents.models import DEFAULT_GEMINI_MODEL, DEFAULT_OPENAI_MODEL, DEFAULT_CLAUDE_MODEL, CATALOG
 from app.agents.llm_context import current_llm_credentials, LLMCredentials
 from app.utils.cache import job_search_cache
@@ -110,6 +110,22 @@ async def ensure_api_prefix_middleware(request, call_next):
     ):
         request.scope["path"] = f"/api{path}"
     return await call_next(request)
+
+@app.exception_handler(LLMProviderError)
+async def llm_provider_exception_handler(request: Request, exc: LLMProviderError):
+    status_code = 400
+    if exc.code == "invalid_key":
+        status_code = 401
+    elif exc.code == "quota_exceeded":
+        status_code = 429
+    elif exc.code == "timeout":
+        status_code = 504
+    elif exc.code == "service_unavailable":
+        status_code = 503
+    return JSONResponse(
+        status_code=status_code,
+        content=exc.to_dict()
+    )
 
 @app.get("/health")
 @app.get("/api/health")

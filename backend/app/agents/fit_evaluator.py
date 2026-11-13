@@ -6,7 +6,7 @@ from app.models.schemas import (
     FitDimensionScore, EvaluatorRoleScore, RequirementEvidenceItem,
     PotentialFitProjection, DirectorSynthesis
 )
-from app.agents.llm_provider import llm
+from app.agents.llm_provider import llm, LLMProviderError
 from app.storage.db import db
 from app.utils.chile_regions import calculate_geographic_priority
 
@@ -217,21 +217,29 @@ Genera la deliberación completa del Comité en formato JSON estricto con la sig
                     logger.warning(f"Error parsing committee evaluator item: {e}")
 
         if len(committee_evals) != 5:
-            committee_evals = []
-            for role_id, role_name, weight, q in default_specs:
-                committee_evals.append(
-                    EvaluatorRoleScore(
-                        role_id=role_id,
-                        role_name=role_name,
-                        score=78,
-                        weight_percentage=weight,
-                        justification=f"Evaluación independiente del rol {role_name}.",
-                        strengths=["Alineación con el perfil general del candidato"],
-                        gaps=["Revisar detalles específicos de la vacante"],
-                        key_question=q,
-                        question_verdict="Cumple con las condiciones iniciales para avanzar a revisión."
-                    )
+            if not committee_evals:
+                raise LLMProviderError(
+                    code="evaluation_failed",
+                    message="El comité de evaluación con IA no pudo procesar la compatibilidad de esta oferta."
                 )
+            # If at least some roles were evaluated, dynamically estimate remaining roles using parsed average
+            avg_score = int(sum(e.score for e in committee_evals) / len(committee_evals))
+            existing_role_ids = {e.role_id for e in committee_evals}
+            for role_id, role_name, weight, q in default_specs:
+                if role_id not in existing_role_ids:
+                    committee_evals.append(
+                        EvaluatorRoleScore(
+                            role_id=role_id,
+                            role_name=role_name,
+                            score=avg_score,
+                            weight_percentage=weight,
+                            justification=f"Evaluación estimada para {role_name}.",
+                            strengths=[],
+                            gaps=[],
+                            key_question=q,
+                            question_verdict="Estimación de evaluación completada."
+                        )
+                    )
 
         # Mathematical weighted score calculation: 25% + 25% + 25% + 15% + 10%
         calc_score = 0.0
