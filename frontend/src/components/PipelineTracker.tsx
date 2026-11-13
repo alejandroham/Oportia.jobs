@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   FileText,
   Mail,
@@ -47,6 +48,7 @@ import { api } from '../api';
 import { formatDisplayDate } from '../utils/dateUtils';
 import { useToast } from './Toast';
 import { formatExperiencePeriod } from './ProfileStudio';
+import { EmptyState } from './common/EmptyState';
 
 interface PipelineTrackerProps {
   jobs: JobPosting[];
@@ -67,6 +69,7 @@ export const PipelineTracker: React.FC<PipelineTrackerProps> = ({
   onApply
 }) => {
   const toast = useToast();
+  const navigate = useNavigate();
 
   // Tracked jobs list
   const trackedJobs = jobs.filter(j => Boolean(j.tracked_at || (j.status && j.status !== 'discovered')));
@@ -828,20 +831,13 @@ export const PipelineTracker: React.FC<PipelineTrackerProps> = ({
       </div>
 
       {trackedJobs.length === 0 ? (
-        /* Empty State */
-        <div className="apple-glass apple-card p-12 text-center space-y-4 max-w-lg mx-auto">
-          <div className="w-14 h-14 mx-auto rounded-full bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex items-center justify-center">
-            <BookmarkCheck className="w-7 h-7" />
-          </div>
-          <div className="space-y-1.5">
-            <h3 className="text-base font-semibold text-gray-900 dark:text-white">
-              No tienes postulaciones en seguimiento aún
-            </h3>
-            <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
-              Explora el <strong>Radar de Empleo</strong> y presiona <strong>"+ Guardar"</strong> o <strong>"Postular"</strong> en las ofertas que te interesen. Aparecerán aquí con su CV adaptado y preguntas de entrevista listas.
-            </p>
-          </div>
-        </div>
+        <EmptyState
+          icon={BookmarkCheck}
+          title="Aún no postulas a ninguna oferta"
+          description="Explora las oportunidades compatibles con tu perfil y adapta tu postulación en un clic para iniciar el seguimiento."
+          actionLabel="Buscar empleo"
+          onAction={() => navigate('/empleos')}
+        />
       ) : (
         /* Master-Detail (Split View) */
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
