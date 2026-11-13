@@ -1,27 +1,59 @@
 import React, { useState } from 'react';
 import type { FitEvaluation, JobPosting } from '../../types';
-import { Award, CheckCircle2, AlertTriangle, ShieldAlert, Sparkles } from 'lucide-react';
+import { Award, CheckCircle2, AlertTriangle, ShieldAlert, Sparkles, Info } from 'lucide-react';
 import { Dialog } from '../../components/ui/Dialog';
 import { Tabs } from '../../components/ui/Tabs';
 import type { TabItem } from '../../components/ui/Tabs';
 import { Button } from '../../components/ui/Button';
+import { AINotConnectedBanner } from '../shared/AINotConnectedBanner';
 
 interface FitEvaluationModalProps {
   isOpen: boolean;
   onClose: () => void;
   evaluation: FitEvaluation | null;
   job?: JobPosting | null;
+  onConnectAI?: () => void;
 }
 
 export const FitEvaluationModal: React.FC<FitEvaluationModalProps> = ({
   isOpen,
   onClose,
   evaluation,
-  job
+  job,
+  onConnectAI
 }) => {
   const [activeTab, setActiveTab] = useState<'director' | 'evaluators' | 'matrix' | 'potential'>('director');
 
-  if (!evaluation) return null;
+  if (!isOpen) return null;
+
+  if (!evaluation) {
+    return (
+      <Dialog
+        isOpen={isOpen}
+        onClose={onClose}
+        title="Evaluación de compatibilidad con IA"
+        description={job ? `${job.title} en ${job.company}` : undefined}
+        maxWidth="xl"
+      >
+        <div className="space-y-4 py-2">
+          <AINotConnectedBanner
+            title="Oferta sin evaluación de IA disponible"
+            description="Para obtener la evaluación de compatibilidad en 5 perspectivas y analizar los requisitos contra tu CV, conecta tu clave de API en Ajustes."
+            actionText="Conectar clave de IA"
+            onConnect={() => {
+              onClose();
+              if (onConnectAI) onConnectAI();
+            }}
+          />
+          <div className="flex justify-end pt-2 border-t border-gray-100 dark:border-zinc-800">
+            <Button variant="outline" size="sm" onClick={onClose}>
+              Cerrar
+            </Button>
+          </div>
+        </div>
+      </Dialog>
+    );
+  }
 
   const evaluators = evaluation.committee_evaluations || [];
   const matrix = evaluation.requirements_matrix || [];
@@ -60,7 +92,7 @@ export const FitEvaluationModal: React.FC<FitEvaluationModalProps> = ({
         />
 
         {/* Content Area */}
-        <div className="max-h-[58vh] overflow-y-auto space-y-4 pr-1">
+        <div className="max-h-[55vh] overflow-y-auto space-y-4 pr-1">
           {activeTab === 'director' && (
             <div className="space-y-3">
               <div className="p-4 rounded-2xl bg-brand-50/50 dark:bg-brand-950/30 border border-brand-200/50 dark:border-brand-800/40 space-y-2">
@@ -136,7 +168,7 @@ export const FitEvaluationModal: React.FC<FitEvaluationModalProps> = ({
           )}
 
           {activeTab === 'matrix' && (
-            <div className="space-y-2">
+            <div className="space-y-2.5">
               {matrix.map((req, idx) => {
                 const isMet = req.status === 'cumplido';
                 const isCritical = req.importance === 'excluyente';
@@ -152,20 +184,34 @@ export const FitEvaluationModal: React.FC<FitEvaluationModalProps> = ({
                     ) : (
                       <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
                     )}
-                    <div className="space-y-0.5 flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
+                    <div className="space-y-1.5 flex-1 min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
                         <span className="text-xs font-bold text-ink dark:text-white">
                           {req.requirement}
                         </span>
+                        {isMet ? (
+                          <span className="px-2 py-0.5 rounded-full text-[12px] font-semibold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200/60">
+                            Respaldado en tu CV
+                          </span>
+                        ) : (
+                          <span className="px-2 py-0.5 rounded-full text-[12px] font-semibold bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200/60">
+                            Sin evidencia en tu CV
+                          </span>
+                        )}
                         {isCritical && (
                           <span className="px-1.5 py-0.5 rounded text-[12px] font-bold bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300">
                             Excluyente
                           </span>
                         )}
                       </div>
-                      {req.cv_evidence && (
-                        <p className="text-xs text-ink-muted dark:text-gray-400">
-                          {req.cv_evidence}
+                      {req.cv_evidence ? (
+                        <div className="text-xs text-ink-muted dark:text-gray-300 bg-white dark:bg-zinc-900/60 p-2 rounded-xl border border-gray-100 dark:border-zinc-800">
+                          <span className="font-semibold text-ink dark:text-gray-200">Evidencia citada de tu CV: </span>
+                          <span>"{req.cv_evidence}"</span>
+                        </div>
+                      ) : (
+                        <p className="text-xs text-ink-muted dark:text-gray-400 italic">
+                          No se identificó mención explícita de este requerimiento en tu currículum actual.
                         </p>
                       )}
                     </div>
@@ -195,8 +241,16 @@ export const FitEvaluationModal: React.FC<FitEvaluationModalProps> = ({
           )}
         </div>
 
-        <div className="flex justify-end pt-3 border-t border-gray-100 dark:border-ink-border">
-          <Button variant="outline" size="md" onClick={onClose}>
+        {/* Disclaimer de Transparencia Obligatorio */}
+        <div className="p-3 rounded-2xl bg-surface-alt dark:bg-zinc-800/60 border border-ink-border text-xs text-ink-muted dark:text-gray-400 flex items-start gap-2">
+          <Info className="w-4 h-4 text-brand shrink-0 mt-0.5" />
+          <span>
+            <strong>Es una orientación, no una decisión:</strong> esta evaluación con IA analiza la correspondencia documental entre tu perfil y los requerimientos de la oferta para ayudarte a preparar tu postulación, no reemplaza la decisión humana del empleador.
+          </span>
+        </div>
+
+        <div className="flex justify-end pt-2 border-t border-gray-100 dark:border-zinc-800">
+          <Button variant="outline" size="sm" onClick={onClose}>
             Cerrar evaluación
           </Button>
         </div>
