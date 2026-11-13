@@ -29,7 +29,7 @@
 > **La IA organiza y te orienta. Tú decides tu camino.**
 
 - **Automatización asistida con autonomía humana:** Rastrea vacantes en las 16 regiones de Chile y remotas globales, convoca al **Comité Oportia**, calcula la **Compatibilidad Oportia** con citas textuales verificables de tu currículum, redacta CVs y cartas adaptadas con logros STAR y te conecta con cursos gratuitos certificados.
-- **Soberanía y control absoluto:** No usamos bots que arriesguen tus cuentas ni compartimos tus datos con terceros. Postulas siempre en **1 clic en el enlace oficial de la empresa o portal estatal con ClaveÚnica**.
+- **Soberanía y control absoluto:** No usamos bots que arriesguen tus cuentas. Tus datos solo salen de tu navegador hacia el proveedor de IA que tú eliges (Gemini, OpenAI o Claude) cuando usas una función de IA. Postulas siempre en **1 clic en el enlace oficial de la empresa o portal estatal con ClaveÚnica**.
 
 ---
 
@@ -45,7 +45,7 @@ flowchart TD
     end
 
     subgraph Backend ["⚡ Servidor FastAPI sin Estado (Stateless)"]
-        API["🚀 Endpoints Computacionales Efímeros\n(Cero persistencia en disco)"]
+        API["🚀 Endpoints Computacionales Efímeros\n(Sin guardar tus datos en el flujo principal)"]
         Guard["🛡️ Anti-Prompt Injection Guardian\n& Sanitizador de URLs (Anti-SSRF)"]
         Limiter["⏱️ Rate Limiter por IP\n(Memoria volátil)"]
         Cache["🧠 Caché Volátil de Ofertas (15 min)"]
@@ -53,7 +53,7 @@ flowchart TD
 
     subgraph Externo ["🌐 Proveedores Externos & Fuentes"]
         LLM["🤖 Proveedores de IA (BYOK)\n• Google Gemini\n• Anthropic Claude\n• OpenAI GPT"]
-        Scrapers["🔎 Radar Concurrente (Timeout 5s)\n• Arbeitnow, Remotive, RemoteOK\n• Portales Chile (ChileTrabajos, Laborum, BNE)\n• Direct ATS (Greenhouse, Lever, Workday)"]
+        Scrapers["🔎 Radar Concurrente (fuentes en paralelo)\n• Arbeitnow, Remotive, RemoteOK\n• Portales Chile (Get on Board, CompuTrabajo,\nChileTrabajos, Laborum, Empleos Públicos, LinkedIn)\n• Portales ATS (Greenhouse, Lever, Ashby)"]
     end
 
     UI <--> Store
@@ -68,9 +68,10 @@ flowchart TD
 ```
 
 ### Garantías Principales de la Arquitectura
-1. **Tus datos nunca tocan el disco del servidor:** Tu perfil, experiencias, postulaciones y memoria residen exclusivamente en el motor `IndexedDB` de tu navegador.
+1. **Tus datos viven en tu navegador:** Tu perfil, experiencias, postulaciones y memoria se guardan en `IndexedDB`. La interfaz usa endpoints sin estado que reciben los datos en cada petición y no los guardan.
+   > ⚠️ **Transición en curso:** el backend aún conserva endpoints heredados (por ejemplo `PUT /api/profile`, `PUT /api/preferences`, `POST /api/jobs/scrape`) y el servidor MCP, que leen y escriben archivos en `data/`. La interfaz web ya no los usa para el flujo principal; están pensados para la instalación local y se retirarán en una próxima versión.
 2. **Custodia de Claves de IA en el Cliente:** Tus claves de API se cifran localmente con `WebCrypto` (AES-GCM de 256 bits). Viajan protegidas en encabezados HTTPS solo al invocar funciones de IA y el backend las descarta de memoria inmediatamente tras recibir la respuesta del proveedor.
-3. **Cero bases de datos remotas:** El servidor backend es una herramienta de cálculo puro sin base de datos relacional de candidatos ni almacenamiento de currículums.
+3. **Sin base de datos de candidatos:** El backend no tiene base de datos de usuarios. Los CV subidos se procesan en un archivo temporal que se elimina apenas se extrae el texto.
 
 ---
 
@@ -80,7 +81,7 @@ flowchart TD
 | :--- | :---: | :---: | :--- |
 | **Inicio** | `/` | 🏠 | Panel de control con tarjeta inteligente de *Siguiente paso recomendado*, checklist de avance del candidato y métricas en tiempo real. |
 | **Buscar empleo** | `/empleos` | 🛰️ | Radar de empleo en Chile (16 regiones) y remoto global, filtros por modalidad y región, orden por compatibilidad y alerta de resiliencia ante caídas de fuentes. |
-| **Mis postulaciones** | `/postulaciones` | 🎯 | Embudo de postulaciones en 3 pestañas (*En proceso*, *Finalizadas*, *Todas*), actualización de estados en 1 clic y generador de CV adaptado y carta formal. |
+| **Mis postulaciones** | `/postulaciones` | 🎯 | Lista filtrable por estado y ficha de cada postulación con 3 pestañas (*Documentos*, *Preparar entrevista*, *Historial y notas*), cambio de estado en 1 clic y generador de CV adaptado y carta formal. |
 | **Aprender** | `/aprender` | 🎓 | 4 pestañas especializadas: Cursos gratuitos oficiales (Microsoft, AWS, Google, Cisco, SENCE), diagnóstico de brechas, rutas de aprendizaje y simulador de entrevistas STAR. |
 | **Mi perfil** | `/perfil` | 👤 | Editor de currículum modular por bloques plegables, extractor automático multiformato (PDF/Word) y preferencias laborales unificadas. |
 | **Ajustes** | `/ajustes` | ⚙️ | Configuración de proveedores de IA (BYOK), selector de apariencia (Claro/Oscuro/Sistema), respaldos cifrados `.oportia` y botón de purga total inmediata. |
@@ -182,7 +183,9 @@ El pipeline de **GitHub Actions** ([.github/workflows/ci.yml](.github/workflows/
 
 ## 🔌 Servidor Model Context Protocol (MCP)
 
-Oportia Jobs IA incluye un servidor nativo **MCP** para integrar tu radar y postulaciones como herramienta de contexto en clientes como **Claude Desktop**, **Cursor** o **Gemini CLI**:
+Oportia Jobs IA incluye un servidor nativo **MCP** para integrar tu radar y postulaciones como herramienta de contexto en clientes como **Claude Desktop**, **Cursor** o **Gemini CLI**.
+
+> ℹ️ El servidor MCP es solo para **instalación local**: lee y guarda en la carpeta `data/` de tu equipo, no en el navegador, por lo que no ve los datos que cargaste en la interfaz web.
 
 ```json
 {
