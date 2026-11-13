@@ -37,34 +37,34 @@
 
 ```mermaid
 flowchart TD
-    subgraph Navegador ["💻 Tu Dispositivo (Cliente Local-First)"]
-        UI["⚛️ Interfaz React 18 + Vite + Tailwind\n(Cupertino HIG / Modo Día y Noche)"]
-        Store["📦 useAppStore (Zustand)\n(Reactividad en memoria)"]
-        IDB[("🗄️ IndexedDB (oportia_jobs_db)\n• Perfil y CV Maestro\n• Preferencias\n• Radar y Postulaciones\n• Memoria de Opi")]
-        Crypto["🔐 WebCrypto API\n(AES-GCM 256 bits + PBKDF2)\nCustodia local de API Keys"]
+    subgraph Navegador ["💻 Tu Dispositivo - Cliente Local-First"]
+        UI["⚛️ Interfaz React 18 + Vite + Tailwind<br>Cupertino HIG y Modo Día/Noche"]
+        Store["📦 useAppStore - Zustand<br>Reactividad en memoria"]
+        IDB[("🗄️ IndexedDB - oportia_jobs_db<br>• Perfil y CV Maestro<br>• Preferencias<br>• Radar y Postulaciones<br>• Memoria de Opi")]
+        Crypto["🔐 WebCrypto API<br>AES-GCM 256 bits y PBKDF2<br>Custodia local de claves"]
     end
 
-    subgraph Backend ["⚡ Servidor FastAPI sin Estado (Stateless)"]
-        API["🚀 Endpoints Computacionales Efímeros\n(Sin guardar tus datos en el flujo principal)"]
-        Guard["🛡️ Anti-Prompt Injection Guardian\n& Sanitizador de URLs (Anti-SSRF)"]
-        Limiter["⏱️ Rate Limiter por IP\n(Memoria volátil)"]
-        Cache["🧠 Caché Volátil de Ofertas (15 min)"]
+    subgraph Backend ["⚡ Servidor FastAPI sin Estado"]
+        API["🚀 Endpoints Computacionales Efímeros<br>Sin persistencia en disco"]
+        Guard["🛡️ Anti-Prompt Injection Guardian<br>y Sanitizador de URLs Anti-SSRF"]
+        Limiter["⏱️ Rate Limiter por IP en memoria"]
+        Cache["🧠 Caché Volátil de Ofertas - 15 min"]
     end
 
-    subgraph Externo ["🌐 Proveedores Externos & Fuentes"]
-        LLM["🤖 Proveedores de IA (BYOK)\n• Google Gemini\n• Anthropic Claude\n• OpenAI GPT"]
-        Scrapers["🔎 Radar Concurrente (fuentes en paralelo)\n• Arbeitnow, Remotive, RemoteOK\n• Portales Chile (Get on Board, CompuTrabajo,\nChileTrabajos, Laborum, Empleos Públicos, LinkedIn)\n• Portales ATS (Greenhouse, Lever, Ashby)"]
+    subgraph Externo ["🌐 Proveedores Externos y Fuentes"]
+        LLM["🤖 Proveedores de IA - BYOK<br>• Google Gemini<br>• Anthropic Claude<br>• OpenAI GPT"]
+        Scrapers["🔎 Radar Concurrente con timeout 5s<br>• Arbeitnow, Remotive, RemoteOK<br>• Portales Chile y ATS"]
     end
 
     UI <--> Store
     Store <--> IDB
     Store <--> Crypto
-    UI -->|Petición HTTPS + Encabezados X-LLM efímeros| API
+    UI -->|Petición HTTPS con encabezados X-LLM| API
     API --> Guard
     API --> Limiter
     API --> Cache
-    API -->|Llamada con clave en memoria (descartada post-respuesta)| LLM
-    API -->|Búsqueda paralela con fallback| Scrapers
+    API -->|Llamada efímera con clave en memoria| LLM
+    API -->|Búsqueda paralela con tolerancia a fallos| Scrapers
 ```
 
 ### Garantías Principales de la Arquitectura
