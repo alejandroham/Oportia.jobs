@@ -27,6 +27,14 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
 - "Búsqueda en portales" agrega Empleos Públicos y Trabajando.cl / Laborum / Computrabajo.
 - Las instrucciones a la IA para redactar CV y carta ya no asumen un perfil técnico ni de software.
 
+### 🔎 Búsqueda que sí muestra ofertas
+- **Las ofertas encontradas ya no se esconden.** Después de buscar, la pantalla volvía a filtrar por el texto exacto escrito; "enfermera" ocultaba "Técnico en Enfermería" o "Registered Nurse". Ahora las ofertas recién traídas no se vuelven a filtrar, y el filtro local ignora tildes y mayúsculas y compara cada palabra por su raíz (`frontend/src/utils/searchText.ts`).
+- **Búsqueda por equivalentes en todas las áreas** (`backend/app/utils/keywords.py`): cada palabra de la búsqueda puede coincidir con sinónimos y su equivalente en inglés (enfermera ↔ TENS ↔ nurse, vendedor ↔ sales, jefe de bodega ↔ warehouse manager…). Se exige que coincidan todas las palabras: "analista contable" ya no trae "Analista de Datos".
+- **Más rápida:** los portales chilenos se consultaban uno tras otro con pausas (10–11 s por búsqueda). Ahora se consultan en paralelo con un tiempo máximo total de ~7 s (2–4 s en las pruebas); las fuentes que no alcanzan a responder se informan en pantalla y el resultado incompleto no se guarda en caché.
+- **Sin ofertas de Estados Unidos ni de Alemania por defecto:** LinkedIn sin ubicación solo se consulta para trabajo remoto, y los tableros remotos (Arbeitnow, Remotive, RemoteOK) solo aportan ofertas remotas que coincidan en título o etiquetas.
+- **Filtro "Solo mi región":** enviaba un alcance (`regional`) que el servidor no reconocía, y solo se consultaba el ATS corporativo. Ahora busca en los portales de Chile.
+- **GetOnBoard volvió a funcionar:** su API cambió el formato de etiquetas, empresa y fecha de publicación, y fallaba en todas las búsquedas.
+
 ### 🐛 Correcciones
 - **Postular con CV adaptado:** `api.applyJob` ahora envía la oferta, el perfil y las preferencias completos a `POST /api/applications/draft` (sin estado). Antes enviaba solo el ID a `/api/jobs/{id}/apply`, que busca la oferta en el disco del servidor y respondía "Empleo no encontrado" en el despliegue. Si la persona no ha subido su CV, se le avisa y se le lleva a Mi perfil.
 - **Carta de presentación que no se generaba:** si la IA no devuelve un JSON válido con ambos documentos, el CV y la carta se generan por separado; si la auditoría ATS falla, igual se entregan los documentos. El endpoint sin estado ya no escribe en el disco del servidor y usa las preferencias enviadas en la petición.
