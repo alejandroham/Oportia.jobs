@@ -17,6 +17,7 @@ import type { CandidateProfile, LLMSettings } from '../types';
 import { useAppStore } from '../state/useAppStore';
 
 import { computeNextStep } from '../utils/nextStep';
+import { OpiAvatar } from './ui/OpiAvatar';
 
 const ICON_MAP = {
   TrendingUp,
@@ -112,9 +113,7 @@ export const WelcomeHub: React.FC<WelcomeHubProps> = ({
 
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-start space-x-3.5">
-            <div className="w-12 h-12 rounded-2xl bg-brand-500 text-white flex items-center justify-center shrink-0 shadow-md">
-              <ActionIcon className="w-6 h-6" />
-            </div>
+            <OpiAvatar expression={progressPct === 100 ? 'celebrando' : 'saludando'} size={64} decorative />
             <div className="space-y-1">
               <h2 className="text-base font-bold text-ink dark:text-white">
                 {nextAction.title}

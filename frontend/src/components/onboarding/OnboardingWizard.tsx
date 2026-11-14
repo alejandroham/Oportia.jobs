@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ArrowRight, X, Sparkles } from 'lucide-react';
+import { OpiAvatar } from '../ui/OpiAvatar';
 import { useAppStore, DEFAULT_EMPTY_PREFERENCES } from '../../state/useAppStore';
 import { api } from '../../api';
 import { useToast } from '../Toast';
@@ -157,6 +158,8 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
         
         {/* Header & Step Indicator */}
         <div className="p-5 border-b border-black/5 dark:border-white/5 flex items-center justify-between bg-gray-50/60 dark:bg-zinc-800/40">
+          <div className="flex items-center gap-3">
+          <OpiAvatar expression={step === 1 ? 'saludando' : step === 2 ? 'curioso' : 'pensando'} size={52} decorative />
           <div>
             <div className="flex items-center space-x-2">
               <span className="text-xs font-bold text-brand-600 dark:text-brand-400 uppercase tracking-wider">
@@ -181,6 +184,7 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
                 />
               ))}
             </div>
+          </div>
           </div>
 
           <button

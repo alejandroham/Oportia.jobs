@@ -10,6 +10,7 @@ import { WelcomeHub } from './components/WelcomeHub';
 import { OnboardingWizard } from './components/onboarding/OnboardingWizard';
 import { Footer } from './components/Footer';
 import { MemoryChat } from './components/MemoryChat';
+import { OpiAvatar } from './components/ui/OpiAvatar';
 import { X } from 'lucide-react';
 import { useToast } from './components/Toast';
 import { api } from './api';
@@ -266,11 +267,7 @@ export function App() {
             className="flex items-center space-x-2.5 px-4 py-2.5 min-h-[44px] rounded-full bg-gradient-to-tr from-ink via-ink-surface to-brand hover:opacity-95 text-white font-semibold text-xs shadow-xl hover:shadow-2xl hover:scale-105 active:scale-95 transition duration-200 border border-white/20 cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
             title="Abrir chat con Opi, tu copiloto profesional"
           >
-            <img
-              src="/opi-avatar.svg"
-              alt="Opi"
-              className="w-5 h-5 rounded-full object-cover shrink-0"
-            />
+            <OpiAvatar expression="saludando" size={26} decorative className="-my-1" />
             <span>Opi Copiloto</span>
           </button>
         </div>
@@ -289,11 +286,7 @@ export function App() {
             <div className="w-full max-w-xl h-full apple-glass bg-white/95 dark:bg-ink-surface/95 shadow-2xl flex flex-col border-l border-gray-200 dark:border-ink-border overflow-hidden">
               <div className="p-4 border-b border-gray-100 dark:border-ink-border flex items-center justify-between bg-gray-50/50 dark:bg-ink/50">
                 <div className="flex items-center space-x-3">
-                  <img
-                    src="/opi-avatar.svg"
-                    alt="Opi"
-                    className="w-9 h-9 rounded-2xl object-cover shadow-xs border border-brand/40 shrink-0"
-                  />
+                  <OpiAvatar expression={settings?.has_active_key ? 'saludando' : 'durmiendo'} size={44} />
                   <div>
                     <h3 className="font-bold text-sm text-ink dark:text-white">
                       Opi — Tu copiloto profesional

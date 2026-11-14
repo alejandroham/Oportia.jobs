@@ -1,6 +1,7 @@
 import React from 'react';
 import type { FitEvaluation } from '../../types';
 import { FitScoreBadge } from './FitScoreBadge';
+import { OpiAvatar } from '../../components/ui/OpiAvatar';
 import { CheckCircle2, AlertCircle, Sparkles, ChevronRight, Info } from 'lucide-react';
 
 interface FitEvaluationSummaryProps {
@@ -23,6 +24,11 @@ export const FitEvaluationSummary: React.FC<FitEvaluationSummaryProps> = ({
       {/* Header con puntuación y veredicto */}
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-gray-100 dark:border-zinc-800 pb-3">
         <div className="flex items-center gap-2">
+          <OpiAvatar
+            expression={evaluation.overall_score >= 75 ? 'celebrando' : evaluation.overall_score < 50 ? 'advertencia' : 'curioso'}
+            size={36}
+            decorative
+          />
           <FitScoreBadge
             score={evaluation.overall_score}
             potentialScore={evaluation.potential_fit_score}

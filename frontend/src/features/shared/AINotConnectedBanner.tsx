@@ -1,6 +1,7 @@
 import React from 'react';
 import { Sparkles, Key, ArrowRight } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
+import { OpiAvatar } from '../../components/ui/OpiAvatar';
 
 interface AINotConnectedBannerProps {
   title?: string;
@@ -33,7 +34,7 @@ export const AINotConnectedBanner: React.FC<AINotConnectedBannerProps> = ({
     return (
       <div className={`p-3 rounded-2xl bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200/60 dark:border-amber-800/40 flex items-center justify-between gap-3 ${className}`}>
         <div className="flex items-center gap-2 min-w-0">
-          <Key className="w-4 h-4 text-amber-600 shrink-0" />
+          <OpiAvatar expression="durmiendo" size={28} decorative />
           <span className="text-xs text-amber-900 dark:text-amber-200 font-medium truncate">
             {title}
           </span>
@@ -53,9 +54,7 @@ export const AINotConnectedBanner: React.FC<AINotConnectedBannerProps> = ({
   return (
     <div className={`p-5 rounded-2xl bg-linear-to-br from-brand-50/50 via-surface to-amber-50/40 dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800 border border-brand-200/60 dark:border-zinc-700/60 shadow-xs space-y-3 text-left ${className}`}>
       <div className="flex items-start gap-3">
-        <div className="p-2.5 rounded-xl bg-brand-100 dark:bg-brand-950/80 text-brand-700 dark:text-brand-300 shrink-0 mt-0.5">
-          <Sparkles className="w-5 h-5" />
-        </div>
+        <OpiAvatar expression="durmiendo" size={56} decorative />
         <div className="space-y-1 flex-1">
           <h4 className="text-sm font-bold text-ink dark:text-white">
             {title}

@@ -20,6 +20,7 @@ import {
 import type { UserPreferences, LLMSettings } from '../types';
 import { api, getHumanErrorMessage } from '../api';
 import { useToast } from './Toast';
+import { OpiAvatar } from './ui/OpiAvatar';
 import { saveClientStore, getClientStore } from '../utils/storage';
 
 interface ChatMessage {
@@ -247,11 +248,7 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
       {/* Chat Header */}
       <div className="px-4 sm:px-5 py-3.5 border-b border-black/6 dark:border-white/8 bg-gray-50/70 dark:bg-zinc-900/70 flex items-center justify-between shrink-0">
         <div className="flex items-center space-x-3">
-          <img
-            src="/opi-avatar.svg"
-            alt="Opi"
-            className="w-9 h-9 rounded-2xl object-cover shadow-xs border border-[#20A88A]/40 shrink-0"
-          />
+          <OpiAvatar expression={!hasKey ? 'durmiendo' : isLoading ? 'pensando' : 'saludando'} size={44} />
           <div>
             <div className="flex items-center space-x-2">
               <h3 className="font-bold text-sm text-[#1D1D1F] dark:text-[#F5F5F7]">
@@ -312,14 +309,7 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
       {!hasKey ? (
         /* GATED LOCK SCREEN: Active API Key Required + Zero-Knowledge Guarantee */
         <div className="flex-1 flex flex-col items-center justify-center p-6 text-center space-y-4 my-auto animate-fade-in max-w-md mx-auto">
-          <div className="relative">
-            <div className="w-16 h-16 rounded-3xl bg-brand-50 dark:bg-brand-950/40 text-brand-600 dark:text-brand-400 flex items-center justify-center shadow-inner">
-              <KeyRound className="w-8 h-8" />
-            </div>
-            <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-amber-500 text-white flex items-center justify-center shadow-md">
-              <Lock className="w-3.5 h-3.5" />
-            </div>
-          </div>
+          <OpiAvatar expression="durmiendo" size={120} decorative />
 
           <div className="space-y-1.5">
             <h4 className="text-base font-bold text-ink dark:text-white">
@@ -466,7 +456,7 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
 
             {isLoading && (
               <div className="flex items-center space-x-2 text-[#86868B] dark:text-[#A1A1A6] text-xs py-2 animate-pulse">
-                <div className="w-4 h-4 rounded-full border-2 border-[#20A88A] border-t-transparent animate-spin" />
+                <OpiAvatar expression="pensando" size={32} decorative />
                 <span>Opi está analizando tu consulta y organizando recomendaciones...</span>
               </div>
             )}

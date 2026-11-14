@@ -31,6 +31,7 @@ export const JobResultsFeed: React.FC<JobResultsFeedProps> = ({
     return (
       <EmptyState
         icon={Info}
+        opiExpression="curioso"
         title="Sin ofertas encontradas"
         description="Prueba con otros términos de búsqueda o haz clic en 'Buscar' para escanear portales chilenos."
         actionLabel="Buscar ofertas ahora"

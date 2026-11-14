@@ -135,6 +135,7 @@ export const ApplicationsPage: React.FC<ApplicationsPageProps> = ({
 
         <EmptyState
           icon={Briefcase}
+          opiExpression="curioso"
           title="Aún no guardas postulaciones"
           description="Explora las ofertas disponibles en el radar, guarda las que te interesen o postula con un CV adaptado."
           actionLabel="Buscar empleo"

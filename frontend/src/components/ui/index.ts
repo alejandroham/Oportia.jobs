@@ -24,3 +24,6 @@ export type { TooltipProps } from './Tooltip';
 
 export { EmptyState } from './EmptyState';
 export type { EmptyStateProps } from './EmptyState';
+
+export { OpiAvatar } from './OpiAvatar';
+export type { OpiAvatarProps, OpiExpression } from './OpiAvatar';
