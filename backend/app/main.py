@@ -797,7 +797,7 @@ def draft_application_stateless(req: StatelessApplicationDraftRequest):
     Pure stateless application generator (Option A).
     Zero server database read/write.
     """
-    return drafter_reviewer.generate_application(req.job, req.profile)
+    return drafter_reviewer.generate_application(req.job, req.profile, preferences=req.preferences, persist=False)
 
 @app.post("/api/jobs/{job_id}/apply", response_model=ApplicationDraft)
 def apply_to_job(job_id: str):

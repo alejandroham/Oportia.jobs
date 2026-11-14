@@ -76,6 +76,57 @@ def test_drafter_reviewer_pipeline(mock_llm, sample_developer_cv, sample_target_
     assert len(draft.ats_feedback) > 0
 
 
+def test_drafter_stateless_mode_does_not_touch_disk(mock_llm, isolated_db, sample_developer_cv, sample_target_job):
+    profile = analyze_cv_content(sample_developer_cv, save_to_db=False)
+    draft = drafter_reviewer.generate_application(sample_target_job, profile, persist=False)
+
+    assert draft.cover_letter
+    assert isolated_db.get_applications() == []
+
+
+def test_drafter_generates_cover_letter_when_combined_json_fails(monkeypatch, sample_developer_cv, sample_target_job):
+    """Si el JSON combinado (CV + carta) no se puede interpretar, la carta se genera por separado."""
+    from app.agents.llm_provider import llm, LLMProviderError
+
+    profile = analyze_cv_content(sample_developer_cv, save_to_db=False)
+
+    def broken_json(prompt, system_instruction=None):
+        raise LLMProviderError(code="invalid_json", message="JSON roto")
+
+    def fake_text(prompt, system_instruction=None):
+        if "CARTA DE PRESENTACIÓN" in prompt:
+            return "Estimado equipo de selección,\n\nCarta generada por separado.\n\nAtentamente,\nAlex Dev"
+        return "# Alex Dev\n## Perfil\nCV generado por separado."
+
+    monkeypatch.setattr(llm, "generate_json", broken_json)
+    monkeypatch.setattr(llm, "generate_text", fake_text)
+
+    draft = drafter_reviewer.generate_application(sample_target_job, profile, persist=False)
+
+    assert "Carta generada por separado" in draft.cover_letter
+    assert draft.tailored_cv_markdown.startswith("# Alex Dev")
+    # La auditoría falló (JSON roto), pero no debe bloquear la entrega de documentos.
+    assert draft.ats_score == 0
+    assert draft.ats_feedback
+
+
+def test_drafter_fallback_letter_is_not_it_specific(monkeypatch, sample_target_job):
+    from app.agents.llm_provider import llm, LLMProviderError
+    from app.models.schemas import CandidateProfile
+
+    def fail(*_args, **_kwargs):
+        raise LLMProviderError(code="invalid_json", message="sin respuesta")
+
+    monkeypatch.setattr(llm, "generate_json", fail)
+    monkeypatch.setattr(llm, "generate_text", fail)
+
+    nurse = CandidateProfile(name="Paula Rojas", headline="Técnico en Enfermería (TENS)", years_of_experience=6)
+    draft = drafter_reviewer.generate_application(sample_target_job, nurse, persist=False)
+
+    assert "Paula Rojas" in draft.cover_letter
+    assert "software" not in draft.cover_letter.lower()
+
+
 def test_preference_learning(mock_llm, sample_target_job):
     event1 = FeedbackAction(
         job_id=sample_target_job.id,

@@ -1,21 +1,48 @@
-from typing import Dict, Any, Tuple
-from app.models.schemas import CandidateProfile, JobPosting, ApplicationDraft
-from app.agents.llm_provider import llm, LLMProviderError
+from typing import Optional, Tuple
+from app.models.schemas import CandidateProfile, JobPosting, ApplicationDraft, UserPreferences
+from app.agents.llm_provider import llm, LLMProviderError, AINotConnectedError
 from app.storage.db import db
 import logging
 import json
 
 logger = logging.getLogger(__name__)
 
+# Oportia sirve a personas de cualquier área (salud, educación, construcción, comercio,
+# administración, oficios, tecnología...). Los textos para la IA no deben asumir un perfil TI.
+DRAFTER_SYSTEM_INSTRUCTION = (
+    "Eres un redactor experto de currículums y cartas de presentación para personas de cualquier "
+    "profesión, oficio o industria (salud, educación, construcción, comercio, administración, "
+    "servicios, tecnología, sector público, etc.). Escribes en español neutro y profesional, "
+    "adaptando el vocabulario al área de la vacante. "
+    "REGLA DE ORO DE INTEGRIDAD: NUNCA inventes experiencia, títulos, empresas, certificaciones ni "
+    "herramientas que no existan en el perfil del candidato. "
+    "Tu tarea es REORDENAR, ENFATIZAR y CONTEXTUALIZAR los logros reales del candidato para resaltar "
+    "su relevancia para la vacante objetivo."
+)
+
+
 class DrafterReviewerPipeline:
-    def generate_application(self, job: JobPosting, profile: CandidateProfile) -> ApplicationDraft:
-        # Step 1: Drafter generates tailored CV and Cover Letter
-        cv_markdown, cover_letter = self._draft_materials(job, profile)
-        
-        # Step 2: Reviewer critiques and audits for ATS compliance and honesty
+    def generate_application(
+        self,
+        job: JobPosting,
+        profile: CandidateProfile,
+        preferences: Optional[UserPreferences] = None,
+        persist: bool = True,
+    ) -> ApplicationDraft:
+        """
+        Genera CV adaptado + carta de presentación y los audita.
+
+        persist=False se usa en el endpoint sin estado (/api/applications/draft): no lee ni escribe
+        en el disco del servidor; las preferencias llegan en la petición.
+        """
+        prefs = preferences if preferences is not None else (db.get_preferences() if persist else None)
+
+        # Paso 1: el redactor genera CV y carta
+        cv_markdown, cover_letter = self._draft_materials(job, profile, prefs)
+
+        # Paso 2: el revisor audita (no bloqueante: si falla, igual se entregan los documentos)
         ats_score, ats_feedback, reviewer_critique = self._review_materials(job, profile, cv_markdown, cover_letter)
 
-        # Generate clean HTML version for preview and PDF printing
         cv_html = self._markdown_to_apple_html(cv_markdown, profile.name)
 
         draft = ApplicationDraft(
@@ -30,75 +57,153 @@ class DrafterReviewerPipeline:
             reviewer_critique=reviewer_critique
         )
 
-        db.save_application(draft)
-        db.update_job_status(job.id, status="applied" if job.status == "applied" else "saved")
+        if persist:
+            db.save_application(draft)
+            db.update_job_status(job.id, status="applied" if job.status == "applied" else "saved")
         return draft
 
-    def _draft_materials(self, job: JobPosting, profile: CandidateProfile) -> Tuple[str, str]:
-        prefs = db.get_preferences()
+    @staticmethod
+    def _memory_context(prefs: Optional[UserPreferences]) -> str:
+        if not prefs:
+            return ""
         memory_context = ""
         if prefs.learned_star_stories:
             top_stories = [
-                f"- {s.title}: {s.situation_and_task} -> {s.action} -> Resultado métrico: {s.result_and_metrics}"
+                f"- {s.title}: {s.situation_and_task} -> {s.action} -> Resultado: {s.result_and_metrics}"
                 for s in prefs.learned_star_stories[:4]
             ]
-            memory_context += "\nHISTORIAS DE ÉXITO STAR VERIFICADAS DEL CANDIDATO (Utiliza estos logros reales en la carta y viñetas del CV):\n" + "\n".join(top_stories) + "\n"
+            memory_context += "\nLOGROS REALES VERIFICADOS DEL CANDIDATO (formato STAR, úsalos en la carta y en las viñetas del CV):\n" + "\n".join(top_stories) + "\n"
         if prefs.profile_dna:
-            memory_context += f"\nADN Y TONO PROFESIONAL APRENDIDO:\n- Tono: {prefs.profile_dna.communication_tone}\n- Propuesta de valor: {prefs.profile_dna.summary}\n- Seniority inferido: {prefs.profile_dna.seniority_level}\n"
+            memory_context += f"\nTONO PROFESIONAL APRENDIDO:\n- Tono: {prefs.profile_dna.communication_tone}\n- Propuesta de valor: {prefs.profile_dna.summary}\n- Seniority inferido: {prefs.profile_dna.seniority_level}\n"
+        return memory_context
 
-        system_instruction = (
-            "Eres el mejor redactor de currículums técnicos y cartas de presentación del mundo para vacantes internacionales. "
-            "REGLA DE ORO DE INTEGRIDAD: NUNCA inventes experiencia, títulos, empresas ni tecnologías que no existan en el perfil del candidato. "
-            "Tu tarea es REORDENAR, ENFATIZAR y CONTEXTUALIZAR los logros y proyectos reales del candidato para resaltar la máxima relevancia hacia la vacante objetivo. "
-            "Aprovecha las historias STAR reales aprendidas de su memoria para enriquecer la persuasión con métricas auténticas."
+    @staticmethod
+    def _job_block(job: JobPosting) -> str:
+        return (
+            f"Título: {job.title}\n"
+            f"Empresa: {job.company}\n"
+            f"Ubicación / Modalidad: {job.location} ({'Remoto' if job.is_remote else 'Presencial'})\n"
+            f"Descripción:\n{(job.description or '')[:4000]}"
         )
+
+    @staticmethod
+    def _strip_fences(text: str) -> str:
+        cleaned = (text or "").strip()
+        if cleaned.startswith("```"):
+            cleaned = cleaned.split("\n", 1)[1] if "\n" in cleaned else ""
+        if cleaned.endswith("```"):
+            cleaned = cleaned[:-3]
+        return cleaned.strip()
+
+    def _draft_materials(self, job: JobPosting, profile: CandidateProfile, prefs: Optional[UserPreferences]) -> Tuple[str, str]:
+        memory_context = self._memory_context(prefs)
+        profile_json = json.dumps(profile.model_dump(), ensure_ascii=False, indent=2)
 
         prompt = f"""
 VACANTE OBJETIVO:
-Título: {job.title}
-Empresa: {job.company}
-Ubicación / Modalidad: {job.location} ({'Remoto' if job.is_remote else 'Presencial'})
-Descripción:
-{job.description[:4000]}
+{self._job_block(job)}
 
 PERFIL REAL Y VERIFICADO DEL CANDIDATO:
-{json.dumps(profile.model_dump(), ensure_ascii=False, indent=2)}
+{profile_json}
 {memory_context}
 INSTRUCCIONES DE REDACCIÓN:
 1. Adapta el Currículum en formato Markdown limpio, estructurado con:
    - Encabezado con datos del candidato
-   - Perfil profesional enfocado al rol
-   - Habilidades clave relevantes primero
-   - Experiencia laboral con viñetas de logros orientadas al impacto (métricas, tecnologías empleadas). REGLAS ESTRICTAS DE FORMATO: Usa SIEMPRE guiones '- ' para las viñetas, NUNCA asteriscos '* '. NO insertes separadores '---' entre secciones. No dejes asteriscos ni símbolos sueltos.
-   - Educación y certificaciones
+   - Perfil profesional enfocado al cargo
+   - Competencias y habilidades relevantes para la vacante primero
+   - Experiencia laboral con viñetas de logros orientadas al impacto (resultados, métricas, responsabilidades clave, herramientas o técnicas usadas). REGLAS ESTRICTAS DE FORMATO: Usa SIEMPRE guiones '- ' para las viñetas, NUNCA asteriscos '* '. NO insertes separadores '---' entre secciones.
+   - Educación, cursos y certificaciones
 2. Redacta una Carta de Presentación moderna (3 a 4 párrafos concisos):
    - Prohibido usar clichés vacíos como "Me dirijo a ustedes para expresar mi entusiasmo...".
-   - Apertura directa: por qué tu experiencia específica resuelve sus desafíos actuales.
-   - Párrafo 2 y 3: dos ejemplos concretos de tu trayectoria que demuestran dominio del problema.
-   - Cierre propositivo y profesional.
+   - Apertura directa: por qué tu experiencia concreta responde a lo que busca la vacante.
+   - Párrafos 2 y 3: dos ejemplos reales de tu trayectoria que lo demuestran.
+   - Cierre propositivo y profesional, firmado con el nombre del candidato.
 
 RESPONDE ÚNICAMENTE CON UN JSON:
 {{
   "tailored_cv_markdown": "# Nombre\\n...",
-  "cover_letter": "Estimado equipo de contratación de..."
+  "cover_letter": "Estimado equipo de selección de..."
 }}
 """
 
-        res = llm.generate_json(prompt, system_instruction=system_instruction)
-        
-        cv_md = res.get("tailored_cv_markdown")
-        cl = res.get("cover_letter")
+        cv_md: Optional[str] = None
+        cl: Optional[str] = None
+        try:
+            res = llm.generate_json(prompt, system_instruction=DRAFTER_SYSTEM_INSTRUCTION) or {}
+            cv_md = res.get("tailored_cv_markdown") or res.get("cv") or res.get("curriculum")
+            cl = res.get("cover_letter") or res.get("carta_presentacion") or res.get("carta")
+            if isinstance(cl, (dict, list)):
+                cl = None
+        except AINotConnectedError:
+            raise
+        except LLMProviderError as e:
+            # Respuestas largas con dos documentos a veces rompen el JSON: se generan por separado.
+            logger.warning(f"Drafter JSON combinado falló ({e.code}); generando documentos por separado.")
 
         if not cv_md:
-            cv_md = self._fallback_cv(profile, job)
+            cv_md = self._draft_cv_text(job, profile_json, memory_context) or self._fallback_cv(profile, job)
         if not cl:
-            cl = f"Estimado equipo de {job.company},\n\nPresento mi postulación para el rol de {job.title}. Con mi trayectoria en desarrollo de software y sistemas distribuidos, puedo aportar de manera inmediata a sus objetivos de ingeniería.\n\nQuedo a su disposición para coordinar una conversación técnica.\n\nAtentamente,\n{profile.name}"
+            cl = self._draft_cover_letter_text(job, profile, profile_json, memory_context) or self._fallback_cover_letter(profile, job)
 
-        return cv_md, cl
+        return cv_md.strip(), cl.strip()
+
+    def _draft_cv_text(self, job: JobPosting, profile_json: str, memory_context: str) -> Optional[str]:
+        prompt = f"""
+VACANTE OBJETIVO:
+{self._job_block(job)}
+
+PERFIL REAL Y VERIFICADO DEL CANDIDATO:
+{profile_json}
+{memory_context}
+Escribe el CURRÍCULUM ADAPTADO a esta vacante en Markdown limpio (# Nombre, ## secciones, viñetas con '- ').
+Responde SOLO con el Markdown del CV, sin explicaciones ni bloques de código.
+"""
+        try:
+            return self._strip_fences(llm.generate_text(prompt, system_instruction=DRAFTER_SYSTEM_INSTRUCTION)) or None
+        except AINotConnectedError:
+            raise
+        except LLMProviderError as e:
+            logger.warning(f"No se pudo generar el CV adaptado por separado: {e.code}")
+            return None
+
+    def _draft_cover_letter_text(self, job: JobPosting, profile: CandidateProfile, profile_json: str, memory_context: str) -> Optional[str]:
+        prompt = f"""
+VACANTE OBJETIVO:
+{self._job_block(job)}
+
+PERFIL REAL Y VERIFICADO DEL CANDIDATO:
+{profile_json}
+{memory_context}
+Escribe una CARTA DE PRESENTACIÓN en español para esta vacante (3 a 4 párrafos, sin clichés,
+con dos ejemplos reales de la trayectoria del candidato) y fírmala como {profile.name or 'el candidato'}.
+Responde SOLO con el texto de la carta, sin títulos, explicaciones ni Markdown.
+"""
+        try:
+            return self._strip_fences(llm.generate_text(prompt, system_instruction=DRAFTER_SYSTEM_INSTRUCTION)) or None
+        except AINotConnectedError:
+            raise
+        except LLMProviderError as e:
+            logger.warning(f"No se pudo generar la carta por separado: {e.code}")
+            return None
+
+    @staticmethod
+    def _fallback_cover_letter(profile: CandidateProfile, job: JobPosting) -> str:
+        """Plantilla neutra (sirve para cualquier área) cuando la IA no entrega la carta."""
+        experiencia = profile.headline or profile.primary_profession or "mi trayectoria profesional"
+        anos = f" y {profile.years_of_experience:g} años de experiencia" if getattr(profile, "years_of_experience", 0) else ""
+        return (
+            f"Estimado equipo de selección de {job.company}:\n\n"
+            f"Presento mi postulación al cargo de {job.title}. Mi formación como {experiencia}{anos} "
+            f"me permiten aportar desde el primer día a los objetivos del equipo.\n\n"
+            "Me interesa especialmente esta oportunidad porque se alinea con lo que he desarrollado en mi "
+            "carrera y con los resultados que he logrado en mis cargos anteriores, detallados en mi currículum.\n\n"
+            "Quedo a su disposición para conversar sobre cómo puedo contribuir.\n\n"
+            f"Atentamente,\n{profile.name}"
+        )
 
     def _review_materials(self, job: JobPosting, profile: CandidateProfile, cv_md: str, cover_letter: str) -> Tuple[int, list, str]:
         system_instruction = (
-            "Eres un Revisor Crítico de Talento Técnico y Auditor ATS de clase mundial. "
+            "Eres un Revisor Crítico de selección de personal y Auditor ATS para vacantes de cualquier área. "
             "Auditas con ojo clínico los documentos generados: "
             "1. ¿Hay afirmaciones dudosas o inventadas que no respaldaba el perfil original? "
             "2. ¿El lenguaje es directo, medible y profesional? "
@@ -127,12 +232,15 @@ RESPONDE EN JSON:
   "reviewer_critique": "Breve diagnóstico del revisor con tono constructivo y directo."
 }}
 """
-        res = llm.generate_json(prompt, system_instruction=system_instruction)
+        try:
+            res = llm.generate_json(prompt, system_instruction=system_instruction)
+        except AINotConnectedError:
+            raise
+        except LLMProviderError as e:
+            logger.warning(f"Auditoría ATS no disponible ({e.code}); se entregan los documentos sin puntaje.")
+            res = None
         if not res or "ats_score" not in res:
-            raise LLMProviderError(
-                code="review_failed",
-                message="No se pudo auditar la postulación con IA."
-            )
+            return 0, ["No se pudo completar la auditoría ATS automática. Revisa los documentos antes de enviarlos."], "Revisión automática no disponible en este intento."
         score = res.get("ats_score", 85)
         feedback = res.get("ats_feedback", ["Formato legible para filtros ATS"])
         critique = res.get("reviewer_critique", "Revisión completada.")
@@ -142,7 +250,7 @@ RESPONDE EN JSON:
         md = f"# {profile.name}\n"
         md += f"**{profile.headline}** | {profile.location} | {profile.email or ''}\n\n"
         md += f"## Perfil Profesional\n{profile.summary}\n\n"
-        md += f"## Habilidades Técnicas\n{', '.join(profile.technical_skills)}\n\n"
+        md += f"## Competencias\n{', '.join(profile.technical_skills)}\n\n"
         md += "## Experiencia Laboral\n"
         for exp in profile.experiences:
             md += f"### {exp.role} — {exp.company}\n"
@@ -150,7 +258,9 @@ RESPONDE EN JSON:
             md += f"{exp.description}\n"
             for b in exp.bullet_achievements:
                 md += f"- {b}\n"
-            md += f"**Tecnologías:** {', '.join(exp.technologies)}\n\n"
+            if exp.technologies:
+                md += f"**Herramientas:** {', '.join(exp.technologies)}\n"
+            md += "\n"
         md += "## Educación\n"
         for edu in profile.education:
             md += f"- **{edu.degree} en {edu.field_of_study}**, {edu.institution} ({edu.graduation_year or ''})\n"
