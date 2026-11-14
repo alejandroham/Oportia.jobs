@@ -12,6 +12,7 @@ import { FitEvaluationModal } from './FitEvaluationModal';
 import { ImportUrlModal } from './ImportUrlModal';
 import { CompanyPortalsModal } from './CompanyPortalsModal';
 import { HelpCircle } from 'lucide-react';
+import { matchesQuery, normalizeText } from '../../utils/searchText';
 
 interface JobSearchPageProps {
   jobs: JobPosting[];
@@ -46,6 +47,9 @@ export const JobSearchPage: React.FC<JobSearchPageProps> = ({
   const [minSalary, setMinSalary] = useState<number | undefined>(undefined);
   const [selectedSource, setSelectedSource] = useState('all');
   const [isScanning, setIsScanning] = useState(false);
+  // Ofertas que trajo la última búsqueda al servidor: no se vuelven a filtrar por el mismo texto,
+  // porque el servidor ya las eligió (sinónimos, inglés, otras redacciones).
+  const [lastSearch, setLastSearch] = useState<{ term: string; ids: Set<string> }>({ term: '', ids: new Set() });
   const [isBatchRanking, setIsBatchRanking] = useState(false);
   const [sourcesFailed, setSourcesFailed] = useState<string[]>([]);
   const [pageSize, setPageSize] = useState(12);
@@ -69,7 +73,7 @@ export const JobSearchPage: React.FC<JobSearchPageProps> = ({
       const searchRes = await api.searchJobs({
         keywords: searchKw,
         remote_only: modalityFilter === 'Remoto',
-        search_scope: regionFilter === 'user_region' ? 'regional' : 'all',
+        search_scope: regionFilter === 'user_region' ? 'chile' : 'all',
         region: selectedRegion || undefined,
         commune: selectedCommune || undefined
       });
@@ -77,6 +81,7 @@ export const JobSearchPage: React.FC<JobSearchPageProps> = ({
       const found = Array.isArray(searchRes) ? searchRes : (searchRes?.jobs || []);
       const failed = Array.isArray(searchRes) ? [] : (searchRes?.sources_failed || []);
       setSourcesFailed(failed);
+      setLastSearch({ term: normalizeText(searchTerm.trim()), ids: new Set(found.map((j) => j.id)) });
 
       if (found.length > 0) {
         const store = useAppStore.getState();
@@ -174,12 +179,16 @@ export const JobSearchPage: React.FC<JobSearchPageProps> = ({
   const filteredJobs = useMemo(() => {
     return jobs.filter((j) => {
       if (j.in_radar === false) return false;
-      const term = searchTerm.toLowerCase().trim();
-      if (term && !(j.title?.toLowerCase().includes(term) || j.company?.toLowerCase().includes(term) || j.description?.toLowerCase().includes(term) || j.tags?.some((t) => t.toLowerCase().includes(term)))) return false;
+      const term = searchTerm.trim();
+      const fromLastSearch = lastSearch.ids.has(j.id) && lastSearch.term === normalizeText(term);
+      if (term && !fromLastSearch) {
+        const haystack = [j.title, j.company, j.description, j.location, ...(j.tags || [])].join(' ');
+        if (!matchesQuery(haystack, term)) return false;
+      }
       if (modalityFilter === 'Remoto' && !j.is_remote) return false;
       if (modalityFilter === 'Presencial' && j.is_remote) return false;
-      if (regionFilter === 'user_region' && userRegion && !j.location?.toLowerCase().includes(userRegion.toLowerCase()) && !j.is_user_region) return false;
-      if (selectedRegion && !j.location?.toLowerCase().includes(selectedRegion.toLowerCase()) && j.region !== selectedRegion) return false;
+      if (regionFilter === 'user_region' && userRegion && !normalizeText(j.location || '').includes(normalizeText(userRegion)) && !j.is_user_region) return false;
+      if (selectedRegion && !normalizeText(j.location || '').includes(normalizeText(selectedRegion)) && j.region !== selectedRegion) return false;
       if (selectedSource !== 'all' && j.source?.toLowerCase() !== selectedSource.toLowerCase()) return false;
       return true;
     }).sort((a, b) => {
@@ -187,7 +196,7 @@ export const JobSearchPage: React.FC<JobSearchPageProps> = ({
       if (sortBy === 'recent') return new Date(b.posted_at || b.discovered_at).getTime() - new Date(a.posted_at || a.discovered_at).getTime();
       return 0;
     });
-  }, [jobs, searchTerm, modalityFilter, regionFilter, selectedRegion, selectedSource, sortBy, userRegion]);
+  }, [jobs, searchTerm, lastSearch, modalityFilter, regionFilter, selectedRegion, selectedSource, sortBy, userRegion]);
 
   const totalPages = Math.ceil(filteredJobs.length / pageSize) || 1;
   const paginatedJobs = filteredJobs.slice((page - 1) * pageSize, page * pageSize);
