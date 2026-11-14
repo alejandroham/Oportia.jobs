@@ -21,12 +21,14 @@ Principios de diseño:
 import httpx
 import logging
 import re
-import time
-from typing import List, Optional
+from datetime import datetime, timezone
+from typing import List, Optional, Tuple
 from bs4 import BeautifulSoup
 from app.models.schemas import JobPosting
 from app.scrapers.base import BaseScraper
 from app.utils.chile_regions import detect_region_and_commune
+from app.utils.concurrency import run_with_deadline
+from app.utils.keywords import keyword_matches, tokens as kw_tokens, stem as kw_stem
 
 logger = logging.getLogger(__name__)
 
@@ -49,17 +51,32 @@ def _strip_html(raw: str) -> str:
 
 
 def _keyword_match(text: str, keyword: str) -> bool:
-    """True if keyword (or any word of it) appears in text."""
+    """
+    True si el texto corresponde a la palabra clave. El portal ya filtró por búsqueda,
+    así que aquí se es tolerante: frase completa o equivalentes (ver keyword_matches),
+    o cualquier palabra significativa, siempre sin tildes ni mayúsculas.
+    """
     if not keyword:
         return True
-    kw = keyword.lower().strip()
-    if kw in text.lower():
+    if keyword_matches(text, keyword):
         return True
-    # Also check individual words for multi-word keywords
-    for word in kw.split():
-        if len(word) > 3 and word in text.lower():
-            return True
-    return False
+    text_tokens = kw_tokens(text)
+    return any(
+        len(word) > 3 and any(t.startswith(kw_stem(word)) for t in text_tokens)
+        for word in kw_tokens(keyword)
+    )
+
+
+def _epoch_to_iso(value) -> Optional[str]:
+    """GetOnBoard entrega published_at como epoch (int); JobPosting espera texto ISO."""
+    if value in (None, ""):
+        return None
+    if isinstance(value, (int, float)):
+        try:
+            return datetime.fromtimestamp(value, tz=timezone.utc).isoformat()
+        except (OverflowError, OSError, ValueError):
+            return None
+    return str(value)
 
 
 # ---------------------------------------------------------------------------
@@ -81,6 +98,9 @@ class GetOnBoardScraper(BaseScraper):
     def search(self, keywords: str = "", remote_only: bool = False, limit: int = 20) -> List[JobPosting]:
         jobs: List[JobPosting] = []
         kw = keywords.strip() if keywords else ""
+        if not kw:
+            # La API exige "query"; sin palabra clave responde 422.
+            return jobs
 
         try:
             # Search jobs endpoint
@@ -107,7 +127,7 @@ class GetOnBoardScraper(BaseScraper):
                         continue
 
                     # Modality: remote, hybrid, on-site
-                    modality = attrs.get("remote_modality", "").lower()
+                    modality = (attrs.get("remote_modality") or "").lower()
                     is_remote = modality in ("fully_remote", "remote", "remoto")
                     is_hybrid = modality in ("hybrid", "hibrido", "partially_remote")
 
@@ -115,13 +135,15 @@ class GetOnBoardScraper(BaseScraper):
                         continue
 
                     # Company info (expanded)
-                    company_data = item.get("relationships", {}).get("company", {}).get("data", {})
-                    company_name = attrs.get("company_name") or "Empresa en GetOnBoard"
+                    # La API v0 entrega la empresa expandida en attributes.company.data.attributes
+                    company_obj = attrs.get("company")
+                    company_attrs = (company_obj.get("data") or {}).get("attributes", {}) if isinstance(company_obj, dict) else {}
+                    company_name = company_attrs.get("name") or attrs.get("company_name") or "Empresa en GetOnBoard"
 
                     # Location
-                    locations = attrs.get("remote_locations") or []
-                    country = attrs.get("country") or "Chile"
-                    loc_str = ", ".join(locations) if locations else country
+                    countries = attrs.get("countries") or []
+                    country = ", ".join(c for c in countries if isinstance(c, str)) or attrs.get("country") or "Chile"
+                    loc_str = country
                     if not loc_str:
                         loc_str = "Chile"
 
@@ -134,7 +156,8 @@ class GetOnBoardScraper(BaseScraper):
                         salary_range = f"{salary_currency} {salary_min or '?'} - {salary_max or '?'}"
 
                     # Tags / tech stack
-                    tags = [t.get("name", "") for t in (attrs.get("tags") or []) if t.get("name")]
+                    # Los tags vienen como referencias {"data": [{"id", "type"}]} sin nombre; se usa la categoría.
+                    tags = [attrs["category_name"]] if isinstance(attrs.get("category_name"), str) else []
 
                     # Description
                     raw_desc = attrs.get("description") or attrs.get("functions") or ""
@@ -143,7 +166,7 @@ class GetOnBoardScraper(BaseScraper):
                         clean_desc = f"Oportunidad de {title} en {company_name}. Modalidad: {modality}. País: {country}."
 
                     # URL
-                    job_url = attrs.get("url") or f"https://www.getonbrd.com/jobs/{item.get('id', '')}"
+                    job_url = (item.get("links") or {}).get("public_url") or f"https://www.getonbrd.com/jobs/{item.get('id', '')}"
 
                     # Modality label for location
                     modality_labels = {"fully_remote": "Remoto", "hybrid": "Híbrido", "on_site": "Presencial"}
@@ -161,7 +184,7 @@ class GetOnBoardScraper(BaseScraper):
                         url=job_url,
                         source="getonbrd",
                         tags=tags,
-                        posted_at=attrs.get("published_at", "")
+                        posted_at=_epoch_to_iso(attrs.get("published_at"))
                     ))
 
                     if len(jobs) >= limit:
@@ -808,7 +831,7 @@ class EmpleosPublicosScraper(BaseScraper):
 
 class ChilePortalsScraper(BaseScraper):
     """
-    Aggregator that queries all Chilean portals in sequence.
+    Aggregator that queries all Chilean portals in parallel with a total time limit.
     Sources used:
       - GetOnBoard (API oficial, alta confianza)
       - LinkedIn Chile (presencial + híbrido + remoto en Chile)
@@ -822,44 +845,51 @@ class ChilePortalsScraper(BaseScraper):
     def name(self) -> str:
         return "chile_portals"
 
-    def search(self, keywords: str = "", remote_only: bool = False, limit: int = 40) -> List[JobPosting]:
+    # Nombre visible de cada portal (se muestra si no responde a tiempo).
+    SOURCES = {
+        "GetOnBoard": GetOnBoardScraper,
+        "LinkedIn Chile": LinkedInChileScraper,
+        "Computrabajo": CompuTrabajoCLScraper,
+        "ChileTrabajos": ChileTrabajosСraper,
+        "Laborum": LaborumScraper,
+        "Empleos Públicos": EmpleosPublicosScraper,
+    }
+
+    @staticmethod
+    def _annotate_location(jobs: List[JobPosting]) -> None:
+        for j in jobs:
+            if not j.region or not j.commune:
+                reg, comm, is_rem = detect_region_and_commune(j.location)
+                if reg and not j.region:
+                    j.region = reg
+                if comm and not j.commune:
+                    j.commune = comm
+                if is_rem:
+                    j.is_remote = True
+                    j.modality = "Remoto"
+                elif not j.modality:
+                    j.modality = "Presencial"
+
+    def search_with_status(
+        self, keywords: str = "", remote_only: bool = False, limit: int = 40, deadline: float = 6.0
+    ) -> Tuple[List[JobPosting], List[str]]:
+        """Consulta todos los portales EN PARALELO (antes era en secuencia con pausas)."""
+        per_source = max(6, limit // len(self.SOURCES))
+        tasks = {
+            label: (lambda cls=cls: cls().search(keywords=keywords, remote_only=remote_only, limit=per_source))
+            for label, cls in self.SOURCES.items()
+        }
+        results, failed = run_with_deadline(tasks, deadline=deadline)
+
         all_jobs: List[JobPosting] = []
-        per_source = max(6, limit // 6)
+        for label in self.SOURCES:  # orden estable
+            source_jobs = results.get(label) or []
+            self._annotate_location(source_jobs)
+            all_jobs.extend(source_jobs)
 
-        scrapers = [
-            GetOnBoardScraper(),
-            LinkedInChileScraper(),
-            CompuTrabajoCLScraper(),
-            ChileTrabajosСraper(),
-            LaborumScraper(),
-            EmpleosPublicosScraper(),
-        ]
+        logger.info(f"[ChilePortals] {len(all_jobs)} ofertas; sin respuesta: {failed}")
+        return all_jobs[:limit], failed
 
-        for scraper in scrapers:
-            try:
-                logger.info(f"[ChilePortals] Querying {scraper.name}...")
-                source_jobs = scraper.search(
-                    keywords=keywords,
-                    remote_only=remote_only,
-                    limit=per_source
-                )
-                for j in source_jobs:
-                    if not j.region or not j.commune:
-                        reg, comm, is_rem = detect_region_and_commune(j.location)
-                        if reg and not j.region:
-                            j.region = reg
-                        if comm and not j.commune:
-                            j.commune = comm
-                        if is_rem:
-                            j.is_remote = True
-                            j.modality = "Remoto"
-                        elif not j.modality:
-                            j.modality = "Presencial"
-                all_jobs.extend(source_jobs)
-                # Gentle rate limit between portals
-                time.sleep(0.8)
-            except Exception as e:
-                logger.warning(f"[ChilePortals] Source {scraper.name} failed: {e}")
-
-        logger.info(f"[ChilePortals] Total collected: {len(all_jobs)} jobs")
-        return all_jobs[:limit]
+    def search(self, keywords: str = "", remote_only: bool = False, limit: int = 40) -> List[JobPosting]:
+        jobs, _ = self.search_with_status(keywords=keywords, remote_only=remote_only, limit=limit)
+        return jobs

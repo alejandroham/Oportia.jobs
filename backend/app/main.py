@@ -4,7 +4,8 @@ import tempfile
 import logging
 from pathlib import Path
 from datetime import datetime
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from app.utils.concurrency import run_with_deadline
+from app.utils.keywords import normalize as normalize_keywords
 
 logger = logging.getLogger(__name__)
 from typing import Optional, List, Dict, Any
@@ -486,15 +487,19 @@ def list_jobs(status: Optional[str] = None):
 
     return jobs
 
+# Límite por grupo de portales chilenos y total de la búsqueda (las funciones serverless cortan ~10 s).
+SEARCH_SOURCE_DEADLINE_SECONDS = 6.0
+SEARCH_TOTAL_DEADLINE_SECONDS = 7.0
+
 @app.post("/api/jobs/search", response_model=JobSearchResponse, dependencies=[Depends(search_rate_limiter)])
 def search_jobs_stateless(req: JobSearchRequest):
     """
     Stateless job search across Chilean portals, Remote boards, and ATS corporativo (Option A).
-    Executes sources concurrently with 5.0s timeout per source.
+    Executes sources concurrently and returns whatever arrives within ~7s.
     Results are cached in server RAM for 15 minutes.
     Zero server disk retention (db.save_jobs is NEVER called).
     """
-    cache_key = f"{req.keywords.lower()}:{req.remote_only}:{req.search_scope}:{req.region}:{req.commune}"
+    cache_key = f"{normalize_keywords(req.keywords)}:{req.remote_only}:{req.search_scope}:{req.region}:{req.commune}"
     cached = job_search_cache.get(cache_key)
     if cached is not None:
         if isinstance(cached, JobSearchResponse):
@@ -508,45 +513,42 @@ def search_jobs_stateless(req: JobSearchRequest):
     jobs: List[JobPosting] = []
     sources_failed: List[str] = []
 
-    def fetch_remote_boards():
-        scraper = RemoteBoardsScraper()
-        return scraper.search_with_status(keywords=kw, remote_only=req.remote_only, limit=20)
+    # "regional" (filtro "Solo mi región") busca en Chile; la región se aplica al anotar y en el frontend.
+    scope = "chile" if req.search_scope == "regional" else req.search_scope
 
-    def fetch_linkedin():
-        scraper = LinkedInGuestScraper()
-        return scraper.search(keywords=kw, remote_only=req.remote_only, limit=8), []
+    def fetch_remote_boards():
+        return RemoteBoardsScraper().search_with_status(keywords=kw, remote_only=req.remote_only, limit=20)
+
+    def fetch_linkedin_remote():
+        # LinkedIn sin ubicación devuelve ofertas de EE. UU.; solo se usa para trabajo remoto.
+        return LinkedInGuestScraper().search(keywords=kw, remote_only=True, limit=8), []
 
     def fetch_chile():
-        scraper = ChilePortalsScraper()
-        return scraper.search(keywords=kw, remote_only=req.remote_only, limit=40), []
+        return ChilePortalsScraper().search_with_status(
+            keywords=kw, remote_only=req.remote_only, limit=40, deadline=SEARCH_SOURCE_DEADLINE_SECONDS
+        )
 
     def fetch_ats():
         return ats_scraper.search(keywords=kw, remote_only=req.remote_only, limit=15), []
 
     tasks: Dict[str, Any] = {}
-    if req.search_scope in ("global", "all"):
+    if scope in ("global", "all"):
         tasks["Tableros Remotos"] = fetch_remote_boards
-        tasks["LinkedIn Empleos"] = fetch_linkedin
-    if req.search_scope in ("chile", "all"):
+        if req.remote_only:
+            tasks["LinkedIn Remoto"] = fetch_linkedin_remote
+    if scope in ("chile", "all"):
         tasks["Portales Chile"] = fetch_chile
     tasks["ATS Corporativo"] = fetch_ats
 
-    with ThreadPoolExecutor(max_workers=min(4, len(tasks))) as executor:
-        future_to_source = {executor.submit(fn): name for name, fn in tasks.items()}
-        for future in as_completed(future_to_source):
-            src_name = future_to_source[future]
-            try:
-                result = future.result(timeout=5.0)
-                if isinstance(result, tuple):
-                    found_jobs, partial_failures = result
-                    jobs.extend(found_jobs)
-                    if partial_failures:
-                        sources_failed.extend(partial_failures)
-                elif isinstance(result, list):
-                    jobs.extend(result)
-            except Exception as e:
-                logger.warning(f"Error fetching from source {src_name}: {e}")
-                sources_failed.append(src_name)
+    results, failed_groups = run_with_deadline(tasks, deadline=SEARCH_TOTAL_DEADLINE_SECONDS)
+    sources_failed.extend(failed_groups)
+    for result in results.values():
+        if isinstance(result, tuple):
+            found_jobs, partial_failures = result
+            jobs.extend(found_jobs)
+            sources_failed.extend(partial_failures or [])
+        elif isinstance(result, list):
+            jobs.extend(result)
 
     # Annotate region, commune, and modality
     for j in jobs:
@@ -577,7 +579,9 @@ def search_jobs_stateless(req: JobSearchRequest):
         sources_failed=sorted(list(set(sources_failed))),
         total=len(deduped)
     )
-    job_search_cache.set(cache_key, response)
+    # No guardar en caché resultados incompletos: la próxima búsqueda reintenta las fuentes caídas.
+    if not response.sources_failed:
+        job_search_cache.set(cache_key, response)
     return response
 
 @app.post("/api/jobs/scrape")

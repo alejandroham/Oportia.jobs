@@ -2,9 +2,10 @@ import httpx
 import logging
 import re
 from typing import List, Tuple
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from app.utils.concurrency import run_with_deadline
 from app.models.schemas import JobPosting
 from app.scrapers.base import BaseScraper
+from app.utils.keywords import keyword_matches
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +18,6 @@ class RemoteBoardsScraper(BaseScraper):
 
     def _fetch_arbeitnow(self, keywords: str, remote_only: bool, limit: int) -> List[JobPosting]:
         jobs: List[JobPosting] = []
-        kw_lower = keywords.lower() if keywords else ""
         url = "https://www.arbeitnow.com/api/job-board-api"
         with httpx.Client(timeout=BOARD_TIMEOUT_SECONDS, follow_redirects=True) as client:
             resp = client.get(url)
@@ -29,13 +29,15 @@ class RemoteBoardsScraper(BaseScraper):
                     clean_desc = re.sub(r'<[^>]+>', ' ', desc)
                     is_remote = item.get("remote", False) or "remote" in title.lower() or "remoto" in title.lower()
 
-                    if remote_only and not is_remote:
+                    # Arbeitnow publica sobre todo empleos presenciales en Alemania: para personas
+                    # en Chile solo sirven los remotos, se pida o no "solo remoto".
+                    if not is_remote:
                         continue
 
-                    if kw_lower and (
-                        kw_lower not in title.lower()
-                        and kw_lower not in clean_desc.lower()
-                        and kw_lower not in " ".join(item.get("tags", [])).lower()
+                    # Solo título y etiquetas: en la descripción casi siempre aparecen palabras
+                    # genéricas ("sales", "manager") que traían ofertas sin relación.
+                    if keywords and not keyword_matches(
+                        f"{title} {' '.join(str(t) for t in item.get('tags', []) or [])}", keywords
                     ):
                         continue
 
@@ -56,10 +58,9 @@ class RemoteBoardsScraper(BaseScraper):
 
     def _fetch_remotive(self, keywords: str, remote_only: bool, limit: int) -> List[JobPosting]:
         jobs: List[JobPosting] = []
-        kw_lower = keywords.lower() if keywords else ""
         url = "https://remotive.com/api/remote-jobs"
         with httpx.Client(timeout=BOARD_TIMEOUT_SECONDS, follow_redirects=True) as client:
-            resp = client.get(url, params={"limit": 25})
+            resp = client.get(url, params={"limit": 100})
             if resp.status_code == 200:
                 data = resp.json().get("jobs", [])
                 for item in data:
@@ -68,10 +69,10 @@ class RemoteBoardsScraper(BaseScraper):
                     clean_desc = re.sub(r'<[^>]+>', ' ', desc)
                     salary = item.get("salary", "")
 
-                    if kw_lower and (
-                        kw_lower not in title.lower()
-                        and kw_lower not in clean_desc.lower()
-                        and kw_lower not in " ".join(item.get("tags", [])).lower()
+                    # Solo título y etiquetas: en la descripción casi siempre aparecen palabras
+                    # genéricas ("sales", "manager") que traían ofertas sin relación.
+                    if keywords and not keyword_matches(
+                        f"{title} {' '.join(str(t) for t in item.get('tags', []) or [])}", keywords
                     ):
                         continue
 
@@ -93,7 +94,6 @@ class RemoteBoardsScraper(BaseScraper):
 
     def _fetch_remoteok(self, keywords: str, remote_only: bool, limit: int) -> List[JobPosting]:
         jobs: List[JobPosting] = []
-        kw_lower = keywords.lower() if keywords else ""
         url = "https://remoteok.com/api"
         headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
         with httpx.Client(timeout=BOARD_TIMEOUT_SECONDS, headers=headers, follow_redirects=True) as client:
@@ -107,10 +107,10 @@ class RemoteBoardsScraper(BaseScraper):
                     clean_desc = re.sub(r'<[^>]+>', ' ', desc)
                     salary = item.get("salary", "")
 
-                    if kw_lower and (
-                        kw_lower not in title.lower()
-                        and kw_lower not in clean_desc.lower()
-                        and kw_lower not in " ".join(item.get("tags", [])).lower()
+                    # Solo título y etiquetas: en la descripción casi siempre aparecen palabras
+                    # genéricas ("sales", "manager") que traían ofertas sin relación.
+                    if keywords and not keyword_matches(
+                        f"{title} {' '.join(str(t) for t in item.get('tags', []) or [])}", keywords
                     ):
                         continue
 
@@ -136,7 +136,6 @@ class RemoteBoardsScraper(BaseScraper):
         Returns tuple of (jobs, failed_sources).
         """
         jobs: List[JobPosting] = []
-        failed_sources: List[str] = []
 
         tasks = {
             "Arbeitnow": lambda: self._fetch_arbeitnow(keywords, remote_only, limit),
@@ -144,16 +143,9 @@ class RemoteBoardsScraper(BaseScraper):
             "RemoteOK": lambda: self._fetch_remoteok(keywords, remote_only, limit),
         }
 
-        with ThreadPoolExecutor(max_workers=3) as executor:
-            future_to_source = {executor.submit(fn): name for name, fn in tasks.items()}
-            for future in as_completed(future_to_source):
-                source_name = future_to_source[future]
-                try:
-                    results = future.result(timeout=BOARD_TIMEOUT_SECONDS)
-                    jobs.extend(results)
-                except Exception as e:
-                    logger.warning(f"Error fetching from remote board '{source_name}': {e}")
-                    failed_sources.append(source_name)
+        results, failed_sources = run_with_deadline(tasks, deadline=BOARD_TIMEOUT_SECONDS + 1.0)
+        for name in tasks:  # orden estable
+            jobs.extend(results.get(name) or [])
 
         return jobs[:limit], failed_sources
 
