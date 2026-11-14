@@ -5,6 +5,41 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
 
 ---
 
+## [Sin publicar]
+
+### 🤖 Opi con personalidad: 6 expresiones
+- **Nuevas ilustraciones de Opi** en `frontend/public/opi/` (WebP con fondo transparente, versiones de 512 px y 128 px): `saludando`, `curioso`, `pensando`, `celebrando`, `advertencia` y `durmiendo`.
+- **Nuevo componente `OpiAvatar`** (`frontend/src/components/ui/OpiAvatar.tsx`) con la propiedad `expression`. Elige automáticamente la versión liviana para avatares pequeños e incluye texto alternativo accesible.
+- **Opi expresa el estado de la app:**
+  - *Saludando:* botón flotante "Opi Copiloto", encabezado del chat, tarjeta "Tu siguiente paso" en Inicio y paso 1 de la guía de inicio.
+  - *Curioso:* estados vacíos de Buscar empleo y Mis postulaciones, y paso 2 de la guía de inicio.
+  - *Pensando:* mientras Opi responde en el chat y en el paso 3 de la guía de inicio.
+  - *Celebrando:* Inicio con el progreso al 100% y evaluaciones con compatibilidad de 75% o más.
+  - *Advertencia:* evaluaciones con compatibilidad menor a 50%.
+  - *Durmiendo:* chat y avisos cuando la IA no está conectada.
+- `EmptyState` acepta la nueva propiedad opcional `opiExpression` para mostrar a Opi en lugar de un ícono.
+- El avatar anterior `opi-avatar.svg` ya no se usa en la interfaz.
+
+### 🌎 Búsqueda para todas las áreas, no solo TI
+- Se eliminó la palabra clave por defecto "Tecnología" en LinkedIn y Computrabajo; sin palabra clave se buscan ofertas de todas las áreas.
+- Se eliminó el filtro de solo-TI (`IT_PATTERNS`) que no se usaba en el scraper de Empleos Públicos.
+- Los ejemplos de los campos (cargo, habilidades, cursos, búsqueda) ahora muestran oficios y profesiones de distintas áreas.
+- "Búsqueda en portales" agrega Empleos Públicos y Trabajando.cl / Laborum / Computrabajo.
+- Las instrucciones a la IA para redactar CV y carta ya no asumen un perfil técnico ni de software.
+
+### 🐛 Correcciones
+- **Postular con CV adaptado:** `api.applyJob` ahora envía la oferta, el perfil y las preferencias completos a `POST /api/applications/draft` (sin estado). Antes enviaba solo el ID a `/api/jobs/{id}/apply`, que busca la oferta en el disco del servidor y respondía "Empleo no encontrado" en el despliegue. Si la persona no ha subido su CV, se le avisa y se le lleva a Mi perfil.
+- **Carta de presentación que no se generaba:** si la IA no devuelve un JSON válido con ambos documentos, el CV y la carta se generan por separado; si la auditoría ATS falla, igual se entregan los documentos. El endpoint sin estado ya no escribe en el disco del servidor y usa las preferencias enviadas en la petición.
+- **PDF en blanco:** "Imprimir / Guardar PDF" ahora imprime solo el documento en una vista aislada, siempre en tema claro, con todas sus páginas y un nombre de archivo sugerido. El CV adaptado se muestra formateado (títulos, viñetas, negritas) en lugar de Markdown sin procesar, y la carta de presentación también se puede guardar como PDF.
+- **Modo oscuro:** se definieron los colores `ink.surface` (`#1E3B50`) e `ink.border` (`#2C4A60`) en `tailwind.config.js`. Se usaban en 17 lugares sin estar definidos, por lo que tarjetas como los estados vacíos se veían blancas y con el título invisible en modo oscuro.
+- **Modo oscuro (contraste en la guía de inicio):** se agregó el tono `brand-950`, usado en 30 clases sin estar definido. Por eso botones y avisos como "Repetir guía de inicio" y "Tu siguiente paso" mostraban texto verde sobre fondo verde claro.
+
+- **Logo e imágenes de Opi rotos al usar la app desde el backend** (`start_app.sh`, puerto 8000): el middleware que agrega el prefijo `/api` reescribía también `/oportia-logo.svg` y `/opi/*.webp`, y el servidor respondía con la página HTML. Ahora solo se reescriben las rutas reales de la API; los archivos del frontend compilado y las rutas de la app se sirven tal cual, y se bloquean rutas fuera de `frontend/dist`. Tests nuevos que no dependen de tener el frontend compilado.
+- **CV adaptado con `\n` visibles:** si el texto llega con saltos de línea escapados, ahora se muestran como saltos de línea reales.
+
+### 📝 Documentación
+- **README:** se corrigieron afirmaciones que no coincidían con el código. Ahora indica que los datos se envían al proveedor de IA elegido, advierte sobre los endpoints heredados que aún usan `data/`, lista los portales de empleo realmente implementados, nombra las pestañas reales de cada postulación y aclara que el servidor MCP es solo para instalación local.
+
 ## [1.1.0] - 2026-11-13 — *Consolidación de Arquitectura Local-First, Calidad, Accesibilidad y CI*
 
 ### 🔒 Arquitectura Local-First & Privacidad Soberana (Opción A)
@@ -37,7 +72,7 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
 ### 🧩 Modularización de Pantallas (Límite $\le 300$ líneas)
 - Descomposición de monolitos en componentes enfocados y mantenibles:
   - **Mi Perfil (`ProfileView.tsx`):** Editor de CV por bloques plegables (Datos, Resumen, Experiencias, Educación, Habilidades, Idiomas) y preferencias unificadas.
-  - **Mis Postulaciones (`ApplicationsPage.tsx`):** Embudo estructurado en 3 pestañas (En proceso, Finalizadas, Todas) con selector de estado en 1 clic y modal de documentos adaptados.
+  - **Mis Postulaciones (`ApplicationsPage.tsx`):** Lista filtrable por estado (En proceso, Finalizadas, Todas) y ficha de cada postulación con 3 pestañas: Documentos, Preparar entrevista e Historial y notas.
   - **Aprender (`LearningPage.tsx`):** 4 pestañas especializadas (Cursos gratuitos verificados, Diagnóstico de brechas, Rutas de aprendizaje por hitos y Simulador STAR).
   - **Buscar Empleo (`JobSearchPage.tsx`):** Barra de búsqueda reactiva, filtros rápidos y avanzados, feed paginado y modal de detalle.
 
