@@ -202,7 +202,7 @@ class LinkedInChileScraper(BaseScraper):
         for work_types in work_type_sets:
             try:
                 params = {
-                    "keywords": keywords or "Tecnología",
+                    "keywords": keywords or "",
                     "location": "Chile",
                     "geoId": "104621616",  # Chile's LinkedIn geoId
                     "f_WT": work_types,
@@ -284,11 +284,11 @@ class CompuTrabajoCLScraper(BaseScraper):
 
     def search(self, keywords: str = "", remote_only: bool = False, limit: int = 15) -> List[JobPosting]:
         jobs: List[JobPosting] = []
-        kw = keywords.strip() if keywords else "tecnologia"
+        kw = keywords.strip() if keywords else ""
 
         try:
             url = f"{self.BASE_URL}/trabajo"
-            params = {"q": kw}
+            params = {"q": kw} if kw else {}
             if not remote_only:
                 params["l"] = "chile"
 
@@ -628,73 +628,14 @@ class EmpleosPublicosScraper(BaseScraper):
     """
     Scraper oficial para Empleos Públicos de Chile (https://www.empleospublicos.cl/).
     Consume la API REST interna /apiConvocatorias.ashx del Estado de Chile.
-    Aplica filtros de alta precisión para extraer exclusivamente ofertas del sector TI,
-    desarrollo de software, análisis de datos, ciberseguridad, infraestructura y transformación digital,
-    evitando homónimos del sector público (e.g. pools de talento médico que usan el prefijo 'BBDD').
+    Cubre convocatorias de cualquier profesión u oficio (salud, educación, administración,
+    tecnología, municipios, etc.); el filtro por palabra clave se aplica más abajo.
     """
     API_URL = "https://www.empleospublicos.cl/apiConvocatorias.ashx"
-
-    # Professions to reject even if they mention technology or an IT department
-    REJECT_ROLES = re.compile(
-        r'\b(secretari[oa]s?|recepcionista|chofer|conductor|auxiliar|m[eé]dic[oa]s?|enfermer[oa]s?|'
-        r'tens\b|param[eé]dic[oa]s?|terapeuta|psic[oó]log[oa]s?|psiquiatra|abogad[oa]s?|'
-        r'matron[a]?|odont[oó]log[oa]s?|kinesi[oó]log[oa]s?|trabajador(a)? social|asistente social|'
-        r'prevencionista|guardaparques|educador(a)?|p[aá]rvul[oa]s?)\b',
-        re.IGNORECASE
-    )
-
-    # Specific non-IT context keywords
-    REJECT_CONTEXTS = re.compile(
-        r'\b(contra incendios|incendio|sistemas de turno|sistema cuarto turno|cuarto turno|'
-        r'atenci[oó]n intersectorial|el[eé]ctricos de potencia|hospital digital)\b',
-        re.IGNORECASE
-    )
-
-    # Positive IT and tech patterns
-    IT_PATTERNS = re.compile(
-        r'\b('
-        r'inform[aá]tic[oa]s?|'
-        r'software|'
-        r'desarrollador[a-z]*|programador[a-z]*|developer|fullstack|frontend|backend|devops|qa\b|tester|'
-        r'computaci[oó]n|computacional|'
-        r'ciberseguridad|seguridad de la informaci[oó]n|aseguramiento de la informaci[oó]n|'
-        r'redes y telecomunicaciones|soporte computacional|infraestructura ti|'
-        r'sistemas inform[aá]ticos|'
-        r'ciencias? de datos|data science|ingenier[oí]a de datos|gestor[a-z]* de datos|analista de datos|'
-        r'transformaci[oó]n digital|tecnolog[ií]as de la informaci[oó]n|'
-        r'plataformas digitales|centro tecnol[oó]gico|transferencia tecnol[oó]gica|'
-        r'ingenier[oí]a civil inform[aá]tica|ingeniero civil inform[aá]tico|ingeniero inform[aá]tico'
-        r')\b',
-        re.IGNORECASE
-    )
 
     @property
     def name(self) -> str:
         return "empleospublicos"
-
-    @staticmethod
-    def _normalize_role_text(text: str) -> str:
-        """Strip gender parentheses like (a), (o) and civil service talent pool prefixes."""
-        cleaned = re.sub(r'\(?\b(base de datos|bbdd)\b\)?\s*[:\-]?', '', text or '', flags=re.IGNORECASE).strip()
-        cleaned = re.sub(r'\([a-zA-Z/]+\)', '', cleaned)
-        return cleaned
-
-    @classmethod
-    def _is_it_role(cls, cargo: str, area: str) -> bool:
-        """Determines if a civil service posting is genuinely an IT/Tech position."""
-        cargo_norm = cls._normalize_role_text(cargo)
-        area_norm = cls._normalize_role_text(area)
-
-        # Reject explicitly non-IT professions
-        if cls.REJECT_ROLES.search(cargo_norm):
-            return False
-
-        # Reject non-IT system contexts unless explicitly an IT role
-        if cls.REJECT_CONTEXTS.search(cargo_norm) and not re.search(r'\binform[aá]tic[oa]s?\b', cargo_norm, re.IGNORECASE):
-            return False
-
-        # Match IT domain
-        return bool(cls.IT_PATTERNS.search(cargo_norm) or cls.IT_PATTERNS.search(area_norm))
 
     @staticmethod
     def _parse_chile_date_to_iso(date_str: Optional[str]) -> Optional[str]:

@@ -194,7 +194,7 @@ export const CvEditor: React.FC<CvEditorProps> = ({ profile, onProfileUpdated })
                     type="text"
                     value={formData.headline || formData.primary_profession || ''}
                     onChange={(e) => setFormData({ ...formData, headline: e.target.value, primary_profession: e.target.value })}
-                    placeholder="Ej. Ingeniero de Software Fullstack"
+                    placeholder="Ej. Técnico en Enfermería, Jefe de Obra, Ingeniero Comercial"
                     className="w-full p-2 rounded-xl border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-gray-900 dark:text-gray-100"
                   />
                 </div>

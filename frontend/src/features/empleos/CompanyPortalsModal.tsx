@@ -14,9 +14,19 @@ export const CompanyPortalsModal: React.FC<CompanyPortalsModalProps> = ({
   onClose,
   profile
 }) => {
-  const targetRole = profile?.primary_profession || profile?.headline || 'Desarrollador';
+  const targetRole = profile?.primary_profession || profile?.headline || 'empleo';
 
   const portalDorks = [
+    {
+      platform: 'Empleos Públicos',
+      description: 'Concursos del Estado de Chile (salud, educación, municipios, servicios públicos)',
+      query: `site:empleospublicos.cl "${targetRole}"`
+    },
+    {
+      platform: 'Trabajando.cl / Laborum / Computrabajo',
+      description: 'Bolsas de empleo chilenas con ofertas de todas las áreas y oficios',
+      query: `(site:trabajando.cl OR site:laborum.cl OR site:cl.computrabajo.com) "${targetRole}"`
+    },
     {
       platform: 'Greenhouse',
       description: 'Ofertas publicadas directamente en boards.greenhouse.io en Chile',
@@ -52,8 +62,8 @@ export const CompanyPortalsModal: React.FC<CompanyPortalsModalProps> = ({
     <Dialog
       isOpen={isOpen}
       onClose={onClose}
-      title="Búsqueda en portales de empresas"
-      description="Encuentra vacantes ocultas buscando directamente en los sistemas de selección (ATS) de empresas con presencia en Chile:"
+      title="Búsqueda en portales de empleo y empresas"
+      description="Encuentra vacantes de cualquier área buscando directamente en bolsas de empleo y en los sistemas de selección (ATS) de empresas con presencia en Chile:"
       maxWidth="lg"
     >
       <div className="space-y-2.5 max-h-[60vh] overflow-y-auto pr-1">

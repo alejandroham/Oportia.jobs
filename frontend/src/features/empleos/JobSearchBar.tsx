@@ -68,7 +68,7 @@ export const JobSearchBar: React.FC<JobSearchBarProps> = ({
             type="text"
             value={searchTerm}
             onChange={(e) => onSearchChange(e.target.value)}
-            placeholder="Buscar por cargo, palabra clave o empresa (ej. Frontend, Python, FinTech)..."
+            placeholder="Buscar por cargo, palabra clave o empresa (ej. Enfermería, Ventas, Contabilidad)..."
             aria-label="Buscar por cargo, palabra clave o empresa"
             className="w-full pl-10 pr-4 py-2.5 min-h-[44px] rounded-2xl bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 text-sm text-ink dark:text-gray-100 placeholder-ink-muted focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none shadow-xs"
           />

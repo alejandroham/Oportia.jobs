@@ -58,7 +58,7 @@ export const OnboardingStep2Preferences: React.FC<OnboardingStep2PreferencesProp
                 handleAddRole();
               }
             }}
-            placeholder="Ej. Desarrollador Frontend, Enfermero TENS..."
+            placeholder="Ej. Enfermero TENS, Vendedor, Analista Contable..."
             className="flex-1 text-xs min-h-[44px] px-3 py-2 rounded-xl bg-gray-50 dark:bg-zinc-800 border border-black/10 dark:border-white/10 text-ink dark:text-white focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
           />
           <button

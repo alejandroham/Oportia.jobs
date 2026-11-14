@@ -16,7 +16,7 @@ export const LearningPathsTab: React.FC<LearningPathsTabProps> = ({
   targetRole
 }) => {
   const [isGenerating, setIsGenerating] = useState(false);
-  const [roleInput, setRoleInput] = useState(targetRole || 'Desarrollador Fullstack');
+  const [roleInput, setRoleInput] = useState(targetRole || '');
   const toast = useToast();
 
   const handleGeneratePath = async () => {
@@ -52,7 +52,7 @@ export const LearningPathsTab: React.FC<LearningPathsTabProps> = ({
             type="text"
             value={roleInput}
             onChange={(e) => setRoleInput(e.target.value)}
-            placeholder="Cargo objetivo (ej. Tech Lead, Product Manager, Data Engineer)..."
+            placeholder="Cargo objetivo (ej. Jefe de Bodega, Educadora de Párvulos, Analista Contable)..."
             className="flex-1 min-w-[220px] px-3.5 py-2 rounded-xl bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 text-gray-900 dark:text-gray-100 focus:outline-none"
           />
           <button
