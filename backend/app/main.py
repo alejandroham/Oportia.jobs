@@ -10,7 +10,6 @@ logger = logging.getLogger(__name__)
 from typing import Optional, List, Dict, Any
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException, BackgroundTasks, Request, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, JSONResponse
 
 from app.config import settings
@@ -92,24 +91,50 @@ async def extract_llm_credentials_middleware(request: Request, call_next):
     finally:
         current_llm_credentials.reset(token)
 
+FRONTEND_DIST = settings.BASE_DIR / "frontend" / "dist"
+
+API_ROOT_PREFIXES = (
+    "/profile", "/preferences", "/memory", "/chat", "/feedback",
+    "/companies", "/roles", "/jobs", "/regions", "/applications",
+    "/interview", "/coach", "/settings", "/purge-all", "/legacy-export"
+)
+
+STATIC_EXTENSIONS = (
+    ".svg", ".webp", ".png", ".jpg", ".jpeg", ".ico", ".json",
+    ".css", ".js", ".map", ".txt", ".woff", ".woff2", ".ttf"
+)
+
 @app.middleware("http")
 async def ensure_api_prefix_middleware(request, call_next):
     """
     Transparently rewrites root endpoint requests (e.g. /settings, /profile, /jobs)
     to /api/* so frontend calls work seamlessly whether VITE_API_URL has /api or not.
+    Static files and SPA navigation routes are NOT rewritten.
     """
     path = request.url.path
     if (
-        not path.startswith("/api")
-        and not path.startswith("/docs")
-        and not path.startswith("/openapi")
-        and not path.startswith("/redoc")
-        and not path.startswith("/assets")
-        and not path.startswith("/health")
-        and path != "/"
-        and path != "/favicon.ico"
+        path.startswith("/api")
+        or path.startswith("/docs")
+        or path.startswith("/openapi")
+        or path.startswith("/redoc")
+        or path.startswith("/assets")
+        or path.startswith("/opi")
+        or path.startswith("/health")
+        or path == "/"
+        or path.endswith(STATIC_EXTENSIONS)
     ):
+        return await call_next(request)
+
+    # Do not rewrite if it corresponds to an existing static file in frontend/dist
+    if FRONTEND_DIST.exists():
+        rel_path = path.lstrip("/")
+        if (FRONTEND_DIST / rel_path).is_file():
+            return await call_next(request)
+
+    # Only rewrite known backend API prefixes
+    if path.startswith(API_ROOT_PREFIXES):
         request.scope["path"] = f"/api{path}"
+
     return await call_next(request)
 
 @app.exception_handler(LLMProviderError)
@@ -1102,13 +1127,28 @@ def get_legacy_export():
         "coach_data": coach_data
     }
 
-# Serve frontend build if present
-FRONTEND_DIST = settings.BASE_DIR / "frontend" / "dist"
-if FRONTEND_DIST.exists():
-    app.mount("/assets", StaticFiles(directory=FRONTEND_DIST / "assets"), name="assets")
-    @app.get("/{full_path:path}")
-    async def serve_spa(full_path: str):
-        file_path = FRONTEND_DIST / full_path
-        if file_path.exists() and file_path.is_file():
-            return FileResponse(file_path)
-        return FileResponse(FRONTEND_DIST / "index.html")
+# Serve frontend build if present.
+# Se resuelve FRONTEND_DIST en cada petición (no al importar) para que los tests puedan
+# usar una carpeta temporal y para que un `npm run build` posterior se sirva sin reiniciar.
+@app.get("/{full_path:path}", include_in_schema=False)
+async def serve_spa(full_path: str):
+    dist = FRONTEND_DIST
+    if full_path.startswith("api/") or full_path == "api" or not dist.exists():
+        raise HTTPException(status_code=404, detail="Recurso no encontrado")
+
+    dist_root = dist.resolve()
+    candidate = (dist_root / full_path).resolve()
+    # Evita salir de dist con rutas tipo ../../
+    if candidate != dist_root and dist_root not in candidate.parents:
+        raise HTTPException(status_code=404, detail="Recurso no encontrado")
+    if candidate.is_file():
+        return FileResponse(candidate)
+
+    # Un archivo con extensión que no existe es un 404 real, no una ruta de la app.
+    if full_path.lower().endswith(STATIC_EXTENSIONS):
+        raise HTTPException(status_code=404, detail="Archivo no encontrado")
+
+    index = dist_root / "index.html"
+    if not index.is_file():
+        raise HTTPException(status_code=404, detail="Frontend no compilado")
+    return FileResponse(index)
