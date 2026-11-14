@@ -95,18 +95,18 @@ export const WelcomeHub: React.FC<WelcomeHubProps> = ({
           <button
             type="button"
             onClick={onOpenOnboarding}
-            className="inline-flex items-center space-x-1.5 px-3.5 py-2 min-h-[44px] rounded-xl text-xs font-semibold bg-brand-50 dark:bg-brand-950/40 text-brand-700 dark:text-brand-300 border border-brand-200/50 hover:bg-brand-100 dark:hover:bg-brand-900/40 transition cursor-pointer self-start sm:self-auto focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
+            className="inline-flex items-center space-x-1.5 px-3.5 py-2 min-h-[44px] rounded-xl text-xs font-semibold bg-brand-50 dark:bg-brand-950/40 text-brand-700 dark:text-brand-200 border border-brand-200/50 dark:border-brand-700/60 hover:bg-brand-100 dark:hover:bg-brand-900/60 transition cursor-pointer self-start sm:self-auto focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
           >
-            <Sparkles className="w-3.5 h-3.5 text-brand-500" />
+            <Sparkles className="w-3.5 h-3.5 text-brand-500 dark:text-brand-300" />
             <span>Repetir guía de inicio</span>
           </button>
         )}
       </div>
 
       {/* Tarjeta Hero: "Tu siguiente paso" */}
-      <div className="apple-glass apple-card p-6 rounded-3xl border-brand-500/20 bg-gradient-to-br from-brand-50/60 via-white to-teal-50/40 dark:from-brand-950/20 dark:via-zinc-900/40 dark:to-zinc-900/60 shadow-lg space-y-4">
+      <div className="apple-glass apple-card p-6 rounded-3xl border-brand-500/20 bg-gradient-to-br from-brand-50/60 via-white to-teal-50/40 dark:from-brand-950/60 dark:via-ink-surface/80 dark:to-ink-surface dark:border-brand-500/30 shadow-lg space-y-4">
         <div className="flex items-center space-x-2">
-          <span className="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider bg-brand-100 dark:bg-brand-950/60 text-brand-800 dark:text-brand-300">
+          <span className="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider bg-brand-100 dark:bg-brand-500/20 text-brand-800 dark:text-brand-200 dark:ring-1 dark:ring-brand-400/40">
             Tu siguiente paso
           </span>
         </div>

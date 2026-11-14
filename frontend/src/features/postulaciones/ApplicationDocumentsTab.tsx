@@ -70,7 +70,7 @@ export const ApplicationDocumentsTab: React.FC<ApplicationDocumentsTabProps> = (
           type="button"
           onClick={onAdaptCv}
           disabled={isAdapting}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 min-h-[36px] rounded-xl bg-brand-50 dark:bg-brand-950/40 text-brand border border-brand-200 dark:border-brand-800/60 font-semibold hover:bg-brand-100 transition disabled:opacity-50"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 min-h-[36px] rounded-xl bg-brand-50 dark:bg-brand-950/40 text-brand-700 dark:text-brand-200 border border-brand-200 dark:border-brand-700/60 font-semibold hover:bg-brand-100 dark:hover:bg-brand-900/60 transition disabled:opacity-50"
         >
           {isAdapting ? (
             <>

@@ -19,16 +19,20 @@ export default {
           700: '#146B58',
           800: '#125647',
           900: '#0F473B',
+          950: '#062821', // fondos de acento en modo oscuro (antes faltaba y dejaba bg-brand-50 claro con texto claro)
           DEFAULT: '#20A88A'
         },
         ink: {
           DEFAULT: '#173B50',
           muted: '#64748B',
           light: '#F4F7F9',
-          dark: '#142B3D'
+          dark: '#142B3D',
+          surface: '#1E3B50', // tarjetas en modo oscuro
+          border: '#2C4A60' // bordes en modo oscuro
         },
         surface: {
           DEFAULT: '#FFFFFF',
+          alt: '#F4F7F9',
           dark: '#142B3D',
           card: '#FFFFFF',
           darkCard: '#1E3B50'
