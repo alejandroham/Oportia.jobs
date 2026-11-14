@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import type { JobPosting, CandidateProfile, ApplicationDraft } from '../../types';
 import { CvPreview } from '../shared/CvPreview';
 import { Sparkles, FileText, Mail, Copy, Check, Printer, Loader2 } from 'lucide-react';
 import { useToast } from '../../components/Toast';
+import { printElement, buildDocumentTitle } from '../../utils/printDocument';
 
 interface ApplicationDocumentsTabProps {
   job: JobPosting;
@@ -21,6 +22,7 @@ export const ApplicationDocumentsTab: React.FC<ApplicationDocumentsTabProps> = (
 }) => {
   const [activeDoc, setActiveDoc] = useState<'cv' | 'cover_letter'>('cv');
   const [copiedLetter, setCopiedLetter] = useState(false);
+  const letterRef = useRef<HTMLDivElement>(null);
   const toast = useToast();
 
   const tailoredMarkdown = application?.tailored_cv_markdown || job.tailored_cv_markdown;
@@ -93,6 +95,7 @@ export const ApplicationDocumentsTab: React.FC<ApplicationDocumentsTabProps> = (
             profile={profile}
             tailoredMarkdown={tailoredMarkdown}
             showControls={true}
+            documentLabel={job.company}
           />
         ) : (
           <div className="p-8 text-center text-xs text-gray-500">
@@ -120,7 +123,12 @@ export const ApplicationDocumentsTab: React.FC<ApplicationDocumentsTabProps> = (
                   </button>
                   <button
                     type="button"
-                    onClick={() => window.print()}
+                    onClick={() =>
+                      void printElement(
+                        letterRef.current,
+                        buildDocumentTitle('Carta de presentación', profile?.name, job.company)
+                      )
+                    }
                     aria-label="Imprimir o guardar carta de presentación como PDF"
                     className="inline-flex items-center gap-1.5 px-3.5 py-2 min-h-[44px] rounded-xl bg-brand text-white text-xs font-semibold hover:bg-brand-600 transition shadow-xs cursor-pointer active:scale-95 focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
                   >
@@ -130,7 +138,10 @@ export const ApplicationDocumentsTab: React.FC<ApplicationDocumentsTabProps> = (
                 </div>
               </div>
 
-              <div className="text-xs sm:text-sm text-gray-800 dark:text-gray-200 leading-relaxed whitespace-pre-wrap font-sans">
+              <div
+                ref={letterRef}
+                className="printable-cv bg-white text-gray-800 rounded-xl p-6 sm:p-8 text-xs sm:text-sm leading-relaxed whitespace-pre-wrap font-sans formal-justify border border-gray-100"
+              >
                 {coverLetter}
               </div>
             </div>

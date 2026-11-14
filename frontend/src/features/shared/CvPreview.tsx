@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import type { CandidateProfile } from '../../types';
-import { Printer, Download, Layout, Palette, AlignLeft, AlignCenter } from 'lucide-react';
+import { Printer, Layout, Palette, AlignLeft, AlignCenter } from 'lucide-react';
+import { MarkdownDocument } from './MarkdownDocument';
+import { printElement, buildDocumentTitle } from '../../utils/printDocument';
 
 export const formatExperiencePeriod = (startDate?: string, endDate?: string): string => {
   const start = (startDate || '').trim();
@@ -21,18 +23,27 @@ interface CvPreviewProps {
   tailoredMarkdown?: string;
   showControls?: boolean;
   className?: string;
+  /** Empresa / cargo de la postulación, se usa para el nombre del PDF. */
+  documentLabel?: string;
 }
 
 export const CvPreview: React.FC<CvPreviewProps> = ({
   profile,
   tailoredMarkdown,
   showControls = true,
-  className = ''
+  className = '',
+  documentLabel
 }) => {
+  const printableRef = useRef<HTMLDivElement>(null);
   const [template, setTemplate] = useState<'modern' | 'minimalist' | 'executive'>('modern');
   const [paperTheme, setPaperTheme] = useState<'white' | 'warm' | 'cream'>('white');
   const [align, setAlign] = useState<'left' | 'center'>('left');
   const [viewSource, setViewSource] = useState<'profile' | 'tailored'>(tailoredMarkdown ? 'tailored' : 'profile');
+
+  // Cuando la IA termina de adaptar el CV, mostrar (e imprimir) la versión adaptada.
+  useEffect(() => {
+    if (tailoredMarkdown) setViewSource('tailored');
+  }, [tailoredMarkdown]);
 
   const paperBg =
     paperTheme === 'warm'
@@ -42,7 +53,10 @@ export const CvPreview: React.FC<CvPreviewProps> = ({
       : 'bg-white text-zinc-900';
 
   const handlePrint = () => {
-    window.print();
+    void printElement(
+      printableRef.current,
+      buildDocumentTitle('CV', profile.name, viewSource === 'tailored' ? documentLabel : undefined)
+    );
   };
 
   return (
@@ -142,12 +156,11 @@ export const CvPreview: React.FC<CvPreviewProps> = ({
       {/* Contenedor Hoja A4 */}
       <div
         id="cv-printable-area"
-        className={`mx-auto max-w-[800px] shadow-lg rounded-2xl border border-gray-200/80 p-8 sm:p-12 transition-all ${paperBg} print:shadow-none print:border-none print:p-0 print:m-0`}
+        ref={printableRef}
+        className={`printable-cv mx-auto max-w-[800px] shadow-lg rounded-2xl border border-gray-200/80 p-8 sm:p-12 transition-all ${paperBg} print:shadow-none print:border-none print:p-0 print:m-0`}
       >
         {viewSource === 'tailored' && tailoredMarkdown ? (
-          <div className="prose prose-sm dark:prose-invert max-w-none whitespace-pre-wrap font-sans text-xs sm:text-sm leading-relaxed">
-            {tailoredMarkdown}
-          </div>
+          <MarkdownDocument markdown={tailoredMarkdown} />
         ) : (
           <div className="space-y-6">
             {/* Cabecera */}
