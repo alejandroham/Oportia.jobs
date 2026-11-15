@@ -430,6 +430,23 @@ export interface CompetencyDiagnosticItem {
   updated_at: string;
 }
 
+/** Requisito de las ofertas comparado con el CV (pestaña Mis brechas). */
+export interface GapItem {
+  requirement: string;
+  status: 'cumple' | 'parcial' | 'brecha';
+  evidence?: string | null;
+  job_titles: string[];
+  area?: string | null;
+  course_query: string;
+}
+
+export interface GapAnalysis {
+  items: GapItem[];
+  method: 'ia' | 'reglas';
+  jobs_analyzed: number;
+  note?: string | null;
+}
+
 export interface LearningCourseResource {
   id: string;
   title: string;

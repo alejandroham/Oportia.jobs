@@ -13,7 +13,8 @@ import type {
   LearningCourseResource,
   LearningPath,
   TutorPracticeChallenge,
-  TutorEvaluationResult
+  TutorEvaluationResult,
+  GapAnalysis
 } from './types';
 import { decryptApiKeyLocally } from './utils/crypto';
 import { getClientId, hasSharedAIConsent, reportSharedAIRemaining } from './utils/sharedAI';
@@ -596,6 +597,21 @@ export const api = {
       headers: { ...llmHeaders }
     });
     return handleResponse<CompetencyDiagnosticItem[]>(res, 'Error al transferir brechas al Coach IA');
+  },
+  /** Brechas reales: requisitos de tus ofertas guardadas/evaluadas vs. tu CV (sin estado). */
+  analyzeGaps: async (
+    profile: CandidateProfile,
+    jobs: JobPosting[],
+    preferences?: UserPreferences | null,
+    useAi = true
+  ): Promise<GapAnalysis> => {
+    const llmHeaders = await getLLMHeaders();
+    const res = await fetch(`${API_BASE}/coach/gaps`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...llmHeaders },
+      body: JSON.stringify({ profile, jobs, preferences: preferences ?? null, use_ai: useAi })
+    });
+    return handleResponse<GapAnalysis>(res, 'Error al analizar brechas');
   },
   searchCoachCourses: async (params?: { query?: string; competency?: string; cost?: string }): Promise<LearningCourseResource[]> => {
     const sp = new URLSearchParams();

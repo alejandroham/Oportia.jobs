@@ -7,6 +7,13 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
 
 ## [Sin publicar]
 
+### 🎓 Brechas reales y cursos de todas las áreas (Etapa A3 de la versión 1.3)
+- **"Mis brechas" compara de verdad** los requisitos de tus ofertas guardadas o evaluadas (hasta 8) con tu CV: ✅ **cumples** (con la evidencia del CV: habilidad, título, certificación o cargo), 🟡 **en parte o transferible**, ❌ **brecha**, con las ofertas que lo piden. Antes solo listaba tus propias habilidades (`POST /api/coach/gaps`, sin estado).
+  - **Con IA:** una sola consulta, que cita evidencia textual del CV y nunca inventa experiencia.
+  - **Sin IA, o si la IA está descansando:** reglas con un diccionario de requisitos de todas las áreas (salud, educación, comercio, logística, administración, construcción, informática, sector público…), comparando cada palabra por raíz. Las licencias se comparan por su clase exacta.
+- **Cursos para cualquier área:** el catálogo verificado devolvía sus 4 primeros cursos (Microsoft, AWS…) cuando no encontraba coincidencias, así que a una TENS le aparecía Microsoft Entra ID para "curaciones". Ahora se ofrecen búsquedas reales en **SENCE/OTEC, ChileValora, Coursera y edX**, sin inventar cursos ni precios. La pestaña Cursos parte con tu profesión.
+- **"Ya lo terminé":** el curso pasa a tus certificaciones y el requisito queda como cumplido.
+
 ### 👤 Perfil completo y editable (Etapa A2 de la versión 1.3)
 - **Editor del CV con 6 secciones:** datos, contacto y **enlaces**; profesión, titular, resumen y **otras profesiones u oficios**; experiencia; **educación y títulos** (uno o más); **certificaciones y cursos**; habilidades, **idiomas** y **tecnologías y palabras clave**. Antes no había dónde editar educación, certificaciones, idiomas ni otros enlaces.
 - **Enlaces con nombre** (LinkedIn, Portafolio, GitHub, Sitio web, Behance, Registro de Prestadores de Salud…) en lugar de un único campo de LinkedIn. Al subir el CV se detectan todos los enlaces, aunque estén escritos sin "https://". El LinkedIn de perfiles antiguos se conserva.

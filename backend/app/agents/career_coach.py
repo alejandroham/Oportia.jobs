@@ -15,6 +15,41 @@ logger = logging.getLogger(__name__)
 
 # Catálogo Verificado de Recursos de Aprendizaje Oficiales
 # Cumple la regla estricta: No inventar cursos, proveedores, enlaces ni costos.
+def course_search_links(term: str) -> List["LearningCourseResource"]:
+    """
+    Búsquedas en plataformas reales para cualquier área (SENCE, ChileValora, Coursera, edX).
+    No son cursos inventados: abren la búsqueda del término en cada sitio.
+    """
+    from urllib.parse import quote_plus
+    q = quote_plus(term)
+    links = [
+        ("SENCE y OTEC (Chile)", "https://www.google.com/search?q=curso+" + q + "+site%3Asence.cl",
+         "Cursos y becas de capacitación del Servicio Nacional de Capacitación y Empleo; muchos son gratuitos."),
+        ("ChileValora", "https://www.google.com/search?q=" + q + "+site%3Achilevalora.cl",
+         "Certificación oficial de competencias laborales: acredita lo que ya sabes hacer, aunque no tengas título."),
+        ("Coursera", "https://www.coursera.org/search?query=" + q,
+         "Cursos de universidades; muchos se pueden auditar gratis y el certificado suele ser pagado."),
+        ("edX", "https://www.edx.org/search?q=" + q,
+         "Cursos de universidades internacionales; la mayoría se puede cursar gratis."),
+    ]
+    return [
+        LearningCourseResource(
+            title="Buscar cursos de «" + term + "» en " + platform,
+            platform=platform,
+            url=url,
+            competency=term,
+            level="Según el curso",
+            duration="Según el curso",
+            cost="Según el curso",
+            has_certificate=False,
+            verified=False,
+            relevance_score=60,
+            description=desc,
+        )
+        for platform, url, desc in links
+    ]
+
+
 VERIFIED_COURSE_CATALOG: List[Dict[str, Any]] = [
     # Microsoft Learn (Oficial, Gratuito)
     {
@@ -277,11 +312,12 @@ class CareerCoach:
             if matches_query and matches_comp and matches_cost:
                 results.append(LearningCourseResource(**item))
 
-        # If specific competency query had no direct match, return most relevant foundational resources
-        if not results and (query or competency):
-            for item in VERIFIED_COURSE_CATALOG[:4]:
-                results.append(LearningCourseResource(**item))
-
+        # Antes, si no había coincidencia se devolvían los 4 primeros cursos del catálogo (casi todos
+        # de informática): a una TENS que buscaba "curaciones" le aparecía Microsoft Entra ID.
+        # Ahora se agregan búsquedas reales en plataformas de todas las áreas, sin inventar cursos.
+        term = (competency or query or "").strip()
+        if term:
+            results.extend(course_search_links(term))
         return results
 
     # --- CAPACIDAD C: GENERADOR DE RUTAS DE APRENDIZAJE ---

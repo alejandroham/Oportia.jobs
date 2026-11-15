@@ -406,6 +406,12 @@ class StatelessOutcomeRequest(BaseModel):
     profile: CandidateProfile
     preferences: Optional[UserPreferences] = None
 
+class StatelessGapsRequest(BaseModel):
+    profile: CandidateProfile
+    jobs: List[JobPosting] = []
+    preferences: Optional[UserPreferences] = None
+    use_ai: bool = True
+
 class StatelessJobRankRequest(BaseModel):
     jobs: List[JobPosting]
     profile: CandidateProfile

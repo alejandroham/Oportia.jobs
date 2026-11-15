@@ -25,7 +25,7 @@ from app.models.schemas import (
     StatelessCoachDiagnosticRequest, StatelessLearningPathRequest,
     StatelessTutorChallengeRequest, StatelessTutorEvalRequest,
     StatelessChatOpiRequest, JobSearchRequest, JobSearchResponse,
-    StatelessJobRankRequest, StatelessOutcomeRequest
+    StatelessJobRankRequest, StatelessOutcomeRequest, StatelessGapsRequest
 )
 from app.storage.db import db
 from app.agents.profile_analyzer import (
@@ -40,6 +40,7 @@ from app.agents.career_coach import career_coach
 from app.agents.outcome_agent import outcome_agent
 from app.agents.llm_provider import llm, LLMProviderError, AINotConnectedError
 from app.agents import shared_ai
+from app.agents.gap_analyzer import analyze_gaps
 from app.agents.shared_ai import SharedAIRequest, current_shared_ai_request
 from app.agents.models import DEFAULT_GEMINI_MODEL, DEFAULT_OPENAI_MODEL, DEFAULT_CLAUDE_MODEL, CATALOG
 from app.agents.llm_context import current_llm_credentials, LLMCredentials
@@ -1012,6 +1013,17 @@ def sync_gaps_from_job(job_id: str):
         prefs = db.get_preferences()
         evaluation = fit_evaluator.evaluate(job, profile, prefs)
     return career_coach.sync_gaps_from_evaluation(evaluation, job.title)
+
+@app.post("/api/coach/gaps", dependencies=[Depends(ai_rate_limiter)])
+def analyze_gaps_stateless(req: StatelessGapsRequest):
+    """
+    Brechas reales sin estado: requisitos de las ofertas guardadas/evaluadas vs. el CV enviado
+    por el navegador. Con IA (1 consulta) si está disponible; si no, con reglas. No guarda nada.
+    """
+    if not _has_analyzed_cv(req.profile):
+        raise HTTPException(status_code=400, detail="Para ver tus brechas primero sube tu CV en Mi perfil.")
+    return analyze_gaps(req.profile, req.jobs, req.preferences, use_ai=req.use_ai)
+
 
 @app.get("/api/coach/courses", response_model=List[LearningCourseResource])
 def search_coach_courses(query: Optional[str] = None, competency: Optional[str] = None, cost: Optional[str] = None):
