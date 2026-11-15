@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Cpu, Shield, Sun, Moon, Info } from 'lucide-react';
 import { useAppStore } from '../state/useAppStore';
 import { SettingsAIPanel } from './settings/SettingsAIPanel';
@@ -6,7 +7,9 @@ import { SettingsPrivacyPanel } from './settings/SettingsPrivacyPanel';
 
 export const SettingsView: React.FC = () => {
   const { darkMode, setDarkMode } = useAppStore();
-  const [activeSubTab, setActiveSubTab] = useState<'ai' | 'privacy' | 'appearance' | 'about'>('ai');
+  const [searchParams] = useSearchParams();
+  const initialTab = searchParams.get('tab') === 'privacidad' ? 'privacy' : searchParams.get('tab') === 'apariencia' ? 'appearance' : 'ai';
+  const [activeSubTab, setActiveSubTab] = useState<'ai' | 'privacy' | 'appearance' | 'about'>(initialTab);
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 space-y-6 animate-fade-in text-xs">

@@ -21,6 +21,7 @@ import type { UserPreferences, LLMSettings } from '../types';
 import { api, getHumanErrorMessage } from '../api';
 import { useToast } from './Toast';
 import { OpiAvatar } from './ui/OpiAvatar';
+import { SharedAICard } from './settings/SharedAICard';
 import { saveClientStore, getClientStore } from '../utils/storage';
 
 interface ChatMessage {
@@ -275,7 +276,7 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
               ) : (
                 <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-300/60 dark:border-amber-800/60 flex items-center gap-1">
                   <Lock className="w-2.5 h-2.5" />
-                  <span>Clave Requerida</span>
+                  <span>IA sin activar</span>
                 </span>
               )}
             </div>
@@ -333,6 +334,13 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
             </p>
           </div>
 
+          {llmSettings?.shared_ai?.available && !llmSettings?.has_own_key ? (
+            /* IA gratuita disponible: se activa aquí mismo, con el aviso de privacidad */
+            <div className="w-full text-left">
+              <SharedAICard />
+            </div>
+          ) : (
+          <>
           {/* Security & Sovereign Storage Guarantee Box */}
           <div className="w-full text-left p-4 rounded-2xl bg-brand-50/80 dark:bg-brand-950/40 border border-brand-200/80 dark:border-brand-900/60 space-y-2 text-xs text-brand-950 dark:text-brand-200">
             <div className="flex items-center space-x-2 font-bold text-brand-700 dark:text-brand-300">
@@ -340,7 +348,7 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
               <span>Soberanía Digital & Privacidad por Diseño</span>
             </div>
             <p className="text-xs text-brand-900/90 dark:text-brand-200/90 leading-relaxed">
-              <strong>Tu clave de API NO es guardada por la aplicación en servidores externos</strong> ni transferida a terceros. Se mantiene 100% cifrada y segura exclusivamente en tu propio equipo local.
+              <strong>Tu clave de API no se guarda en nuestros servidores</strong> ni se comparte con terceros: queda cifrada en tu equipo, igual que tu CV y tus conversaciones con Opi. Puedes descargar o borrar tus datos en Ajustes → Privacidad & Datos.
             </p>
           </div>
 
@@ -365,6 +373,8 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
               <ExternalLink className="w-3 h-3" />
             </a>
           </div>
+          </>
+          )}
         </div>
       ) : (
         /* ACTIVE MESSAGES SCROLL AREA */

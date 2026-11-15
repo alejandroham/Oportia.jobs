@@ -2,6 +2,7 @@ import React from 'react';
 import { NavLink, Link, useNavigate } from 'react-router-dom';
 import { Radar, Settings as SettingsIcon, Briefcase, User, Info, GraduationCap } from 'lucide-react';
 import type { LLMSettings } from '../types';
+import { getAIStatus } from '../utils/aiStatus';
 
 export interface NavbarProps {
   llmSettings?: LLMSettings | null;
@@ -27,8 +28,9 @@ export const Navbar: React.FC<NavbarProps> = ({ llmSettings }) => {
   ];
 
   const hasKey = Boolean(llmSettings?.has_active_key);
-  const statusLabel = !hasKey ? 'IA no conectada' : llmSettings?.shared_ai?.active ? 'IA gratuita' : 'IA conectada';
-  const dotColor = hasKey ? 'bg-emerald-500' : 'bg-gray-400';
+  const aiStatus = getAIStatus(llmSettings);
+  const statusLabel = aiStatus.short;
+  const dotColor = hasKey ? 'bg-emerald-500' : aiStatus.kind === 'shared_available' ? 'bg-amber-400' : 'bg-gray-400';
 
   return (
     <>

@@ -95,7 +95,7 @@ export const SharedAICard: React.FC = () => {
                 Oportia no guarda tu CV en su servidor. Para contar tu cupo diario usa un identificador anónimo de este
                 navegador.
               </li>
-              <li>Si prefieres que Google no use tus datos, conecta tu propia clave de un plan de pago (más abajo).</li>
+              <li>Si prefieres que Google no use tus datos, conecta tu propia clave de un plan de pago en Ajustes → Motor de IA.</li>
             </ul>
             <a
               href="https://ai.google.dev/gemini-api/terms"
