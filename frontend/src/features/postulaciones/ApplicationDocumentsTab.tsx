@@ -4,6 +4,7 @@ import { CvPreview } from '../shared/CvPreview';
 import { Sparkles, FileText, Mail, Copy, Check, Printer, Loader2 } from 'lucide-react';
 import { useToast } from '../../components/Toast';
 import { printElement, buildDocumentTitle } from '../../utils/printDocument';
+import { OpiAvatar } from '../../components/ui/OpiAvatar';
 
 interface ApplicationDocumentsTabProps {
   job: JobPosting;
@@ -39,14 +40,14 @@ export const ApplicationDocumentsTab: React.FC<ApplicationDocumentsTabProps> = (
   return (
     <div className="space-y-4">
       {/* Selector de Documento (CV vs Carta) y Botón Adaptar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-gray-50 dark:bg-zinc-800/60 rounded-2xl border border-gray-200/80 dark:border-zinc-700/60 text-xs">
-        <div className="flex items-center gap-1 bg-white dark:bg-zinc-900 p-1 rounded-xl border border-gray-200 dark:border-zinc-700">
+      <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-gray-50 dark:bg-ink-raised/60 rounded-2xl border border-gray-200/80 dark:border-ink-line/60 text-xs">
+        <div className="flex items-center gap-1 bg-white dark:bg-ink-surface p-1 rounded-xl border border-gray-200 dark:border-ink-line">
           <button
             type="button"
             onClick={() => setActiveDoc('cv')}
             className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition ${
               activeDoc === 'cv'
-                ? 'bg-brand text-white shadow-xs'
+                ? 'bg-brand-600 text-white shadow-xs'
                 : 'text-gray-600 dark:text-gray-300 hover:text-gray-900'
             }`}
           >
@@ -58,7 +59,7 @@ export const ApplicationDocumentsTab: React.FC<ApplicationDocumentsTabProps> = (
             onClick={() => setActiveDoc('cover_letter')}
             className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition ${
               activeDoc === 'cover_letter'
-                ? 'bg-brand text-white shadow-xs'
+                ? 'bg-brand-600 text-white shadow-xs'
                 : 'text-gray-600 dark:text-gray-300 hover:text-gray-900'
             }`}
           >
@@ -88,6 +89,20 @@ export const ApplicationDocumentsTab: React.FC<ApplicationDocumentsTabProps> = (
         </button>
       </div>
 
+      {isAdapting && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="flex items-center gap-4 p-4 rounded-2xl bg-brand-50 dark:bg-brand-950/60 border border-brand-200 dark:border-brand-700/50"
+        >
+          <OpiAvatar expression="pensando" size={64} decorative className="animate-pulse" />
+          <div>
+            <p className="text-sm font-bold text-ink dark:text-white">Opi está adaptando tu CV y tu carta…</p>
+            <p className="text-xs text-ink-muted dark:text-ink-200">Reordena tu experiencia real según lo que pide esta oferta. Puede tardar hasta un minuto.</p>
+          </div>
+        </div>
+      )}
+
       {/* Contenido según pestaña */}
       {activeDoc === 'cv' ? (
         profile ? (
@@ -106,8 +121,8 @@ export const ApplicationDocumentsTab: React.FC<ApplicationDocumentsTabProps> = (
         /* Carta de presentación */
         <div className="space-y-4">
           {coverLetter ? (
-            <div className="p-6 sm:p-8 rounded-2xl bg-white dark:bg-zinc-900 border border-gray-200/80 dark:border-zinc-800 shadow-sm space-y-4">
-              <div className="flex items-center justify-between border-b border-gray-100 dark:border-zinc-800 pb-3">
+            <div className="p-6 sm:p-8 rounded-2xl bg-white dark:bg-ink-surface border border-gray-200/80 dark:border-ink-border shadow-sm space-y-4">
+              <div className="flex items-center justify-between border-b border-gray-100 dark:border-ink-border pb-3">
                 <span className="text-xs font-bold uppercase tracking-wider text-gray-500">
                   Carta de Presentación Formal
                 </span>
@@ -116,7 +131,7 @@ export const ApplicationDocumentsTab: React.FC<ApplicationDocumentsTabProps> = (
                     type="button"
                     onClick={handleCopyLetter}
                     aria-label="Copiar carta de presentación al portapapeles"
-                    className="inline-flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-xl border border-gray-200 dark:border-zinc-700 text-xs font-semibold text-ink dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-zinc-800 transition cursor-pointer active:scale-95 focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
+                    className="inline-flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-xl border border-gray-200 dark:border-ink-line text-xs font-semibold text-ink dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-ink-raised transition cursor-pointer active:scale-95 focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
                   >
                     {copiedLetter ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
                     <span>{copiedLetter ? 'Copiada' : 'Copiar texto'}</span>
@@ -130,7 +145,7 @@ export const ApplicationDocumentsTab: React.FC<ApplicationDocumentsTabProps> = (
                       )
                     }
                     aria-label="Imprimir o guardar carta de presentación como PDF"
-                    className="inline-flex items-center gap-1.5 px-3.5 py-2 min-h-[44px] rounded-xl bg-brand text-white text-xs font-semibold hover:bg-brand-600 transition shadow-xs cursor-pointer active:scale-95 focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 min-h-[44px] rounded-xl bg-brand-600 text-white text-xs font-semibold hover:bg-brand-700 transition shadow-xs cursor-pointer active:scale-95 focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
                   >
                     <Printer className="w-3.5 h-3.5" />
                     <span>Imprimir / PDF</span>
@@ -146,8 +161,8 @@ export const ApplicationDocumentsTab: React.FC<ApplicationDocumentsTabProps> = (
               </div>
             </div>
           ) : (
-            <div className="p-8 text-center rounded-2xl border border-dashed border-gray-300 dark:border-zinc-700 space-y-3">
-              <Mail className="w-8 h-8 text-gray-400 mx-auto" />
+            <div className="p-8 text-center rounded-2xl border border-dashed border-gray-300 dark:border-ink-line space-y-3">
+              <OpiAvatar expression="curioso" size={96} className="mx-auto" decorative />
               <p className="text-xs text-gray-500">
                 Aún no has generado una carta de presentación para esta vacante.
               </p>
@@ -155,7 +170,7 @@ export const ApplicationDocumentsTab: React.FC<ApplicationDocumentsTabProps> = (
                 type="button"
                 onClick={onAdaptCv}
                 disabled={isAdapting}
-                className="px-4 py-2 rounded-xl bg-[#20A88A] text-white text-xs font-semibold shadow-xs hover:bg-[#18856d] transition"
+                className="px-4 py-2 min-h-[44px] rounded-xl bg-brand-600 text-white text-xs font-semibold shadow-xs hover:bg-brand-700 transition disabled:opacity-50 cursor-pointer"
               >
                 Generar carta adaptada con IA
               </button>

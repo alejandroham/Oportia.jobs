@@ -270,6 +270,7 @@ export const JobSearchPage: React.FC<JobSearchPageProps> = ({
       {/* Feed de resultados y paginación */}
       <JobResultsFeed
         jobs={paginatedJobs}
+        isScanning={isScanning}
         userRegion={userRegion}
         onViewDetail={(j) => setSelectedJobForDetail(j)}
         onToggleTrack={handleToggleTrack}

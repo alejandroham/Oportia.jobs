@@ -8,7 +8,7 @@ interface FooterProps {
 
 export const Footer: React.FC<FooterProps> = ({ onNavigateToTab }) => {
   return (
-    <footer className="no-print mt-12 border-t border-black/8 dark:border-white/8 bg-white/60 dark:bg-zinc-900/60 backdrop-blur-md text-xs text-gray-500 dark:text-gray-400">
+    <footer className="no-print mt-12 border-t border-black/[0.08] dark:border-ink-border bg-white/60 dark:bg-ink-surface/60 backdrop-blur-md text-xs text-gray-500 dark:text-ink-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
         
         {/* Top row: Brand & Sponsor / Instagram actions */}
@@ -24,11 +24,11 @@ export const Footer: React.FC<FooterProps> = ({ onNavigateToTab }) => {
                 <span className="font-bold text-gray-900 dark:text-white text-sm">
                   Oportia Jobs IA
                 </span>
-                <span className="text-xs font-mono font-bold px-2 py-0.5 rounded-full bg-[#20A88A]/10 dark:bg-[#20A88A]/20 text-[#20A88A] dark:text-[#8AD9C4] border border-[#20A88A]/30">
+                <span className="text-xs font-mono font-bold px-2 py-0.5 rounded-full bg-[#20A88A]/10 dark:bg-[#20A88A]/20 text-brand-700 dark:text-[#8AD9C4] border border-[#20A88A]/30">
                   v1.1.0
                 </span>
               </div>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
+              <p className="text-xs text-gray-500 dark:text-ink-200">
                 Tu talento. Tus decisiones. Tus oportunidades.
               </p>
             </div>
@@ -68,38 +68,44 @@ export const Footer: React.FC<FooterProps> = ({ onNavigateToTab }) => {
         <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-6 gap-y-2 text-xs font-medium">
           <Link
             to="/"
-            className="hover:text-[#20A88A] dark:hover:text-[#8AD9C4] transition"
+            className="hover:text-brand-700 dark:hover:text-brand-300 transition"
           >
             Inicio
           </Link>
           <Link
+            to="/conoce-oportia"
+            className="hover:text-brand-700 dark:hover:text-brand-300 transition"
+          >
+            Conoce Oportia
+          </Link>
+          <Link
             to="/empleos"
-            className="hover:text-[#20A88A] dark:hover:text-[#8AD9C4] transition"
+            className="hover:text-brand-700 dark:hover:text-brand-300 transition"
           >
             Buscar empleo
           </Link>
           <Link
             to="/postulaciones"
-            className="hover:text-[#20A88A] dark:hover:text-[#8AD9C4] transition"
+            className="hover:text-brand-700 dark:hover:text-brand-300 transition"
           >
             Mis postulaciones
           </Link>
           <Link
             to="/aprender"
-            className="hover:text-[#20A88A] dark:hover:text-[#8AD9C4] transition flex items-center space-x-1 text-[#20A88A] dark:text-[#8AD9C4] font-semibold"
+            className="hover:text-brand-700 dark:hover:text-brand-300 transition flex items-center space-x-1 text-brand-700 dark:text-[#8AD9C4] font-semibold"
           >
             <GraduationCap className="w-3 h-3" />
             <span>Aprender</span>
           </Link>
           <Link
             to="/perfil"
-            className="hover:text-[#20A88A] dark:hover:text-[#8AD9C4] transition"
+            className="hover:text-brand-700 dark:hover:text-brand-300 transition"
           >
             Mi perfil
           </Link>
           <Link
             to="/ajustes"
-            className="hover:text-[#20A88A] dark:hover:text-[#8AD9C4] transition flex items-center space-x-1"
+            className="hover:text-brand-700 dark:hover:text-brand-300 transition flex items-center space-x-1"
           >
             <SettingsIcon className="w-3 h-3" />
             <span>Ajustes</span>
@@ -107,7 +113,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigateToTab }) => {
         </div>
 
         {/* Bottom row: Credits and Legal Compliance */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2 text-xs text-gray-500 dark:text-gray-400">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2 text-xs text-gray-500 dark:text-ink-200">
           <div className="flex items-center space-x-1.5">
             <span>Creado y diseñado por</span>
             <a

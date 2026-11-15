@@ -3,6 +3,7 @@ import type { JobPosting } from '../../types';
 import { JobCard } from './JobCard';
 import { EmptyState } from '../../components/common/EmptyState';
 import { Info } from 'lucide-react';
+import { OpiAvatar } from '../../components/ui/OpiAvatar';
 
 interface JobResultsFeedProps {
   jobs: JobPosting[];
@@ -14,6 +15,7 @@ interface JobResultsFeedProps {
   totalPages: number;
   onPageChange: (newPage: number) => void;
   onScan: () => void;
+  isScanning?: boolean;
 }
 
 export const JobResultsFeed: React.FC<JobResultsFeedProps> = ({
@@ -25,8 +27,27 @@ export const JobResultsFeed: React.FC<JobResultsFeedProps> = ({
   page,
   totalPages,
   onPageChange,
-  onScan
+  onScan,
+  isScanning = false
 }) => {
+  const searchingBanner = isScanning ? (
+    <div
+      role="status"
+      aria-live="polite"
+      className="flex items-center gap-4 p-4 rounded-2xl bg-brand-50 dark:bg-brand-950/60 border border-brand-200 dark:border-brand-700/50"
+    >
+      <OpiAvatar expression="pensando" size={jobs.length === 0 ? 96 : 56} decorative className="animate-pulse" />
+      <div>
+        <p className="text-sm font-bold text-ink dark:text-white">Opi está buscando ofertas para ti…</p>
+        <p className="text-xs text-ink-muted dark:text-ink-200">Consultando los portales de empleo de Chile a la vez. Tarda unos segundos.</p>
+      </div>
+    </div>
+  ) : null;
+
+  if (isScanning && jobs.length === 0) {
+    return searchingBanner;
+  }
+
   if (jobs.length === 0) {
     return (
       <EmptyState
@@ -42,6 +63,7 @@ export const JobResultsFeed: React.FC<JobResultsFeedProps> = ({
 
   return (
     <div className="space-y-6">
+      {searchingBanner}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {jobs.map((job) => (
           <JobCard
@@ -62,7 +84,7 @@ export const JobResultsFeed: React.FC<JobResultsFeedProps> = ({
             disabled={page <= 1}
             onClick={() => onPageChange(page - 1)}
             aria-label="Página anterior de ofertas"
-            className="px-4 py-2 min-h-[44px] rounded-xl border border-gray-200 dark:border-zinc-700 text-xs font-semibold text-ink dark:text-gray-200 disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-zinc-800 transition cursor-pointer active:scale-95 focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
+            className="px-4 py-2 min-h-[44px] rounded-xl border border-gray-200 dark:border-ink-line text-xs font-semibold text-ink dark:text-gray-200 disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-ink-raised transition cursor-pointer active:scale-95 focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
           >
             Anterior
           </button>
@@ -74,7 +96,7 @@ export const JobResultsFeed: React.FC<JobResultsFeedProps> = ({
             disabled={page >= totalPages}
             onClick={() => onPageChange(page + 1)}
             aria-label="Página siguiente de ofertas"
-            className="px-4 py-2 min-h-[44px] rounded-xl border border-gray-200 dark:border-zinc-700 text-xs font-semibold text-ink dark:text-gray-200 disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-zinc-800 transition cursor-pointer active:scale-95 focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
+            className="px-4 py-2 min-h-[44px] rounded-xl border border-gray-200 dark:border-ink-line text-xs font-semibold text-ink dark:text-gray-200 disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-ink-raised transition cursor-pointer active:scale-95 focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
           >
             Siguiente
           </button>

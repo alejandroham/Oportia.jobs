@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ArrowRight, X, Sparkles } from 'lucide-react';
 import { OpiAvatar } from '../ui/OpiAvatar';
 import { useAppStore, DEFAULT_EMPTY_PREFERENCES } from '../../state/useAppStore';
@@ -50,6 +50,16 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
   const [provider, setProvider] = useState<'gemini' | 'openai' | 'claude'>('gemini');
   const [apiKey, setApiKey] = useState('');
   const [isSavingAI, setIsSavingAI] = useState(false);
+
+  // Cerrar con Escape, como cualquier diálogo accesible.
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
@@ -153,19 +163,19 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
         role="dialog"
         aria-modal="true"
         aria-label="Guía de inicio paso a paso"
-        className="w-full max-w-xl bg-white dark:bg-zinc-900 border border-black/10 dark:border-white/10 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+        className="w-full max-w-xl bg-white dark:bg-ink-surface border border-black/10 dark:border-white/10 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
       >
         
         {/* Header & Step Indicator */}
-        <div className="p-5 border-b border-black/5 dark:border-white/5 flex items-center justify-between bg-gray-50/60 dark:bg-zinc-800/40">
+        <div className="p-5 border-b border-black/5 dark:border-white/5 flex items-center justify-between bg-gray-50/60 dark:bg-ink-raised/40">
           <div className="flex items-center gap-3">
           <OpiAvatar expression={step === 1 ? 'saludando' : step === 2 ? 'curioso' : 'pensando'} size={52} decorative />
           <div>
             <div className="flex items-center space-x-2">
-              <span className="text-xs font-bold text-brand-600 dark:text-brand-400 uppercase tracking-wider">
+              <span className="text-xs font-bold text-brand-700 dark:text-brand-400 uppercase tracking-wider">
                 Paso {step} de 3
               </span>
-              <span className="text-gray-300 dark:text-gray-700">•</span>
+              <span className="text-gray-300 dark:text-ink-300">•</span>
               <span className="text-xs font-semibold text-ink dark:text-gray-300">
                 {step === 1 ? 'Tu currículum' : step === 2 ? 'Qué estás buscando' : 'Conecta la IA'}
               </span>
@@ -179,7 +189,7 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
                       ? 'w-8 bg-brand-500'
                       : s < step
                       ? 'w-5 bg-emerald-500'
-                      : 'w-5 bg-gray-200 dark:bg-zinc-700'
+                      : 'w-5 bg-gray-200 dark:bg-ink-hover'
                   }`}
                 />
               ))}
@@ -191,7 +201,7 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
             type="button"
             onClick={onClose}
             aria-label="Cerrar guía de inicio"
-            className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-full text-ink-muted hover:text-ink dark:hover:text-white hover:bg-gray-100 dark:hover:bg-zinc-800 transition cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
+            className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-full text-ink-muted hover:text-ink dark:hover:text-white hover:bg-gray-100 dark:hover:bg-ink-raised transition cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
             title="Cerrar guía"
           >
             <X className="w-5 h-5" />
@@ -235,7 +245,7 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
         </div>
 
         {/* Footer Navigation Actions */}
-        <div className="p-4 border-t border-black/5 dark:border-white/5 flex items-center justify-between bg-gray-50/40 dark:bg-zinc-800/40">
+        <div className="p-4 border-t border-black/5 dark:border-white/5 flex items-center justify-between bg-gray-50/40 dark:bg-ink-raised/40">
           {step === 1 && (
             <>
               <button
@@ -248,7 +258,7 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
               <button
                 type="button"
                 onClick={handleConfirmStep1}
-                className="px-5 py-2.5 min-h-[44px] rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-semibold text-xs transition flex items-center gap-1.5 shadow-xs cursor-pointer active:scale-95 focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
+                className="px-5 py-2.5 min-h-[44px] rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold text-xs transition flex items-center gap-1.5 shadow-xs cursor-pointer active:scale-95 focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
               >
                 <span>{tempName ? 'Se ve bien, continuar' : 'Continuar'}</span>
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -268,7 +278,7 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
               <button
                 type="button"
                 onClick={handleConfirmStep2}
-                className="px-5 py-2.5 min-h-[44px] rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-semibold text-xs transition flex items-center gap-1.5 shadow-xs cursor-pointer active:scale-95 focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
+                className="px-5 py-2.5 min-h-[44px] rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold text-xs transition flex items-center gap-1.5 shadow-xs cursor-pointer active:scale-95 focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
               >
                 <span>Guardar y continuar</span>
                 <ArrowRight className="w-3.5 h-3.5" />

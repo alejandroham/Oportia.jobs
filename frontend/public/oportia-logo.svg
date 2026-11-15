@@ -22,11 +22,9 @@
     Oportia
   </text>
 
-  <!-- Descriptor: Jobs IA Badge -->
-  <g transform="translate(204, 23)">
-    <rect x="0" y="0" width="76" height="24" rx="12" fill="#EDF3F5" stroke="#20A88A" stroke-width="1.2"/>
-    <text x="12" y="16.5" font-family="-apple-system, BlinkMacSystemFont, 'Inter', sans-serif" font-size="12" font-weight="700" fill="#20A88A" letter-spacing="0.4">
-      Jobs IA
-    </text>
+  <!-- Descriptor: Jobs IA Badge (más grande y con contraste AA; antes ~6 px en pantalla) -->
+  <g transform="translate(206, 20)">
+    <rect x="0" y="0" width="92" height="30" rx="15" fill="#E6F6F2" stroke="#18856D" stroke-width="1.5"/>
+    <text x="46" y="20.5" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Inter', sans-serif" font-size="15" font-weight="800" fill="#146B58" letter-spacing="0.3">Jobs IA</text>
   </g>
 </svg>

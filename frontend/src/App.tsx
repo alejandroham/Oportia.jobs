@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { Navbar } from './components/Navbar';
 import { JobSearchPage } from './features/empleos/JobSearchPage';
 import { ApplicationsPage } from './features/postulaciones/ApplicationsPage';
@@ -7,6 +7,7 @@ import { LearnPage } from './features/aprender/LearnPage';
 import { ProfilePage } from './features/perfil/ProfilePage';
 import { SettingsView } from './components/SettingsView';
 import { WelcomeHub } from './components/WelcomeHub';
+import { LandingPage } from './components/landing/LandingPage';
 import { OnboardingWizard } from './components/onboarding/OnboardingWizard';
 import { Footer } from './components/Footer';
 import { MemoryChat } from './components/MemoryChat';
@@ -40,13 +41,13 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { has
       return (
         <div className="p-8 text-center space-y-4">
           <h2 className="text-lg font-bold text-red-600">Algo salió mal</h2>
-          <pre className="text-xs text-gray-500 bg-gray-100 dark:bg-zinc-800 p-4 rounded-xl overflow-auto max-w-xl mx-auto">
+          <pre className="text-xs text-gray-500 bg-gray-100 dark:bg-ink-raised p-4 rounded-xl overflow-auto max-w-xl mx-auto">
             {this.state.error?.message || String(this.state.error)}
           </pre>
           <button
             type="button"
             onClick={() => window.location.reload()}
-            className="px-4 py-2 min-h-[44px] bg-brand-500 hover:bg-brand-600 text-white text-xs font-semibold rounded-xl shadow-xs transition cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
+            className="px-4 py-2 min-h-[44px] bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold rounded-xl shadow-xs transition cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
           >
             Recargar aplicación
           </button>
@@ -59,6 +60,7 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { has
 
 export function App() {
   const navigate = useNavigate();
+  const location = useLocation();
   const {
     profile,
     setProfile,
@@ -77,15 +79,10 @@ export function App() {
   } = useAppStore();
 
   const [isOpiChatOpen, setIsOpiChatOpen] = useState<boolean>(false);
+  const isLandingVisible =
+    !isLoading && (location.pathname === '/conoce-oportia' || (location.pathname === '/' && !hasCompletedOnboarding));
   const [isOnboardingOpen, setIsOnboardingOpen] = useState<boolean>(false);
   const toast = useToast();
-
-  // Auto-open onboarding on first visit once store initialized
-  useEffect(() => {
-    if (!isLoading && !hasCompletedOnboarding) {
-      setIsOnboardingOpen(true);
-    }
-  }, [isLoading, hasCompletedOnboarding]);
 
   useEffect(() => {
     const init = async () => {
@@ -153,7 +150,7 @@ export function App() {
 
   return (
     <ErrorBoundary>
-      <div className="min-h-screen bg-[#FBFBFD] dark:bg-[#000000] text-[#1D1D1F] dark:text-[#F5F5F7] transition-colors duration-300">
+      <div className="min-h-screen bg-[#FBFBFD] dark:bg-ink-dark text-[#1D1D1F] dark:text-gray-100 transition-colors duration-300">
         {/* Apple Frosted Navbar with 5 semantic tabs + AI status indicator */}
         <Navbar llmSettings={settings} />
 
@@ -168,7 +165,7 @@ export function App() {
               />
               <div className="flex items-center space-x-2">
                 <div className="w-4 h-4 rounded-full border-2 border-[#20A88A] border-t-transparent animate-spin" />
-                <p className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                <p className="text-xs font-medium text-gray-500 dark:text-ink-200">
                   Iniciando Oportia Jobs IA...
                 </p>
               </div>
@@ -178,8 +175,16 @@ export function App() {
               <div className="animate-fade-in">
                 <Routes>
                   <Route
+                    path="/conoce-oportia"
+                    element={<LandingPage onStart={() => setIsOnboardingOpen(true)} onExplore={() => navigate('/empleos')} />}
+                  />
+                  <Route
                     path="/"
                     element={
+                      // Primera visita: portada que presenta Oportia (antes se abría directo "Carga tu CV").
+                      !hasCompletedOnboarding ? (
+                        <LandingPage onStart={() => setIsOnboardingOpen(true)} onExplore={() => navigate('/empleos')} />
+                      ) : (
                       <WelcomeHub
                         profile={profile}
                         llmSettings={settings}
@@ -189,6 +194,7 @@ export function App() {
                         onUploadCVClick={() => navigate('/perfil')}
                         onOpenOnboarding={() => setIsOnboardingOpen(true)}
                       />
+                      )
                     }
                   />
 
@@ -258,8 +264,13 @@ export function App() {
         {/* Global Apple-styled Footer with Instagram & Sponsor CTA */}
         <Footer onNavigateToTab={handleNavigate} />
 
-        {/* Floating Opi Copilot Button (Ergonomic placement above bottom tab bar on mobile) */}
-        <div className="no-print fixed bottom-20 right-4 sm:bottom-6 sm:right-6 z-40">
+        {/* Floating Opi Copilot Button (Ergonomic placement above bottom tab bar on mobile).
+            Se oculta en la portada: ahí Opi ya está presente y el botón tapaba los llamados a la acción en celular. */}
+        <div
+          className={`no-print fixed bottom-20 right-4 sm:bottom-6 sm:right-6 z-40 ${
+            isLandingVisible ? 'hidden' : ''
+          }`}
+        >
           <button
             type="button"
             onClick={() => setIsOpiChatOpen(!isOpiChatOpen)}

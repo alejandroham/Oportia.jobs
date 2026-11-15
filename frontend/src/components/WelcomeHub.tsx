@@ -86,7 +86,7 @@ export const WelcomeHub: React.FC<WelcomeHubProps> = ({
           <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white tracking-tight">
             {candidateName ? `Hola, ${candidateName}` : 'Bienvenido a Oportia Jobs IA'}
           </h1>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+          <p className="text-xs text-gray-500 dark:text-ink-200 mt-0.5">
             Tu talento. Tus decisiones. Tus oportunidades.
           </p>
         </div>
@@ -97,7 +97,7 @@ export const WelcomeHub: React.FC<WelcomeHubProps> = ({
             onClick={onOpenOnboarding}
             className="inline-flex items-center space-x-1.5 px-3.5 py-2 min-h-[44px] rounded-xl text-xs font-semibold bg-brand-50 dark:bg-brand-950/40 text-brand-700 dark:text-brand-200 border border-brand-200/50 dark:border-brand-700/60 hover:bg-brand-100 dark:hover:bg-brand-900/60 transition cursor-pointer self-start sm:self-auto focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
           >
-            <Sparkles className="w-3.5 h-3.5 text-brand-500 dark:text-brand-300" />
+            <Sparkles className="w-3.5 h-3.5 text-brand-700 dark:text-brand-300" />
             <span>Repetir guía de inicio</span>
           </button>
         )}
@@ -113,7 +113,7 @@ export const WelcomeHub: React.FC<WelcomeHubProps> = ({
 
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-start space-x-3.5">
-            <OpiAvatar expression={progressPct === 100 ? 'celebrando' : 'saludando'} size={64} decorative />
+            <OpiAvatar expression={progressPct === 100 ? 'celebrando' : 'saludando'} size={96} decorative className="-my-2" />
             <div className="space-y-1">
               <h2 className="text-base font-bold text-ink dark:text-white">
                 {nextAction.title}
@@ -127,7 +127,7 @@ export const WelcomeHub: React.FC<WelcomeHubProps> = ({
           <button
             type="button"
             onClick={() => handleNavigate(nextAction.route)}
-            className="px-5 py-2.5 min-h-[44px] rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-semibold text-xs transition flex items-center justify-center space-x-2 shadow-xs cursor-pointer active:scale-95 shrink-0 focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
+            className="px-5 py-2.5 min-h-[44px] rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold text-xs transition flex items-center justify-center space-x-2 shadow-xs cursor-pointer active:scale-95 shrink-0 focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
           >
             <span>{nextAction.cta}</span>
             <ArrowRight className="w-4 h-4" />
@@ -151,7 +151,7 @@ export const WelcomeHub: React.FC<WelcomeHubProps> = ({
           </div>
 
           {/* Progress bar */}
-          <div className="w-full bg-gray-200/80 dark:bg-zinc-800 rounded-full h-2 overflow-hidden">
+          <div className="w-full bg-gray-200/80 dark:bg-ink-raised rounded-full h-2 overflow-hidden">
             <div
               className="h-2 rounded-full bg-gradient-to-r from-brand-500 to-emerald-500 transition-all duration-500"
               style={{ width: `${progressPct}%` }}
@@ -165,13 +165,13 @@ export const WelcomeHub: React.FC<WelcomeHubProps> = ({
                 key={idx}
                 type="button"
                 onClick={() => handleNavigate(item.route)}
-                className="w-full flex items-center justify-between p-2.5 min-h-[44px] rounded-xl bg-gray-50/80 dark:bg-zinc-800/50 hover:bg-gray-100 dark:hover:bg-zinc-800 border border-black/5 dark:border-white/5 transition text-left cursor-pointer group focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
+                className="w-full flex items-center justify-between p-2.5 min-h-[44px] rounded-xl bg-gray-50/80 dark:bg-ink-raised/50 hover:bg-gray-100 dark:hover:bg-ink-raised border border-black/5 dark:border-white/5 transition text-left cursor-pointer group focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
               >
                 <div className="flex items-center space-x-2.5">
                   {item.done ? (
                     <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
                   ) : (
-                    <Circle className="w-4 h-4 text-gray-300 dark:text-gray-600 shrink-0" />
+                    <Circle className="w-4 h-4 text-gray-300 dark:text-ink-300 shrink-0" />
                   )}
                   <span className={`text-xs ${item.done ? 'text-gray-800 dark:text-gray-200 font-medium line-through opacity-75' : 'text-ink dark:text-white font-medium'}`}>
                     {item.label}
@@ -191,7 +191,7 @@ export const WelcomeHub: React.FC<WelcomeHubProps> = ({
             className="w-full apple-glass apple-card p-4 min-h-[44px] rounded-2xl flex items-center justify-between hover:border-brand-500/40 transition cursor-pointer group text-left focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
           >
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 rounded-xl bg-teal-50 dark:bg-teal-950/60 text-brand-600 dark:text-brand-400 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-teal-50 dark:bg-teal-950/60 text-brand-700 dark:text-brand-400 flex items-center justify-center">
                 <Compass className="w-5 h-5" />
               </div>
               <div>
@@ -208,7 +208,7 @@ export const WelcomeHub: React.FC<WelcomeHubProps> = ({
             className="w-full apple-glass apple-card p-4 min-h-[44px] rounded-2xl flex items-center justify-between hover:border-brand-500/40 transition cursor-pointer group text-left focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
           >
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 rounded-xl bg-teal-50 dark:bg-teal-950/60 text-brand-600 dark:text-brand-400 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-teal-50 dark:bg-teal-950/60 text-brand-700 dark:text-brand-400 flex items-center justify-center">
                 <Briefcase className="w-5 h-5" />
               </div>
               <div>
