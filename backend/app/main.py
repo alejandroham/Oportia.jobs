@@ -5,7 +5,7 @@ import logging
 from pathlib import Path
 from datetime import datetime
 from app.utils.concurrency import run_with_deadline
-from app.utils.keywords import normalize as normalize_keywords
+from app.utils.keywords import normalize as normalize_keywords, relevance_score
 
 logger = logging.getLogger(__name__)
 from typing import Optional, List, Dict, Any
@@ -25,7 +25,7 @@ from app.models.schemas import (
     StatelessCoachDiagnosticRequest, StatelessLearningPathRequest,
     StatelessTutorChallengeRequest, StatelessTutorEvalRequest,
     StatelessChatOpiRequest, JobSearchRequest, JobSearchResponse,
-    StatelessJobRankRequest
+    StatelessJobRankRequest, StatelessOutcomeRequest
 )
 from app.storage.db import db
 from app.agents.profile_analyzer import (
@@ -611,6 +611,12 @@ def search_jobs_stateless(req: JobSearchRequest):
             seen.add(uniq)
             deduped.append(j)
 
+    # Relevancia central (todas las fuentes): se descartan las que no son del área buscada
+    # y se ordenan primero las que coinciden en el cargo.
+    if kw:
+        scored = [(relevance_score(j.title, j.description or "", kw), i, j) for i, j in enumerate(deduped)]
+        deduped = [j for score, i, j in sorted((x for x in scored if x[0] > 0), key=lambda x: (-x[0], x[1]))]
+
     response = JobSearchResponse(
         jobs=deduped,
         sources_failed=sorted(list(set(sources_failed))),
@@ -867,6 +873,22 @@ def update_job_status_endpoint(job_id: str, data: dict):
         raise HTTPException(status_code=404, detail="Empleo no encontrado")
     db.update_job_status(job_id, status=new_status)
     return {"message": f"Estado actualizado a {new_status}"}
+
+@app.post("/api/jobs/outcome")
+def register_job_outcome_stateless(req: StatelessOutcomeRequest):
+    """
+    Registrar el resultado de una postulación sin estado: el navegador envía la oferta, el perfil
+    y las preferencias, y recibe el plan de mejora y el aprendizaje para guardarlos localmente.
+    """
+    prefs = req.preferences or UserPreferences()
+    job = req.job.model_copy(deep=True)
+    plan = outcome_agent.process_outcome(req.submission, job, req.profile, prefs, persist=False)
+    return {
+        "plan": plan,
+        "upskill_recommendations": job.upskill_recommendations,
+        "auto_learned_insights": prefs.auto_learned_insights,
+    }
+
 
 @app.post("/api/jobs/{job_id}/outcome", response_model=UpskillPlan)
 def register_job_outcome(job_id: str, submission: OutcomeSubmission):

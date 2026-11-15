@@ -205,11 +205,11 @@ def test_slow_source_does_not_block_search(api_client, monkeypatch):
 
 def test_incomplete_results_are_not_cached(api_client):
     job_search_cache.clear()
-    with patch("app.main.ChilePortalsScraper.search_with_status", return_value=([_job("A")], ["Laborum"])), \
+    with patch("app.main.ChilePortalsScraper.search_with_status", return_value=([_job("Jefe de Bodega")], ["Laborum"])), \
          patch("app.main.RemoteBoardsScraper.search_with_status", return_value=([], [])), \
          patch("app.main.ats_scraper.search", return_value=[]):
         api_client.post("/api/jobs/search", json={"keywords": "bodega", "search_scope": "chile"})
-    with patch("app.main.ChilePortalsScraper.search_with_status", return_value=([_job("A"), _job("B")], [])) as chile, \
+    with patch("app.main.ChilePortalsScraper.search_with_status", return_value=([_job("Jefe de Bodega"), _job("Bodeguero")], [])) as chile, \
          patch("app.main.ats_scraper.search", return_value=[]):
         data = api_client.post("/api/jobs/search", json={"keywords": "bodega", "search_scope": "chile"}).json()
     assert chile.called

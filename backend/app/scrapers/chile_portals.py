@@ -28,7 +28,7 @@ from app.models.schemas import JobPosting
 from app.scrapers.base import BaseScraper
 from app.utils.chile_regions import detect_region_and_commune
 from app.utils.concurrency import run_with_deadline
-from app.utils.keywords import keyword_matches, tokens as kw_tokens, stem as kw_stem
+from app.utils.keywords import keyword_matches, relevance_score, tokens as kw_tokens, stem as kw_stem
 
 logger = logging.getLogger(__name__)
 
@@ -51,20 +51,11 @@ def _strip_html(raw: str) -> str:
 
 
 def _keyword_match(text: str, keyword: str) -> bool:
-    """
-    True si el texto corresponde a la palabra clave. El portal ya filtró por búsqueda,
-    así que aquí se es tolerante: frase completa o equivalentes (ver keyword_matches),
-    o cualquier palabra significativa, siempre sin tildes ni mayúsculas.
-    """
+    """True si el texto es relevante para la búsqueda (ver relevance_score). Antes bastaba
+    con que coincidiera UNA palabra: "encargado informática" aceptaba "Encargado de Aseo"."""
     if not keyword:
         return True
-    if keyword_matches(text, keyword):
-        return True
-    text_tokens = kw_tokens(text)
-    return any(
-        len(word) > 3 and any(t.startswith(kw_stem(word)) for t in text_tokens)
-        for word in kw_tokens(keyword)
-    )
+    return relevance_score(text, "", keyword) > 0
 
 
 def _epoch_to_iso(value) -> Optional[str]:
@@ -734,28 +725,12 @@ class EmpleosPublicosScraper(BaseScraper):
                     if remote_only and not is_remote:
                         continue
 
-                    # Universal keyword matching across any profession or trade
-                    full_text = f"{cargo} {institucion} {ministerio} {area} {location}".lower()
+                    # Coincidencia por relevancia sobre el CARGO y el área. Se ignora el prefijo
+                    # "(Base de datos)" de los bancos de talento: antes, cualquier búsqueda con
+                    # "inform" aceptaba toda convocatoria que dijera "datos" (psicólogos, TENS...).
                     if keywords:
-                        kw_lower = keywords.lower().strip()
-                        # Cross-synonym expansion for Chilean job markets
-                        is_match = False
-                        if "tens" in kw_lower or "enferm" in kw_lower:
-                            is_match = any(k in full_text for k in ["tens", "enferm", "paramedico", "paramédico", "salud", "clinico", "clínico"])
-                        elif "arquitect" in kw_lower or "construc" in kw_lower:
-                            is_match = any(k in full_text for k in ["arquitect", "construc", "obras", "bim", "edific", "proyectista"])
-                        elif "abogad" in kw_lower or "derecho" in kw_lower or "jurid" in kw_lower:
-                            is_match = any(k in full_text for k in ["abogad", "juridic", "jurídic", "legal", "ley"])
-                        elif "profesor" in kw_lower or "docent" in kw_lower or "educa" in kw_lower:
-                            is_match = any(k in full_text for k in ["profesor", "docent", "educa", "pedagog", "parvul", "párvul"])
-                        elif any(t in kw_lower for t in ["software", "inform", "developer", "ti\b", "comput", "programad"]):
-                            is_match = any(k in full_text for k in ["informátic", "informatic", "software", "programador", "sistemas informátic", "ciberseguridad", "datos", "tecnolog"])
-                        elif any(t in kw_lower for t in ["contad", "auditor", "administra", "comercial"]):
-                            is_match = any(k in full_text for k in ["contador", "auditor", "administra", "comercial", "finanzas", "presupuesto"])
-                        else:
-                            is_match = _keyword_match(full_text, keywords)
-
-                        if not is_match:
+                        cargo_sin_prefijo = re.sub(r'^\W*base de datos\W*', '', cargo or '', flags=re.IGNORECASE)
+                        if relevance_score(cargo_sin_prefijo, f"{area} {institucion}", keywords) == 0:
                             continue
 
                     # Format salary (CLP)

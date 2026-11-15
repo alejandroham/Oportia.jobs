@@ -55,6 +55,10 @@ _SYNONYMS = {
     "marketing": ["marketing", "publicidad", "comunicaciones"],
     "recursos": ["recursos humanos", "rrhh", "human resources", "hr"],
     "rrhh": ["rrhh", "recursos humanos", "human resources"],
+    # "TI" solo en frases: suelto chocaría con "para ti" en las descripciones.
+    "informat": ["informatica", "informatico", "tecnologias de la informacion", "soporte informatico",
+                 "sistemas informaticos", "it support", "soporte ti", "area ti", "jefe ti", "encargado ti",
+                 "analista ti", "gestion ti", "mesa de ayuda", "help desk"],
     "desarroll": ["desarrollador", "developer", "programador", "software engineer"],
     "programad": ["programador", "developer", "desarrollador"],
     "analista": ["analista", "analyst"],
@@ -142,3 +146,53 @@ def keyword_matches(text: str, keywords: str) -> bool:
         any(_phrase_in_tokens(alt, text_tokens) for alt in _alternatives(tok))
         for tok in query_tokens
     )
+
+
+# Palabras de cargo que por sí solas no definen el área ("encargado de qué?").
+# Cuentan para el puntaje, pero no bastan para que una oferta coincida.
+GENERIC_ROLE_WORDS = {
+    "encargado", "encargada", "jefe", "jefa", "coordinador", "coordinadora", "analista", "asistente",
+    "ejecutivo", "ejecutiva", "tecnico", "tecnica", "ingeniero", "ingeniera", "supervisor", "supervisora",
+    "profesional", "operario", "operaria", "auxiliar", "ayudante", "gerente", "director", "directora",
+    "especialista", "administrador", "administradora", "senior", "junior", "practicante", "trainee",
+    "lider", "responsable", "agente", "oficial",
+}
+
+
+def _token_present(token: str, text_tokens: List[str]) -> bool:
+    return any(_phrase_in_tokens(alt, text_tokens) for alt in _alternatives(token))
+
+
+def relevance_score(title: str, description: str, keywords: str) -> int:
+    """
+    Puntaje de relevancia 0-100 de una oferta para la búsqueda.
+    - Las palabras del ÁREA (no genéricas) deben estar todas, en el cargo o la descripción;
+      si falta alguna, el puntaje es 0 y la oferta se descarta.
+    - Coincidir en el CARGO vale más que en la descripción.
+    - Las palabras genéricas (encargado, jefe, analista...) solo suman puntos.
+    Ej.: "encargado informática" -> "Encargado de Informática" (100) > "Ingeniero Informático" (70);
+    "Encargado de Aseo" y "Psicólogo" -> 0.
+    """
+    q = tokens(keywords or "")
+    if not q:
+        return 100
+    title_t = tokens(title)
+    all_t = title_t + tokens(description)
+    domain = [t for t in q if t not in GENERIC_ROLE_WORDS]
+    generic = [t for t in q if t in GENERIC_ROLE_WORDS]
+
+    if domain:
+        if not all(_token_present(t, all_t) for t in domain):
+            return 0
+        in_title = sum(_token_present(t, title_t) for t in domain)
+        score = 40 + int(30 * in_title / len(domain))
+        if generic:
+            score += int(30 * sum(_token_present(t, title_t) for t in generic) / len(generic))
+        else:
+            score += 30 if in_title == len(domain) else 0
+        return min(score, 100)
+
+    # Solo palabras genéricas (p. ej. "analista"): deben estar en el cargo.
+    if all(_token_present(t, title_t) for t in generic):
+        return 100
+    return 40 if all(_token_present(t, all_t) for t in generic) else 0
