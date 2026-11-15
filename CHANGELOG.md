@@ -20,6 +20,19 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
 - `EmptyState` acepta la nueva propiedad opcional `opiExpression` para mostrar a Opi en lugar de un ícono.
 - El avatar anterior `opi-avatar.svg` ya no se usa en la interfaz.
 
+### 🤖 IA gratuita de Oportia (con cupo y aviso de privacidad)
+- **Sin configurar nada:** quien no tiene clave propia puede activar en Ajustes (o en el paso 3 de la guía de inicio) la IA gratuita de Oportia, que usa la clave de Gemini del servidor (`GEMINI_API_KEY`) con un cupo diario: 15 consultas por persona, 45 por IP y 500 en total, configurables con `SHARED_AI_DAILY_LIMIT_PER_USER`, `_PER_IP` y `_TOTAL` (`backend/app/agents/shared_ai.py`).
+- **Consentimiento obligatorio:** usa el plan gratuito de la API de Gemini, en el que Google puede usar el contenido para mejorar sus productos. La tarjeta explica esto, pide no incluir datos sensibles y solo se activa marcando la casilla; sin consentimiento el servidor responde `shared_ai_consent_required` (403). Detallado en `PRIVACY.md` §4.1.
+- **"El servicio de IA está descansando un momento, intenta de nuevo en unos minutos":** cuando se agota el cupo o Google responde sin cuota (`ai_resting`, 429). En el chat, Opi lo dice como respuesta; en el resto, como aviso. Si la falla es de Google, la consulta no se descuenta.
+- **La clave propia siempre manda:** si la persona conectó su clave, se usa esa sin límite. Ajustes muestra "Te quedan N de M consultas hoy" y la barra indica "IA gratuita" o "IA conectada".
+- Cada petición descuenta 1 consulta aunque internamente haga varias llamadas a la IA. El cupo se cuenta con un identificador anónimo del navegador; el servidor guarda solo hashes en memoria.
+
+### 🔒 Seguridad
+- `POST /api/settings/purge` y `POST /api/purge-all` (sin autenticación) borraban la clave del servidor y dejaban la IA sin funcionar para todas las personas. Ya no la tocan; la clave del servidor solo se configura por variable de entorno.
+- `POST /api/settings` cambiaba el proveedor y el modelo **globales** del servidor desde cualquier navegador. Ahora no modifica nada: cada navegador envía su proveedor y modelo en cada petición.
+- Sin clave propia ya no se usan `OPENAI_API_KEY` ni `ANTHROPIC_API_KEY` del servidor sin límite: la única IA compartida es la gratuita de Gemini, con cupo.
+- El chat de Opi y la adaptación de CV/carta ya no responden con un texto genérico cuando falta consentimiento o la IA está descansando: se informa a la persona.
+
 ### 🏠 Portada de Oportia
 - **Nueva portada para quien llega por primera vez** (`frontend/src/components/landing/LandingPage.tsx`): presenta Oportia con Opi, explica cómo funciona en 3 pasos, muestra que sirve para todas las áreas, de qué portales vienen las ofertas, cómo se protegen los datos y que la IA es opcional. "Comenzar" abre la guía de inicio; antes se abría sola la ventana "Carga tu CV" sin explicar qué es la app.
 - Quien ya completó la guía sigue viendo su panel "Tu siguiente paso". La portada queda disponible en `/conoce-oportia` y en el enlace "Conoce Oportia" del pie de página.

@@ -51,6 +51,15 @@ Oportia Jobs IA utiliza un modelo **BYOK (Trae tu propia clave)** para conectart
 2. **Transmisión efímera en memoria:** Tu clave solo viaja desde tu navegador hacia el backend cuando ejecutas activamente una función de IA (evaluación de compatibilidad, redacción de carta, práctica de entrevista, tutoría o chat con Opi). Se transmite protegida por HTTPS en los encabezados `X-LLM-Key` y `X-LLM-Provider`.
 3. **Destrucción inmediata en memoria:** El servidor backend recibe la clave en la memoria de la petición, llama a la API oficial del proveedor de IA correspondiente, devuelve el resultado a tu navegador y **destruye la credencial de la memoria**. La clave nunca se escribe en disco ni se almacena en base de datos alguna.
 
+### 4.1 IA gratuita de Oportia (opcional, con aviso)
+
+Si no tienes una clave propia, puedes activar en **Ajustes** la **IA gratuita de Oportia**, que usa una clave de Google Gemini del servidor de Oportia con un cupo diario por persona.
+
+1. **Solo con tu consentimiento:** la IA gratuita no se usa hasta que marcas *"Entiendo que Google puede usar lo que envíe…"* y pulsas **Activar IA gratuita**. Sin ese consentimiento, tu navegador no envía la cabecera `X-Oportia-Shared-AI-Consent` y el servidor rechaza el uso. Puedes retirarlo cuando quieras con **Dejar de usar IA gratuita**.
+2. **Plan gratuito de Google Gemini:** la IA gratuita usa el plan sin costo de la API de Gemini. Según los [términos de la API de Gemini](https://ai.google.dev/gemini-api/terms), en ese plan **Google puede usar el contenido enviado y las respuestas para mejorar sus productos, y personas revisoras pueden leerlo**. Por eso te pedimos **no incluir datos sensibles** (RUT, dirección, datos de salud o de terceros) en tu CV ni en el chat cuando uses la IA gratuita.
+3. **Cupo diario anónimo:** para repartir el cupo, tu navegador genera un identificador aleatorio (sin datos personales). El servidor guarda **solo en memoria** un resumen irreversible (hash) de ese identificador y de tu dirección IP, junto con el número de consultas del día; se borra cada día y al reiniciar el servidor. Nunca se guarda tu CV ni el contenido de tus consultas.
+4. **Tu clave siempre tiene prioridad:** si conectas tu propia clave, se usa esa y la IA gratuita queda desactivada para tus consultas. Con una clave de un plan de pago, el proveedor no usa tus datos para entrenar sus modelos.
+
 ---
 
 ## 5. Portabilidad y Copias de Seguridad Cifradas

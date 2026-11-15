@@ -52,7 +52,7 @@ flowchart TD
     end
 
     subgraph Externo ["🌐 Proveedores Externos y Fuentes"]
-        LLM["🤖 Proveedores de IA - BYOK<br>• Google Gemini<br>• Anthropic Claude<br>• OpenAI GPT"]
+        LLM["🤖 Proveedores de IA<br>• IA gratuita de Oportia (Gemini, con cupo)<br>• BYOK: Gemini, Claude u OpenAI"]
         Scrapers["🔎 Radar Concurrente con timeout 5s<br>• Arbeitnow, Remotive, RemoteOK<br>• Portales Chile y ATS"]
     end
 
@@ -84,7 +84,7 @@ flowchart TD
 | **Mis postulaciones** | `/postulaciones` | 🎯 | Lista filtrable por estado y ficha de cada postulación con 3 pestañas (*Documentos*, *Preparar entrevista*, *Historial y notas*), cambio de estado en 1 clic y generador de CV adaptado y carta formal. |
 | **Aprender** | `/aprender` | 🎓 | 4 pestañas especializadas: Cursos gratuitos oficiales (Microsoft, AWS, Google, Cisco, SENCE), diagnóstico de brechas, rutas de aprendizaje y simulador de entrevistas STAR. |
 | **Mi perfil** | `/perfil` | 👤 | Editor de currículum modular por bloques plegables, extractor automático multiformato (PDF/Word) y preferencias laborales unificadas. |
-| **Ajustes** | `/ajustes` | ⚙️ | Configuración de proveedores de IA (BYOK), selector de apariencia (Claro/Oscuro/Sistema), respaldos cifrados `.oportia` y botón de purga total inmediata. |
+| **Ajustes** | `/ajustes` | ⚙️ | IA gratuita de Oportia (con aviso de privacidad y cupo diario) o clave propia de IA (BYOK), selector de apariencia (Claro/Oscuro/Sistema), respaldos cifrados `.oportia` y botón de purga total inmediata. |
 | **Copiloto Opi** | Flotante | 💬 | Asistente conversacional inteligente disponible en todo momento con biblioteca de sugerencias rápidas contextuales. |
 
 ---
