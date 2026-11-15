@@ -13,7 +13,7 @@ from app.models.schemas import (
     CandidateProfile
 )
 from app.storage.db import db
-from app.agents.llm_provider import llm
+from app.agents.llm_provider import llm, USER_FACING_LLM_ERRORS
 
 logger = logging.getLogger(__name__)
 
@@ -664,6 +664,9 @@ FORMATO OBLIGATORIO JSON (ESTRICTAMENTE EN PROSA PROFESIONAL, NUNCA CÓDIGO NI S
                 "preferences": prefs.model_dump()
             }
 
+        except USER_FACING_LLM_ERRORS:
+            # Sin consentimiento o IA gratuita agotada: se informa, no se finge una respuesta.
+            raise
         except Exception as e:
             # Deterministic, context-aware offline fallback
             logger.warning(f"Opi LLM chat fallback: {e}")

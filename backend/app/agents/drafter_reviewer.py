@@ -1,6 +1,6 @@
 from typing import Optional, Tuple
 from app.models.schemas import CandidateProfile, JobPosting, ApplicationDraft, UserPreferences
-from app.agents.llm_provider import llm, LLMProviderError, AINotConnectedError
+from app.agents.llm_provider import llm, LLMProviderError, AINotConnectedError, USER_FACING_LLM_ERRORS
 from app.storage.db import db
 import logging
 import json
@@ -134,7 +134,7 @@ RESPONDE ÚNICAMENTE CON UN JSON:
             cl = res.get("cover_letter") or res.get("carta_presentacion") or res.get("carta")
             if isinstance(cl, (dict, list)):
                 cl = None
-        except AINotConnectedError:
+        except USER_FACING_LLM_ERRORS:
             raise
         except LLMProviderError as e:
             # Respuestas largas con dos documentos a veces rompen el JSON: se generan por separado.
@@ -160,7 +160,7 @@ Responde SOLO con el Markdown del CV, sin explicaciones ni bloques de código.
 """
         try:
             return self._strip_fences(llm.generate_text(prompt, system_instruction=DRAFTER_SYSTEM_INSTRUCTION)) or None
-        except AINotConnectedError:
+        except USER_FACING_LLM_ERRORS:
             raise
         except LLMProviderError as e:
             logger.warning(f"No se pudo generar el CV adaptado por separado: {e.code}")
@@ -180,7 +180,7 @@ Responde SOLO con el texto de la carta, sin títulos, explicaciones ni Markdown.
 """
         try:
             return self._strip_fences(llm.generate_text(prompt, system_instruction=DRAFTER_SYSTEM_INSTRUCTION)) or None
-        except AINotConnectedError:
+        except USER_FACING_LLM_ERRORS:
             raise
         except LLMProviderError as e:
             logger.warning(f"No se pudo generar la carta por separado: {e.code}")
@@ -234,7 +234,7 @@ RESPONDE EN JSON:
 """
         try:
             res = llm.generate_json(prompt, system_instruction=system_instruction)
-        except AINotConnectedError:
+        except USER_FACING_LLM_ERRORS:
             raise
         except LLMProviderError as e:
             logger.warning(f"Auditoría ATS no disponible ({e.code}); se entregan los documentos sin puntaje.")

@@ -38,6 +38,8 @@ from app.agents.interview_coach import interview_coach
 from app.agents.career_coach import career_coach
 from app.agents.outcome_agent import outcome_agent
 from app.agents.llm_provider import llm, LLMProviderError, AINotConnectedError
+from app.agents import shared_ai
+from app.agents.shared_ai import SharedAIRequest, current_shared_ai_request
 from app.agents.models import DEFAULT_GEMINI_MODEL, DEFAULT_OPENAI_MODEL, DEFAULT_CLAUDE_MODEL, CATALOG
 from app.agents.llm_context import current_llm_credentials, LLMCredentials
 from app.utils.cache import job_search_cache
@@ -63,7 +65,7 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
-    expose_headers=["X-LLM-Provider", "X-LLM-Model"],
+    expose_headers=["X-LLM-Provider", "X-LLM-Model", "X-Shared-AI-Remaining"],
 )
 
 @app.middleware("http")
@@ -76,6 +78,14 @@ async def extract_llm_credentials_middleware(request: Request, call_next):
     provider = request.headers.get("X-LLM-Provider")
     api_key = request.headers.get("X-LLM-Key")
     model_name = request.headers.get("X-LLM-Model")
+
+    # IA gratuita de Oportia: identidad anónima del navegador, IP y consentimiento.
+    shared_req = SharedAIRequest(
+        client_id=_clean_client_id(request.headers.get("X-Oportia-Client")),
+        ip=_client_ip(request),
+        consent=request.headers.get("X-Oportia-Shared-AI-Consent") == "1",
+    )
+    shared_token = current_shared_ai_request.set(shared_req)
     if api_key:
         token = current_llm_credentials.set(
             LLMCredentials(
@@ -88,9 +98,27 @@ async def extract_llm_credentials_middleware(request: Request, call_next):
         token = current_llm_credentials.set(None)
     try:
         response = await call_next(request)
+        if shared_req.remaining is not None:
+            response.headers["X-Shared-AI-Remaining"] = str(shared_req.remaining)
         return response
     finally:
         current_llm_credentials.reset(token)
+        current_shared_ai_request.reset(shared_token)
+
+
+def _client_ip(request: Request) -> str:
+    forwarded_for = request.headers.get("X-Forwarded-For")
+    if forwarded_for:
+        return forwarded_for.split(",")[0].strip()
+    return request.client.host if request.client else "127.0.0.1"
+
+
+def _clean_client_id(value: Optional[str]) -> str:
+    """ID anónimo generado en el navegador (UUID). Se descarta si no tiene forma válida."""
+    v = (value or "").strip()
+    if 8 <= len(v) <= 64 and all(c.isalnum() or c == "-" for c in v):
+        return v
+    return ""
 
 FRONTEND_DIST = settings.BASE_DIR / "frontend" / "dist"
 
@@ -143,8 +171,10 @@ async def llm_provider_exception_handler(request: Request, exc: LLMProviderError
     status_code = 400
     if exc.code == "invalid_key":
         status_code = 401
-    elif exc.code == "quota_exceeded":
+    elif exc.code in ("quota_exceeded", "ai_resting"):
         status_code = 429
+    elif exc.code == "shared_ai_consent_required":
+        status_code = 403
     elif exc.code == "timeout":
         status_code = 504
     elif exc.code == "service_unavailable":
@@ -330,7 +360,7 @@ def chat_opi_stateless(req: StatelessChatOpiRequest):
     Zero server disk read/write.
     """
     creds = current_llm_credentials.get()
-    has_key = bool(creds and creds.api_key) or bool(settings.GEMINI_API_KEY or settings.OPENAI_API_KEY or settings.ANTHROPIC_API_KEY)
+    has_key = bool(creds and creds.api_key) or shared_ai.is_enabled()
     if not has_key:
         raise HTTPException(
             status_code=403,
@@ -356,7 +386,7 @@ def memory_chat(payload: dict):
         raise HTTPException(status_code=400, detail="El mensaje no puede estar vacío.")
 
     creds = current_llm_credentials.get()
-    has_key = bool(creds and creds.api_key) or bool(settings.GEMINI_API_KEY or settings.OPENAI_API_KEY or settings.ANTHROPIC_API_KEY)
+    has_key = bool(creds and creds.api_key) or shared_ai.is_enabled()
     if not has_key:
         raise HTTPException(
             status_code=403,
@@ -990,7 +1020,7 @@ def evaluate_interview_eval_stateless(req: StatelessInterviewEvalRequest):
 # --- Settings & Keys Endpoints ---
 
 @app.get("/api/settings")
-def get_current_settings():
+def get_current_settings(request: Request):
     """
     Returns available LLM catalog and current defaults.
     Under Option A (Stateless), the server retains zero client keys.
@@ -1014,30 +1044,35 @@ def get_current_settings():
         "gemini_model": settings.GEMINI_MODEL or DEFAULT_GEMINI_MODEL,
         "openai_model": settings.OPENAI_MODEL or DEFAULT_OPENAI_MODEL,
         "claude_model": settings.CLAUDE_MODEL or DEFAULT_CLAUDE_MODEL,
-        "available_models": CATALOG
+        "available_models": CATALOG,
+        # IA gratuita de Oportia (clave del servidor, plan gratuito de Gemini, con cupo diario).
+        "shared_ai": {
+            "available": shared_ai.is_enabled(),
+            "provider": "gemini",
+            "daily_limit": shared_ai.per_user_limit(),
+            "remaining": shared_ai.quota.remaining(
+                _clean_client_id(request.headers.get("X-Oportia-Client")), _client_ip(request)
+            ) if shared_ai.is_enabled() else 0,
+        },
     }
 
 @app.post("/api/settings")
 def update_llm_settings(config: LLMConfig):
     """
-    Stateless Option A: Updates default provider and model preference in server RAM only.
-    Zero disk retention. Never saves api_key to disk.
+    Compatibilidad: ya no modifica nada en el servidor.
+    Antes cambiaba el proveedor/modelo GLOBAL para todas las personas. Cada navegador envía
+    su proveedor y modelo en cada petición (X-LLM-Provider / X-LLM-Model).
     """
-    settings.DEFAULT_PROVIDER = config.provider
-    if config.model_name:
-        if config.provider == "gemini":
-            settings.GEMINI_MODEL = config.model_name
-        elif config.provider == "openai":
-            settings.OPENAI_MODEL = config.model_name
-        elif config.provider == "claude":
-            settings.CLAUDE_MODEL = config.model_name
-    return {"message": "Configuración de modelos actualizada en memoria"}
+    return {"message": "Tu proveedor y modelo se guardan en tu navegador y viajan con cada petición."}
 
 @app.post("/api/settings/purge")
 def purge_settings_and_keys():
-    """Wipes all API keys and resets in-memory provider state."""
-    llm.reset_provider()
-    return {"message": "Claves de API y configuración eliminadas completamente"}
+    """
+    Las claves de las personas nunca se guardan en el servidor (viajan por petición), así que
+    no hay nada que borrar aquí. La clave del servidor (IA gratuita) solo se configura por
+    variable de entorno: antes este endpoint, sin autenticación, la borraba para todos.
+    """
+    return {"message": "Tus claves se guardan solo en tu navegador; bórralas desde Ajustes."}
 
 @app.post("/api/purge-all")
 def purge_all_data():
@@ -1045,7 +1080,6 @@ def purge_all_data():
     Stateless Option A: Clears server RAM caches (search cache, rate limiters, LLM credentials).
     Under stateless architecture, all user data resides exclusively in client IndexedDB.
     """
-    llm.reset_provider()
     job_search_cache.clear()
     ai_rate_limiter.clear()
     search_rate_limiter.clear()

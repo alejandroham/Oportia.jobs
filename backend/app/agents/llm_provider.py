@@ -33,6 +33,31 @@ class AINotConnectedError(LLMProviderError):
         super().__init__(code="ai_not_connected", message=message, provider=provider)
 
 
+class AIRestingError(LLMProviderError):
+    """La IA gratuita de Oportia agotó su cupo (de la persona, del día o de Google)."""
+    def __init__(self, message: str, provider: Optional[str] = "gemini"):
+        super().__init__(code="ai_resting", message=message, provider=provider)
+
+
+class SharedAIConsentRequired(AINotConnectedError):
+    """Hay IA gratuita disponible, pero la persona aún no aceptó el aviso de privacidad."""
+    def __init__(self):
+        LLMProviderError.__init__(
+            self,
+            code="shared_ai_consent_required",
+            message=(
+                "Para usar la IA gratuita de Oportia, acepta primero el aviso de privacidad en Ajustes, "
+                "o conecta tu propia clave de IA."
+            ),
+            provider="gemini",
+        )
+
+
+# Errores que NO deben convertirse en una respuesta de respaldo silenciosa: la persona debe
+# ver que falta su clave/consentimiento o que la IA gratuita está descansando.
+USER_FACING_LLM_ERRORS = (AINotConnectedError, AIRestingError)
+
+
 class UnifiedLLMProvider:
     def __init__(self):
         self._gemini_client = None
@@ -87,13 +112,34 @@ class UnifiedLLMProvider:
             os.environ.get("ANTHROPIC_API_KEY")
         )
 
+    def _shared_gemini_key(self) -> str:
+        """
+        Clave del servidor (IA gratuita de Oportia). Exige consentimiento y descuenta cupo.
+        Devuelve "" si no hay IA gratuita configurada.
+        """
+        from app.agents import shared_ai
+        key = shared_ai.shared_key()
+        if not key:
+            return ""
+        req = shared_ai.current_shared_ai_request.get()
+        if req is not None and not req.consent:
+            raise SharedAIConsentRequired()
+        shared_ai.charge_current_request()
+        return key
+
     def generate_text(self, prompt: str, system_instruction: Optional[str] = None, provider: Optional[str] = None) -> str:
         creds = current_llm_credentials.get()
-        prov = (creds.provider if creds else (provider or settings.DEFAULT_PROVIDER)).lower()
+        # Sin clave propia, la única IA del servidor es la gratuita de Oportia (Gemini).
+        prov = (creds.provider if creds else "gemini").lower()
+        using_shared = False
 
         # 1. Google Gemini
         if prov == "gemini":
-            api_key = (creds.api_key if creds else (settings.GEMINI_API_KEY or os.environ.get("GEMINI_API_KEY", "")))
+            if creds:
+                api_key = creds.api_key
+            else:
+                api_key = self._shared_gemini_key()
+                using_shared = bool(api_key)
             if not api_key:
                 raise AINotConnectedError(
                     message="Conecta una clave de API de Gemini en Ajustes para obtener esta función con IA.",
@@ -145,6 +191,12 @@ class UnifiedLLMProvider:
 
                     # Immediate key validation failure
                     if "401" in err_str or "403" in err_str or "API_KEY_INVALID" in err_str or "invalid api key" in err_str.lower():
+                        if using_shared:
+                            # La clave del servidor falló: no es culpa de la persona.
+                            logger.error("La clave GEMINI_API_KEY del servidor (IA gratuita) fue rechazada por Google.")
+                            from app.agents.shared_ai import RESTING_MESSAGE, refund_current_request
+                            refund_current_request()  # la falla fue de Google, no se cobra a la persona
+                            raise AIRestingError(RESTING_MESSAGE)
                         raise LLMProviderError(
                             code="invalid_key",
                             message="La clave de API de Gemini ingresada es inválida o fue revocada. Revisa la clave en Ajustes.",
@@ -153,6 +205,10 @@ class UnifiedLLMProvider:
 
                     # Quota exhaustion failure
                     if "429" in err_str or "RESOURCE_EXHAUSTED" in err_str or "quota" in err_str.lower():
+                        if using_shared:
+                            from app.agents.shared_ai import RESTING_MESSAGE, refund_current_request
+                            refund_current_request()  # la falla fue de Google, no se cobra a la persona
+                            raise AIRestingError(RESTING_MESSAGE)
                         raise LLMProviderError(
                             code="quota_exceeded",
                             message="Has alcanzado el límite de cuota o velocidad de Google Gemini. Espera unos momentos o selecciona otro modelo en Ajustes.",
@@ -172,6 +228,9 @@ class UnifiedLLMProvider:
                         time.sleep(1.0)
 
             # All models failed in fallback chain
+            if using_shared:
+                from app.agents.shared_ai import refund_current_request
+                refund_current_request()
             raise LLMProviderError(
                 code="service_unavailable",
                 message=f"No se pudo completar la llamada con Google Gemini: {last_err}",
