@@ -39,12 +39,22 @@ export interface ResumeVersion {
   created_at: string;
 }
 
+export interface ProfileLink {
+  label: string;
+  url: string;
+}
+
 export interface CandidateProfile {
   name: string;
   email?: string;
   phone?: string;
   location?: string;
+  /** @deprecated usar `links`; se mantiene por compatibilidad con respaldos y CV antiguos. */
   linkedin_url?: string;
+  /** Enlaces con nombre: LinkedIn, portafolio, GitHub, sitio web, registro profesional… */
+  links?: ProfileLink[];
+  /** Tecnologías y palabras clave del perfil (para buscar y ordenar ofertas). */
+  keywords?: string[];
   github_url?: string;
   portfolio_url?: string;
   headline?: string;

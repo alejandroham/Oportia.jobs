@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Dict, Any, Optional, List
 import pypdf
 import docx
-from app.models.schemas import CandidateProfile, WorkExperience, EducationItem, UserPreferences
+from app.models.schemas import CandidateProfile, WorkExperience, EducationItem, UserPreferences, ProfileLink
 from app.agents.llm_provider import llm
 from app.storage.db import db
 from app.config import settings
@@ -347,6 +347,52 @@ def deterministic_cv_parser(text: str) -> CandidateProfile:
         raw_cv_text=text
     )
 
+_LINK_LABELS = [
+    ("linkedin.", "LinkedIn"),
+    ("github.", "GitHub"),
+    ("gitlab.", "GitLab"),
+    ("behance.", "Behance"),
+    ("dribbble.", "Dribbble"),
+    ("artstation.", "ArtStation"),
+    ("youtube.", "YouTube"),
+    ("instagram.", "Instagram"),
+    ("superdesalud.", "Registro de Prestadores de Salud"),
+]
+
+
+def attach_links_from_text(profile: CandidateProfile, raw_text: str) -> CandidateProfile:
+    """
+    Detecta TODOS los enlaces del CV (no solo LinkedIn) y los guarda con nombre en profile.links.
+    Mantiene linkedin_url/portfolio_url por compatibilidad.
+    """
+    found = []
+    seen = set()
+    candidates = re.findall(
+        r'(?:https?://|www\.)[^\s|,;<>()"\']+'
+        r'|\b(?:[a-z]{2,3}\.)?(?:linkedin|github|gitlab|behance|dribbble)\.com/[^\s|,;<>()"\']+',
+        raw_text or "", re.I,
+    )
+    for extra in (profile.linkedin_url, profile.portfolio_url, profile.github_url):
+        if extra:
+            candidates.append(extra)
+    for url in candidates:
+        url = url.rstrip('.').strip()
+        if not url.lower().startswith("http"):
+            url = "https://" + url
+        key = url.lower().rstrip('/')
+        if key in seen:
+            continue
+        seen.add(key)
+        label = next((name for needle, name in _LINK_LABELS if needle in key), "Sitio web")
+        found.append(ProfileLink(label=label, url=url))
+    existing = {l.url.lower().rstrip('/') for l in (profile.links or [])}
+    profile.links = list(profile.links or []) + [l for l in found if l.url.lower().rstrip('/') not in existing]
+    if not profile.linkedin_url:
+        li = next((l.url for l in profile.links if l.label == "LinkedIn"), None)
+        profile.linkedin_url = li
+    return profile
+
+
 def analyze_cv_content(raw_text: str, save_to_db: bool = True) -> CandidateProfile:
     """
     Parses CV using LLM if configured; otherwise uses deterministic_cv_parser
@@ -463,6 +509,7 @@ TEXTO DEL CURRÍCULUM:
                     certifications=result.get("certifications", []),
                     raw_cv_text=raw_text
                 )
+                profile = attach_links_from_text(profile, raw_text)
                 if save_to_db:
                     db.save_profile(profile)
                     # Automatically synchronize user preferences with the detected profile
@@ -472,7 +519,7 @@ TEXTO DEL CURRÍCULUM:
             logger.warning(f"LLM parsing failed, falling back to deterministic parser: {e}")
 
     # Fallback to deterministic parser
-    profile = deterministic_cv_parser(raw_text)
+    profile = attach_links_from_text(deterministic_cv_parser(raw_text), raw_text)
     if save_to_db:
         db.save_profile(profile)
         _sync_preferences_from_profile(profile)

@@ -21,12 +21,19 @@ class EducationItem(BaseModel):
     field_of_study: str
     graduation_year: Optional[str] = None
 
+class ProfileLink(BaseModel):
+    label: str = "Enlace"
+    url: str = ""
+
+
 class CandidateProfile(BaseModel):
     name: str = "Candidato"
     email: Optional[str] = None
     phone: Optional[str] = None
     location: Optional[str] = "Chile"
     linkedin_url: Optional[str] = None
+    links: List[ProfileLink] = []      # Enlaces con nombre (LinkedIn, portafolio, GitHub…)
+    keywords: List[str] = []           # Tecnologías y palabras clave del perfil
     github_url: Optional[str] = None
     portfolio_url: Optional[str] = None
     headline: Optional[str] = "Profesional"

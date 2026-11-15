@@ -71,6 +71,8 @@ class FitEvaluator:
             "languages": profile.languages,
             "education": [{"degree": e.degree, "institution": e.institution, "field": e.field_of_study} for e in profile.education],
             "certifications": profile.certifications,
+            "secondary_professions": profile.secondary_professions,
+            "keywords": profile.keywords,
             "recent_roles": [
                 {
                     "role": e.role,
@@ -393,6 +395,9 @@ Genera la deliberación completa del Comité en formato JSON estricto con la sig
             "habilidades": (profile.technical_skills or [])[:20],
             "experiencias": [f"{e.role} en {e.company}" for e in profile.experiences[:5]],
             "educacion": [f"{e.degree} {e.field_of_study}".strip() for e in profile.education[:3]],
+            "otras_profesiones": (profile.secondary_professions or [])[:5],
+            "palabras_clave": (profile.keywords or [])[:20],
+            "certificaciones": (profile.certifications or [])[:10],
             "cargos_objetivo": preferences.target_roles[:5],
             "solo_remoto": preferences.remote_only,
             "no_acepta": preferences.deal_breakers[:5],

@@ -235,3 +235,18 @@ def test_universal_job_matching_non_tech():
     # Dev job should have zero overlap with TENS equivalent roles
     dev_matches = [t for t in role_terms if t in dev_job.title.lower() or t in dev_job.description.lower()]
     assert len(dev_matches) == 0, "No debe haber coincidencia espuria entre roles TENS y vacante de desarrollo"
+
+
+def test_cv_links_are_all_detected_with_labels():
+    from app.agents.profile_analyzer import attach_links_from_text
+    from app.models.schemas import CandidateProfile
+    text = ("Paula Rojas | linkedin.com/in/paularojas | https://github.com/paula-r | "
+            "Portafolio: https://paula.cl/trabajos. Registro: https://rnpi.superdesalud.gob.cl/123")
+    p = attach_links_from_text(CandidateProfile(name="Paula"), text)
+    labels = {l.label: l.url for l in p.links}
+    assert labels["GitHub"] == "https://github.com/paula-r"
+    assert labels["Sitio web"] == "https://paula.cl/trabajos"
+    assert labels["Registro de Prestadores de Salud"].startswith("https://rnpi.superdesalud")
+    assert p.linkedin_url and "linkedin.com/in/paularojas" in p.linkedin_url
+    # sin duplicados al volver a procesar
+    assert len(attach_links_from_text(p, text).links) == len(p.links)
