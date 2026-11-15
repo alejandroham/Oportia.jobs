@@ -7,6 +7,9 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
 
 ## [Sin publicar]
 
+### ☁️ Despliegue
+- **Tiempo máximo de 60 s para el backend en Vercel** (`vercel.json` → `functions.api/index.py.maxDuration`). La evaluación del Comité tarda unos 34 s y adaptar CV y carta hace hasta 4 llamadas a la IA; antes dependía del valor por defecto de la cuenta.
+
 ### 🐛 Evaluar y ordenar ofertas con IA
 - **"Error al evaluar: Error del servidor (500)":** la pantalla no enviaba las preferencias y el evaluador fallaba al leerlas. Ahora se envían y, si faltan, se usan valores vacíos.
 - **"Error al clasificar: … Carga tu CV primero":** "Ordenar ofertas con IA" usaba `/api/jobs/batch-rank`, que busca el CV y las ofertas en el disco del servidor (vacío en Vercel). El nuevo `POST /api/jobs/rank` recibe el perfil y hasta 15 ofertas desde el navegador y las puntúa en **una sola consulta** a la IA (descuenta 1 del cupo gratuito, no 20). Si no hay CV, avisa "primero sube tu CV en Mi perfil".
