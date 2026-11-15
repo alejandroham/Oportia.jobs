@@ -7,6 +7,11 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
 
 ## [Sin publicar]
 
+### 🐛 Evaluar y ordenar ofertas con IA
+- **"Error al evaluar: Error del servidor (500)":** la pantalla no enviaba las preferencias y el evaluador fallaba al leerlas. Ahora se envían y, si faltan, se usan valores vacíos.
+- **"Error al clasificar: … Carga tu CV primero":** "Ordenar ofertas con IA" usaba `/api/jobs/batch-rank`, que busca el CV y las ofertas en el disco del servidor (vacío en Vercel). El nuevo `POST /api/jobs/rank` recibe el perfil y hasta 15 ofertas desde el navegador y las puntúa en **una sola consulta** a la IA (descuenta 1 del cupo gratuito, no 20). Si no hay CV, avisa "primero sube tu CV en Mi perfil".
+- **Privacidad:** la evaluación sin estado ya no guarda la oferta ni la evaluación (que cita evidencia del CV) en el disco del servidor, que en Vercel puede compartirse entre personas.
+
 ### 📱 Instalar en el celular
 - **Botón "Instalar en tu celular"** en la portada, en Inicio y en el pie de página (`frontend/src/components/InstallApp.tsx`). En Android y en Chrome o Edge de computador abre el aviso nativo de instalación; en iPhone y iPad muestra los pasos (Compartir → Agregar a pantalla de inicio), porque Apple no permite instalar desde un botón. Elige sola la pestaña según el dispositivo y se oculta si la app ya está instalada.
 - **Service worker mínimo** (`public/sw.js`): permite la instalación en Android sin guardar la app en caché (nunca se ve una versión vieja). Solo si no hay conexión al abrir, muestra `offline.html`.

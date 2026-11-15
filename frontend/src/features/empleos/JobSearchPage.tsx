@@ -34,7 +34,7 @@ export const JobSearchPage: React.FC<JobSearchPageProps> = ({
   onNavigateToTracker
 }) => {
   const toast = useToast();
-  const { setJobs, addOrUpdateJob, removeJob } = useAppStore();
+  const { setJobs, addOrUpdateJob, removeJob, preferences } = useAppStore();
 
   // Search and filter states
   const [searchTerm, setSearchTerm] = useState('');
@@ -125,7 +125,7 @@ export const JobSearchPage: React.FC<JobSearchPageProps> = ({
     }
     setIsLoadingEvaluation(true);
     try {
-      const evaluation = await api.evaluateJob(job, profile);
+      const evaluation = await api.evaluateJob(job, profile, preferences ?? undefined);
       setSelectedEvaluation(evaluation);
       const updatedJob: JobPosting = { ...job, fit_score: evaluation.overall_score };
       await addOrUpdateJob(updatedJob);
@@ -143,20 +143,39 @@ export const JobSearchPage: React.FC<JobSearchPageProps> = ({
     }
   };
 
-  // Batch rank
+  // "Ordenar ofertas con IA": una sola consulta para las ofertas visibles aún sin puntaje.
+  const hasCv = Boolean(profile && profile.name?.trim().toLowerCase() !== 'candidato' && (profile.experiences?.length || profile.technical_skills?.length || profile.headline));
   const handleBatchRank = async () => {
+    if (!hasCv || !profile) {
+      toast.info('Para ordenar ofertas con IA, primero sube tu CV en Mi perfil.');
+      return;
+    }
     if (!hasActiveKey) {
-      toast.info('Activa la IA gratuita o conecta tu clave en Ajustes para clasificar automáticamente con IA.');
+      toast.info('Activa la IA gratuita o conecta tu clave en Ajustes para ordenar ofertas con IA.');
       onOpenSettings?.();
+      return;
+    }
+    const pending = filteredJobs.filter((j) => j.fit_score === undefined || j.fit_score === null);
+    const batch = (pending.length ? pending : filteredJobs).slice(0, 15);
+    if (batch.length === 0) {
+      toast.info('Primero busca ofertas para poder ordenarlas.');
       return;
     }
     setIsBatchRanking(true);
     try {
-      await api.batchRank();
+      const { results } = await api.rankJobs(batch, profile, preferences);
+      const scores = new Map(results.map((r) => [r.job_id, r.fit_score]));
+      const current = useAppStore.getState().jobs;
+      await setJobs(current.map((j) => (scores.has(j.id) ? { ...j, fit_score: scores.get(j.id) } : j)));
       setSortBy('fit_desc');
-      toast.success('Ofertas clasificadas por compatibilidad');
+      toast.success(`${results.length} ofertas ordenadas por compatibilidad`, pending.length > 15 ? 'Vuelve a pulsar para ordenar las siguientes.' : undefined);
     } catch (e: any) {
-      toast.error('Error al clasificar: ' + (e?.message || e));
+      if (isAINotConnectedError(e)) {
+        toast.info('Para ordenar con IA, activa la IA gratuita o conecta tu clave en Ajustes.');
+        onOpenSettings?.();
+      } else {
+        toast.error('Error al ordenar: ' + getHumanErrorMessage(e));
+      }
     } finally {
       setIsBatchRanking(false);
     }

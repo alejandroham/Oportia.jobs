@@ -453,13 +453,23 @@ export const api = {
       return null;
     }
   },
-  batchRank: async () => {
+  /**
+   * "Ordenar ofertas con IA": una sola consulta para hasta 15 ofertas.
+   * Sin estado: el perfil y las ofertas viajan desde el navegador (antes se buscaban en el disco
+   * del servidor, que en Vercel está vacío, y respondía "Carga tu CV primero").
+   */
+  rankJobs: async (
+    jobs: JobPosting[],
+    profile: CandidateProfile,
+    preferences?: UserPreferences | null
+  ): Promise<{ results: Array<{ job_id: string; fit_score: number; reason: string }> }> => {
     const llmHeaders = await getLLMHeaders();
-    const res = await fetch(`${API_BASE}/jobs/batch-rank`, {
+    const res = await fetch(`${API_BASE}/jobs/rank`, {
       method: 'POST',
-      headers: { ...llmHeaders }
+      headers: { 'Content-Type': 'application/json', ...llmHeaders },
+      body: JSON.stringify({ jobs, profile, preferences: preferences ?? null })
     });
-    return handleResponse(res, 'Error al clasificar ofertas');
+    return handleResponse(res, 'Error al ordenar ofertas');
   },
 
   // ATS Companies & Dynamic Role Recommendations (Radar Inteligente)

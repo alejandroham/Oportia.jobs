@@ -25,7 +25,19 @@ class FitEvaluator:
     Calcula el Fit Score ponderado real y el Potential Fit Score (proyección tras subsanar brechas).
     """
 
-    def evaluate(self, job: JobPosting, profile: CandidateProfile, preferences: UserPreferences) -> FitEvaluation:
+    def evaluate(
+        self,
+        job: JobPosting,
+        profile: CandidateProfile,
+        preferences: Optional[UserPreferences] = None,
+        persist: bool = True,
+    ) -> FitEvaluation:
+        """
+        persist=False (endpoint sin estado): no escribe la oferta ni la evaluación en el disco del
+        servidor. Las evaluaciones citan evidencia del CV y no deben quedar en un servidor compartido.
+        """
+        # El navegador puede no enviar preferencias: antes esto provocaba un error 500.
+        preferences = preferences or UserPreferences()
         # Pre-check remote dealbreaker if user strictly requested remote
         rule_deal_breakers: List[str] = []
         if preferences.remote_only and not job.is_remote:
@@ -355,13 +367,77 @@ Genera la deliberación completa del Comité en formato JSON estricto con la sig
         job.is_user_region = (geo_cat == "user_region")
         job.modality = "Remoto" if job.is_remote else "Presencial"
 
-        # Update the job with the score and geographic metadata in the database
-        db.update_job_status(job.id, status=job.status, fit_score=overall)
-        db.save_jobs([job])
-
-        # Persist full evaluation in Database (evaluations.json) so it can be queried at any time
-        db.save_evaluation(evaluation)
+        if persist:
+            # Modo local (instalación personal): guarda la oferta y la evaluación en data/.
+            db.update_job_status(job.id, status=job.status, fit_score=overall)
+            db.save_jobs([job])
+            db.save_evaluation(evaluation)
 
         return evaluation
+
+    def quick_rank(
+        self,
+        jobs: List[JobPosting],
+        profile: CandidateProfile,
+        preferences: Optional[UserPreferences] = None,
+    ) -> List[Dict[str, Any]]:
+        """
+        Puntúa varias ofertas con UNA sola consulta a la IA (para "Ordenar ofertas con IA").
+        Más liviano que la evaluación completa del Comité: devuelve un puntaje 0-100 y una razón breve.
+        Sin estado: no guarda nada en el servidor.
+        """
+        preferences = preferences or UserPreferences()
+        profile_summary = {
+            "titular": profile.headline or profile.primary_profession,
+            "anios_experiencia": profile.years_of_experience,
+            "habilidades": (profile.technical_skills or [])[:20],
+            "experiencias": [f"{e.role} en {e.company}" for e in profile.experiences[:5]],
+            "educacion": [f"{e.degree} {e.field_of_study}".strip() for e in profile.education[:3]],
+            "cargos_objetivo": preferences.target_roles[:5],
+            "solo_remoto": preferences.remote_only,
+            "no_acepta": preferences.deal_breakers[:5],
+        }
+        offers = [
+            {
+                "id": j.id,
+                "cargo": j.title,
+                "empresa": j.company,
+                "ubicacion": j.location,
+                "remoto": j.is_remote,
+                "descripcion": (j.description or "")[:400],
+            }
+            for j in jobs
+        ]
+        prompt = f"""
+Ordena estas ofertas laborales según su compatibilidad con el candidato (cualquier área laboral).
+Califica cada oferta de 0 a 100 con honestidad (experiencia, habilidades, cargo objetivo y restricciones).
+No inventes experiencia que el candidato no tenga.
+
+CANDIDATO:
+{json.dumps(profile_summary, ensure_ascii=False)}
+
+OFERTAS:
+{json.dumps(offers, ensure_ascii=False)}
+
+RESPONDE SOLO CON JSON:
+{{"ranking": [{{"id": "id de la oferta", "fit_score": 0, "razon": "una frase breve"}}]}}
+"""
+        res = llm.generate_json(
+            prompt,
+            system_instruction="Eres un evaluador de selección de personal riguroso y honesto para empleos de todas las áreas.",
+        ) or {}
+        raw = res.get("ranking") if isinstance(res, dict) else res
+        valid_ids = {j.id for j in jobs}
+        ranked: List[Dict[str, Any]] = []
+        for item in raw or []:
+            if not isinstance(item, dict) or item.get("id") not in valid_ids:
+                continue
+            try:
+                score = max(0, min(100, int(round(float(item.get("fit_score", 0))))))
+            except (TypeError, ValueError):
+                continue
+            ranked.append({"job_id": item["id"], "fit_score": score, "reason": str(item.get("razon") or item.get("reason") or "")[:200]})
+        return ranked
+
 
 fit_evaluator = FitEvaluator()

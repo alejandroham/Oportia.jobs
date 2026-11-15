@@ -392,6 +392,11 @@ class StatelessJobEvaluationRequest(BaseModel):
     profile: CandidateProfile
     preferences: Optional[UserPreferences] = None
 
+class StatelessJobRankRequest(BaseModel):
+    jobs: List[JobPosting]
+    profile: CandidateProfile
+    preferences: Optional[UserPreferences] = None
+
 class StatelessApplicationDraftRequest(BaseModel):
     job: JobPosting
     profile: CandidateProfile

@@ -24,7 +24,8 @@ from app.models.schemas import (
     StatelessInterviewPrepRequest, StatelessInterviewEvalRequest,
     StatelessCoachDiagnosticRequest, StatelessLearningPathRequest,
     StatelessTutorChallengeRequest, StatelessTutorEvalRequest,
-    StatelessChatOpiRequest, JobSearchRequest, JobSearchResponse
+    StatelessChatOpiRequest, JobSearchRequest, JobSearchResponse,
+    StatelessJobRankRequest
 )
 from app.storage.db import db
 from app.agents.profile_analyzer import (
@@ -726,7 +727,29 @@ def evaluate_job_stateless(req: StatelessJobEvaluationRequest):
             status_code=400,
             detail="Para evaluar el Fit Score con IA primero debes cargar tu currículum vitae."
         )
-    return fit_evaluator.evaluate(req.job, req.profile, req.preferences)
+    return fit_evaluator.evaluate(req.job, req.profile, req.preferences, persist=False)
+
+
+# Máximo de ofertas por consulta de "Ordenar ofertas con IA" (una sola llamada a la IA).
+RANK_MAX_JOBS = 15
+
+
+@app.post("/api/jobs/rank", dependencies=[Depends(ai_rate_limiter)])
+def rank_jobs_stateless(req: StatelessJobRankRequest):
+    """
+    "Ordenar ofertas con IA" sin estado: el navegador envía su perfil y las ofertas.
+    Reemplaza a /api/jobs/batch-rank, que buscaba el CV en el disco del servidor (vacío en Vercel).
+    Una sola consulta a la IA (descuenta 1 del cupo gratuito).
+    """
+    if not _has_analyzed_cv(req.profile):
+        raise HTTPException(
+            status_code=400,
+            detail="Para ordenar ofertas con IA primero sube tu CV en Mi perfil.",
+        )
+    jobs = req.jobs[:RANK_MAX_JOBS]
+    if not jobs:
+        return {"results": []}
+    return {"results": fit_evaluator.quick_rank(jobs, req.profile, req.preferences)}
 
 @app.post("/api/jobs/{job_id}/evaluate", response_model=FitEvaluation)
 def evaluate_job(job_id: str):
