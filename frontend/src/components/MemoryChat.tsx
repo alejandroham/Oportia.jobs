@@ -161,7 +161,7 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
   const handleSend = async (textToSend?: string) => {
     if (!hasKey) {
       if (onOpenSettings) onOpenSettings();
-      toast.error('Opi requiere una clave de API activa para interactuar en vivo.');
+      toast.error('Activa la IA gratuita de Oportia o conecta tu clave en Ajustes para conversar con Opi.');
       return;
     }
 
@@ -234,7 +234,20 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
         toast.success('Preferencia registrada en tu memoria IA');
       }
     } catch (e: any) {
-      toast.error('Error al comunicarse con Opi: ' + getHumanErrorMessage(e));
+      if (e?.code === 'ai_resting') {
+        // Opi responde en el chat, durmiendo, en vez de un error genérico.
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: `resting-${Date.now()}`,
+            role: 'assistant',
+            content: getHumanErrorMessage(e),
+            timestamp: new Date().toISOString()
+          } as ChatMessage
+        ]);
+      } else {
+        toast.error('Error al comunicarse con Opi: ' + getHumanErrorMessage(e));
+      }
     } finally {
       setIsLoading(false);
     }
@@ -313,7 +326,7 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
 
           <div className="space-y-1.5">
             <h4 className="text-base font-bold text-ink dark:text-white">
-              Opi Copiloto requiere una Clave de API
+              Opi necesita IA para conversar
             </h4>
             <p className="text-xs text-ink-muted leading-relaxed">
               Para conversar en vivo, extraer logros STAR con métricas y orientar tu desarrollo profesional, el copiloto necesita estar conectado a un motor de inteligencia artificial.
@@ -339,7 +352,7 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
               className="w-full min-h-[44px] px-5 py-2.5 rounded-2xl bg-brand-600 hover:bg-brand-700 text-white font-semibold text-xs shadow-md shadow-brand-500/20 transition active:scale-95 flex items-center justify-center space-x-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
             >
               <KeyRound className="w-4 h-4" />
-              <span>Conectar Clave de API Segura</span>
+              <span>Activar IA en Ajustes</span>
             </button>
 
             <a
@@ -512,14 +525,14 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
           <div className="flex flex-col sm:flex-row items-center justify-between gap-2 p-2.5 rounded-2xl bg-gray-100/70 dark:bg-ink-raised/60 border border-black/[0.06] dark:border-ink-border text-xs text-ink-muted">
             <div className="flex items-center space-x-2">
               <Lock className="w-4 h-4 text-amber-500 shrink-0" />
-              <span>Chat en pausa. Conecta tu API key para habilitar la conversación interactiva.</span>
+              <span>Chat en pausa. Activa la IA gratuita o conecta tu clave en Ajustes.</span>
             </div>
             <button
               type="button"
               onClick={onOpenSettings}
               className="min-h-[44px] px-4 py-1.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold text-xs shadow-xs transition shrink-0 cursor-pointer active:scale-95 focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
             >
-              Conectar Clave
+              Activar IA
             </button>
           </div>
         ) : (

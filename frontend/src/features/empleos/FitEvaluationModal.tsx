@@ -39,7 +39,7 @@ export const FitEvaluationModal: React.FC<FitEvaluationModalProps> = ({
           <AINotConnectedBanner
             title="Oferta sin evaluación de IA disponible"
             description="Para obtener la evaluación de compatibilidad en 5 perspectivas y analizar los requisitos contra tu CV, conecta tu clave de API en Ajustes."
-            actionText="Conectar clave de IA"
+            actionText="Activar IA en Ajustes"
             onConnect={() => {
               onClose();
               if (onConnectAI) onConnectAI();

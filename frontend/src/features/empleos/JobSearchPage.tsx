@@ -133,7 +133,7 @@ export const JobSearchPage: React.FC<JobSearchPageProps> = ({
       toast.success(`Compatibilidad evaluada: ${evaluation.overall_score}%`);
     } catch (e: any) {
       if (isAINotConnectedError(e)) {
-        toast.info('Para evaluar compatibilidad con IA, conecta tu clave en Ajustes.');
+        toast.info('Para evaluar compatibilidad con IA, activa la IA gratuita o conecta tu clave en Ajustes.');
         onOpenSettings?.();
       } else {
         toast.error('Error al evaluar: ' + getHumanErrorMessage(e));
@@ -146,7 +146,7 @@ export const JobSearchPage: React.FC<JobSearchPageProps> = ({
   // Batch rank
   const handleBatchRank = async () => {
     if (!hasActiveKey) {
-      toast.info('Conecta tu clave de IA en Ajustes para clasificar automáticamente con IA.');
+      toast.info('Activa la IA gratuita o conecta tu clave en Ajustes para clasificar automáticamente con IA.');
       onOpenSettings?.();
       return;
     }

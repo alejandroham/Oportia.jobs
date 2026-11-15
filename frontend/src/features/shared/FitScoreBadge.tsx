@@ -25,7 +25,7 @@ export const FitScoreBadge: React.FC<FitScoreBadgeProps> = ({
   if (score === null || score === undefined) {
     return (
       <span
-        className={`inline-flex items-center gap-1 font-medium rounded-full bg-gray-100 dark:bg-ink-raised text-gray-500 dark:text-ink-200 border border-gray-200 dark:border-ink-line ${
+        className={`inline-flex items-center gap-1 font-medium rounded-full bg-gray-100 dark:bg-ink-raised text-gray-600 dark:text-ink-200 border border-gray-200 dark:border-ink-line ${
           size === 'sm' ? 'px-2 py-0.5 text-[12px]' : size === 'lg' ? 'px-3.5 py-1.5 text-sm' : 'px-2.5 py-1 text-xs'
         } ${className}`}
       >

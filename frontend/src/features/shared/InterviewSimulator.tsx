@@ -91,7 +91,7 @@ export const InterviewSimulator: React.FC<InterviewSimulatorProps> = ({
     } catch (e: any) {
       if (isAINotConnectedError(e)) {
         setAiNotConnected(true);
-        toast.info('Para evaluar tus respuestas con IA, conecta tu clave en Ajustes.');
+        toast.info('Para evaluar tus respuestas con IA, activa la IA gratuita o conecta tu clave en Ajustes.');
       } else {
         toast.error('Error al evaluar respuesta: ' + getHumanErrorMessage(e));
       }
@@ -149,8 +149,8 @@ export const InterviewSimulator: React.FC<InterviewSimulatorProps> = ({
       {aiNotConnected && (
         <AINotConnectedBanner
           title="Conecta la IA para evaluar tu respuesta"
-          description="Para recibir retroalimentación metodológica bajo el marco STAR y sugerencias de mejora con IA, conecta tu clave en Ajustes."
-          actionText="Conectar clave de IA"
+          description="Para recibir retroalimentación metodológica bajo el marco STAR y sugerencias de mejora con IA, activa la IA gratuita o conecta tu clave en Ajustes."
+          actionText="Activar IA en Ajustes"
         />
       )}
 

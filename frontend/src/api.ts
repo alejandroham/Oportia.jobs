@@ -16,6 +16,7 @@ import type {
   TutorEvaluationResult
 } from './types';
 import { decryptApiKeyLocally } from './utils/crypto';
+import { getClientId, hasSharedAIConsent, reportSharedAIRemaining } from './utils/sharedAI';
 
 export async function getLLMHeaders(): Promise<Record<string, string>> {
   if (typeof window === 'undefined' || !window.localStorage) {
@@ -39,6 +40,12 @@ export async function getLLMHeaders(): Promise<Record<string, string>> {
   const modelName = localStorage.getItem(`job_search_llm_model_${provider}`);
   if (modelName) {
     headers['X-LLM-Model'] = modelName.trim();
+  }
+  // IA gratuita de Oportia: ID anónimo para el cupo diario y consentimiento explícito.
+  const clientId = getClientId();
+  if (clientId) headers['X-Oportia-Client'] = clientId;
+  if (!headers['X-LLM-Key'] && hasSharedAIConsent()) {
+    headers['X-Oportia-Shared-AI-Consent'] = '1';
   }
   return headers;
 }
@@ -87,9 +94,13 @@ export class ApiError extends Error {
   }
 }
 
+export function isAIRestingError(error: any): boolean {
+  return Boolean(error && error.code === 'ai_resting');
+}
+
 export function isAINotConnectedError(error: any): boolean {
   if (!error) return false;
-  if (error.code === 'ai_not_connected') return true;
+  if (error.code === 'ai_not_connected' || error.code === 'shared_ai_consent_required') return true;
   const msg = typeof error === 'string' ? error : (error.message || '');
   return msg.toLowerCase().includes('conecta una clave') || msg.toLowerCase().includes('ai_not_connected');
 }
@@ -98,7 +109,13 @@ export function getHumanErrorMessage(error: any): string {
   if (!error) return 'Ocurrió un error inesperado.';
   const code = error.code;
   if (code === 'ai_not_connected') {
-    return 'Conecta una clave de API en Ajustes para obtener esta función con IA.';
+    return 'Activa la IA gratuita de Oportia o conecta tu propia clave en Ajustes para usar esta función.';
+  }
+  if (code === 'shared_ai_consent_required') {
+    return 'Para usar la IA gratuita de Oportia, acepta primero el aviso en Ajustes o conecta tu propia clave.';
+  }
+  if (code === 'ai_resting') {
+    return 'El servicio de IA está descansando un momento, intenta de nuevo en unos minutos. Si tienes tu propia clave de IA, conéctala en Ajustes para seguir sin límites.';
   }
   if (code === 'invalid_key') {
     return 'Tu clave de API no es válida o fue revocada. Revisa la clave en Ajustes.';
@@ -116,6 +133,7 @@ export function getHumanErrorMessage(error: any): string {
 }
 
 export async function handleResponse<T = any>(res: Response, defaultError = 'Error en la petición'): Promise<T> {
+  reportSharedAIRemaining(res);
   const text = await res.text();
   let parsed: any = null;
   try {
@@ -237,11 +255,7 @@ export const api = {
       headers: { 'Content-Type': 'application/json', ...llmHeaders },
       body: JSON.stringify(data)
     });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.detail || 'Error al optimizar versión con IA');
-    }
-    return res.json();
+    return handleResponse(res, 'Error al optimizar versión con IA');
   },
 
   // Preferences & Cognitive AI Memory
@@ -294,11 +308,8 @@ export const api = {
       headers: { 'Content-Type': 'application/json', ...llmHeaders },
       body: JSON.stringify({ message, history: history || [], profile, preferences })
     });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.detail || 'Error al comunicarse con el Coach de Memoria');
-    }
-    return res.json();
+    // handleResponse conserva el código de error (ai_resting, consentimiento) e informa el cupo restante.
+    return handleResponse(res, 'Error al comunicarse con Opi');
   },
   sendFeedback: async (job_id: string, action: 'like' | 'dislike' | 'apply' | 'reject', notes?: string) => {
     const res = await fetch(`${API_BASE}/feedback`, {
@@ -632,7 +643,8 @@ export const api = {
 
   // Settings & Security Purge
   getSettings: async (): Promise<LLMSettings> => {
-    return safeFetchJson<LLMSettings>(`${API_BASE}/settings`, undefined, {
+    const clientId = getClientId();
+    return safeFetchJson<LLMSettings>(`${API_BASE}/settings`, clientId ? { headers: { 'X-Oportia-Client': clientId } } : undefined, {
       provider: 'gemini',
       has_active_key: false,
       active_model_name: '',

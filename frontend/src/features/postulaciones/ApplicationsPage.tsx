@@ -100,7 +100,7 @@ export const ApplicationsPage: React.FC<ApplicationsPageProps> = ({
       toast.success('CV y carta adaptados con IA');
     } catch (e: any) {
       if (isAINotConnectedError(e)) {
-        toast.info('Para adaptar tu CV con IA, conecta tu clave en Ajustes.');
+        toast.info('Para adaptar tu CV con IA, activa la IA gratuita o conecta tu clave en Ajustes.');
       } else {
         toast.error('Error al adaptar documentos: ' + getHumanErrorMessage(e));
       }

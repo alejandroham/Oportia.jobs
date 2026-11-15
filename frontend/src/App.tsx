@@ -15,6 +15,7 @@ import { OpiAvatar } from './components/ui/OpiAvatar';
 import { X } from 'lucide-react';
 import { useToast } from './components/Toast';
 import { api } from './api';
+import { onSharedAIRemaining } from './utils/sharedAI';
 import type { JobPosting } from './types';
 import {
   useAppStore,
@@ -83,6 +84,9 @@ export function App() {
     !isLoading && (location.pathname === '/conoce-oportia' || (location.pathname === '/' && !hasCompletedOnboarding));
   const [isOnboardingOpen, setIsOnboardingOpen] = useState<boolean>(false);
   const toast = useToast();
+
+  // Cupo de la IA gratuita: el servidor lo informa en cada respuesta que usa IA.
+  useEffect(() => onSharedAIRemaining((n) => useAppStore.getState().updateSharedAIRemaining(n)), []);
 
   useEffect(() => {
     const init = async () => {

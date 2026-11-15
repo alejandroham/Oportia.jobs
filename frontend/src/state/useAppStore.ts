@@ -10,6 +10,31 @@ import type {
   LearningPath
 } from '../types';
 import { getClientStore, saveClientStore, clearClientStore } from '../utils/storage';
+import { hasSharedAIConsent, setSharedAIConsent as persistSharedAIConsent } from '../utils/sharedAI';
+import { api } from '../api';
+
+/**
+ * Estado de IA derivado: clave propia (sin límite) > IA gratuita de Oportia (con cupo y
+ * consentimiento) > sin IA. Toda actualización de settings pasa por aquí.
+ */
+export function deriveAISettings(s: LLMSettings): LLMSettings {
+  const ownKey =
+    typeof window !== 'undefined' && !!window.localStorage
+      ? Boolean(localStorage.getItem(`job_search_llm_key_${s.provider}`))
+      : Boolean(s.has_own_key);
+  const consented = hasSharedAIConsent();
+  const sharedAvailable = Boolean(s.shared_ai?.available);
+  const sharedActive = !ownKey && sharedAvailable && consented;
+  const providerName = s.provider.charAt(0).toUpperCase() + s.provider.slice(1);
+  return {
+    ...s,
+    has_own_key: ownKey,
+    has_active_key: ownKey || sharedActive,
+    status_label: ownKey ? `${providerName} · tu clave` : sharedActive ? 'IA gratuita de Oportia' : 'IA no conectada',
+    status_color: ownKey || sharedActive ? 'green' : 'yellow',
+    shared_ai: s.shared_ai ? { ...s.shared_ai, consented, active: sharedActive } : s.shared_ai
+  };
+}
 
 export const DEFAULT_EMPTY_PROFILE: CandidateProfile = {
   name: 'Candidato',
@@ -85,6 +110,12 @@ interface AppState {
   saveCompetency: (comp: CompetencyDiagnosticItem) => Promise<void>;
   saveLearningPath: (path: LearningPath) => Promise<void>;
   setSettings: (settings: LLMSettings) => Promise<void>;
+  /** Acepta o retira el aviso de la IA gratuita de Oportia. */
+  setSharedAIConsent: (accepted: boolean) => void;
+  /** Actualiza el cupo restante informado por el servidor. */
+  updateSharedAIRemaining: (remaining: number) => void;
+  /** Vuelve a consultar al servidor si hay IA gratuita y cuánto cupo queda. */
+  refreshSharedAI: () => Promise<void>;
   setActiveTab: (tab: string) => void;
   setDarkMode: (darkMode: boolean) => void;
   clearAllLocalData: () => Promise<void>;
@@ -149,7 +180,7 @@ export const useAppStore = create<AppState>((set, get) => ({
          provider === 'openai' ? (savedSettings?.openai_model || 'gpt-4o') :
          (savedSettings?.claude_model || 'claude-3-5-sonnet-latest'));
 
-      const initialSettings: LLMSettings = {
+      const initialSettings: LLMSettings = deriveAISettings({
         provider,
         has_active_key: hasKey,
         active_model_name: activeModel,
@@ -161,8 +192,9 @@ export const useAppStore = create<AppState>((set, get) => ({
         gemini_model: localStorage.getItem('job_search_llm_model_gemini') || savedSettings?.gemini_model || 'gemini-2.0-flash',
         openai_model: localStorage.getItem('job_search_llm_model_openai') || savedSettings?.openai_model || 'gpt-4o',
         claude_model: localStorage.getItem('job_search_llm_model_claude') || savedSettings?.claude_model || 'claude-3-5-sonnet-latest',
-        available_models: savedSettings?.available_models
-      };
+        available_models: savedSettings?.available_models,
+        shared_ai: undefined
+      });
 
       set({
         profile: savedProfile || null,
@@ -177,17 +209,8 @@ export const useAppStore = create<AppState>((set, get) => ({
         isLoading: false
       });
 
-      // Update backend models catalog asynchronously
-      fetch('/api/settings').then(res => res.json()).then(backendSettings => {
-        if (backendSettings?.available_models) {
-          set(state => ({
-            settings: {
-              ...state.settings,
-              available_models: backendSettings.available_models
-            }
-          }));
-        }
-      }).catch(() => {});
+      // Catálogo de modelos e IA gratuita del servidor (asíncrono)
+      get().refreshSharedAI();
     } catch (e) {
       console.warn('[useAppStore] Error al inicializar store desde IndexedDB:', e);
       set({ isInitialized: true, isLoading: false });
@@ -290,8 +313,37 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
 
   setSettings: async (settings) => {
-    set({ settings });
-    await saveClientStore('llm_settings', settings);
+    const derived = deriveAISettings({ ...settings, shared_ai: settings.shared_ai ?? get().settings.shared_ai });
+    set({ settings: derived });
+    await saveClientStore('llm_settings', derived);
+  },
+
+  setSharedAIConsent: (accepted) => {
+    persistSharedAIConsent(accepted);
+    set((state) => ({ settings: deriveAISettings(state.settings) }));
+  },
+
+  updateSharedAIRemaining: (remaining) => {
+    set((state) =>
+      state.settings.shared_ai
+        ? { settings: deriveAISettings({ ...state.settings, shared_ai: { ...state.settings.shared_ai, remaining } }) }
+        : {}
+    );
+  },
+
+  refreshSharedAI: async () => {
+    try {
+      const backend = await api.getSettings();
+      set((state) => ({
+        settings: deriveAISettings({
+          ...state.settings,
+          available_models: backend?.available_models || state.settings.available_models,
+          shared_ai: backend?.shared_ai
+        })
+      }));
+    } catch {
+      /* sin backend: se mantiene el estado local */
+    }
   },
 
   setActiveTab: (tab) => {

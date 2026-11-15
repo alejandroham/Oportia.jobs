@@ -14,7 +14,7 @@ interface AINotConnectedBannerProps {
 
 export const AINotConnectedBanner: React.FC<AINotConnectedBannerProps> = ({
   title = 'Conecta la IA para obtener esta función',
-  description = 'Configura tu clave de API de Gemini, OpenAI o Claude en Ajustes para activar la evaluación y asistencia con IA.',
+  description = 'Activa la IA gratuita de Oportia en Ajustes (con un cupo diario) o conecta tu propia clave de Gemini, OpenAI o Claude.',
   actionText = 'Conectar IA',
   onConnect,
   className = '',

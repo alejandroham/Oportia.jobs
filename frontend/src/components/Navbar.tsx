@@ -27,7 +27,7 @@ export const Navbar: React.FC<NavbarProps> = ({ llmSettings }) => {
   ];
 
   const hasKey = Boolean(llmSettings?.has_active_key);
-  const statusLabel = hasKey ? 'IA conectada' : 'IA no conectada';
+  const statusLabel = !hasKey ? 'IA no conectada' : llmSettings?.shared_ai?.active ? 'IA gratuita' : 'IA conectada';
   const dotColor = hasKey ? 'bg-emerald-500' : 'bg-gray-400';
 
   return (

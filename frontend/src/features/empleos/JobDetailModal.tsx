@@ -94,7 +94,7 @@ export const JobDetailModal: React.FC<JobDetailModalProps> = ({
               )}
 
               {job.source && (
-                <span className="text-gray-400">
+                <span className="text-gray-600 dark:text-ink-200">
                   Fuente: <strong className="font-semibold text-gray-600 dark:text-gray-300 capitalize">{job.source}</strong>
                 </span>
               )}

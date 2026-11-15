@@ -34,7 +34,7 @@ export const PracticeTab: React.FC<PracticeTabProps> = ({ profile }) => {
     } catch (e: any) {
       if (isAINotConnectedError(e)) {
         setAiNotConnected(true);
-        toast.info('Para generar desafíos con el Tutor IA, conecta tu clave en Ajustes.');
+        toast.info('Para generar desafíos con el Tutor IA, activa la IA gratuita o conecta tu clave en Ajustes.');
       } else {
         toast.error('Error al generar caso: ' + getHumanErrorMessage(e));
       }
@@ -54,7 +54,7 @@ export const PracticeTab: React.FC<PracticeTabProps> = ({ profile }) => {
     } catch (e: any) {
       if (isAINotConnectedError(e)) {
         setAiNotConnected(true);
-        toast.info('Para evaluar tu solución con el Tutor IA, conecta tu clave en Ajustes.');
+        toast.info('Para evaluar tu solución con el Tutor IA, activa la IA gratuita o conecta tu clave en Ajustes.');
       } else {
         toast.error('Error al evaluar solución: ' + getHumanErrorMessage(e));
       }
@@ -108,8 +108,8 @@ export const PracticeTab: React.FC<PracticeTabProps> = ({ profile }) => {
           {aiNotConnected && (
             <AINotConnectedBanner
               title="Conecta la IA para interactuar con el Tutor"
-              description="Para generar casos prácticos interactivos basados en tus brechas y evaluar tus soluciones con IA, conecta tu clave en Ajustes."
-              actionText="Conectar clave de IA"
+              description="Para generar casos prácticos interactivos basados en tus brechas y evaluar tus soluciones con IA, activa la IA gratuita o conecta tu clave en Ajustes."
+              actionText="Activar IA en Ajustes"
             />
           )}
 

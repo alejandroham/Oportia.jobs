@@ -179,7 +179,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart, onExplore }) 
           </h2>
           <p className="text-sm text-ink-muted dark:text-ink-200 leading-relaxed">
             Buscar ofertas y armar tu CV funciona sin IA. Para evaluar tu compatibilidad, adaptar documentos o conversar
-            con Opi, conecta tu propia clave de Gemini, OpenAI o Claude en Ajustes.
+            con Opi, activa la IA gratuita de Oportia (con un cupo diario) o conecta tu propia clave de Gemini, OpenAI o
+            Claude para usarla sin límites.
           </p>
         </div>
       </section>

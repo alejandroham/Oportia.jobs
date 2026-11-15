@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Cpu, ExternalLink, Eye, EyeOff } from 'lucide-react';
+import { SharedAICard } from '../settings/SharedAICard';
 
 export interface OnboardingStep3AIProps {
   apiKey: string;
@@ -27,9 +28,13 @@ export const OnboardingStep3AI: React.FC<OnboardingStep3AIProps> = ({
         </div>
         <p className="text-xs text-gray-500 dark:text-ink-200 leading-relaxed">
           Adapta tu currículum a cada vacante, redacta cartas convincentes y simula entrevistas con Opi.
-          Tu clave viaja cifrada y nunca se guarda en el servidor.
+          Puedes usar la IA gratuita de Oportia o tu propia clave, que viaja cifrada y nunca se guarda en el servidor.
         </p>
       </div>
+
+      <SharedAICard />
+
+      <p className="text-xs font-bold text-gray-800 dark:text-gray-200 pt-1">O usa tu propia clave (sin límite diario)</p>
 
       <div className="p-4 rounded-2xl bg-indigo-50/40 dark:bg-indigo-950/20 border border-indigo-200/50 dark:border-indigo-900/40 space-y-3">
         <div className="flex items-center justify-between">
@@ -65,7 +70,7 @@ export const OnboardingStep3AI: React.FC<OnboardingStep3AIProps> = ({
         </div>
 
         <p className="text-xs text-gray-500 dark:text-ink-200">
-          Si no tienes una clave ahora, puedes continuar en modo sin IA y conectarla más tarde desde Ajustes.
+          Si no quieres usar IA ahora, puedes continuar y activarla más tarde desde Ajustes.
         </p>
       </div>
     </div>

@@ -5,6 +5,7 @@ import { useToast } from '../Toast';
 import { api } from '../../api';
 import { encryptApiKeyLocally, decryptApiKeyLocally } from '../../utils/crypto';
 import type { ModelOption, LLMSettings } from '../../types';
+import { SharedAICard } from './SharedAICard';
 
 export const SettingsAIPanel: React.FC = () => {
   const toast = useToast();
@@ -132,6 +133,8 @@ export const SettingsAIPanel: React.FC = () => {
   const providerModels = settings.available_models?.[provider] || [];
 
   return (
+    <div className="space-y-6">
+    <SharedAICard />
     <form onSubmit={handleSaveAI} className="space-y-6">
       <div className="apple-glass apple-card p-6 rounded-2xl space-y-4">
         <div className="flex items-center justify-between">
@@ -140,12 +143,12 @@ export const SettingsAIPanel: React.FC = () => {
               <Cpu className="w-4 h-4" />
             </div>
             <div>
-              <h2 className="text-sm font-bold text-ink dark:text-white">Conexión con Inteligencia Artificial</h2>
+              <h2 className="text-sm font-bold text-ink dark:text-white">Tu propia clave de IA (opcional, sin límite)</h2>
               <p className="text-xs text-ink-muted">Tus claves se guardan cifradas exclusivamente en tu navegador.</p>
             </div>
           </div>
-          <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${settings.has_active_key ? 'bg-emerald-100 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-300' : 'bg-amber-100 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border border-amber-300'}`}>
-            {settings.has_active_key ? 'IA conectada' : 'IA no conectada'}
+          <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${settings.has_own_key ? 'bg-emerald-100 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-300' : 'bg-amber-100 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border border-amber-300'}`}>
+            {settings.has_own_key ? 'Tu clave conectada' : 'Sin clave propia'}
           </span>
         </div>
 
@@ -221,5 +224,6 @@ export const SettingsAIPanel: React.FC = () => {
         </div>
       </div>
     </form>
+    </div>
   );
 };

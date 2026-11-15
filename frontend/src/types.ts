@@ -390,6 +390,21 @@ export interface LLMSettings {
   openai_model: string;
   claude_model: string;
   available_models?: Record<'gemini' | 'openai' | 'claude', ModelOption[]>;
+  /** true si la persona conectó su propia clave (sin cupo). */
+  has_own_key?: boolean;
+  /** IA gratuita de Oportia: clave del servidor con cupo diario. */
+  shared_ai?: SharedAIStatus;
+}
+
+export interface SharedAIStatus {
+  available: boolean;
+  provider: 'gemini';
+  daily_limit: number;
+  remaining: number;
+  /** La persona aceptó el aviso de privacidad del plan gratuito de Gemini. */
+  consented?: boolean;
+  /** Se está usando ahora (no hay clave propia y hay consentimiento). */
+  active?: boolean;
 }
 
 // Modelos del Coach IA (Desarrollo y Crecimiento Profesional)
