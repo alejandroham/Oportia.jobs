@@ -4,6 +4,10 @@ import { BrowserRouter } from 'react-router-dom'
 import App from './App'
 import { ToastProvider } from './components/Toast'
 import './index.css'
+import { initPWA } from './utils/pwa'
+
+// Instalación como app en el celular (botón "Instalar en tu celular")
+initPWA()
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

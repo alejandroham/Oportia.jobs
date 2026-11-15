@@ -1,6 +1,7 @@
 import React from 'react';
-import { ArrowRight, Search, ShieldCheck, Sparkles, FileText, KeyRound } from 'lucide-react';
+import { ArrowRight, Search, ShieldCheck, Sparkles, FileText, KeyRound, Smartphone } from 'lucide-react';
 import { OpiAvatar, type OpiExpression } from '../ui/OpiAvatar';
+import { InstallAppButton } from '../InstallApp';
 
 /**
  * Portada de Oportia: lo primero que ve quien llega por primera vez.
@@ -84,6 +85,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart, onExplore }) 
           <p className="text-xs text-ink-muted dark:text-ink-300">
             Gratis · Sin crear cuenta · Tus datos se quedan en tu navegador
           </p>
+          <InstallAppButton variant="link" label="Instalar Oportia en tu celular" className="text-brand-700 dark:text-brand-300" />
         </div>
         <div className="order-1 md:order-2 flex justify-center">
           <div className="relative">
@@ -183,6 +185,23 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart, onExplore }) 
             Claude para usarla sin límites.
           </p>
         </div>
+      </section>
+
+      {/* Instalar como app */}
+      <section
+        aria-labelledby="landing-install"
+        className="flex flex-col sm:flex-row items-center gap-5 p-6 sm:p-8 rounded-3xl bg-white dark:bg-ink-surface border border-gray-200/80 dark:border-ink-border"
+      >
+        <div className="w-16 h-16 rounded-2xl bg-brand-50 dark:bg-brand-950/60 text-brand-700 dark:text-brand-300 flex items-center justify-center shrink-0">
+          <Smartphone className="w-8 h-8" aria-hidden="true" />
+        </div>
+        <div className="space-y-1 text-center sm:text-left flex-1">
+          <h2 id="landing-install" className="text-lg font-bold text-ink dark:text-white">Llévala en tu celular</h2>
+          <p className="text-sm text-ink-muted dark:text-ink-200 leading-relaxed">
+            Déjala como app en tu pantalla de inicio, en iPhone o Android. Sin tiendas de apps y sin ocupar espacio.
+          </p>
+        </div>
+        <InstallAppButton variant="primary" label="Instalar en tu celular" className="w-full sm:w-auto" />
       </section>
 
       {/* Llamado final */}

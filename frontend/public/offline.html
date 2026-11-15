@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#173B50" />
+    <title>Sin conexión — Oportia</title>
+    <style>
+      body { margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background: #F4F7F9; color: #173B50; padding: 24px; box-sizing: border-box; text-align: center; }
+      @media (prefers-color-scheme: dark) { body { background: #142B3D; color: #F4F7F9; } p { color: #C9D7E1 !important; } }
+      main { max-width: 360px; }
+      h1 { font-size: 22px; margin: 16px 0 8px; }
+      p { font-size: 15px; line-height: 1.5; color: #56657A; margin: 0 0 20px; }
+      button { font: inherit; font-weight: 700; color: #fff; background: #18856D; border: 0; border-radius: 14px;
+        padding: 12px 22px; min-height: 48px; cursor: pointer; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <svg width="72" height="72" viewBox="0 0 160 160" aria-hidden="true">
+        <defs><linearGradient id="g" x1="0%" y1="100%" x2="100%" y2="0%"><stop offset="0%" stop-color="#173B50"/><stop offset="100%" stop-color="#20A88A"/></linearGradient></defs>
+        <rect width="160" height="160" rx="38" fill="url(#g)"/>
+        <path d="M 46 114 C 46 78, 68 50, 112 46" fill="none" stroke="#fff" stroke-width="12" stroke-linecap="round"/>
+        <path d="M 96 38 L 116 46 L 108 66" fill="none" stroke="#fff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="46" cy="114" r="11" fill="#fff"/><circle cx="46" cy="114" r="6" fill="#20A88A"/>
+        <circle cx="116" cy="46" r="11" fill="#FF906F"/><circle cx="116" cy="46" r="5" fill="#fff"/>
+      </svg>
+      <h1>Sin conexión a Internet</h1>
+      <p>Oportia necesita Internet para buscar ofertas. Tus datos siguen guardados en este equipo.</p>
+      <button type="button" onclick="location.reload()">Reintentar</button>
+    </main>
+  </body>
+</html>

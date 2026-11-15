@@ -11,13 +11,20 @@ import {
   HelpCircle,
   Compass,
   TrendingUp,
-  Layers
+  Layers,
+  ShieldCheck,
+  Download,
+  Trash2,
+  Smartphone
 } from 'lucide-react';
 import type { CandidateProfile, LLMSettings } from '../types';
 import { useAppStore } from '../state/useAppStore';
 
 import { computeNextStep } from '../utils/nextStep';
 import { OpiAvatar } from './ui/OpiAvatar';
+import { getAIStatus } from '../utils/aiStatus';
+import { InstallAppButton } from './InstallApp';
+import { isStandalone } from '../utils/pwa';
 
 const ICON_MAP = {
   TrendingUp,
@@ -60,7 +67,8 @@ export const WelcomeHub: React.FC<WelcomeHubProps> = ({
   );
   const hasPrefs = Boolean(preferences?.target_roles && preferences.target_roles.length > 0);
   const hasJobs = jobs.length > 0;
-  const hasAI = Boolean(llmSettings?.has_active_key);
+  const aiStatus = getAIStatus(llmSettings);
+  const hasAI = aiStatus.ready || aiStatus.kind === 'shared_active';
   const hasApplications = applications.length > 0;
   const interviewJob = jobs.find(j => j.status === 'interview_scheduled' || j.status === 'interview_done');
 
@@ -71,7 +79,7 @@ export const WelcomeHub: React.FC<WelcomeHubProps> = ({
   const checklist = [
     { label: 'CV cargado y analizado', done: hasCV, route: '/perfil?tab=cv' },
     { label: 'Criterios de búsqueda definidos', done: hasPrefs, route: '/perfil?tab=busqueda' },
-    { label: 'Motor de IA conectado (opcional)', done: hasAI, route: '/ajustes' },
+    { label: 'IA activada (opcional)', done: hasAI, route: '/ajustes' },
     { label: 'Primera postulación adaptada', done: hasApplications, route: '/postulaciones' }
   ];
   const completedCount = checklist.filter(c => c.done).length;
@@ -229,14 +237,71 @@ export const WelcomeHub: React.FC<WelcomeHubProps> = ({
                 <Cpu className="w-5 h-5" />
               </div>
               <div>
-                <span className="text-xs uppercase font-bold text-ink-muted block">Estado de Inteligencia Artificial</span>
-                <span className="text-xs font-bold text-ink dark:text-white">
-                  {hasAI ? 'IA Conectada' : 'Modo sin IA'}
+                <span className="text-xs uppercase font-bold text-ink-muted block">Inteligencia artificial</span>
+                <span className="text-sm font-bold text-ink dark:text-white block">{aiStatus.title}</span>
+                <span className={`text-xs block ${aiStatus.kind === 'shared_available' ? 'text-brand-700 dark:text-brand-300 font-semibold' : 'text-ink-muted dark:text-ink-200'}`}>
+                  {aiStatus.detail}
                 </span>
               </div>
             </div>
             <ArrowRight className="w-4 h-4 text-gray-400 group-hover:translate-x-0.5 transition" />
           </button>
+
+          {/* Tus datos: se guardan en el equipo de la persona */}
+          <section
+            aria-labelledby="tus-datos-title"
+            className="apple-glass apple-card p-4 rounded-2xl space-y-3"
+          >
+            <div className="flex items-start space-x-3">
+              <div className="w-10 h-10 rounded-xl bg-brand-50 dark:bg-brand-950/60 text-brand-700 dark:text-brand-300 flex items-center justify-center shrink-0">
+                <ShieldCheck className="w-5 h-5" aria-hidden="true" />
+              </div>
+              <div className="space-y-1">
+                <h3 id="tus-datos-title" className="text-sm font-bold text-ink dark:text-white">
+                  Tus datos se quedan en tu equipo
+                </h3>
+                <p className="text-xs text-ink-muted dark:text-ink-200 leading-relaxed">
+                  Tu CV, perfil y postulaciones se guardan en este navegador, no en nuestros servidores. Descarga un
+                  respaldo o bórralos cuando lo necesites.
+                </p>
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => handleNavigate('/ajustes?tab=privacidad')}
+                className="inline-flex items-center gap-1.5 min-h-[40px] px-3 py-1.5 rounded-xl border border-gray-200 dark:border-ink-line text-xs font-semibold text-ink dark:text-white hover:bg-gray-50 dark:hover:bg-ink-hover transition cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
+              >
+                <Download className="w-3.5 h-3.5" aria-hidden="true" />
+                Descargar respaldo
+              </button>
+              <button
+                type="button"
+                onClick={() => handleNavigate('/ajustes?tab=privacidad')}
+                className="inline-flex items-center gap-1.5 min-h-[40px] px-3 py-1.5 rounded-xl border border-gray-200 dark:border-ink-line text-xs font-semibold text-ink dark:text-white hover:bg-gray-50 dark:hover:bg-ink-hover transition cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
+              >
+                <Trash2 className="w-3.5 h-3.5" aria-hidden="true" />
+                Borrar mis datos
+              </button>
+            </div>
+          </section>
+
+          {!isStandalone() && (
+            <section aria-labelledby="instalar-title" className="apple-glass apple-card p-4 rounded-2xl space-y-3">
+              <div className="flex items-start space-x-3">
+                <div className="w-10 h-10 rounded-xl bg-brand-50 dark:bg-brand-950/60 text-brand-700 dark:text-brand-300 flex items-center justify-center shrink-0">
+                  <Smartphone className="w-5 h-5" aria-hidden="true" />
+                </div>
+                <div className="space-y-1">
+                  <h3 id="instalar-title" className="text-sm font-bold text-ink dark:text-white">Lleva Oportia en tu celular</h3>
+                  <p className="text-xs text-ink-muted dark:text-ink-200 leading-relaxed">
+                    Déjala como app en tu pantalla de inicio (iPhone o Android) y ábrela en un toque.
+                  </p>
+                </div>
+              </div>
+              <InstallAppButton variant="outline" label="Ver cómo instalarla" className="w-full" />
+            </section>
+          )}
         </div>
 
       </div>

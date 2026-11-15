@@ -1,4 +1,5 @@
 import React from 'react';
+import { InstallAppButton } from './InstallApp';
 import { Link } from 'react-router-dom';
 import { Heart, Instagram, ExternalLink, ShieldCheck, GraduationCap, Settings as SettingsIcon } from 'lucide-react';
 
@@ -72,6 +73,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigateToTab }) => {
           >
             Inicio
           </Link>
+          <InstallAppButton variant="link" label="Instalar en tu celular" />
           <Link
             to="/conoce-oportia"
             className="hover:text-brand-700 dark:hover:text-brand-300 transition"

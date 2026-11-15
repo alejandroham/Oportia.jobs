@@ -7,6 +7,20 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
 
 ## [Sin publicar]
 
+### 📱 Instalar en el celular
+- **Botón "Instalar en tu celular"** en la portada, en Inicio y en el pie de página (`frontend/src/components/InstallApp.tsx`). En Android y en Chrome o Edge de computador abre el aviso nativo de instalación; en iPhone y iPad muestra los pasos (Compartir → Agregar a pantalla de inicio), porque Apple no permite instalar desde un botón. Elige sola la pestaña según el dispositivo y se oculta si la app ya está instalada.
+- **Service worker mínimo** (`public/sw.js`): permite la instalación en Android sin guardar la app en caché (nunca se ve una versión vieja). Solo si no hay conexión al abrir, muestra `offline.html`.
+- `manifest.json` con íconos `any` y `maskable` (Android recorta sin cortar el dibujo); Chrome no reporta errores de instalación.
+
+### 🐛 Favicon e íconos
+- **Los íconos PNG seguían siendo el logo antiguo de NexusJob** (la "N" azul): el favicon de 32 px, `favicon.ico`, el ícono de iPhone (`apple-touch-icon`) y los de Android (192 y 512 px). Se regeneraron todos desde `favicon.svg`, el ícono oficial de Oportia. `favicon.ico` ahora es un ICO real con tamaños de 16, 32 y 48 px; antes era un PNG renombrado.
+- Se eliminaron los archivos que ya no se usaban: `nexusjob-icon.png`, `nexusjob-logo.png`, `nexusjob-logo-dark.png` y `opi-avatar.svg`.
+
+### 🤖 IA gratuita más clara
+- **Inicio, la barra superior y el chat ya no dicen "Modo sin IA" cuando el servidor tiene IA gratuita.** Ahora muestran "IA gratuita disponible · Actívala en un paso" (barra: "Activar IA"), luego "IA gratuita de Oportia · Te quedan N de M consultas hoy", o "Tu clave de Gemini" si la persona conectó la suya (`frontend/src/utils/aiStatus.ts`).
+- **El chat de Opi se activa ahí mismo:** si hay IA gratuita, el chat muestra el aviso de privacidad con la casilla y el botón "Activar IA gratuita"; al aceptar, el chat se abre sin pasar por Ajustes. La etiqueta "Clave Requerida" pasó a "IA sin activar".
+- **"Tus datos se quedan en tu equipo"** en Inicio: explica que el CV, el perfil y las postulaciones se guardan en el navegador, con accesos a "Descargar respaldo" y "Borrar mis datos" (abren Ajustes → Privacidad & Datos, ahora enlazable con `/ajustes?tab=privacidad`).
+
 ## [1.2.0] - 2026-11-14 — *Oportia para todas las áreas: portada, búsqueda, IA gratuita y modo oscuro legible*
 
 ### 🤖 Opi con personalidad: 6 expresiones
