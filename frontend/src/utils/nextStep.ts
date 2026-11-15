@@ -79,7 +79,7 @@ export function computeNextStep(params: {
 
   return {
     title: 'Monitorea tus postulaciones',
-    description: `Tienes ${applications.length} postulaciones registradas. Revisa el estado de tus procesos.`,
+    description: `Tienes ${applications.length} ${applications.length === 1 ? 'postulación registrada' : 'postulaciones registradas'}. Revisa el estado de tus procesos.`,
     cta: 'Ver mis postulaciones',
     route: '/postulaciones',
     iconName: 'Briefcase'
