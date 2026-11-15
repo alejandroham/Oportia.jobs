@@ -125,6 +125,8 @@ interface AppState {
     jobs?: JobPosting[];
     applications?: ApplicationDraft[];
     coachData?: CoachDataStore;
+    /** Conversación con Opi (respaldo formato 1.2). */
+    chatHistory?: unknown[];
   }) => Promise<void>;
 }
 
@@ -395,7 +397,10 @@ export const useAppStore = create<AppState>((set, get) => ({
       preferences ? saveClientStore('preferences', preferences) : Promise.resolve(),
       saveClientStore('jobs', jobs),
       saveClientStore('applications', applications),
-      saveClientStore('coach_data', coachData)
+      saveClientStore('coach_data', coachData),
+      Array.isArray(payload.chatHistory) && payload.chatHistory.length
+        ? saveClientStore('oportia_chat_history', payload.chatHistory)
+        : Promise.resolve()
     ]);
   }
 }));

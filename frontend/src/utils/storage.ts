@@ -24,7 +24,7 @@ const STORE_NAME = 'client_session';
 
 export interface SessionBackupBundle {
   app: 'Oportia Jobs IA' | 'NexusJob AI';
-  format_version: '1.0' | '1.1';
+  format_version: '1.0' | '1.1' | '1.2';
   exported_at: string;
   candidate_name?: string;
   payload: {
@@ -33,7 +33,19 @@ export interface SessionBackupBundle {
     jobs: JobPosting[];
     applications: ApplicationDraft[];
     coach_data?: any;
+    /** Conversación con Opi (desde formato 1.2). */
+    chat_history?: any[];
   };
+}
+
+/** Todo lo que incluye un respaldo. Las claves de IA NO se incluyen a propósito. */
+export interface BackupContent {
+  profile: CandidateProfile | null;
+  preferences: UserPreferences | null;
+  jobs: JobPosting[];
+  applications: ApplicationDraft[];
+  coachData?: any;
+  chatHistory?: any[];
 }
 
 // ── Native IndexedDB Helper ──────────────────────────────────────────────
@@ -145,49 +157,63 @@ export async function clearClientStore(): Promise<void> {
 
 // ── Export / Import Backup Helpers ────────────────────────────────────────
 
-export async function exportSessionBackupFile(
-  profile: CandidateProfile | null,
-  preferences: UserPreferences | null,
-  jobs: JobPosting[],
-  applications: ApplicationDraft[],
-  coachData?: any,
-  passphrase?: string,
-  hint?: string
-): Promise<void> {
-  const dateStr = new Date().toISOString().split('T')[0];
-  const bundle: SessionBackupBundle = {
+/**
+ * Arma el contenido del respaldo (sin cifrar). Separado de la descarga para poder probarlo.
+ * Antes se recibían parámetros posicionales y la pantalla los pasaba en otro orden: la contraseña
+ * quedaba guardada como "datos de Aprender" y el archivo salía SIN cifrar.
+ */
+export function buildBackupBundle(content: BackupContent): SessionBackupBundle {
+  return {
     app: 'Oportia Jobs IA',
-    format_version: '1.1',
+    format_version: '1.2',
     exported_at: new Date().toISOString(),
-    candidate_name: profile?.name || 'Candidato',
+    candidate_name: content.profile?.name || 'Candidato',
     payload: {
-      profile,
-      preferences,
-      jobs,
-      applications,
-      coach_data: coachData || undefined
+      profile: content.profile,
+      preferences: content.preferences, // incluye "qué busco", logros STAR y lo que Opi sabe de ti
+      jobs: content.jobs,
+      applications: content.applications,
+      coach_data: content.coachData ?? undefined,
+      chat_history: Array.isArray(content.chatHistory) ? content.chatHistory : undefined
     }
   };
+}
 
-  const cleanName = (profile?.name || 'candidato')
+/** Texto final del archivo y su nombre. Con contraseña, AES-GCM 256 (sin la contraseña adentro). */
+export async function serializeBackup(
+  content: BackupContent,
+  options: { passphrase?: string; hint?: string } = {}
+): Promise<{ fileContent: string; filename: string; encrypted: boolean }> {
+  const bundle = buildBackupBundle(content);
+  const dateStr = bundle.exported_at.split('T')[0];
+  const cleanName = (bundle.candidate_name || 'candidato')
     .toLowerCase()
     .replace(/[^a-z0-9]/g, '_')
-    .replace(/_+/g, '_');
+    .replace(/_+/g, '_') || 'candidato';
 
-  let fileContent: string;
-  let filename: string;
-
-  if (passphrase && passphrase.trim().length > 0) {
-    // AES-GCM 256-bit encryption
-    const rawJson = JSON.stringify(bundle);
-    const encryptedPkg = await encryptText(rawJson, passphrase, hint);
-    fileContent = JSON.stringify(encryptedPkg, null, 2);
-    filename = `oportia_cifrado_${cleanName}_${dateStr}.oportia`;
-  } else {
-    fileContent = JSON.stringify(bundle, null, 2);
-    filename = `oportia_backup_${cleanName}_${dateStr}.json`;
+  // La contraseña se usa tal cual (sin recortar espacios); solo se exige que no esté vacía.
+  const passphrase = options.passphrase ?? '';
+  if (passphrase.trim()) {
+    const encryptedPkg = await encryptText(JSON.stringify(bundle), passphrase, options.hint?.trim() || undefined);
+    return {
+      fileContent: JSON.stringify(encryptedPkg, null, 2),
+      filename: `oportia_cifrado_${cleanName}_${dateStr}.oportia`,
+      encrypted: true
+    };
   }
+  return {
+    fileContent: JSON.stringify(bundle, null, 2),
+    filename: `oportia_respaldo_${cleanName}_${dateStr}.json`,
+    encrypted: false
+  };
+}
 
+/** Descarga el respaldo completo en el equipo de la persona. */
+export async function exportSessionBackupFile(
+  content: BackupContent,
+  options: { passphrase?: string; hint?: string } = {}
+): Promise<{ encrypted: boolean; filename: string }> {
+  const { fileContent, filename, encrypted } = await serializeBackup(content, options);
   const blob = new Blob([fileContent], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
 
@@ -198,6 +224,7 @@ export async function exportSessionBackupFile(
   link.click();
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
+  return { encrypted, filename };
 }
 
 export async function parseSessionBackupFile(
@@ -236,7 +263,8 @@ export async function parseSessionBackupFile(
       preferences: parsed.payload.preferences || null,
       jobs: Array.isArray(parsed.payload.jobs) ? parsed.payload.jobs : [],
       applications: Array.isArray(parsed.payload.applications) ? parsed.payload.applications : [],
-      coach_data: parsed.payload.coach_data || null
+      coach_data: parsed.payload.coach_data || null,
+      chat_history: Array.isArray(parsed.payload.chat_history) ? parsed.payload.chat_history : undefined
     };
   }
 
