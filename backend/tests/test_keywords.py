@@ -61,3 +61,8 @@ def test_search_endpoint_drops_irrelevant_and_sorts(monkeypatch):
          patch("app.main.ats_scraper.search", return_value=[]):
         data = TestClient(app).post("/api/jobs/search", json={"keywords": "encargado informatica", "search_scope": "all"}).json()
     assert [j["title"] for j in data["jobs"]] == ["Encargado de Informática", "Ingeniero Informático"]
+
+
+def test_area_in_title_beats_generic_role_word():
+    assert relevance_score("Gestor TI (Soporte)", "", "encargado informatica") > \
+        relevance_score("Director of Product Management", "Área de informática", "encargado informatica")

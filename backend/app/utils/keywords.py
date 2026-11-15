@@ -184,12 +184,14 @@ def relevance_score(title: str, description: str, keywords: str) -> int:
     if domain:
         if not all(_token_present(t, all_t) for t in domain):
             return 0
+        # El área en el CARGO pesa el doble que la palabra de cargo genérica: "Gestor TI" debe
+        # quedar antes que "Director of Product Management" con "informática" solo en la descripción.
         in_title = sum(_token_present(t, title_t) for t in domain)
-        score = 40 + int(30 * in_title / len(domain))
+        score = 40 + int(40 * in_title / len(domain))
         if generic:
-            score += int(30 * sum(_token_present(t, title_t) for t in generic) / len(generic))
+            score += int(20 * sum(_token_present(t, title_t) for t in generic) / len(generic))
         else:
-            score += 30 if in_title == len(domain) else 0
+            score += 20 if in_title == len(domain) else 0
         return min(score, 100)
 
     # Solo palabras genéricas (p. ej. "analista"): deben estar en el cargo.
