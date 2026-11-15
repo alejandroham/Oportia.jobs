@@ -178,12 +178,13 @@ class JobPosting(BaseModel):
     outcome_reason: Optional[str] = None
     outcome_feedback: Optional[str] = None
     outcome_date: Optional[str] = None
+    # Plan de mejora tras registrar el resultado (antes estaba por error en JobSearchResponse)
+    upskill_recommendations: List[str] = []
 
 class JobSearchResponse(BaseModel):
     jobs: List[JobPosting] = []
     sources_failed: List[str] = []
     total: int = 0
-    upskill_recommendations: List[str] = []
 
 class OutcomeSubmission(BaseModel):
     job_id: str
@@ -388,6 +389,12 @@ class TutorEvaluationResult(BaseModel):
 # --- Stateless Pure Request Schemas (Option A: Zero Server Retention) ---
 
 class StatelessJobEvaluationRequest(BaseModel):
+    job: JobPosting
+    profile: CandidateProfile
+    preferences: Optional[UserPreferences] = None
+
+class StatelessOutcomeRequest(BaseModel):
+    submission: "OutcomeSubmission"
     job: JobPosting
     profile: CandidateProfile
     preferences: Optional[UserPreferences] = None

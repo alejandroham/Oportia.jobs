@@ -1,3 +1,4 @@
+import { getSourceLabel, safeExternalUrl } from '../../utils/jobSource';
 import React, { useEffect } from 'react';
 import type { JobPosting, FitEvaluation } from '../../types';
 import { FitEvaluationSummary } from '../shared/FitEvaluationSummary';
@@ -95,7 +96,7 @@ export const JobDetailModal: React.FC<JobDetailModalProps> = ({
 
               {job.source && (
                 <span className="text-gray-600 dark:text-ink-200">
-                  Fuente: <strong className="font-semibold text-gray-600 dark:text-gray-300 capitalize">{job.source}</strong>
+                  Fuente: <strong className="font-semibold text-gray-600 dark:text-gray-300">{getSourceLabel(job.source)}</strong>
                 </span>
               )}
             </div>
@@ -184,9 +185,9 @@ export const JobDetailModal: React.FC<JobDetailModalProps> = ({
                 <span>{isTracked ? 'En seguimiento' : 'Guardar'}</span>
               </button>
 
-              {job.url && (
+              {safeExternalUrl(job.url) && (
                 <a
-                  href={job.url}
+                  href={safeExternalUrl(job.url) as string}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1.5 px-3.5 py-2.5 min-h-[44px] rounded-xl border border-gray-200 dark:border-ink-line text-ink dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-ink-raised text-xs font-medium transition focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"

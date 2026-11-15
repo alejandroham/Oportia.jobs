@@ -7,6 +7,13 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
 
 ## [Sin publicar]
 
+### 🎯 Búsqueda precisa, postular en un clic y fuente visible (Etapa A de la versión 1.3)
+- **Búsqueda precisa** (`relevance_score` en `backend/app/utils/keywords.py`): las palabras del **área** ("informática", "enfermería", "bodega") deben aparecer siempre; las palabras de cargo genéricas ("encargado", "jefe", "analista") solo suman puntos; el cargo pesa más que la descripción y los resultados se ordenan por relevancia. "encargado informática" ya no trae "Encargado de Aseo", psicólogos ni TENS.
+- **Empleos Públicos:** se quitó la regla que aceptaba cualquier convocatoria con la palabra "datos" (los bancos de talento empiezan con "(Base de datos)"). "TI" solo cuenta en frases como "soporte TI", porque suelto chocaba con "para ti".
+- **"Postular con CV adaptado" en un clic:** la oferta queda al instante en Mis postulaciones, ya seleccionada, con Opi generando el CV y la carta a la vista; al terminar pasa a "Documentos listos para enviar". Si la IA falla, la oferta queda guardada y se puede reintentar. Ya no se marca como "Postulada" antes de enviarla.
+- **Fuente en cada tarjeta** ("Fuente: Empleos Públicos", "LinkedIn Chile"…) y enlace **"Ver oferta original"**. Solo se abren enlaces http(s).
+- **Registrar resultado de una postulación:** nunca funcionó (el campo `upskill_recommendations` estaba por error en otro modelo y el endpoint buscaba la oferta en el disco del servidor). Nuevo `POST /api/jobs/outcome` sin estado: el plan de mejora y lo que Opi aprende se guardan en tu navegador.
+
 ### 🔒 Respaldo y privacidad (Etapa 0 de la versión 1.3)
 - **Respaldo con contraseña que no cifraba y guardaba la contraseña:** la pantalla de Privacidad pasaba los datos en otro orden del que esperaba la función. La contraseña quedaba escrita en el archivo como "datos de Aprender", el archivo salía **sin cifrar** (`.json`) aunque el aviso decía "AES-256" y Aprender no se respaldaba. Ahora el archivo `.oportia` se cifra con tu contraseña y no la contiene; se agregó un campo de pista opcional.
 - **Respaldo completo (formato 1.2):** CV y perfil (con todos los títulos), qué buscas, logros STAR, lo que Opi sabe de ti, ofertas, postulaciones, Aprender (brechas y rutas) y la conversación con Opi. Las claves de IA no se incluyen, a propósito. Se siguen leyendo los respaldos antiguos.

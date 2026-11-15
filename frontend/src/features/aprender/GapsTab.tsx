@@ -101,7 +101,7 @@ export const GapsTab: React.FC<GapsTabProps> = ({
             );
           })
         ) : (
-          <div className="p-8 text-center rounded-2xl border border-dashed border-gray-200 dark:border-ink-border text-xs text-gray-400">
+          <div className="p-8 text-center rounded-2xl border border-dashed border-gray-200 dark:border-ink-border text-xs text-gray-600 dark:text-ink-200">
             Aún no se han identificado brechas formativas. Evalúa más ofertas en el radar para que Opi detecte oportunidades de mejora.
           </div>
         )}

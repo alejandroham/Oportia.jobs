@@ -1,11 +1,11 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import type { JobPosting, ApplicationDraft, CandidateProfile } from '../../types';
 import { useAppStore } from '../../state/useAppStore';
 import { ApplicationList } from './ApplicationList';
 import { ApplicationDetail } from './ApplicationDetail';
 import { EmptyState } from '../../components/common/EmptyState';
 import { Briefcase, Plus, Send } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { api, isAINotConnectedError, getHumanErrorMessage } from '../../api';
 import { useToast } from '../../components/Toast';
 
@@ -80,24 +80,28 @@ export const ApplicationsPage: React.FC<ApplicationsPageProps> = ({
     return applications.find((a) => a.job_id === activeJob.id) || null;
   }, [activeJob, applications]);
 
-  // Adaptar CV con IA para la postulación activa
-  const handleAdaptCv = async () => {
-    if (!activeJob) return;
+  // Adaptar CV con IA para una postulación (por defecto, la activa)
+  const handleAdaptCv = async (target?: JobPosting) => {
+    const job = target ?? activeJob;
+    if (!job) return;
     if (!profile) {
       toast.error('Primero sube tu CV en Mi perfil para adaptar la postulación.');
       return;
     }
     setIsAdapting(true);
     try {
-      const draft = await api.applyJob(activeJob, profile, preferences);
+      const draft = await api.applyJob(job, profile, preferences);
       await addOrUpdateApplication(draft);
+      const latest = useAppStore.getState().jobs.find((j) => j.id === job.id) ?? job;
       const updatedJob: JobPosting = {
-        ...activeJob,
+        ...latest,
+        // Con los documentos listos pasa a "Documentos listos para enviar" (si aún no se envió).
+        status: !latest.status || latest.status === 'saved' || latest.status === 'discovered' ? 'ready_to_send' : latest.status,
         tailored_cv_markdown: draft.tailored_cv_markdown,
         tailored_cover_letter: draft.cover_letter
       };
       await addOrUpdateJob(updatedJob);
-      toast.success('CV y carta adaptados con IA');
+      toast.success('CV y carta adaptados con IA', 'Revísalos en Documentos y descárgalos en PDF.');
     } catch (e: any) {
       if (isAINotConnectedError(e)) {
         toast.info('Para adaptar tu CV con IA, activa la IA gratuita o conecta tu clave en Ajustes.');
@@ -108,6 +112,26 @@ export const ApplicationsPage: React.FC<ApplicationsPageProps> = ({
       setIsAdapting(false);
     }
   };
+
+  // Llegada desde "Postular con CV adaptado": seleccionar la oferta y generar los documentos.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const autoAdaptDone = useRef<string | null>(null);
+  useEffect(() => {
+    const ofertaId = searchParams.get('oferta');
+    if (!ofertaId) return;
+    const job = trackedJobs.find((j) => j.id === ofertaId);
+    if (!job) return;
+    setStatusFilter('all');
+    setSelectedJobId(ofertaId);
+    const wantsAdapt = searchParams.get('adaptar') === '1';
+    setSearchParams({}, { replace: true });
+    const hasDocs = applications.some((a) => a.job_id === ofertaId) || Boolean(job.tailored_cv_markdown);
+    if (wantsAdapt && !hasDocs && autoAdaptDone.current !== ofertaId) {
+      autoAdaptDone.current = ofertaId;
+      void handleAdaptCv(job);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams, trackedJobs]);
 
   const handleUpdateJob = async (updated: JobPosting) => {
     await addOrUpdateJob(updated);
@@ -238,7 +262,7 @@ export const ApplicationsPage: React.FC<ApplicationsPageProps> = ({
               onBackToList={() => setSelectedJobId(null)}
               onUpdateJob={handleUpdateJob}
               onDeleteJob={handleDeleteJob}
-              onAdaptCv={handleAdaptCv}
+              onAdaptCv={() => handleAdaptCv()}
               isAdapting={isAdapting}
             />
           ) : (

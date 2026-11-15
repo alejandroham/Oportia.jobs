@@ -61,3 +61,17 @@ def test_import_url_does_not_save_job(stateless, monkeypatch):
     r = c().post("/api/jobs/import-url", json={"url": "https://example.com/oferta"})
     assert r.status_code == 200, r.text
     assert len(stateless.get_jobs()) == before
+
+
+def test_outcome_stateless_returns_plan_without_writing(stateless, mock_llm):
+    job = {"id": "j9", "title": "TENS Urgencia", "company": "Clínica", "location": "Valparaíso", "is_remote": False,
+           "description": "TENS", "source": "t", "tags": []}
+    body = {"submission": {"job_id": "j9", "status": "rejected", "was_successful": False, "reason": "Faltó experiencia en UCI"},
+            "job": job, "profile": ME, "preferences": {"auto_learned_insights": ["previo"]}}
+    r = c().post("/api/jobs/outcome", json=body)
+    assert r.status_code == 200, r.text
+    data = r.json()
+    assert data["plan"]["job_title"] == "TENS Urgencia"
+    assert "previo" in data["auto_learned_insights"] and len(data["auto_learned_insights"]) >= 2
+    assert stateless.get_job_by_id("j9") is None
+    assert stateless.get_preferences().auto_learned_insights == ["SECRETO de otra persona"]

@@ -8,7 +8,8 @@ from app.storage.db import db
 logger = logging.getLogger(__name__)
 
 class OutcomeAndStrategyAgent:
-    def process_outcome(self, submission: OutcomeSubmission, job: JobPosting, profile: CandidateProfile, prefs: UserPreferences) -> UpskillPlan:
+    def process_outcome(self, submission: OutcomeSubmission, job: JobPosting, profile: CandidateProfile, prefs: UserPreferences, persist: bool = True) -> UpskillPlan:
+        """persist=False (sin estado): no guarda en el disco del servidor; el navegador recibe el plan y lo guarda."""
         # Update job in database
         job.status = submission.status
         job.outcome_success = submission.was_successful
@@ -115,11 +116,13 @@ RESPONDE ÚNICAMENTE CON UN JSON VÁLIDO:
         insight_text = f"Estrategia {'exitosa' if submission.was_successful else 'a calibrar'} en vacantes tipo '{job.title}': {strategy[:120]}..."
         if insight_text not in prefs.auto_learned_insights:
             prefs.auto_learned_insights.insert(0, insight_text)
-            db.save_preferences(prefs)
+            if persist:
+                db.save_preferences(prefs)
 
         # Save recommendations to job
         job.upskill_recommendations = [f"{t.topic}: {t.description}" for t in topics] + [f"Certificación: {c}" for c in certs]
-        db.save_jobs([job])
+        if persist:
+            db.save_jobs([job])
 
         return UpskillPlan(
             job_title=job.title,

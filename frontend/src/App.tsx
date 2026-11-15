@@ -70,7 +70,6 @@ export function App() {
     jobs,
     addOrUpdateJob,
     applications,
-    addOrUpdateApplication,
     settings,
     hasCompletedOnboarding,
     setOnboardingCompleted,
@@ -128,28 +127,22 @@ export function App() {
     navigate(dest);
   };
 
+  // "Postular con CV adaptado": la oferta pasa al instante a Mis postulaciones (ya seleccionada)
+  // y ahí se generan el CV y la carta adaptados, con el avance a la vista. Si la IA falla, la
+  // oferta queda guardada igual y se puede reintentar.
   const handleApplyToJob = async (job: JobPosting) => {
     if (!profile) {
       toast.error('Primero sube tu CV en Mi perfil para adaptar la postulación.');
       navigate('/perfil');
       return;
     }
-    try {
-      navigate('/postulaciones');
-      const draft = await api.applyJob(job, profile, preferences);
-      await addOrUpdateApplication(draft);
-
-      const updatedJob: JobPosting = {
-        ...job,
-        status: 'applied',
-        applied_date: new Date().toISOString()
-      };
-      await addOrUpdateJob(updatedJob);
-
-      toast.success('CV y carta adaptados exitosamente', job.title);
-    } catch (e: any) {
-      toast.error('Error al adaptar CV: ' + (e?.message || e));
-    }
+    const alreadyTracked = Boolean(job.status && job.status !== 'discovered');
+    await addOrUpdateJob({
+      ...job,
+      status: alreadyTracked ? job.status : 'saved',
+      tracked_at: job.tracked_at || new Date().toISOString()
+    });
+    navigate(`/postulaciones?oferta=${encodeURIComponent(job.id)}&adaptar=1`);
   };
 
   return (

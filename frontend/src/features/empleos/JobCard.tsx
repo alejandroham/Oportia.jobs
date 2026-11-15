@@ -1,6 +1,7 @@
 import React from 'react';
 import type { JobPosting } from '../../types';
 import { FitScoreBadge } from '../shared/FitScoreBadge';
+import { getSourceLabel, safeExternalUrl } from '../../utils/jobSource';
 import { Bookmark, BookmarkCheck, ExternalLink, X, MapPin, Building2, DollarSign } from 'lucide-react';
 
 interface JobCardProps {
@@ -120,6 +121,26 @@ export const JobCard: React.FC<JobCardProps> = ({
               <span>•</span>
               <span>{relativeDate}</span>
             </>
+          )}
+        </div>
+
+        {/* Fuente de la oferta y enlace al aviso original */}
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-semibold bg-gray-100 dark:bg-ink-raised text-gray-700 dark:text-ink-200 border border-gray-200 dark:border-ink-line">
+            Fuente: {getSourceLabel(job.source)}
+          </span>
+          {safeExternalUrl(job.url) && (
+            <a
+              href={safeExternalUrl(job.url) as string}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              aria-label={`Ver la oferta original de ${job.title} en ${getSourceLabel(job.source)} (se abre en una pestaña nueva)`}
+              className="inline-flex items-center gap-1 min-h-[32px] text-xs font-semibold text-brand-700 dark:text-brand-300 hover:underline focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none rounded"
+            >
+              Ver oferta original
+              <ExternalLink className="w-3 h-3" aria-hidden="true" />
+            </a>
           )}
         </div>
 

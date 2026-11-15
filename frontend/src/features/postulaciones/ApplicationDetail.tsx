@@ -4,7 +4,9 @@ import { ApplicationDocumentsTab } from './ApplicationDocumentsTab';
 import { ApplicationInterviewTab } from './ApplicationInterviewTab';
 import { ApplicationTimelineTab } from './ApplicationTimelineTab';
 import { ArrowLeft, ExternalLink, Trash2, Building2, MapPin, Sparkles, CheckCircle2 } from 'lucide-react';
+import { useAppStore } from '../../state/useAppStore';
 import { api } from '../../api';
+import { safeExternalUrl } from '../../utils/jobSource';
 import { useToast } from '../../components/Toast';
 import { Dialog } from '../../components/ui/Dialog';
 import { Button } from '../../components/ui/Button';
@@ -73,16 +75,33 @@ export const ApplicationDetail: React.FC<ApplicationDetailProps> = ({
 
   const handleSaveOutcome = async (wasSuccessful: boolean) => {
     try {
-      await api.submitOutcome({
-        job_id: job.id,
-        status: wasSuccessful ? 'offer' : 'rejected',
-        was_successful: wasSuccessful,
-        reason: outcomeReason,
-        feedback_details: outcomeFeedback
-      });
+      const { profile, preferences, setPreferences } = useAppStore.getState();
+      let learned: { upskill_recommendations: string[]; auto_learned_insights: string[] } | null = null;
+      try {
+        learned = await api.submitOutcome(
+          {
+            job_id: job.id,
+            status: wasSuccessful ? 'offer' : 'rejected',
+            was_successful: wasSuccessful,
+            reason: outcomeReason,
+            feedback_details: outcomeFeedback
+          },
+          job,
+          profile,
+          preferences
+        );
+        // Lo que Opi aprende del resultado se guarda en TU navegador (no en el servidor).
+        if (preferences && learned?.auto_learned_insights?.length) {
+          await setPreferences({ ...preferences, auto_learned_insights: learned.auto_learned_insights });
+        }
+      } catch (err) {
+        // Sin IA o sin conexión, el resultado se registra igual en tu historial.
+        console.warn('No se pudo generar el plan de mejora:', err);
+      }
 
       const updatedJob: JobPosting = {
         ...job,
+        upskill_recommendations: learned?.upskill_recommendations?.length ? learned.upskill_recommendations : job.upskill_recommendations,
         status: wasSuccessful ? 'offer' : 'rejected',
         outcome_success: wasSuccessful,
         outcome_reason: outcomeReason,
@@ -134,9 +153,9 @@ export const ApplicationDetail: React.FC<ApplicationDetailProps> = ({
           </div>
 
           <div className="flex items-center gap-2">
-            {job.url && (
+            {safeExternalUrl(job.url) && (
               <a
-                href={job.url}
+                href={safeExternalUrl(job.url) as string}
                 target="_blank"
                 rel="noreferrer"
                 aria-label="Abrir oferta original"

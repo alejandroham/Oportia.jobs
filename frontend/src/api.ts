@@ -377,13 +377,20 @@ export const api = {
     });
     return res.json();
   },
-  submitOutcome: async (submission: any): Promise<any> => {
-    const res = await fetch(`${API_BASE}/jobs/${submission.job_id}/outcome`, {
+  /** Registrar el resultado de una postulación (sin estado: todo viaja desde el navegador). */
+  submitOutcome: async (
+    submission: { job_id: string; status: string; was_successful: boolean; reason?: string; feedback_details?: string },
+    job: JobPosting,
+    profile: CandidateProfile | null,
+    preferences?: UserPreferences | null
+  ): Promise<{ plan: any; upskill_recommendations: string[]; auto_learned_insights: string[] }> => {
+    const llmHeaders = await getLLMHeaders();
+    const res = await fetch(`${API_BASE}/jobs/outcome`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(submission)
+      headers: { 'Content-Type': 'application/json', ...llmHeaders },
+      body: JSON.stringify({ submission, job, profile: profile ?? { name: 'Candidato' }, preferences: preferences ?? null })
     });
-    return res.json();
+    return handleResponse(res, 'Error al registrar el resultado');
   },
   getRegions: async (): Promise<Array<{ id: string; name: string; short_name: string; communes: string[] }>> => {
     const res = await fetch(`${API_BASE}/regions`);
