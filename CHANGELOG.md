@@ -20,6 +20,22 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
 - `EmptyState` acepta la nueva propiedad opcional `opiExpression` para mostrar a Opi en lugar de un ícono.
 - El avatar anterior `opi-avatar.svg` ya no se usa en la interfaz.
 
+### 🏠 Portada de Oportia
+- **Nueva portada para quien llega por primera vez** (`frontend/src/components/landing/LandingPage.tsx`): presenta Oportia con Opi, explica cómo funciona en 3 pasos, muestra que sirve para todas las áreas, de qué portales vienen las ofertas, cómo se protegen los datos y que la IA es opcional. "Comenzar" abre la guía de inicio; antes se abría sola la ventana "Carga tu CV" sin explicar qué es la app.
+- Quien ya completó la guía sigue viendo su panel "Tu siguiente paso". La portada queda disponible en `/conoce-oportia` y en el enlace "Conoce Oportia" del pie de página.
+- La guía de inicio ahora se cierra con la tecla Escape.
+
+### 🌙 Modo oscuro unificado y contraste AA
+- **Una sola paleta oscura petróleo** (`ink.dark`, `ink.surface`, `ink.raised`, `ink.hover`, `ink.border`, `ink.line`, `ink.200`, `ink.300` en `tailwind.config.js`). Se reemplazaron 446 clases `zinc`/`gray`/`black` y el fondo negro puro (`#000000`) que se mezclaban con el petróleo.
+- **Botones principales legibles:** el texto blanco sobre el verde `#20A88A` tenía contraste 3:1; ahora usan `brand-600`/`brand-700` (≥ 4,5:1) en 33 botones.
+- **Textos verdes y grises legibles:** 74 textos en verde de marca pasan a `brand-700` (claro) / `brand-300` (oscuro); los grises atenuados sin variante oscura se aclaran automáticamente en modo oscuro (sin afectar la hoja del CV), y `ink.muted` se oscurece levemente para cumplir AA en fondos grises.
+- **Bordes que no existían:** clases como `border-white/8` usaban opacidades fuera de la escala de Tailwind y quedaban como un borde gris claro brillante (por ejemplo, sobre el pie de página en modo oscuro).
+- Verificado con una auditoría automática de contraste WCAG AA en 12 pantallas, en modo claro y oscuro.
+
+### 🎨 Logos y Opi
+- **Logo para modo oscuro:** el ícono ya no se funde con la barra de navegación, y la etiqueta "Jobs IA" es más grande y legible en ambos logos (antes medía unos 6 px en pantalla).
+- **Opi más presente:** más grande en "Tu siguiente paso"; aparece pensando mientras se buscan ofertas y mientras se adaptan el CV y la carta, y curioso cuando aún no hay carta. En la portada el botón flotante "Opi Copiloto" se oculta para no tapar los botones en celular.
+
 ### 🌎 Búsqueda para todas las áreas, no solo TI
 - Se eliminó la palabra clave por defecto "Tecnología" en LinkedIn y Computrabajo; sin palabra clave se buscan ofertas de todas las áreas.
 - Se eliminó el filtro de solo-TI (`IT_PATTERNS`) que no se usaba en el scraper de Empleos Públicos.
