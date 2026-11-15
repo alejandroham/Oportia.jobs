@@ -1,0 +1,23 @@
+Oportia Jobs IA
+Copyright 2026 Alejandro Ham
+
+Este producto fue creado y es mantenido por Alejandro Ham
+(https://github.com/alejandroham/Oportia.jobs).
+
+Licenciado bajo la Licencia Apache, Versión 2.0 (ver el archivo LICENSE).
+Quien redistribuya este trabajo o una obra derivada debe conservar este
+archivo NOTICE, el archivo LICENSE y los avisos de autoría, e indicar de
+forma visible los archivos que haya modificado.
+
+Marcas: los nombres "Oportia", "Oportia Jobs IA" y la mascota "Opi"
+(incluidas sus ilustraciones en frontend/public/opi/ y los logotipos en
+frontend/public/) identifican a este proyecto. Según la sección 6 de la
+Licencia Apache 2.0, la licencia no concede permiso para usarlos, salvo
+para describir razonablemente el origen del trabajo.
+
+Desarrollo asistido por inteligencia artificial:
+- Gemini (Google Antigravity): implementación de parte del código.
+- Claude (Anthropic, Claude Code): diagnóstico, planificación,
+  implementación y revisión.
+La autoría, dirección y titularidad del proyecto corresponden a
+Alejandro Ham.
