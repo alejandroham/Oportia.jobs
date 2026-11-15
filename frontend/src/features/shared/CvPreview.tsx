@@ -2,6 +2,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import type { CandidateProfile } from '../../types';
 import { Printer, Layout, Palette, AlignLeft, AlignCenter } from 'lucide-react';
 import { MarkdownDocument } from './MarkdownDocument';
+import { getProfileLinks } from '../../utils/profileKeywords';
+import { safeExternalUrl } from '../../utils/jobSource';
 import { printElement, buildDocumentTitle } from '../../utils/printDocument';
 
 export const formatExperiencePeriod = (startDate?: string, endDate?: string): string => {
@@ -171,6 +173,9 @@ export const CvPreview: React.FC<CvPreviewProps> = ({
               <p className="text-sm sm:text-base font-semibold text-brand-700">
                 {profile.headline || profile.primary_profession || 'Profesional'}
               </p>
+              {(profile.secondary_professions?.length ?? 0) > 0 && (
+                <p className="text-xs text-gray-600">También: {profile.secondary_professions!.join(' · ')}</p>
+              )}
 
               {/* Fila de contacto */}
               <div className={`flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-600 ${align === 'center' ? 'justify-center' : 'justify-start'}`}>
@@ -179,8 +184,14 @@ export const CvPreview: React.FC<CvPreviewProps> = ({
                 {(profile.commune || profile.region || profile.location) && (
                   <span>• {profile.commune ? `${profile.commune}, ` : ''}{profile.region || profile.location || 'Chile'}</span>
                 )}
-                {profile.linkedin_url && (
-                  <span>• <a href={profile.linkedin_url} target="_blank" rel="noreferrer" className="hover:underline">LinkedIn</a></span>
+                {getProfileLinks(profile).map((l) =>
+                  safeExternalUrl(l.url) ? (
+                    <span key={l.url}>
+                      • <a href={safeExternalUrl(l.url) as string} target="_blank" rel="noreferrer" className="hover:underline">
+                        {l.label === 'Sitio web' || l.label === 'Otro' ? l.url.replace(/^https?:\/\//, '').replace(/\/$/, '') : l.label}
+                      </a>
+                    </span>
+                  ) : null
                 )}
               </div>
             </div>
@@ -263,12 +274,27 @@ export const CvPreview: React.FC<CvPreviewProps> = ({
                   {profile.education.map((edu, idx) => (
                     <div key={idx} className="flex flex-wrap justify-between items-baseline gap-2 text-xs">
                       <span className="font-semibold text-gray-900">
-                        {edu.degree} en {edu.field_of_study} — <span className="font-normal text-gray-600">{edu.institution}</span>
+                        {[edu.degree, edu.field_of_study].filter(Boolean).join(' en ')}
+                        {edu.institution && <span className="font-normal text-gray-600"> — {edu.institution}</span>}
                       </span>
                       {edu.graduation_year && <span className="text-gray-500">{edu.graduation_year}</span>}
                     </div>
                   ))}
                 </div>
+              </div>
+            )}
+
+            {/* Certificaciones y cursos */}
+            {profile.certifications && profile.certifications.length > 0 && (
+              <div className="space-y-1.5">
+                <h2 className="text-xs font-bold uppercase tracking-wider text-gray-500 border-b border-gray-100 pb-1">
+                  Certificaciones y cursos
+                </h2>
+                <ul className="list-disc pl-5 text-xs text-gray-700 space-y-0.5">
+                  {profile.certifications.map((c, i) => (
+                    <li key={i}>{c}</li>
+                  ))}
+                </ul>
               </div>
             )}
 

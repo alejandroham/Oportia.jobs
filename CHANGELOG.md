@@ -7,6 +7,15 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
 
 ## [Sin publicar]
 
+### 👤 Perfil completo y editable (Etapa A2 de la versión 1.3)
+- **Editor del CV con 6 secciones:** datos, contacto y **enlaces**; profesión, titular, resumen y **otras profesiones u oficios**; experiencia; **educación y títulos** (uno o más); **certificaciones y cursos**; habilidades, **idiomas** y **tecnologías y palabras clave**. Antes no había dónde editar educación, certificaciones, idiomas ni otros enlaces.
+- **Enlaces con nombre** (LinkedIn, Portafolio, GitHub, Sitio web, Behance, Registro de Prestadores de Salud…) en lugar de un único campo de LinkedIn. Al subir el CV se detectan todos los enlaces, aunque estén escritos sin "https://". El LinkedIn de perfiles antiguos se conserva.
+- **Habilidades como etiquetas:** el campo "separado por coma" borraba la coma al escribir y no permitía agregar una segunda habilidad. Ahora se escribe y se presiona Enter o coma.
+- **Palabras clave sugeridas por área:** informática, salud, educación, comercio, logística, administración, construcción, gastronomía y sector público, según la profesión, los cargos y los títulos del CV.
+- **Actualizar el perfil desde el chat con Opi:** frases como "agrega SAP a mis habilidades", "tengo un diplomado en gestión", "hablo inglés intermedio", "mi linkedin es …" o "también soy técnico en administración". Opi muestra el cambio y lo guarda solo si pulsas **"Sí, guardar en mi perfil"**. No usa la IA ni descuenta cupo, y el editor se actualiza al instante.
+- **Vista previa y PDF del CV** con todos los enlaces, certificaciones y otras profesiones.
+- La evaluación y el ordenamiento con IA consideran también las otras profesiones, las palabras clave y las certificaciones.
+
 ### 🎯 Búsqueda precisa, postular en un clic y fuente visible (Etapa A de la versión 1.3)
 - **Búsqueda precisa** (`relevance_score` en `backend/app/utils/keywords.py`): las palabras del **área** ("informática", "enfermería", "bodega") deben aparecer siempre; las palabras de cargo genéricas ("encargado", "jefe", "analista") solo suman puntos; el cargo pesa más que la descripción y los resultados se ordenan por relevancia. "encargado informática" ya no trae "Encargado de Aseo", psicólogos ni TENS.
 - **Empleos Públicos:** se quitó la regla que aceptaba cualquier convocatoria con la palabra "datos" (los bancos de talento empiezan con "(Base de datos)"). "TI" solo cuenta en frases como "soporte TI", porque suelto chocaba con "para ti".

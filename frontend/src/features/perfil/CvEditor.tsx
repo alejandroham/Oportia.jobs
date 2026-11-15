@@ -1,8 +1,13 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import type { CandidateProfile } from '../../types';
 import { CvExperienceSection } from './CvExperienceSection';
 import { CvSkillsSection } from './CvSkillsSection';
 import { CvPreviewModal } from './CvPreviewModal';
+import { CvEducationSection } from './CvEducationSection';
+import { CvLinksSection } from './CvLinksSection';
+import { CvLanguagesSection } from './CvLanguagesSection';
+import { TagInput } from '../../components/ui/TagInput';
+import { getProfileLinks, suggestKeywords } from '../../utils/profileKeywords';
 import { Upload, Eye, CheckCircle2, Circle, ChevronDown, ChevronUp, Save, Loader2 } from 'lucide-react';
 import { api } from '../../api';
 import { useToast } from '../../components/Toast';
@@ -13,10 +18,16 @@ interface CvEditorProps {
 }
 
 export const CvEditor: React.FC<CvEditorProps> = ({ profile, onProfileUpdated }) => {
-  const [formData, setFormData] = useState<CandidateProfile>(profile);
+  const withLinks = (p: CandidateProfile): CandidateProfile => ({ ...p, links: getProfileLinks(p) });
+  const [formData, setFormData] = useState<CandidateProfile>(() => withLinks(profile));
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
-    personal: true, summary: false, experience: false, skills: false
+    personal: true, summary: false, experience: false, education: false, certifications: false, skills: false
   });
+  // Si el perfil cambia desde fuera (por ejemplo, Opi agrega una habilidad desde el chat), refrescar.
+  useEffect(() => {
+    setFormData(withLinks(profile));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profile.updated_at]);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const toast = useToast();
@@ -26,7 +37,15 @@ export const CvEditor: React.FC<CvEditorProps> = ({ profile, onProfileUpdated })
   };
 
   const handleSave = () => {
-    onProfileUpdated({ ...formData, updated_at: new Date().toISOString() });
+    const links = (formData.links || []).filter((l) => l.url.trim());
+    onProfileUpdated({
+      ...formData,
+      links,
+      // Compatibilidad: el primer enlace de LinkedIn también queda en linkedin_url.
+      linkedin_url: links.find((l) => l.label === 'LinkedIn')?.url,
+      education: (formData.education || []).filter((e) => e.degree || e.field_of_study || e.institution),
+      updated_at: new Date().toISOString()
+    });
     toast.success('Perfil y CV guardados en tu navegador');
   };
 
@@ -38,7 +57,7 @@ export const CvEditor: React.FC<CvEditorProps> = ({ profile, onProfileUpdated })
     try {
       const res = await api.uploadCV(file);
       if (res.profile) {
-        setFormData(res.profile);
+        setFormData(withLinks(res.profile));
         onProfileUpdated(res.profile);
         toast.success('CV procesado y perfil actualizado exitosamente');
       }
@@ -115,7 +134,7 @@ export const CvEditor: React.FC<CvEditorProps> = ({ profile, onProfileUpdated })
                 <Circle className="w-4 h-4 text-gray-300" />
               )}
               <span className="text-sm font-bold text-gray-900 dark:text-gray-100">
-                1. Datos Personales y Contacto
+                1. Datos personales, contacto y enlaces
               </span>
             </div>
             {openSections.personal ? <ChevronUp className="w-4 h-4 text-gray-400" /> : <ChevronDown className="w-4 h-4 text-gray-400" />}
@@ -151,16 +170,7 @@ export const CvEditor: React.FC<CvEditorProps> = ({ profile, onProfileUpdated })
                   className="w-full p-2 rounded-xl border border-gray-200 dark:border-ink-line bg-gray-50 dark:bg-ink-raised text-gray-900 dark:text-gray-100"
                 />
               </div>
-              <div>
-                <label className="block text-gray-600 dark:text-ink-200 font-medium mb-1">Perfil de LinkedIn (URL)</label>
-                <input
-                  type="url"
-                  value={formData.linkedin_url || ''}
-                  onChange={(e) => setFormData({ ...formData, linkedin_url: e.target.value })}
-                  placeholder="https://linkedin.com/in/..."
-                  className="w-full p-2 rounded-xl border border-gray-200 dark:border-ink-line bg-gray-50 dark:bg-ink-raised text-gray-900 dark:text-gray-100"
-                />
-              </div>
+              <CvLinksSection links={formData.links || []} onChange={(links) => setFormData({ ...formData, links })} />
             </div>
           )}
         </div>
@@ -179,7 +189,7 @@ export const CvEditor: React.FC<CvEditorProps> = ({ profile, onProfileUpdated })
                 <Circle className="w-4 h-4 text-gray-300" />
               )}
               <span className="text-sm font-bold text-gray-900 dark:text-gray-100">
-                2. Titular y Resumen Profesional
+                2. Profesión, titular y resumen
               </span>
             </div>
             {openSections.summary ? <ChevronUp className="w-4 h-4 text-gray-400" /> : <ChevronDown className="w-4 h-4 text-gray-400" />}
@@ -209,6 +219,14 @@ export const CvEditor: React.FC<CvEditorProps> = ({ profile, onProfileUpdated })
                   />
                 </div>
               </div>
+
+              <TagInput
+                label="Otras profesiones u oficios (opcional)"
+                values={formData.secondary_professions || []}
+                onChange={(secondary_professions) => setFormData({ ...formData, secondary_professions })}
+                placeholder="Ej. Técnico en Administración, Guardia de seguridad"
+                helpText="Si tienes más de una profesión, Oportia también buscará ofertas para ellas."
+              />
 
               <div>
                 <label className="block text-gray-600 dark:text-ink-200 font-medium mb-1">Resumen Ejecutivo</label>
@@ -254,7 +272,34 @@ export const CvEditor: React.FC<CvEditorProps> = ({ profile, onProfileUpdated })
           )}
         </div>
 
-        {/* BLOQUE 4: Habilidades Técnicas y Blandas */}
+        {/* BLOQUE 4: Educación y títulos */}
+        <EditorSection
+          id="education"
+          title={`4. Educación y títulos (${formData.education?.length || 0})`}
+          complete={isEducationComplete}
+          open={openSections.education}
+          onToggle={() => toggleSection('education')}
+        >
+          <CvEducationSection education={formData.education || []} onChange={(education) => setFormData({ ...formData, education })} />
+        </EditorSection>
+
+        {/* BLOQUE 5: Certificaciones y cursos */}
+        <EditorSection
+          id="certifications"
+          title={`5. Certificaciones y cursos (${formData.certifications?.length || 0})`}
+          complete={(formData.certifications?.length || 0) > 0}
+          open={openSections.certifications}
+          onToggle={() => toggleSection('certifications')}
+        >
+          <TagInput
+            label="Certificaciones, cursos y capacitaciones"
+            values={formData.certifications || []}
+            onChange={(certifications) => setFormData({ ...formData, certifications })}
+            placeholder="Ej. Curso IAAS, Licencia clase D, Certificación ITIL, Curso SENCE de Excel"
+          />
+        </EditorSection>
+
+        {/* BLOQUE 6: Habilidades, idiomas y palabras clave */}
         <div className="rounded-2xl border border-gray-200/80 dark:border-ink-border bg-white dark:bg-ink-surface overflow-hidden shadow-xs">
           <button
             type="button"
@@ -268,7 +313,7 @@ export const CvEditor: React.FC<CvEditorProps> = ({ profile, onProfileUpdated })
                 <Circle className="w-4 h-4 text-gray-300" />
               )}
               <span className="text-sm font-bold text-gray-900 dark:text-gray-100">
-                4. Habilidades y Competencias ({formData.technical_skills?.length || 0})
+                6. Habilidades, idiomas y palabras clave ({formData.technical_skills?.length || 0})
               </span>
             </div>
             {openSections.skills ? <ChevronUp className="w-4 h-4 text-gray-400" /> : <ChevronDown className="w-4 h-4 text-gray-400" />}
@@ -282,6 +327,18 @@ export const CvEditor: React.FC<CvEditorProps> = ({ profile, onProfileUpdated })
                 onChangeTechnical={(technical_skills) => setFormData({ ...formData, technical_skills })}
                 onChangeSoft={(soft_skills) => setFormData({ ...formData, soft_skills })}
               />
+              <div className="mt-4 space-y-4">
+                <CvLanguagesSection languages={formData.languages || {}} onChange={(languages) => setFormData({ ...formData, languages })} />
+                <TagInput
+                  label="Tecnologías y palabras clave"
+                  values={formData.keywords || []}
+                  onChange={(keywords) => setFormData({ ...formData, keywords })}
+                  placeholder="Términos con los que te buscarían para un cargo (ej. Soporte TI, Curaciones, SAP)"
+                  suggestions={suggestKeywords(formData)}
+                  suggestionsLabel="Sugeridas para tu área"
+                  helpText="Se usan para buscar y ordenar ofertas según tu perfil."
+                />
+              </div>
             </div>
           )}
         </div>
@@ -296,3 +353,34 @@ export const CvEditor: React.FC<CvEditorProps> = ({ profile, onProfileUpdated })
     </div>
   );
 };
+
+/** Bloque plegable del editor. */
+const EditorSection: React.FC<{
+  id: string;
+  title: string;
+  complete: boolean;
+  open: boolean;
+  onToggle: () => void;
+  children: React.ReactNode;
+}> = ({ id, title, complete, open, onToggle, children }) => (
+  <div className="rounded-2xl border border-gray-200/80 dark:border-ink-border bg-white dark:bg-ink-surface overflow-hidden shadow-xs">
+    <button
+      type="button"
+      onClick={onToggle}
+      aria-expanded={open}
+      aria-controls={`cv-section-${id}`}
+      className="w-full p-4 flex items-center justify-between text-left hover:bg-gray-50/50 dark:hover:bg-ink-raised/40 transition"
+    >
+      <div className="flex items-center gap-2.5">
+        {complete ? <CheckCircle2 className="w-4 h-4 text-emerald-500" /> : <Circle className="w-4 h-4 text-gray-300" />}
+        <span className="text-sm font-bold text-gray-900 dark:text-gray-100">{title}</span>
+      </div>
+      {open ? <ChevronUp className="w-4 h-4 text-gray-400" /> : <ChevronDown className="w-4 h-4 text-gray-400" />}
+    </button>
+    {open && (
+      <div id={`cv-section-${id}`} className="p-4 pt-0 border-t border-gray-100 dark:border-ink-border animate-fade-in">
+        <div className="pt-4">{children}</div>
+      </div>
+    )}
+  </div>
+);

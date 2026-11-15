@@ -24,6 +24,7 @@ import { OpiAvatar } from './ui/OpiAvatar';
 import { useAppStore } from '../state/useAppStore';
 import { SharedAICard } from './settings/SharedAICard';
 import { saveClientStore, getClientStore } from '../utils/storage';
+import { parseProfileCommand, describeChange, applyProfileChanges, type ProfileChange } from '../utils/profileCommands';
 
 interface ChatMessage {
   id: string;
@@ -38,6 +39,9 @@ interface ChatMessage {
   };
   learnedInsights?: string[];
   learnedDealBreakers?: string[];
+  /** Cambio al perfil propuesto por Opi; se guarda solo si la persona lo confirma. */
+  profileChanges?: ProfileChange[];
+  profileChangesStatus?: 'pending' | 'applied' | 'dismissed';
 }
 
 interface MemoryChatProps {
@@ -160,7 +164,50 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
     toast.info('Historial y contexto del chat reiniciados');
   };
 
+  // Confirmar o descartar un cambio de perfil propuesto en el chat.
+  const resolveProfileChange = async (msgId: string, accept: boolean) => {
+    const target = messages.find((m) => m.id === msgId);
+    if (!target?.profileChanges) return;
+    if (accept) {
+      const { profile, setProfile } = useAppStore.getState();
+      if (!profile) {
+        toast.error('Primero sube tu CV en Mi perfil.');
+        return;
+      }
+      await setProfile(applyProfileChanges(profile, target.profileChanges));
+      toast.success('Perfil actualizado', 'Puedes revisarlo en Mi perfil.');
+    }
+    const next = messages.map((m) => (m.id === msgId ? { ...m, profileChangesStatus: accept ? ('applied' as const) : ('dismissed' as const) } : m));
+    setMessages(next);
+    saveClientStore('oportia_chat_history', next);
+  };
+
   const handleSend = async (textToSend?: string) => {
+    // "Agrega X a mis habilidades", "tengo un diplomado en…", "hablo inglés…": se resuelve aquí,
+    // sin IA, y Opi pide confirmación antes de modificar el perfil.
+    const commandText = (textToSend || inputValue).trim();
+    const changes = commandText ? parseProfileCommand(commandText) : [];
+    if (changes.length && !isLoading) {
+      const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const next: ChatMessage[] = [
+        ...messages,
+        { id: Math.random().toString(36).substring(2, 9), role: 'user', content: commandText, timestamp: now },
+        {
+          id: Math.random().toString(36).substring(2, 9),
+          role: 'assistant',
+          content: `Entendí este cambio para tu perfil:\n• ${changes.map(describeChange).join('\n• ')}\n\n¿Lo guardo?`,
+          timestamp: now,
+          profileChanges: changes,
+          profileChangesStatus: 'pending'
+        }
+      ];
+      setMessages(next);
+      saveClientStore('oportia_chat_history', next);
+      setInputValue('');
+      setTimeout(() => scrollToBottom('smooth'), 50);
+      return;
+    }
+
     if (!hasKey) {
       if (onOpenSettings) onOpenSettings();
       toast.error('Activa la IA gratuita de Oportia o conecta tu clave en Ajustes para conversar con Opi.');
@@ -410,6 +457,33 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
                       {msg.timestamp}
                     </div>
                   </div>
+
+                  {msg.profileChanges && (
+                    <div className="w-full max-w-[88%] sm:max-w-[80%] flex flex-wrap items-center gap-2">
+                      {msg.profileChangesStatus === 'pending' ? (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => resolveProfileChange(msg.id, true)}
+                            className="min-h-[40px] px-3.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
+                          >
+                            Sí, guardar en mi perfil
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => resolveProfileChange(msg.id, false)}
+                            className="min-h-[40px] px-3.5 rounded-xl border border-gray-300 dark:border-ink-line text-xs font-semibold text-ink dark:text-white hover:bg-gray-50 dark:hover:bg-ink-hover cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
+                          >
+                            No, dejarlo así
+                          </button>
+                        </>
+                      ) : (
+                        <span className="text-xs font-semibold text-gray-600 dark:text-ink-200" role="status">
+                          {msg.profileChangesStatus === 'applied' ? '✓ Guardado en tu perfil' : 'No se hicieron cambios'}
+                        </span>
+                      )}
+                    </div>
+                  )}
 
                   {/* Detected STAR Story Badge Card */}
                   {msg.learnedStory && (
