@@ -7,6 +7,8 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
 
 ## [Sin publicar]
 
+## [1.2.0] - 2026-11-14 — *Oportia para todas las áreas: portada, búsqueda, IA gratuita y modo oscuro legible*
+
 ### 🤖 Opi con personalidad: 6 expresiones
 - **Nuevas ilustraciones de Opi** en `frontend/public/opi/` (WebP con fondo transparente, versiones de 512 px y 128 px): `saludando`, `curioso`, `pensando`, `celebrando`, `advertencia` y `durmiendo`.
 - **Nuevo componente `OpiAvatar`** (`frontend/src/components/ui/OpiAvatar.tsx`) con la propiedad `expression`. Elige automáticamente la versión liviana para avatares pequeños e incluye texto alternativo accesible.
@@ -74,7 +76,14 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
 - **Logo e imágenes de Opi rotos al usar la app desde el backend** (`start_app.sh`, puerto 8000): el middleware que agrega el prefijo `/api` reescribía también `/oportia-logo.svg` y `/opi/*.webp`, y el servidor respondía con la página HTML. Ahora solo se reescriben las rutas reales de la API; los archivos del frontend compilado y las rutas de la app se sirven tal cual, y se bloquean rutas fuera de `frontend/dist`. Tests nuevos que no dependen de tener el frontend compilado.
 - **CV adaptado con `\n` visibles:** si el texto llega con saltos de línea escapados, ahora se muestran como saltos de línea reales.
 
+### ⚖️ Licencia y créditos
+- **Cambio de MIT a Apache 2.0** (`LICENSE` con el texto oficial). El nuevo archivo `NOTICE` acredita la autoría de Alejandro Ham y aclara que la licencia no permite usar los nombres "Oportia" ni "Opi" ni sus logotipos e ilustraciones (sección 6). `license` y `author` en ambos `package.json`; el pie de página enlaza a la licencia.
+- **Créditos:** `CONTRIBUTORS.md` y sección "Créditos" del README: Alejandro Ham como autor; Gemini (Google Antigravity) y Claude (Claude Code) como asistentes de desarrollo.
+
 ### 📝 Documentación
+- **Manual de usuario reescrito** (`docs/MANUAL_DE_USUARIO.md`): guía paso a paso en segunda persona, con 18 capturas de una persona de demostración ficticia de un área no TI (Técnico en Enfermería), preguntas frecuentes (cómo guardar en PDF, "IA descansando", búsquedas sin resultados) y privacidad.
+- **Capturas automáticas:** `npm run docs:screenshots` (`frontend/e2e/manual-screenshots.spec.ts`) regenera las imágenes de `docs/manual/img/` con datos y respuestas simuladas, sin Internet ni clave de IA.
+- **README:** versión 1.2.0, licencia Apache 2.0, portada, áreas laborales, IA gratuita y su configuración en el despliegue, pestañas reales de Aprender, conteo de pruebas actualizado y créditos.
 - **README:** se corrigieron afirmaciones que no coincidían con el código. Ahora indica que los datos se envían al proveedor de IA elegido, advierte sobre los endpoints heredados que aún usan `data/`, lista los portales de empleo realmente implementados, nombra las pestañas reales de cada postulación y aclara que el servidor MCP es solo para instalación local.
 
 ## [1.1.0] - 2026-11-13 — *Consolidación de Arquitectura Local-First, Calidad, Accesibilidad y CI*

@@ -1,7 +1,7 @@
 # Política de Privacidad y Soberanía Digital — Oportia Jobs IA
 
-**Última actualización:** 13 de noviembre de 2026  
-**Versión de política:** 1.1.0  
+**Última actualización:** 14 de noviembre de 2026  
+**Versión de política:** 1.2.0  
 **Marco normativo:** Ley N° 21.719 de Protección de Datos Personales (Chile) y principios de *Privacy by Design*.
 
 ---
