@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useAppStore } from '../../state/useAppStore';
 import type { CandidateProfile, JobPosting, LLMSettings, CompetencyDiagnosticItem, LearningCourseResource, LearningPath } from '../../types';
 import { GapsTab } from './GapsTab';
 import { CoursesTab } from './CoursesTab';
@@ -36,7 +37,9 @@ export const LearnPage: React.FC<LearnPageProps> = ({ profile }) => {
   const loadDiagnostic = async () => {
     setIsLoadingDiagnostic(true);
     try {
-      const data = await api.getCoachDiagnostic();
+      // Diagnóstico con TU perfil (desde el navegador); el servidor no guarda ni reutiliza nada.
+      const { profile, jobs } = useAppStore.getState();
+      const data = profile ? await api.getCoachDiagnostic(profile, jobs.filter((j) => j.status && j.status !== 'discovered')) : [];
       setCompetencies(data || []);
     } catch (e) {
       console.warn('Error al cargar competencias:', e);
@@ -63,8 +66,12 @@ export const LearnPage: React.FC<LearnPageProps> = ({ profile }) => {
 
   const loadPaths = async () => {
     try {
-      const data = await api.getLearningPaths();
-      setLearningPaths(data || []);
+      // Rutas guardadas en el navegador + (solo en instalación local) las del servidor.
+      const local = useAppStore.getState().coachData.learningPaths || [];
+      const remote = (await api.getLearningPaths().catch(() => [])) || [];
+      const byId = new Map<string, LearningPath>();
+      [...remote, ...local].forEach((p) => byId.set(p.id || p.title, p));
+      setLearningPaths([...byId.values()]);
     } catch (e) {
       console.warn('Error al cargar rutas:', e);
     }

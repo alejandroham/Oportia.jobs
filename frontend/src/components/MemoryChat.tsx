@@ -21,6 +21,7 @@ import type { UserPreferences, LLMSettings } from '../types';
 import { api, getHumanErrorMessage } from '../api';
 import { useToast } from './Toast';
 import { OpiAvatar } from './ui/OpiAvatar';
+import { useAppStore } from '../state/useAppStore';
 import { SharedAICard } from './settings/SharedAICard';
 import { saveClientStore, getClientStore } from '../utils/storage';
 
@@ -194,7 +195,9 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
     setTimeout(() => scrollToBottom('smooth'), 50);
 
     try {
-      const res = await api.chatMemory(text, history);
+      // Se envían el perfil y las preferencias del navegador: el servidor no guarda ni lee
+      // "lo que Opi sabe de ti" en su disco (antes los mezclaba entre personas).
+      const res = await api.chatMemory(text, history, useAppStore.getState().profile ?? undefined, preferences ?? undefined);
 
       const assistantMsg: ChatMessage = {
         id: Math.random().toString(36).substring(2, 9),

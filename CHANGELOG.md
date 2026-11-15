@@ -7,6 +7,13 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
 
 ## [Sin publicar]
 
+### 🔒 Respaldo y privacidad (Etapa 0 de la versión 1.3)
+- **Respaldo con contraseña que no cifraba y guardaba la contraseña:** la pantalla de Privacidad pasaba los datos en otro orden del que esperaba la función. La contraseña quedaba escrita en el archivo como "datos de Aprender", el archivo salía **sin cifrar** (`.json`) aunque el aviso decía "AES-256" y Aprender no se respaldaba. Ahora el archivo `.oportia` se cifra con tu contraseña y no la contiene; se agregó un campo de pista opcional.
+- **Respaldo completo (formato 1.2):** CV y perfil (con todos los títulos), qué buscas, logros STAR, lo que Opi sabe de ti, ofertas, postulaciones, Aprender (brechas y rutas) y la conversación con Opi. Las claves de IA no se incluyen, a propósito. Se siguen leyendo los respaldos antiguos.
+- **Restaurar respaldos cifrados:** antes fallaban siempre; ahora se pide la contraseña (con la pista) y se avisa si es incorrecta. Aprender y el chat también se restauran (antes `coach_data` se perdía).
+- **Modo sin estado en el servidor** (`STATELESS`, automático en Vercel): el chat con Opi leía y guardaba "lo que Opi sabe de ti" en el disco compartido del servidor, y podía devolver datos de otra persona. Lo mismo ocurría con "Mis brechas", las rutas de aprendizaje, la práctica de entrevista y las ofertas importadas por URL. La migración de datos antiguos queda desactivada en Vercel. Ahora el chat, Aprender y las rutas usan tu perfil desde el navegador, y las rutas se guardan en el navegador (entran en el respaldo).
+- Tests nuevos: ida y vuelta del respaldo, contraseña ausente del archivo, respaldos antiguos y 5 pruebas que verifican que los datos de otra persona en el disco del servidor nunca se entregan ni se modifican.
+
 ### ☁️ Despliegue
 - **Tiempo máximo de 60 s para el backend en Vercel** (`vercel.json` → `functions.api/index.py.maxDuration`). La evaluación del Comité tarda unos 34 s y adaptar CV y carta hace hasta 4 llamadas a la IA; antes dependía del valor por defecto de la cuenta.
 

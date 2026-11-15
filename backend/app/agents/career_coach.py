@@ -182,8 +182,10 @@ class CareerCoach:
     """
 
     # --- CAPACIDAD A: DIAGNÓSTICO DE COMPETENCIAS ---
-    def generate_or_get_diagnostic(self, profile: CandidateProfile, target_role: Optional[str] = None) -> List[CompetencyDiagnosticItem]:
-        existing = db.get_competencies()
+    def generate_or_get_diagnostic(self, profile: CandidateProfile, target_role: Optional[str] = None, persist: bool = True) -> List[CompetencyDiagnosticItem]:
+        # persist=False: sin estado. No se reutiliza ni se guarda nada del disco del servidor
+        # (antes se devolvían competencias guardadas por OTRA persona).
+        existing = db.get_competencies() if persist else []
         if existing:
             return existing
 
@@ -220,7 +222,8 @@ class CareerCoach:
                 )
             )
 
-        db.save_competencies(items)
+        if persist:
+            db.save_competencies(items)
         return items
 
     def sync_gaps_from_evaluation(self, evaluation: FitEvaluation, job_title: str) -> List[CompetencyDiagnosticItem]:
@@ -282,7 +285,7 @@ class CareerCoach:
         return results
 
     # --- CAPACIDAD C: GENERADOR DE RUTAS DE APRENDIZAJE ---
-    def generate_learning_path(self, target_role: str, gaps: List[str], profile: CandidateProfile) -> LearningPath:
+    def generate_learning_path(self, target_role: str, gaps: List[str], profile: CandidateProfile, persist: bool = True) -> LearningPath:
         """Generates an organized, progressive learning path structured in logical milestones."""
         matched_resources = []
         for gap in gaps[:4]:
@@ -403,7 +406,8 @@ GENERA UNA RUTA EN FORMATO JSON CON ESTA ESTRUCTURA:
             progress_percentage=0
         )
 
-        db.save_learning_path(learning_path)
+        if persist:
+            db.save_learning_path(learning_path)
         return learning_path
 
     # --- CAPACIDAD D: TUTOR PERSONAL Y PREPARACIÓN TÉCNICA ---

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useAppStore } from '../../state/useAppStore';
 import type { LearningPath } from '../../types';
 import { Route, Sparkles, CheckCircle2, Circle, Clock, Loader2, ArrowRight } from 'lucide-react';
 import { api } from '../../api';
@@ -23,7 +24,10 @@ export const LearningPathsTab: React.FC<LearningPathsTabProps> = ({
     if (!roleInput.trim()) return;
     setIsGenerating(true);
     try {
-      await api.generateLearningPath(roleInput.trim(), []);
+      const { profile, saveLearningPath } = useAppStore.getState();
+      const path = await api.generateLearningPath(roleInput.trim(), [], profile ?? undefined);
+      // Se guarda en el navegador (y entra en el respaldo); el servidor no la conserva.
+      await saveLearningPath(path);
       toast.success('Ruta de aprendizaje generada con IA');
       onPathsUpdated();
     } catch (e: any) {

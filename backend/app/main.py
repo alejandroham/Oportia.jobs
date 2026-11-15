@@ -401,7 +401,13 @@ def memory_chat(payload: dict):
     prefs_data = payload.get("preferences")
     profile = CandidateProfile(**profile_data) if profile_data else None
     prefs = UserPreferences(**prefs_data) if prefs_data else None
-    save_to_db = not (profile or prefs)
+    if settings.STATELESS:
+        # Nunca leer ni guardar "lo que Opi sabe" en el disco compartido del servidor.
+        save_to_db = False
+        profile = profile or CandidateProfile()
+        prefs = prefs or UserPreferences()
+    else:
+        save_to_db = not (profile or prefs)
 
     result = preference_learner.chat_and_learn(
         message=message,
@@ -712,7 +718,8 @@ def import_job_from_url(data: dict):
         source="url_import"
     )
 
-    db.save_jobs([job])
+    if not settings.STATELESS:
+        db.save_jobs([job])
     return {"message": "Oferta importada exitosamente", "job": job}
 
 @app.post("/api/jobs/evaluate", response_model=FitEvaluation, dependencies=[Depends(ai_rate_limiter)])
@@ -924,6 +931,9 @@ def evaluate_interview_answer(data: dict):
     if not question or not answer:
         raise HTTPException(status_code=400, detail="Pregunta y respuesta requeridas")
     eval_res = interview_coach.evaluate_mock_answer(question, answer)
+    if settings.STATELESS:
+        # El aprendizaje automático de logros escribía en el disco compartido; sin estado se omite.
+        return eval_res
     try:
         preference_learner.learn_from_star_answer(question, answer, eval_res, company=company)
     except Exception as e:
@@ -940,6 +950,10 @@ def get_coach_diagnostic(payload: Optional[dict] = None):
             profile = CandidateProfile(**payload["profile"])
         except Exception:
             profile = None
+    if settings.STATELESS:
+        if not profile:
+            return []
+        return career_coach.generate_or_get_diagnostic(profile, persist=False)
     if not profile:
         profile = db.get_profile()
     return career_coach.generate_or_get_diagnostic(profile)
@@ -986,11 +1000,17 @@ def generate_coach_learning_path(data: dict):
     target_role = data.get("target_role", "Especialista TI")
     gaps = data.get("gaps", [])
     profile_data = data.get("profile")
+    if settings.STATELESS:
+        profile = CandidateProfile(**profile_data) if profile_data else CandidateProfile()
+        return career_coach.generate_learning_path(target_role, gaps, profile, persist=False)
     profile = CandidateProfile(**profile_data) if profile_data else db.get_profile()
     return career_coach.generate_learning_path(target_role, gaps, profile)
 
 @app.get("/api/coach/learning-paths", response_model=List[LearningPath])
 def get_coach_learning_paths():
+    # Sin estado: las rutas viven en el navegador (coachData.learningPaths).
+    if settings.STATELESS:
+        return []
     return db.get_learning_paths()
 
 @app.put("/api/coach/learning-paths/{path_id}/milestones/{step_number}", response_model=LearningPath)
@@ -1116,6 +1136,9 @@ def get_legacy_export():
     Transfers pre-existing server disk data to the client's browser (IndexedDB) once.
     Renames the local legacy files to .bak after export so they are never read again.
     """
+    if settings.STATELESS:
+        # En Vercel no hay datos "antiguos" propios: el disco es compartido y no debe entregarse.
+        return {"found": False}
     profile_path = settings.PROFILE_FILE
     if not profile_path.exists():
         return {"found": False}

@@ -24,6 +24,10 @@ def _unmask_key(val: str) -> str:
 
 # Load .env if present
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
+# Modo sin estado: en Vercel (o con OPORTIA_STATELESS=1) el servidor NUNCA lee ni guarda datos
+# personales en disco; todo viaja desde el navegador. En una instalación local personal sí usa data/.
+STATELESS = bool(os.environ.get("VERCEL") or os.environ.get("OPORTIA_STATELESS"))
+
 if os.environ.get("VERCEL"):
     DATA_DIR = Path("/tmp/data")
 else:
@@ -63,6 +67,7 @@ class Settings:
     OPENAI_MODEL: str = os.getenv("OPENAI_MODEL", DEFAULT_OPENAI_MODEL)
     CLAUDE_MODEL: str = os.getenv("CLAUDE_MODEL", DEFAULT_CLAUDE_MODEL)
     ALLOWED_ORIGINS: str = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000")
+    STATELESS: bool = STATELESS
 
     def __init__(self):
         self.UPLOADS_DIR.mkdir(exist_ok=True)
