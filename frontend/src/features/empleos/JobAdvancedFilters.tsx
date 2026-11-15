@@ -31,9 +31,9 @@ export const JobAdvancedFilters: React.FC<JobAdvancedFiltersProps> = ({
   const communes = currentRegionObj ? currentRegionObj.communes : [];
 
   return (
-    <div className={`p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-gray-200/90 dark:border-zinc-800 shadow-sm space-y-4 animate-fade-in ${className}`}>
-      <div className="flex items-center justify-between border-b border-gray-100 dark:border-zinc-800 pb-2.5">
-        <h4 className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+    <div className={`p-4 rounded-2xl bg-white dark:bg-ink-surface border border-gray-200/90 dark:border-ink-border shadow-sm space-y-4 animate-fade-in ${className}`}>
+      <div className="flex items-center justify-between border-b border-gray-100 dark:border-ink-border pb-2.5">
+        <h4 className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-ink-200">
           Filtros de Búsqueda Avanzada
         </h4>
         <button
@@ -49,8 +49,8 @@ export const JobAdvancedFilters: React.FC<JobAdvancedFiltersProps> = ({
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-xs">
         {/* Región */}
         <div className="space-y-1">
-          <label className="block text-gray-600 dark:text-gray-400 font-medium flex items-center gap-1">
-            <MapPin className="w-3 h-3 text-[#20A88A]" />
+          <label className="block text-gray-600 dark:text-ink-200 font-medium flex items-center gap-1">
+            <MapPin className="w-3 h-3 text-brand-700 dark:text-brand-300" />
             Región de Chile
           </label>
           <select
@@ -60,7 +60,7 @@ export const JobAdvancedFilters: React.FC<JobAdvancedFiltersProps> = ({
               onRegionChange(reg);
               onCommuneChange('');
             }}
-            className="w-full px-2.5 py-1.5 rounded-xl bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 text-gray-900 dark:text-gray-100 focus:outline-none"
+            className="w-full px-2.5 py-1.5 rounded-xl bg-gray-50 dark:bg-ink-raised border border-gray-200 dark:border-ink-line text-gray-900 dark:text-gray-100 focus:outline-none"
           >
             <option value="">Todas las regiones</option>
             {CHILE_REGIONS.map((r) => (
@@ -71,14 +71,14 @@ export const JobAdvancedFilters: React.FC<JobAdvancedFiltersProps> = ({
 
         {/* Comuna */}
         <div className="space-y-1">
-          <label className="block text-gray-600 dark:text-gray-400 font-medium">
+          <label className="block text-gray-600 dark:text-ink-200 font-medium">
             Comuna
           </label>
           <select
             value={selectedCommune}
             disabled={!selectedRegion}
             onChange={(e) => onCommuneChange(e.target.value)}
-            className="w-full px-2.5 py-1.5 rounded-xl bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 text-gray-900 dark:text-gray-100 disabled:opacity-50 focus:outline-none"
+            className="w-full px-2.5 py-1.5 rounded-xl bg-gray-50 dark:bg-ink-raised border border-gray-200 dark:border-ink-line text-gray-900 dark:text-gray-100 disabled:opacity-50 focus:outline-none"
           >
             <option value="">Todas las comunas</option>
             {communes.map((c) => (
@@ -89,8 +89,8 @@ export const JobAdvancedFilters: React.FC<JobAdvancedFiltersProps> = ({
 
         {/* Salario mínimo aproximado */}
         <div className="space-y-1">
-          <label className="block text-gray-600 dark:text-gray-400 font-medium flex items-center gap-1">
-            <DollarSign className="w-3 h-3 text-[#20A88A]" />
+          <label className="block text-gray-600 dark:text-ink-200 font-medium flex items-center gap-1">
+            <DollarSign className="w-3 h-3 text-brand-700 dark:text-brand-300" />
             Salario mín. (CLP)
           </label>
           <input
@@ -100,20 +100,20 @@ export const JobAdvancedFilters: React.FC<JobAdvancedFiltersProps> = ({
             value={minSalary || ''}
             onChange={(e) => onMinSalaryChange(e.target.value ? Number(e.target.value) : undefined)}
             placeholder="Ej. 1.000.000"
-            className="w-full px-2.5 py-1.5 rounded-xl bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 text-gray-900 dark:text-gray-100 focus:outline-none"
+            className="w-full px-2.5 py-1.5 rounded-xl bg-gray-50 dark:bg-ink-raised border border-gray-200 dark:border-ink-line text-gray-900 dark:text-gray-100 focus:outline-none"
           />
         </div>
 
         {/* Fuente / Portal */}
         <div className="space-y-1">
-          <label className="block text-gray-600 dark:text-gray-400 font-medium flex items-center gap-1">
-            <Globe className="w-3 h-3 text-[#20A88A]" />
+          <label className="block text-gray-600 dark:text-ink-200 font-medium flex items-center gap-1">
+            <Globe className="w-3 h-3 text-brand-700 dark:text-brand-300" />
             Portal de origen
           </label>
           <select
             value={selectedSource}
             onChange={(e) => onSourceChange(e.target.value)}
-            className="w-full px-2.5 py-1.5 rounded-xl bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 text-gray-900 dark:text-gray-100 focus:outline-none"
+            className="w-full px-2.5 py-1.5 rounded-xl bg-gray-50 dark:bg-ink-raised border border-gray-200 dark:border-ink-line text-gray-900 dark:text-gray-100 focus:outline-none"
           >
             <option value="all">Todas las fuentes</option>
             <option value="getonbrd">Get on Board</option>

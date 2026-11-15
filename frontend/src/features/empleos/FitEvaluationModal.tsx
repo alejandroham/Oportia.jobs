@@ -45,7 +45,7 @@ export const FitEvaluationModal: React.FC<FitEvaluationModalProps> = ({
               if (onConnectAI) onConnectAI();
             }}
           />
-          <div className="flex justify-end pt-2 border-t border-gray-100 dark:border-zinc-800">
+          <div className="flex justify-end pt-2 border-t border-gray-100 dark:border-ink-border">
             <Button variant="outline" size="sm" onClick={onClose}>
               Cerrar
             </Button>
@@ -73,7 +73,7 @@ export const FitEvaluationModal: React.FC<FitEvaluationModalProps> = ({
       onClose={onClose}
       title={
         <div className="flex items-center gap-2">
-          <span className="text-xl font-bold text-brand">{evaluation.overall_score}%</span>
+          <span className="text-xl font-bold text-brand-700 dark:text-brand-300">{evaluation.overall_score}%</span>
           <span className="text-base font-bold text-ink dark:text-white">
             Evaluación de Compatibilidad (5 Perspectivas)
           </span>
@@ -97,7 +97,7 @@ export const FitEvaluationModal: React.FC<FitEvaluationModalProps> = ({
             <div className="space-y-3">
               <div className="p-4 rounded-2xl bg-brand-50/50 dark:bg-brand-950/30 border border-brand-200/50 dark:border-brand-800/40 space-y-2">
                 <span className="text-xs uppercase font-bold text-brand-700 dark:text-brand-300 flex items-center gap-1.5">
-                  <Award className="w-4 h-4 text-brand" />
+                  <Award className="w-4 h-4 text-brand-700 dark:text-brand-300" />
                   Síntesis del Director de Empleabilidad
                 </span>
                 <p className="text-xs text-ink dark:text-gray-200 leading-relaxed font-medium">
@@ -111,7 +111,7 @@ export const FitEvaluationModal: React.FC<FitEvaluationModalProps> = ({
               </div>
 
               {evaluation.strengths && evaluation.strengths.length > 0 && (
-                <div className="p-4 rounded-2xl bg-white dark:bg-zinc-800/60 border border-gray-200/80 dark:border-zinc-700/60 space-y-2">
+                <div className="p-4 rounded-2xl bg-white dark:bg-ink-raised/60 border border-gray-200/80 dark:border-ink-line/60 space-y-2">
                   <h4 className="text-xs font-bold text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5">
                     <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                     Fortalezas clave del postulante
@@ -125,7 +125,7 @@ export const FitEvaluationModal: React.FC<FitEvaluationModalProps> = ({
               )}
 
               {evaluation.missing_skills && evaluation.missing_skills.length > 0 && (
-                <div className="p-4 rounded-2xl bg-white dark:bg-zinc-800/60 border border-gray-200/80 dark:border-zinc-700/60 space-y-2">
+                <div className="p-4 rounded-2xl bg-white dark:bg-ink-raised/60 border border-gray-200/80 dark:border-ink-line/60 space-y-2">
                   <h4 className="text-xs font-bold text-amber-700 dark:text-amber-400 flex items-center gap-1.5">
                     <AlertTriangle className="w-4 h-4 text-amber-600" />
                     Habilidades faltantes o por desarrollar
@@ -145,7 +145,7 @@ export const FitEvaluationModal: React.FC<FitEvaluationModalProps> = ({
               {evaluators.map((ev, idx) => (
                 <div
                   key={idx}
-                  className="p-4 rounded-2xl bg-gray-50 dark:bg-zinc-800/50 border border-gray-200/80 dark:border-zinc-700/60 space-y-2"
+                  className="p-4 rounded-2xl bg-gray-50 dark:bg-ink-raised/50 border border-gray-200/80 dark:border-ink-line/60 space-y-2"
                 >
                   <div className="flex items-center justify-between">
                     <div>
@@ -154,7 +154,7 @@ export const FitEvaluationModal: React.FC<FitEvaluationModalProps> = ({
                       </h4>
                       <span className="text-[12px] text-ink-muted block">Peso: {ev.weight_percentage}%</span>
                     </div>
-                    <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-white dark:bg-zinc-700 text-ink dark:text-white shadow-2xs border border-gray-200 dark:border-zinc-600">
+                    <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-white dark:bg-ink-hover text-ink dark:text-white shadow-2xs border border-gray-200 dark:border-ink-line">
                       {ev.score}%
                     </span>
                   </div>
@@ -175,7 +175,7 @@ export const FitEvaluationModal: React.FC<FitEvaluationModalProps> = ({
                 return (
                   <div
                     key={idx}
-                    className="p-3.5 rounded-2xl bg-gray-50 dark:bg-zinc-800/50 border border-gray-200/80 dark:border-zinc-700/60 flex items-start gap-3"
+                    className="p-3.5 rounded-2xl bg-gray-50 dark:bg-ink-raised/50 border border-gray-200/80 dark:border-ink-line/60 flex items-start gap-3"
                   >
                     {isMet ? (
                       <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
@@ -205,12 +205,12 @@ export const FitEvaluationModal: React.FC<FitEvaluationModalProps> = ({
                         )}
                       </div>
                       {req.cv_evidence ? (
-                        <div className="text-xs text-ink-muted dark:text-gray-300 bg-white dark:bg-zinc-900/60 p-2 rounded-xl border border-gray-100 dark:border-zinc-800">
+                        <div className="text-xs text-ink-muted dark:text-gray-300 bg-white dark:bg-ink-surface/60 p-2 rounded-xl border border-gray-100 dark:border-ink-border">
                           <span className="font-semibold text-ink dark:text-gray-200">Evidencia citada de tu CV: </span>
                           <span>"{req.cv_evidence}"</span>
                         </div>
                       ) : (
-                        <p className="text-xs text-ink-muted dark:text-gray-400 italic">
+                        <p className="text-xs text-ink-muted dark:text-ink-200 italic">
                           No se identificó mención explícita de este requerimiento en tu currículum actual.
                         </p>
                       )}
@@ -242,14 +242,14 @@ export const FitEvaluationModal: React.FC<FitEvaluationModalProps> = ({
         </div>
 
         {/* Disclaimer de Transparencia Obligatorio */}
-        <div className="p-3 rounded-2xl bg-surface-alt dark:bg-zinc-800/60 border border-ink-border text-xs text-ink-muted dark:text-gray-400 flex items-start gap-2">
-          <Info className="w-4 h-4 text-brand shrink-0 mt-0.5" />
+        <div className="p-3 rounded-2xl bg-surface-alt dark:bg-ink-raised/60 border border-ink-border text-xs text-ink-muted dark:text-ink-200 flex items-start gap-2">
+          <Info className="w-4 h-4 text-brand-700 shrink-0 mt-0.5 dark:text-brand-300" />
           <span>
             <strong>Es una orientación, no una decisión:</strong> esta evaluación con IA analiza la correspondencia documental entre tu perfil y los requerimientos de la oferta para ayudarte a preparar tu postulación, no reemplaza la decisión humana del empleador.
           </span>
         </div>
 
-        <div className="flex justify-end pt-2 border-t border-gray-100 dark:border-zinc-800">
+        <div className="flex justify-end pt-2 border-t border-gray-100 dark:border-ink-border">
           <Button variant="outline" size="sm" onClick={onClose}>
             Cerrar evaluación
           </Button>

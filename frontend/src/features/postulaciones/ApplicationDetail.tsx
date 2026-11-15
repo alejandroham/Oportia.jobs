@@ -108,7 +108,7 @@ export const ApplicationDetail: React.FC<ApplicationDetailProps> = ({
   return (
     <div className="space-y-5">
       {/* Barra superior: Volver (móvil), Título, Enlace y Eliminar */}
-      <div className="p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-gray-200/80 dark:border-zinc-800 shadow-sm space-y-4">
+      <div className="p-5 rounded-2xl bg-white dark:bg-ink-surface border border-gray-200/80 dark:border-ink-border shadow-sm space-y-4">
         {onBackToList && (
           <button
             type="button"
@@ -140,7 +140,7 @@ export const ApplicationDetail: React.FC<ApplicationDetailProps> = ({
                 target="_blank"
                 rel="noreferrer"
                 aria-label="Abrir oferta original"
-                className="p-2 min-h-[44px] rounded-xl border border-gray-200 dark:border-zinc-700 text-ink-muted hover:text-ink dark:hover:text-white text-xs flex items-center gap-1 transition focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
+                className="p-2 min-h-[44px] rounded-xl border border-gray-200 dark:border-ink-line text-ink-muted hover:text-ink dark:hover:text-white text-xs flex items-center gap-1 transition focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
                 title="Abrir oferta original"
               >
                 <ExternalLink className="w-3.5 h-3.5" />
@@ -164,13 +164,13 @@ export const ApplicationDetail: React.FC<ApplicationDetailProps> = ({
         </div>
 
         {/* Selector de estado directo en 1 clic */}
-        <div className="pt-3 border-t border-gray-100 dark:border-zinc-800 flex flex-wrap items-center justify-between gap-3 text-xs">
+        <div className="pt-3 border-t border-gray-100 dark:border-ink-border flex flex-wrap items-center justify-between gap-3 text-xs">
           <div className="flex items-center gap-2">
             <span className="font-semibold text-gray-500">Estado:</span>
             <select
               value={job.status}
               onChange={(e) => handleStatusChange(e.target.value)}
-              className="px-3 py-1.5 rounded-xl bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 font-semibold text-gray-900 dark:text-gray-100 focus:outline-none"
+              className="px-3 py-1.5 rounded-xl bg-gray-50 dark:bg-ink-raised border border-gray-200 dark:border-ink-line font-semibold text-gray-900 dark:text-gray-100 focus:outline-none"
             >
               <optgroup label="Etapa inicial">
                 <option value="applied_no_response">Guardada / Por preparar</option>
@@ -199,13 +199,13 @@ export const ApplicationDetail: React.FC<ApplicationDetailProps> = ({
       </div>
 
       {/* Navegación por 3 pestañas */}
-      <div className="flex border-b border-gray-200 dark:border-zinc-800 gap-4 text-xs font-semibold">
+      <div className="flex border-b border-gray-200 dark:border-ink-border gap-4 text-xs font-semibold">
         <button
           type="button"
           onClick={() => setActiveTab('docs')}
           className={`pb-3 border-b-2 transition ${
-            activeTab === 'docs' ? 'border-[#20A88A] text-[#20A88A]' : 'border-transparent text-gray-500 hover:text-gray-800'
-          }`}
+            activeTab === 'docs' ? 'border-[#20A88A] text-brand-700' : 'border-transparent text-gray-500 hover:text-gray-800'
+          } dark:text-brand-300`}
         >
           1. Documentos (CV y Carta)
         </button>
@@ -213,8 +213,8 @@ export const ApplicationDetail: React.FC<ApplicationDetailProps> = ({
           type="button"
           onClick={() => setActiveTab('interview')}
           className={`pb-3 border-b-2 transition ${
-            activeTab === 'interview' ? 'border-[#20A88A] text-[#20A88A]' : 'border-transparent text-gray-500 hover:text-gray-800'
-          }`}
+            activeTab === 'interview' ? 'border-[#20A88A] text-brand-700' : 'border-transparent text-gray-500 hover:text-gray-800'
+          } dark:text-brand-300`}
         >
           2. Preparar entrevista
         </button>
@@ -222,8 +222,8 @@ export const ApplicationDetail: React.FC<ApplicationDetailProps> = ({
           type="button"
           onClick={() => setActiveTab('timeline')}
           className={`pb-3 border-b-2 transition ${
-            activeTab === 'timeline' ? 'border-[#20A88A] text-[#20A88A]' : 'border-transparent text-gray-500 hover:text-gray-800'
-          }`}
+            activeTab === 'timeline' ? 'border-[#20A88A] text-brand-700' : 'border-transparent text-gray-500 hover:text-gray-800'
+          } dark:text-brand-300`}
         >
           3. Historial y notas
         </button>
@@ -273,7 +273,7 @@ export const ApplicationDetail: React.FC<ApplicationDetailProps> = ({
               value={outcomeFeedback}
               onChange={(e) => setOutcomeFeedback(e.target.value)}
               placeholder="Ej. Buscaban alguien con más experiencia en Kubernetes, o el proceso se pausó..."
-              className="w-full text-xs p-2.5 rounded-xl border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-ink dark:text-white resize-none focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
+              className="w-full text-xs p-2.5 rounded-xl border border-gray-200 dark:border-ink-line bg-gray-50 dark:bg-ink-raised text-ink dark:text-white resize-none focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
             />
           </div>
           <div className="flex justify-end gap-2 pt-2">

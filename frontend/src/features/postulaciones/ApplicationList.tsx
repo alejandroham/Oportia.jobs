@@ -41,7 +41,7 @@ export const ApplicationList: React.FC<ApplicationListProps> = ({
         return { label: 'Postulada', color: 'bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-950/60 dark:text-sky-300 dark:border-sky-800/40' };
       case 'rejected':
       case 'archived':
-        return { label: 'Cerrada', color: 'bg-gray-100 text-ink-muted border-gray-200 dark:bg-zinc-800 dark:text-gray-400 dark:border-zinc-700' };
+        return { label: 'Cerrada', color: 'bg-gray-100 text-ink-muted border-gray-200 dark:bg-ink-raised dark:text-ink-200 dark:border-ink-line' };
       default:
         return { label: 'Guardada', color: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800/40' };
     }
@@ -58,7 +58,7 @@ export const ApplicationList: React.FC<ApplicationListProps> = ({
           onChange={(e) => setSearchTerm(e.target.value)}
           placeholder="Filtrar por cargo o empresa..."
           aria-label="Filtrar por cargo o empresa"
-          className="w-full pl-9 pr-3 py-2 min-h-[44px] rounded-xl bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 text-xs text-ink dark:text-gray-100 placeholder-ink-muted focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
+          className="w-full pl-9 pr-3 py-2 min-h-[44px] rounded-xl bg-white dark:bg-ink-surface border border-gray-200 dark:border-ink-border text-xs text-ink dark:text-gray-100 placeholder-ink-muted focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
         />
       </div>
 
@@ -77,7 +77,7 @@ export const ApplicationList: React.FC<ApplicationListProps> = ({
                 className={`w-full p-3.5 min-h-[44px] rounded-2xl border transition cursor-pointer text-left focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none ${
                   isSelected
                     ? 'bg-brand-50/60 dark:bg-brand-950/30 border-brand shadow-xs'
-                    : 'bg-white dark:bg-zinc-900 border-gray-200/80 dark:border-zinc-800 hover:border-gray-300 dark:hover:border-zinc-700'
+                    : 'bg-white dark:bg-ink-surface border-gray-200/80 dark:border-ink-border hover:border-gray-300 dark:hover:border-ink-line'
                 }`}
               >
                 <div className="flex items-start justify-between gap-2">
@@ -94,7 +94,7 @@ export const ApplicationList: React.FC<ApplicationListProps> = ({
                   </span>
                 </div>
 
-                <div className="flex items-center justify-between text-xs text-ink-muted pt-2 mt-1 border-t border-gray-100 dark:border-zinc-800/80">
+                <div className="flex items-center justify-between text-xs text-ink-muted pt-2 mt-1 border-t border-gray-100 dark:border-ink-border/80">
                   <span className="truncate">{job.location || 'Chile'}</span>
                   <ChevronRight className="w-3.5 h-3.5 text-ink-muted" />
                 </div>

@@ -58,7 +58,7 @@ export const Navbar: React.FC<NavbarProps> = ({ llmSettings }) => {
           {/* Clean Apple Segmented Navigation without icons (Desktop / Tablet) */}
           <nav
             aria-label="Navegación principal"
-            className="hidden md:flex items-center bg-gray-200/50 dark:bg-zinc-800/60 p-1 rounded-full border border-black/5 dark:border-white/5 space-x-1"
+            className="hidden md:flex items-center bg-gray-200/50 dark:bg-ink-raised/60 p-1 rounded-full border border-black/5 dark:border-white/5 space-x-1"
           >
             {tabs.map((tab) => (
               <NavLink
@@ -68,8 +68,8 @@ export const Navbar: React.FC<NavbarProps> = ({ llmSettings }) => {
                 className={({ isActive }) =>
                   `px-3.5 py-1.5 rounded-full text-xs font-medium transition-all duration-200 whitespace-nowrap cursor-pointer ${
                     isActive
-                      ? 'bg-white dark:bg-zinc-700 text-gray-900 dark:text-white shadow-sm font-semibold'
-                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                      ? 'bg-white dark:bg-ink-hover text-gray-900 dark:text-white shadow-sm font-semibold'
+                      : 'text-gray-600 dark:text-ink-200 hover:text-gray-900 dark:hover:text-white'
                   }`
                 }
               >
@@ -86,7 +86,7 @@ export const Navbar: React.FC<NavbarProps> = ({ llmSettings }) => {
               type="button"
               onClick={() => navigate('/ajustes')}
               aria-label={`Estado de IA: ${statusLabel}. Ir a ajustes.`}
-              className="flex items-center space-x-2 min-h-[44px] px-3.5 py-1.5 rounded-full text-xs font-medium bg-gray-100/90 dark:bg-zinc-800/90 hover:bg-gray-200 dark:hover:bg-zinc-700 text-ink dark:text-gray-200 border border-black/6 dark:border-white/8 transition shadow-xs cursor-pointer active:scale-95 focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
+              className="flex items-center space-x-2 min-h-[44px] px-3.5 py-1.5 rounded-full text-xs font-medium bg-gray-100/90 dark:bg-ink-raised/90 hover:bg-gray-200 dark:hover:bg-ink-hover text-ink dark:text-gray-200 border border-black/[0.06] dark:border-ink-border transition shadow-xs cursor-pointer active:scale-95 focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
               title="Configuración de Inteligencia Artificial (Ajustes)"
             >
               <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${dotColor} ${!hasKey ? 'opacity-70' : ''}`} />
@@ -96,7 +96,7 @@ export const Navbar: React.FC<NavbarProps> = ({ llmSettings }) => {
             {/* Direct Settings Gear Icon Button */}
             <Link
               to="/ajustes"
-              className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-full text-ink-muted hover:text-ink dark:hover:text-white hover:bg-gray-100 dark:hover:bg-zinc-800 border border-black/5 dark:border-white/5 transition shrink-0 cursor-pointer active:scale-95 focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
+              className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-full text-ink-muted hover:text-ink dark:hover:text-white hover:bg-gray-100 dark:hover:bg-ink-raised border border-black/5 dark:border-white/5 transition shrink-0 cursor-pointer active:scale-95 focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
               title="Ajustes de la aplicación y privacidad"
               aria-label="Ir a ajustes de la aplicación y privacidad"
             >
@@ -110,7 +110,7 @@ export const Navbar: React.FC<NavbarProps> = ({ llmSettings }) => {
       {/* Mobile Bottom Navigation Bar (Apple iOS Cupertino Tab Bar — >= 48px touch target, >= 12px text) */}
       <nav
         aria-label="Navegación móvil"
-        className="md:hidden fixed bottom-0 left-0 right-0 z-50 apple-glass border-t border-black/8 dark:border-white/8 px-1 pt-1 flex items-center justify-around shadow-2xl bg-white/95 dark:bg-ink-surface/95"
+        className="md:hidden fixed bottom-0 left-0 right-0 z-50 apple-glass border-t border-black/[0.08] dark:border-ink-border px-1 pt-1 flex items-center justify-around shadow-2xl bg-white/95 dark:bg-ink-surface/95"
         style={{ paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 8px)' }}
       >
         {tabs.map((tab) => {
@@ -124,7 +124,7 @@ export const Navbar: React.FC<NavbarProps> = ({ llmSettings }) => {
               className={({ isActive }) =>
                 `flex flex-col items-center justify-center flex-1 min-h-[48px] py-1 px-1 rounded-xl transition-all duration-200 active:scale-95 cursor-pointer ${
                   isActive
-                    ? 'text-brand-600 dark:text-brand-400 font-bold'
+                    ? 'text-brand-700 dark:text-brand-400 font-bold'
                     : 'text-ink-muted hover:text-ink dark:hover:text-white'
                 }`
               }

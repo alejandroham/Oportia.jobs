@@ -243,15 +243,15 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
   const historyCount = messages.filter((m) => m.id !== 'welcome').length;
 
   return (
-    <div className={`flex flex-col rounded-3xl bg-white/85 dark:bg-zinc-900/85 border border-black/6 dark:border-white/8 shadow-xl backdrop-blur-xl overflow-hidden ${className || 'h-[620px] max-h-[calc(100vh-200px)] min-h-[500px]'}`}>
+    <div className={`flex flex-col rounded-3xl bg-white/[0.85] dark:bg-ink-surface/85 border border-black/[0.06] dark:border-ink-border shadow-xl backdrop-blur-xl overflow-hidden ${className || 'h-[620px] max-h-[calc(100vh-200px)] min-h-[500px]'}`}>
       
       {/* Chat Header */}
-      <div className="px-4 sm:px-5 py-3.5 border-b border-black/6 dark:border-white/8 bg-gray-50/70 dark:bg-zinc-900/70 flex items-center justify-between shrink-0">
+      <div className="px-4 sm:px-5 py-3.5 border-b border-black/[0.06] dark:border-ink-border bg-gray-50/70 dark:bg-ink-surface/70 flex items-center justify-between shrink-0">
         <div className="flex items-center space-x-3">
           <OpiAvatar expression={!hasKey ? 'durmiendo' : isLoading ? 'pensando' : 'saludando'} size={44} />
           <div>
             <div className="flex items-center space-x-2">
-              <h3 className="font-bold text-sm text-[#1D1D1F] dark:text-[#F5F5F7]">
+              <h3 className="font-bold text-sm text-[#1D1D1F] dark:text-gray-100">
                 Opi — Tu copiloto profesional
               </h3>
               {hasKey ? (
@@ -266,7 +266,7 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
                 </span>
               )}
             </div>
-            <p className="text-xs text-[#86868B] dark:text-[#A1A1A6] truncate max-w-[240px] sm:max-w-md">
+            <p className="text-xs text-ink-muted dark:text-ink-200 truncate max-w-[240px] sm:max-w-md">
               La IA organiza y te orienta. Tú decides tu camino.
             </p>
           </div>
@@ -288,7 +288,7 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
               type="button"
               onClick={handleClearHistory}
               aria-label="Reiniciar conversación y comenzar nuevo tema"
-              className="min-h-[44px] px-3 py-1 rounded-xl text-ink-muted hover:text-ink dark:hover:text-white hover:bg-gray-100 dark:hover:bg-zinc-800 text-xs font-medium transition flex items-center space-x-1 cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
+              className="min-h-[44px] px-3 py-1 rounded-xl text-ink-muted hover:text-ink dark:hover:text-white hover:bg-gray-100 dark:hover:bg-ink-raised text-xs font-medium transition flex items-center space-x-1 cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
               title="Reiniciar conversación y comenzar un nuevo tema"
             >
               <RotateCcw className="w-3.5 h-3.5 shrink-0" />
@@ -298,7 +298,7 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
 
           <div className="text-right hidden sm:block shrink-0 border-l border-black/10 dark:border-white/10 pl-3">
             <span className="text-xs font-medium text-ink-muted">Madurez:</span>
-            <span className="ml-1 font-bold text-brand-600 dark:text-brand-400 text-xs">
+            <span className="ml-1 font-bold text-brand-700 dark:text-brand-400 text-xs">
               {preferences.memory_stats?.maturity_percentage || 0}%
             </span>
           </div>
@@ -323,7 +323,7 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
           {/* Security & Sovereign Storage Guarantee Box */}
           <div className="w-full text-left p-4 rounded-2xl bg-brand-50/80 dark:bg-brand-950/40 border border-brand-200/80 dark:border-brand-900/60 space-y-2 text-xs text-brand-950 dark:text-brand-200">
             <div className="flex items-center space-x-2 font-bold text-brand-700 dark:text-brand-300">
-              <ShieldCheck className="w-4 h-4 text-brand-600 dark:text-brand-400 shrink-0" />
+              <ShieldCheck className="w-4 h-4 text-brand-700 dark:text-brand-400 shrink-0" />
               <span>Soberanía Digital & Privacidad por Diseño</span>
             </div>
             <p className="text-xs text-brand-900/90 dark:text-brand-200/90 leading-relaxed">
@@ -336,7 +336,7 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
             <button
               type="button"
               onClick={onOpenSettings}
-              className="w-full min-h-[44px] px-5 py-2.5 rounded-2xl bg-brand-500 hover:bg-brand-600 text-white font-semibold text-xs shadow-md shadow-brand-500/20 transition active:scale-95 flex items-center justify-center space-x-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
+              className="w-full min-h-[44px] px-5 py-2.5 rounded-2xl bg-brand-600 hover:bg-brand-700 text-white font-semibold text-xs shadow-md shadow-brand-500/20 transition active:scale-95 flex items-center justify-center space-x-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
             >
               <KeyRound className="w-4 h-4" />
               <span>Conectar Clave de API Segura</span>
@@ -346,7 +346,7 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
               href="https://aistudio.google.com/app/apikey"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center justify-center space-x-1.5 text-xs font-medium text-brand-600 dark:text-brand-400 hover:underline pt-1"
+              className="inline-flex items-center justify-center space-x-1.5 text-xs font-medium text-brand-700 dark:text-brand-400 hover:underline pt-1"
             >
               <span>Obtener clave gratis en Google AI Studio (Gemini)</span>
               <ExternalLink className="w-3 h-3" />
@@ -371,8 +371,8 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
                   <div
                     className={`max-w-[88%] sm:max-w-[80%] rounded-2xl px-4 py-3 text-xs leading-relaxed shadow-xs transition ${
                       isUser
-                        ? 'bg-brand-500 text-white rounded-tr-none'
-                        : 'bg-gray-100/95 dark:bg-zinc-800/95 text-ink dark:text-gray-100 rounded-tl-none border border-black/6 dark:border-white/8'
+                        ? 'bg-brand-600 text-white rounded-tr-none'
+                        : 'bg-gray-100/95 dark:bg-ink-raised/95 text-ink dark:text-gray-100 rounded-tl-none border border-black/[0.06] dark:border-ink-border'
                     }`}
                   >
                     <div className="whitespace-pre-wrap">{msg.content}</div>
@@ -408,7 +408,7 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
                   {msg.learnedInsights && msg.learnedInsights.length > 0 && (
                     <div className="w-full max-w-[88%] sm:max-w-[80%] rounded-2xl p-3 bg-teal-50/90 dark:bg-teal-950/30 border border-teal-200/60 dark:border-teal-800/60 text-xs text-teal-900 dark:text-teal-200 space-y-1 animate-fade-in">
                       <div className="flex items-center space-x-1.5 font-bold text-brand-700 dark:text-brand-300">
-                        <Lightbulb className="w-3.5 h-3.5 text-brand-500" />
+                        <Lightbulb className="w-3.5 h-3.5 text-brand-700 dark:text-brand-300" />
                         <span>Regla de afinidad aprendida:</span>
                       </div>
                       {msg.learnedInsights.map((ins, i) => (
@@ -455,7 +455,7 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
             })}
 
             {isLoading && (
-              <div className="flex items-center space-x-2 text-[#86868B] dark:text-[#A1A1A6] text-xs py-2 animate-pulse">
+              <div className="flex items-center space-x-2 text-ink-muted dark:text-ink-200 text-xs py-2 animate-pulse">
                 <OpiAvatar expression="pensando" size={32} decorative />
                 <span>Opi está analizando tu consulta y organizando recomendaciones...</span>
               </div>
@@ -482,9 +482,9 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
 
       {/* Suggested Prompt Pills (Only active when key is configured) */}
       {hasKey && (
-        <div className="px-3.5 sm:px-4 py-2 border-t border-black/6 dark:border-white/8 bg-gray-50/60 dark:bg-zinc-900/60 overflow-x-auto no-scrollbar flex items-center space-x-2 shrink-0">
+        <div className="px-3.5 sm:px-4 py-2 border-t border-black/[0.06] dark:border-ink-border bg-gray-50/60 dark:bg-ink-surface/60 overflow-x-auto no-scrollbar flex items-center space-x-2 shrink-0">
           <span className="text-xs font-bold uppercase tracking-wider text-ink-muted shrink-0 flex items-center gap-1">
-            <Sparkles className="w-3 h-3 text-brand-500" />
+            <Sparkles className="w-3 h-3 text-brand-700 dark:text-brand-300" />
             <span>Sugerencias:</span>
           </span>
           {ACTIONABLE_SUGGESTIONS.map((item, i) => {
@@ -495,10 +495,10 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
                 type="button"
                 onClick={() => handleSend(item.prompt)}
                 disabled={isLoading}
-                className="min-h-[44px] px-3.5 py-1.5 rounded-full text-xs font-medium bg-white dark:bg-zinc-800 text-ink dark:text-white border border-black/6 dark:border-white/8 hover:border-brand-500 hover:text-brand-600 dark:hover:text-brand-400 transition whitespace-nowrap shrink-0 shadow-2xs disabled:opacity-50 active:scale-95 cursor-pointer flex items-center space-x-1.5 focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
+                className="min-h-[44px] px-3.5 py-1.5 rounded-full text-xs font-medium bg-white dark:bg-ink-raised text-ink dark:text-white border border-black/[0.06] dark:border-ink-border hover:border-brand-500 hover:text-brand-600 dark:hover:text-brand-400 transition whitespace-nowrap shrink-0 shadow-2xs disabled:opacity-50 active:scale-95 cursor-pointer flex items-center space-x-1.5 focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
                 title={item.prompt}
               >
-                <IconComp className="w-3.5 h-3.5 text-brand-500 shrink-0" />
+                <IconComp className="w-3.5 h-3.5 text-brand-700 shrink-0 dark:text-brand-300" />
                 <span>{item.label}</span>
               </button>
             );
@@ -507,9 +507,9 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
       )}
 
       {/* Chat Input Box */}
-      <div className="p-3 sm:p-4 border-t border-black/6 dark:border-white/8 bg-white/95 dark:bg-zinc-900/95 shrink-0">
+      <div className="p-3 sm:p-4 border-t border-black/[0.06] dark:border-ink-border bg-white/95 dark:bg-ink-surface/95 shrink-0">
         {!hasKey ? (
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-2 p-2.5 rounded-2xl bg-gray-100/70 dark:bg-zinc-800/60 border border-black/6 dark:border-white/8 text-xs text-ink-muted">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-2 p-2.5 rounded-2xl bg-gray-100/70 dark:bg-ink-raised/60 border border-black/[0.06] dark:border-ink-border text-xs text-ink-muted">
             <div className="flex items-center space-x-2">
               <Lock className="w-4 h-4 text-amber-500 shrink-0" />
               <span>Chat en pausa. Conecta tu API key para habilitar la conversación interactiva.</span>
@@ -517,7 +517,7 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
             <button
               type="button"
               onClick={onOpenSettings}
-              className="min-h-[44px] px-4 py-1.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-semibold text-xs shadow-xs transition shrink-0 cursor-pointer active:scale-95 focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
+              className="min-h-[44px] px-4 py-1.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold text-xs shadow-xs transition shrink-0 cursor-pointer active:scale-95 focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
             >
               Conectar Clave
             </button>
@@ -545,7 +545,7 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
                 rows={1}
                 disabled={isLoading}
                 aria-label="Mensaje para el copiloto Opi"
-                className="w-full max-h-32 min-h-[44px] px-4 py-3 rounded-2xl bg-gray-100/90 dark:bg-zinc-800/90 border border-black/6 dark:border-white/8 focus:border-brand-500 dark:focus:border-brand-500 focus:outline-hidden text-xs resize-none placeholder-gray-400 dark:placeholder-gray-500 transition leading-relaxed text-ink dark:text-white"
+                className="w-full max-h-32 min-h-[44px] px-4 py-3 rounded-2xl bg-gray-100/90 dark:bg-ink-raised/90 border border-black/[0.06] dark:border-ink-border focus:border-brand-500 dark:focus:border-brand-500 focus:outline-hidden text-xs resize-none placeholder-gray-400 dark:placeholder-ink-300 transition leading-relaxed text-ink dark:text-white"
               />
             </div>
 
@@ -554,7 +554,7 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
               onClick={() => handleSend()}
               disabled={!inputValue.trim() || isLoading}
               aria-label="Enviar mensaje a Opi"
-              className="min-h-[44px] min-w-[44px] rounded-2xl bg-brand hover:bg-brand-600 dark:bg-brand dark:hover:bg-brand-600 disabled:opacity-40 disabled:cursor-not-allowed text-white flex items-center justify-center shrink-0 shadow-md shadow-brand/20 transition cursor-pointer active:scale-95 focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
+              className="min-h-[44px] min-w-[44px] rounded-2xl bg-brand-600 hover:bg-brand-700 dark:bg-brand dark:hover:bg-brand-700 disabled:opacity-40 disabled:cursor-not-allowed text-white flex items-center justify-center shrink-0 shadow-md shadow-brand/20 transition cursor-pointer active:scale-95 focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
               title="Enviar mensaje a Opi"
             >
               <Send className="w-4 h-4" />

@@ -66,10 +66,10 @@ export const AchievementsTab: React.FC<AchievementsTabProps> = ({
   return (
     <div className="space-y-6">
       {/* Cabecera y botón Nuevo logro */}
-      <div className="p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-gray-200/80 dark:border-zinc-800 shadow-sm flex flex-wrap items-center justify-between gap-3">
+      <div className="p-4 rounded-2xl bg-white dark:bg-ink-surface border border-gray-200/80 dark:border-ink-border shadow-sm flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="text-base font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-            <Award className="w-4 h-4 text-brand" />
+            <Award className="w-4 h-4 text-brand-700 dark:text-brand-300" />
             Mis Logros (Método STAR)
           </h2>
           <p className="text-xs text-gray-500">
@@ -80,7 +80,7 @@ export const AchievementsTab: React.FC<AchievementsTabProps> = ({
         <button
           type="button"
           onClick={() => setIsAdding(!isAdding)}
-          className="inline-flex items-center gap-1.5 px-4 py-2 min-h-[44px] rounded-xl bg-brand hover:bg-brand-600 text-white text-xs font-semibold shadow-xs transition"
+          className="inline-flex items-center gap-1.5 px-4 py-2 min-h-[44px] rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold shadow-xs transition"
         >
           <Plus className="w-3.5 h-3.5" />
           <span>{isAdding ? 'Cancelar' : 'Agregar nuevo logro'}</span>
@@ -89,14 +89,14 @@ export const AchievementsTab: React.FC<AchievementsTabProps> = ({
 
       {/* Formulario guiado STAR */}
       {isAdding && (
-        <form onSubmit={handleSaveStory} className="p-6 rounded-2xl bg-white dark:bg-zinc-900 border border-gray-200/80 dark:border-zinc-800 shadow-md space-y-4 animate-fade-in text-xs">
+        <form onSubmit={handleSaveStory} className="p-6 rounded-2xl bg-white dark:bg-ink-surface border border-gray-200/80 dark:border-ink-border shadow-md space-y-4 animate-fade-in text-xs">
           <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-brand" />
+            <Sparkles className="w-4 h-4 text-brand-700 dark:text-brand-300" />
             Nuevo Logro Profesional Guiado
           </h3>
 
           <div>
-            <label className="block text-gray-600 dark:text-gray-400 font-medium mb-1">
+            <label className="block text-gray-600 dark:text-ink-200 font-medium mb-1">
               Título del logro o proyecto
             </label>
             <input
@@ -105,7 +105,7 @@ export const AchievementsTab: React.FC<AchievementsTabProps> = ({
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Ej. Rediseño de arquitectura cloud para reducir costos operativos"
-              className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-gray-900 dark:text-gray-100 focus:outline-none"
+              className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-ink-line bg-gray-50 dark:bg-ink-raised text-gray-900 dark:text-gray-100 focus:outline-none"
             />
           </div>
 
@@ -120,7 +120,7 @@ export const AchievementsTab: React.FC<AchievementsTabProps> = ({
                 value={situation}
                 onChange={(e) => setSituation(e.target.value)}
                 placeholder="La plataforma enfrentaba caídas por sobrecarga de tráfico durante promociones..."
-                className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-gray-900 dark:text-gray-100 resize-none focus:outline-none"
+                className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-ink-line bg-gray-50 dark:bg-ink-raised text-gray-900 dark:text-gray-100 resize-none focus:outline-none"
               />
             </div>
 
@@ -134,7 +134,7 @@ export const AchievementsTab: React.FC<AchievementsTabProps> = ({
                 value={task}
                 onChange={(e) => setTask(e.target.value)}
                 placeholder="Fui asignado como líder técnico para rediseñar la infraestructura en 2 meses..."
-                className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-gray-900 dark:text-gray-100 resize-none focus:outline-none"
+                className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-ink-line bg-gray-50 dark:bg-ink-raised text-gray-900 dark:text-gray-100 resize-none focus:outline-none"
               />
             </div>
           </div>
@@ -151,7 +151,7 @@ export const AchievementsTab: React.FC<AchievementsTabProps> = ({
                 value={action}
                 onChange={(e) => setAction(e.target.value)}
                 placeholder="Migré servicios monolíticos a contenedores, implementé auto-scaling y caché distribuida..."
-                className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-gray-900 dark:text-gray-100 resize-none focus:outline-none"
+                className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-ink-line bg-gray-50 dark:bg-ink-raised text-gray-900 dark:text-gray-100 resize-none focus:outline-none"
               />
             </div>
 
@@ -166,13 +166,13 @@ export const AchievementsTab: React.FC<AchievementsTabProps> = ({
                 value={result}
                 onChange={(e) => setResult(e.target.value)}
                 placeholder="Disponibilidad subió al 99.98% y redujimos el gasto de servidores en un 32%..."
-                className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-gray-900 dark:text-gray-100 resize-none focus:outline-none"
+                className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-ink-line bg-gray-50 dark:bg-ink-raised text-gray-900 dark:text-gray-100 resize-none focus:outline-none"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-gray-600 dark:text-gray-400 font-medium mb-1">
+            <label className="block text-gray-600 dark:text-ink-200 font-medium mb-1">
               Habilidades clave asociadas (separadas por coma)
             </label>
             <input
@@ -180,7 +180,7 @@ export const AchievementsTab: React.FC<AchievementsTabProps> = ({
               value={skills}
               onChange={(e) => setSkills(e.target.value)}
               placeholder="AWS, Docker, Resiliencia, Liderazgo técnico..."
-              className="w-full p-2 rounded-xl border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-gray-900 dark:text-gray-100 focus:outline-none"
+              className="w-full p-2 rounded-xl border border-gray-200 dark:border-ink-line bg-gray-50 dark:bg-ink-raised text-gray-900 dark:text-gray-100 focus:outline-none"
             />
           </div>
 
@@ -194,7 +194,7 @@ export const AchievementsTab: React.FC<AchievementsTabProps> = ({
             </button>
             <button
               type="submit"
-              className="px-5 py-2 rounded-xl bg-[#20A88A] hover:bg-[#18856d] text-white font-semibold shadow-xs"
+              className="px-5 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold shadow-xs"
             >
               Guardar Logro STAR
             </button>
@@ -208,7 +208,7 @@ export const AchievementsTab: React.FC<AchievementsTabProps> = ({
           stories.map((story) => (
             <div
               key={story.id}
-              className="p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-gray-200/80 dark:border-zinc-800 shadow-xs space-y-3"
+              className="p-5 rounded-2xl bg-white dark:bg-ink-surface border border-gray-200/80 dark:border-ink-border shadow-xs space-y-3"
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="space-y-0.5">
@@ -233,7 +233,7 @@ export const AchievementsTab: React.FC<AchievementsTabProps> = ({
               </div>
 
               {story.situation_and_task && (
-                <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
+                <p className="text-xs text-gray-600 dark:text-ink-200 leading-relaxed">
                   <strong>Contexto:</strong> {story.situation_and_task}
                 </p>
               )}
@@ -251,7 +251,7 @@ export const AchievementsTab: React.FC<AchievementsTabProps> = ({
                   {story.key_skills.map((sk, i) => (
                     <span
                       key={i}
-                      className="px-2 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-zinc-700"
+                      className="px-2 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-ink-raised text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-ink-line"
                     >
                       {sk}
                     </span>
@@ -261,7 +261,7 @@ export const AchievementsTab: React.FC<AchievementsTabProps> = ({
             </div>
           ))
         ) : (
-          <div className="p-8 text-center rounded-2xl border border-dashed border-gray-200 dark:border-zinc-800 text-xs text-gray-400">
+          <div className="p-8 text-center rounded-2xl border border-dashed border-gray-200 dark:border-ink-border text-xs text-gray-400">
             Aún no has registrado logros STAR. Haz clic en "Agregar nuevo logro" para preparar tus mejores respuestas.
           </div>
         )}

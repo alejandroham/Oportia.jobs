@@ -25,7 +25,7 @@ export const OnboardingStep3AI: React.FC<OnboardingStep3AIProps> = ({
             Conecta la IA (opcional)
           </h2>
         </div>
-        <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+        <p className="text-xs text-gray-500 dark:text-ink-200 leading-relaxed">
           Adapta tu currículum a cada vacante, redacta cartas convincentes y simula entrevistas con Opi.
           Tu clave viaja cifrada y nunca se guarda en el servidor.
         </p>
@@ -53,7 +53,7 @@ export const OnboardingStep3AI: React.FC<OnboardingStep3AIProps> = ({
             value={apiKey}
             onChange={(e) => setApiKey(e.target.value)}
             placeholder="Pega aquí tu clave de API (ej. AIzaSy...)"
-            className="w-full text-xs p-2.5 pr-10 rounded-xl bg-white dark:bg-zinc-800 border border-black/10 dark:border-white/10 font-mono text-gray-900 dark:text-white"
+            className="w-full text-xs p-2.5 pr-10 rounded-xl bg-white dark:bg-ink-raised border border-black/10 dark:border-white/10 font-mono text-gray-900 dark:text-white"
           />
           <button
             type="button"
@@ -64,7 +64,7 @@ export const OnboardingStep3AI: React.FC<OnboardingStep3AIProps> = ({
           </button>
         </div>
 
-        <p className="text-xs text-gray-500 dark:text-gray-400">
+        <p className="text-xs text-gray-500 dark:text-ink-200">
           Si no tienes una clave ahora, puedes continuar en modo sin IA y conectarla más tarde desde Ajustes.
         </p>
       </div>

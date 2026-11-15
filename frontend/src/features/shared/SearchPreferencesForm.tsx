@@ -65,15 +65,15 @@ export const SearchPreferencesForm: React.FC<SearchPreferencesFormProps> = ({
     <div className={`space-y-6 ${className}`}>
       {/* Cargos deseados */}
       <div className="space-y-2">
-        <label className="block text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-gray-400 flex items-center gap-1.5">
-          <Briefcase className="w-3.5 h-3.5 text-[#20A88A]" />
+        <label className="block text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-ink-200 flex items-center gap-1.5">
+          <Briefcase className="w-3.5 h-3.5 text-brand-700 dark:text-brand-300" />
           Cargos u ocupaciones que buscas
         </label>
-        <div className="flex flex-wrap gap-1.5 min-h-[32px] p-2 rounded-xl bg-gray-50 dark:bg-zinc-800/60 border border-gray-200 dark:border-zinc-700/80">
+        <div className="flex flex-wrap gap-1.5 min-h-[32px] p-2 rounded-xl bg-gray-50 dark:bg-ink-raised/60 border border-gray-200 dark:border-ink-line/80">
           {preferences.target_roles.map((role) => (
             <span
               key={role}
-              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium bg-white dark:bg-zinc-900 text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-zinc-700 shadow-xs"
+              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium bg-white dark:bg-ink-surface text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-ink-line shadow-xs"
             >
               {role}
               <button
@@ -95,11 +95,11 @@ export const SearchPreferencesForm: React.FC<SearchPreferencesFormProps> = ({
             value={newRole}
             onChange={(e) => setNewRole(e.target.value)}
             placeholder="Ej. Técnico en Enfermería, Vendedor, Analista Contable..."
-            className="flex-1 text-xs px-3 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-[#20A88A]/40"
+            className="flex-1 text-xs px-3 py-2 rounded-xl bg-white dark:bg-ink-surface border border-gray-200 dark:border-ink-line text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-[#20A88A]/40"
           />
           <button
             type="submit"
-            className="px-3 py-2 rounded-xl bg-[#20A88A] hover:bg-[#18856d] text-white text-xs font-semibold flex items-center gap-1"
+            className="px-3 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold flex items-center gap-1"
           >
             <Plus className="w-3.5 h-3.5" /> Agregar
           </button>
@@ -108,8 +108,8 @@ export const SearchPreferencesForm: React.FC<SearchPreferencesFormProps> = ({
 
       {/* Región y Comuna (Chile) */}
       <div className="space-y-3">
-        <label className="block text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-gray-400 flex items-center gap-1.5">
-          <MapPin className="w-3.5 h-3.5 text-[#20A88A]" />
+        <label className="block text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-ink-200 flex items-center gap-1.5">
+          <MapPin className="w-3.5 h-3.5 text-brand-700 dark:text-brand-300" />
           Ubicación geográfica preferida (Chile)
         </label>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -127,7 +127,7 @@ export const SearchPreferencesForm: React.FC<SearchPreferencesFormProps> = ({
                   preferred_communes: firstCommune ? [firstCommune] : []
                 });
               }}
-              className="w-full text-xs px-3 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 text-gray-900 dark:text-gray-100 focus:outline-none"
+              className="w-full text-xs px-3 py-2 rounded-xl bg-white dark:bg-ink-surface border border-gray-200 dark:border-ink-line text-gray-900 dark:text-gray-100 focus:outline-none"
             >
               <option value="">(Sin sesgo regional / Cobertura Nacional)</option>
               {CHILE_REGIONS.map((r) => (
@@ -148,7 +148,7 @@ export const SearchPreferencesForm: React.FC<SearchPreferencesFormProps> = ({
                   preferred_communes: comm ? [comm] : []
                 });
               }}
-              className="w-full text-xs px-3 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 text-gray-900 dark:text-gray-100 disabled:opacity-50 focus:outline-none"
+              className="w-full text-xs px-3 py-2 rounded-xl bg-white dark:bg-ink-surface border border-gray-200 dark:border-ink-line text-gray-900 dark:text-gray-100 disabled:opacity-50 focus:outline-none"
             >
               <option value="">(Todas las comunas de la región)</option>
               {communes.map((c) => (
@@ -162,7 +162,7 @@ export const SearchPreferencesForm: React.FC<SearchPreferencesFormProps> = ({
       {/* Modalidad y Salario */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {/* Modalidad remota */}
-        <div className="p-3 rounded-xl bg-gray-50 dark:bg-zinc-800/60 border border-gray-200 dark:border-zinc-700/60 flex items-center justify-between">
+        <div className="p-3 rounded-xl bg-gray-50 dark:bg-ink-raised/60 border border-gray-200 dark:border-ink-line/60 flex items-center justify-between">
           <div>
             <span className="text-xs font-bold text-gray-800 dark:text-gray-200 block">Solo Remoto</span>
             <span className="text-xs text-gray-500">Filtrar exclusivamente ofertas 100% remotas</span>
@@ -171,7 +171,7 @@ export const SearchPreferencesForm: React.FC<SearchPreferencesFormProps> = ({
             type="button"
             onClick={() => onChange({ ...preferences, remote_only: !preferences.remote_only })}
             className={`w-11 h-6 rounded-full transition-colors flex items-center p-0.5 ${
-              preferences.remote_only ? 'bg-[#20A88A] justify-end' : 'bg-gray-300 dark:bg-zinc-600 justify-start'
+              preferences.remote_only ? 'bg-[#20A88A] justify-end' : 'bg-gray-300 dark:bg-ink-line justify-start'
             }`}
           >
             <span className="w-5 h-5 rounded-full bg-white shadow-xs" />
@@ -179,9 +179,9 @@ export const SearchPreferencesForm: React.FC<SearchPreferencesFormProps> = ({
         </div>
 
         {/* Salario mínimo CLP */}
-        <div className="p-3 rounded-xl bg-gray-50 dark:bg-zinc-800/60 border border-gray-200 dark:border-zinc-700/60 space-y-1">
+        <div className="p-3 rounded-xl bg-gray-50 dark:bg-ink-raised/60 border border-gray-200 dark:border-ink-line/60 space-y-1">
           <label className="block text-xs font-bold text-gray-800 dark:text-gray-200 flex items-center gap-1">
-            <DollarSign className="w-3.5 h-3.5 text-[#20A88A]" />
+            <DollarSign className="w-3.5 h-3.5 text-brand-700 dark:text-brand-300" />
             Pretensión de renta líquida (CLP)
           </label>
           <input
@@ -196,18 +196,18 @@ export const SearchPreferencesForm: React.FC<SearchPreferencesFormProps> = ({
               })
             }
             placeholder="Ej. 1.200.000"
-            className="w-full text-xs px-3 py-1.5 rounded-lg bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 text-gray-900 dark:text-gray-100 focus:outline-none"
+            className="w-full text-xs px-3 py-1.5 rounded-lg bg-white dark:bg-ink-surface border border-gray-200 dark:border-ink-line text-gray-900 dark:text-gray-100 focus:outline-none"
           />
         </div>
       </div>
 
       {/* Condiciones que descartas (deal-breakers) */}
       <div className="space-y-2">
-        <label className="block text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-gray-400 flex items-center gap-1.5">
+        <label className="block text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-ink-200 flex items-center gap-1.5">
           <Ban className="w-3.5 h-3.5 text-rose-500" />
           Condiciones que descartas estrictamente
         </label>
-        <div className="flex flex-wrap gap-1.5 min-h-[32px] p-2 rounded-xl bg-gray-50 dark:bg-zinc-800/60 border border-gray-200 dark:border-zinc-700/80">
+        <div className="flex flex-wrap gap-1.5 min-h-[32px] p-2 rounded-xl bg-gray-50 dark:bg-ink-raised/60 border border-gray-200 dark:border-ink-line/80">
           {preferences.deal_breakers.map((db) => (
             <span
               key={db}
@@ -233,7 +233,7 @@ export const SearchPreferencesForm: React.FC<SearchPreferencesFormProps> = ({
             value={newDealBreaker}
             onChange={(e) => setNewDealBreaker(e.target.value)}
             placeholder="Ej. Turnos rotativos, Presencial fuera de Santiago, Sin contrato..."
-            className="flex-1 text-xs px-3 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-rose-500/30"
+            className="flex-1 text-xs px-3 py-2 rounded-xl bg-white dark:bg-ink-surface border border-gray-200 dark:border-ink-line text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-rose-500/30"
           />
           <button
             type="submit"

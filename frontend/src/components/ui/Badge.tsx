@@ -25,7 +25,7 @@ export const Badge: React.FC<BadgeProps> = ({
     danger:
       'bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border-rose-200/60 dark:border-rose-800/40',
     neutral:
-      'bg-gray-100 text-gray-700 dark:bg-zinc-800 dark:text-gray-300 border-gray-200/60 dark:border-zinc-700/60',
+      'bg-gray-100 text-gray-700 dark:bg-ink-raised dark:text-gray-300 border-gray-200/60 dark:border-ink-line/60',
     info:
       'bg-sky-50 text-sky-700 dark:bg-sky-950/60 dark:text-sky-300 border-sky-200/60 dark:border-sky-800/40'
   };

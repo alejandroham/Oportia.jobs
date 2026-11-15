@@ -24,10 +24,10 @@ export const SearchPreferencesTab: React.FC<SearchPreferencesTabProps> = ({
   return (
     <div className="space-y-6">
       {/* Cabecera descriptiva */}
-      <div className="p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-gray-200/80 dark:border-zinc-800 shadow-sm flex flex-wrap items-center justify-between gap-3">
+      <div className="p-4 rounded-2xl bg-white dark:bg-ink-surface border border-gray-200/80 dark:border-ink-border shadow-sm flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="text-base font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-brand" />
+            <Sparkles className="w-4 h-4 text-brand-700 dark:text-brand-300" />
             Criterios Explícitos de Búsqueda
           </h2>
           <p className="text-xs text-gray-500">
@@ -38,7 +38,7 @@ export const SearchPreferencesTab: React.FC<SearchPreferencesTabProps> = ({
         <button
           type="button"
           onClick={handleSave}
-          className="inline-flex items-center gap-1.5 px-4 py-2 min-h-[44px] rounded-xl bg-brand hover:bg-brand-600 text-white text-xs font-semibold shadow-xs transition"
+          className="inline-flex items-center gap-1.5 px-4 py-2 min-h-[44px] rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold shadow-xs transition"
         >
           <Save className="w-3.5 h-3.5" />
           <span>Guardar preferencias</span>
@@ -46,7 +46,7 @@ export const SearchPreferencesTab: React.FC<SearchPreferencesTabProps> = ({
       </div>
 
       {/* Formulario modular compartido */}
-      <div className="p-6 rounded-2xl bg-white dark:bg-zinc-900 border border-gray-200/80 dark:border-zinc-800 shadow-sm">
+      <div className="p-6 rounded-2xl bg-white dark:bg-ink-surface border border-gray-200/80 dark:border-ink-border shadow-sm">
         <SearchPreferencesForm
           preferences={formData}
           onChange={setFormData}

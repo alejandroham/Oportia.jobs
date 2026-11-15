@@ -59,7 +59,7 @@ export const ImportUrlModal: React.FC<ImportUrlModalProps> = ({
             value={url}
             onChange={(e) => setUrl(e.target.value)}
             placeholder="https://www.getonbrd.com/jobs/..."
-            className="w-full text-xs min-h-[44px] px-3.5 py-2.5 rounded-xl bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 text-ink dark:text-gray-100 placeholder-ink-muted focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
+            className="w-full text-xs min-h-[44px] px-3.5 py-2.5 rounded-xl bg-gray-50 dark:bg-ink-raised border border-gray-200 dark:border-ink-line text-ink dark:text-gray-100 placeholder-ink-muted focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
           />
         </div>
 

@@ -70,7 +70,7 @@ export const CompanyPortalsModal: React.FC<CompanyPortalsModalProps> = ({
         {portalDorks.map((dork) => (
           <div
             key={dork.platform}
-            className="p-3.5 rounded-2xl bg-gray-50 dark:bg-zinc-800/60 border border-gray-200/80 dark:border-zinc-700/60 flex items-center justify-between gap-3 text-xs"
+            className="p-3.5 rounded-2xl bg-gray-50 dark:bg-ink-raised/60 border border-gray-200/80 dark:border-ink-line/60 flex items-center justify-between gap-3 text-xs"
           >
             <div className="space-y-0.5 min-w-0">
               <span className="font-bold text-ink dark:text-gray-100 block">
@@ -87,7 +87,7 @@ export const CompanyPortalsModal: React.FC<CompanyPortalsModalProps> = ({
             <button
               type="button"
               onClick={() => handleRunSearch(dork.query)}
-              className="shrink-0 inline-flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-xl bg-brand hover:bg-brand-600 text-white font-medium shadow-xs transition cursor-pointer active:scale-95 focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
+              className="shrink-0 inline-flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-medium shadow-xs transition cursor-pointer active:scale-95 focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
             >
               <Search className="w-3.5 h-3.5" />
               <span>Explorar</span>
@@ -101,7 +101,7 @@ export const CompanyPortalsModal: React.FC<CompanyPortalsModalProps> = ({
         <button
           type="button"
           onClick={onClose}
-          className="px-4 py-2 min-h-[44px] rounded-xl text-xs font-semibold text-ink-muted hover:text-ink dark:hover:text-white hover:bg-gray-100 dark:hover:bg-zinc-800 transition cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
+          className="px-4 py-2 min-h-[44px] rounded-xl text-xs font-semibold text-ink-muted hover:text-ink dark:hover:text-white hover:bg-gray-100 dark:hover:bg-ink-raised transition cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
         >
           Cerrar
         </button>

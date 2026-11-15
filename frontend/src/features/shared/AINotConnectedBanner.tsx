@@ -42,7 +42,7 @@ export const AINotConnectedBanner: React.FC<AINotConnectedBannerProps> = ({
         <button
           type="button"
           onClick={handleConnectClick}
-          className="shrink-0 text-xs font-semibold text-brand hover:text-brand-600 inline-flex items-center gap-1 min-h-[36px] px-2"
+          className="shrink-0 text-xs font-semibold text-brand-700 hover:text-brand-600 inline-flex items-center gap-1 min-h-[36px] px-2 dark:text-brand-300"
         >
           <span>{actionText}</span>
           <ArrowRight className="w-3.5 h-3.5" />
@@ -52,7 +52,7 @@ export const AINotConnectedBanner: React.FC<AINotConnectedBannerProps> = ({
   }
 
   return (
-    <div className={`p-5 rounded-2xl bg-linear-to-br from-brand-50/50 via-surface to-amber-50/40 dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800 border border-brand-200/60 dark:border-zinc-700/60 shadow-xs space-y-3 text-left ${className}`}>
+    <div className={`p-5 rounded-2xl bg-linear-to-br from-brand-50/50 via-surface to-amber-50/40 dark:from-ink-surface dark:via-ink-surface dark:to-ink-raised border border-brand-200/60 dark:border-ink-line/60 shadow-xs space-y-3 text-left ${className}`}>
       <div className="flex items-start gap-3">
         <OpiAvatar expression="durmiendo" size={56} decorative />
         <div className="space-y-1 flex-1">
@@ -65,7 +65,7 @@ export const AINotConnectedBanner: React.FC<AINotConnectedBannerProps> = ({
         </div>
       </div>
 
-      <div className="flex items-center justify-end gap-2 pt-1 border-t border-gray-100 dark:border-zinc-800">
+      <div className="flex items-center justify-end gap-2 pt-1 border-t border-gray-100 dark:border-ink-border">
         <Button
           variant="primary"
           size="sm"

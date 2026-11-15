@@ -136,7 +136,7 @@ export const SettingsAIPanel: React.FC = () => {
       <div className="apple-glass apple-card p-6 rounded-2xl space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-brand-50 dark:bg-brand-950/60 text-brand-600 dark:text-brand-400 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-xl bg-brand-50 dark:bg-brand-950/60 text-brand-700 dark:text-brand-400 flex items-center justify-center">
               <Cpu className="w-4 h-4" />
             </div>
             <div>
@@ -155,7 +155,7 @@ export const SettingsAIPanel: React.FC = () => {
               type="button"
               key={p}
               onClick={() => handleProviderChange(p)}
-              className={`min-h-[44px] py-2 px-3 rounded-xl border text-xs font-semibold capitalize transition cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none ${provider === p ? 'border-brand-500 bg-brand-50/50 dark:bg-brand-950/40 text-brand-700 dark:text-brand-300 shadow-xs' : 'border-black/8 dark:border-white/8 text-ink-muted hover:bg-gray-50 dark:hover:bg-zinc-800'}`}
+              className={`min-h-[44px] py-2 px-3 rounded-xl border text-xs font-semibold capitalize transition cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none ${provider === p ? 'border-brand-500 bg-brand-50/50 dark:bg-brand-950/40 text-brand-700 dark:text-brand-300 shadow-xs' : 'border-black/[0.08] dark:border-ink-border text-ink-muted hover:bg-gray-50 dark:hover:bg-ink-raised'}`}
             >
               {p === 'gemini' ? 'Google Gemini' : p === 'openai' ? 'OpenAI' : 'Anthropic Claude'}
             </button>
@@ -168,7 +168,7 @@ export const SettingsAIPanel: React.FC = () => {
             id="ai-model-select"
             value={selectedModel}
             onChange={(e) => setSelectedModel(e.target.value)}
-            className="w-full text-xs min-h-[44px] px-3 py-2 rounded-xl bg-gray-50 dark:bg-zinc-800 border border-black/10 dark:border-white/10 text-ink dark:text-white focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
+            className="w-full text-xs min-h-[44px] px-3 py-2 rounded-xl bg-gray-50 dark:bg-ink-raised border border-black/10 dark:border-white/10 text-ink dark:text-white focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
           >
             {providerModels.map((m: ModelOption) => (
               <option key={m.id} value={m.id}>{m.name} ({m.tag})</option>
@@ -185,7 +185,7 @@ export const SettingsAIPanel: React.FC = () => {
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
               placeholder={`Pega aquí tu clave de API de ${provider}...`}
-              className="w-full text-xs min-h-[44px] px-3 py-2 pr-12 rounded-xl bg-gray-50 dark:bg-zinc-800 border border-black/10 dark:border-white/10 text-ink dark:text-white font-mono focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
+              className="w-full text-xs min-h-[44px] px-3 py-2 pr-12 rounded-xl bg-gray-50 dark:bg-ink-raised border border-black/10 dark:border-white/10 text-ink dark:text-white font-mono focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
             />
             <button
               type="button"
@@ -214,7 +214,7 @@ export const SettingsAIPanel: React.FC = () => {
           <button
             type="submit"
             disabled={isSavingAI}
-            className="px-4 py-2 min-h-[44px] bg-brand-500 hover:bg-brand-600 text-white text-xs font-semibold rounded-xl shadow-xs transition cursor-pointer active:scale-95 disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
+            className="px-4 py-2 min-h-[44px] bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold rounded-xl shadow-xs transition cursor-pointer active:scale-95 disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
           >
             {isSavingAI ? 'Guardando...' : 'Guardar configuración'}
           </button>

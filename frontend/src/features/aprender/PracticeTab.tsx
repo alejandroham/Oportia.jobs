@@ -66,10 +66,10 @@ export const PracticeTab: React.FC<PracticeTabProps> = ({ profile }) => {
   return (
     <div className="space-y-6">
       {/* Switcher de modalidad: Entrevista vs Caso Práctico */}
-      <div className="flex flex-wrap items-center justify-between gap-3 p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-gray-200/80 dark:border-zinc-800 shadow-sm">
+      <div className="flex flex-wrap items-center justify-between gap-3 p-4 bg-white dark:bg-ink-surface rounded-2xl border border-gray-200/80 dark:border-ink-border shadow-sm">
         <div>
           <h2 className="text-base font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-brand" />
+            <Sparkles className="w-4 h-4 text-brand-700 dark:text-brand-300" />
             Entrenamiento Activo y Práctica
           </h2>
           <p className="text-xs text-gray-500">
@@ -77,12 +77,12 @@ export const PracticeTab: React.FC<PracticeTabProps> = ({ profile }) => {
           </p>
         </div>
 
-        <div className="flex items-center gap-1 bg-gray-100 dark:bg-zinc-800 p-1 rounded-xl text-xs font-semibold">
+        <div className="flex items-center gap-1 bg-gray-100 dark:bg-ink-raised p-1 rounded-xl text-xs font-semibold">
           <button
             type="button"
             onClick={() => setActiveMode('interview')}
             className={`px-3 py-1.5 rounded-lg transition ${
-              activeMode === 'interview' ? 'bg-white dark:bg-zinc-900 text-gray-900 dark:text-white shadow-xs' : 'text-gray-500'
+              activeMode === 'interview' ? 'bg-white dark:bg-ink-surface text-gray-900 dark:text-white shadow-xs' : 'text-gray-500'
             }`}
           >
             Simulador de Entrevista
@@ -91,7 +91,7 @@ export const PracticeTab: React.FC<PracticeTabProps> = ({ profile }) => {
             type="button"
             onClick={() => setActiveMode('case')}
             className={`px-3 py-1.5 rounded-lg transition ${
-              activeMode === 'case' ? 'bg-white dark:bg-zinc-900 text-gray-900 dark:text-white shadow-xs' : 'text-gray-500'
+              activeMode === 'case' ? 'bg-white dark:bg-ink-surface text-gray-900 dark:text-white shadow-xs' : 'text-gray-500'
             }`}
           >
             Casos Prácticos & Tutor
@@ -113,9 +113,9 @@ export const PracticeTab: React.FC<PracticeTabProps> = ({ profile }) => {
             />
           )}
 
-          <div className="p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-gray-200/80 dark:border-zinc-800 shadow-sm space-y-3 text-xs">
+          <div className="p-5 rounded-2xl bg-white dark:bg-ink-surface border border-gray-200/80 dark:border-ink-border shadow-sm space-y-3 text-xs">
             <div className="flex items-center gap-2">
-              <Terminal className="w-4 h-4 text-brand" />
+              <Terminal className="w-4 h-4 text-brand-700 dark:text-brand-300" />
               <h3 className="font-bold text-gray-900 dark:text-gray-100 text-sm">
                 Generador de Casos y Retos de Estudio
               </h3>
@@ -127,13 +127,13 @@ export const PracticeTab: React.FC<PracticeTabProps> = ({ profile }) => {
                 value={competencyInput}
                 onChange={(e) => setCompetencyInput(e.target.value)}
                 placeholder="Competencia a entrenar (ej. Docker, Negociación, SQL)..."
-                className="flex-1 min-w-[240px] px-3.5 py-2 rounded-xl bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 text-gray-900 dark:text-gray-100 focus:outline-none"
+                className="flex-1 min-w-[240px] px-3.5 py-2 rounded-xl bg-gray-50 dark:bg-ink-raised border border-gray-200 dark:border-ink-line text-gray-900 dark:text-gray-100 focus:outline-none"
               />
               <button
                 type="button"
                 onClick={handleGenerateChallenge}
                 disabled={isGeneratingChallenge || !competencyInput.trim()}
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#20A88A] hover:bg-[#18856d] text-white font-semibold shadow-xs transition disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold shadow-xs transition disabled:opacity-50"
               >
                 {isGeneratingChallenge ? (
                   <>
@@ -151,9 +151,9 @@ export const PracticeTab: React.FC<PracticeTabProps> = ({ profile }) => {
           </div>
 
           {challenge && (
-            <div className="p-5 sm:p-6 rounded-2xl bg-white dark:bg-zinc-900 border border-gray-200/80 dark:border-zinc-800 shadow-sm space-y-4 text-xs animate-fade-in">
+            <div className="p-5 sm:p-6 rounded-2xl bg-white dark:bg-ink-surface border border-gray-200/80 dark:border-ink-border shadow-sm space-y-4 text-xs animate-fade-in">
               <div className="space-y-1">
-                <span className="text-xs uppercase font-bold text-[#20A88A] tracking-wider">
+                <span className="text-xs uppercase font-bold text-brand-700 tracking-wider dark:text-brand-300">
                   Caso Asignado ({challenge.difficulty || 'Intermedio'})
                 </span>
                 <h4 className="text-sm sm:text-base font-bold text-gray-900 dark:text-gray-100">
@@ -161,7 +161,7 @@ export const PracticeTab: React.FC<PracticeTabProps> = ({ profile }) => {
                 </h4>
               </div>
 
-              <div className="p-4 rounded-xl bg-gray-50 dark:bg-zinc-800/60 border border-gray-200/60 dark:border-zinc-700/60 space-y-2 leading-relaxed">
+              <div className="p-4 rounded-xl bg-gray-50 dark:bg-ink-raised/60 border border-gray-200/60 dark:border-ink-line/60 space-y-2 leading-relaxed">
                 <p className="text-gray-800 dark:text-gray-200 font-medium">
                   {challenge.scenario_context}
                 </p>
@@ -178,14 +178,14 @@ export const PracticeTab: React.FC<PracticeTabProps> = ({ profile }) => {
                     value={solution}
                     onChange={(e) => setSolution(e.target.value)}
                     placeholder="Escribe tu propuesta de solución técnica o metodológica detallando los pasos que ejecutarías..."
-                    className="w-full p-3.5 rounded-xl border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-100 resize-none focus:outline-none focus:ring-2 focus:ring-[#20A88A]/30 leading-relaxed"
+                    className="w-full p-3.5 rounded-xl border border-gray-200 dark:border-ink-line bg-white dark:bg-ink-raised text-gray-900 dark:text-gray-100 resize-none focus:outline-none focus:ring-2 focus:ring-[#20A88A]/30 leading-relaxed"
                   />
                   <div className="flex justify-end">
                     <button
                       type="button"
                       onClick={handleEvaluateSolution}
                       disabled={isEvaluating || !solution.trim()}
-                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#20A88A] hover:bg-[#18856d] text-white font-semibold shadow-xs transition disabled:opacity-50"
+                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold shadow-xs transition disabled:opacity-50"
                     >
                       <Send className="w-3.5 h-3.5" />
                       <span>{isEvaluating ? 'Evaluando...' : 'Enviar solución al Tutor'}</span>
@@ -197,7 +197,7 @@ export const PracticeTab: React.FC<PracticeTabProps> = ({ profile }) => {
                 <div className="space-y-3 pt-2">
                   <div className="p-4 rounded-xl bg-teal-50 dark:bg-teal-950/40 border border-teal-200/60 flex items-center justify-between">
                     <div>
-                      <span className="text-lg font-bold text-[#20A88A]">{evaluationResult.score}/100</span>
+                      <span className="text-lg font-bold text-brand-700 dark:text-brand-300">{evaluationResult.score}/100</span>
                       <p className="text-teal-900 dark:text-teal-200 text-xs font-semibold">{evaluationResult.technical_correctness}</p>
                     </div>
                     <button

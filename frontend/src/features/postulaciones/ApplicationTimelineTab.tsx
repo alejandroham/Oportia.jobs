@@ -59,9 +59,9 @@ export const ApplicationTimelineTab: React.FC<ApplicationTimelineTabProps> = ({
   return (
     <div className="space-y-5">
       {/* Formulario para agregar una nota */}
-      <form onSubmit={handleAddNote} className="p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-gray-200/80 dark:border-zinc-800 shadow-sm space-y-3">
-        <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 flex items-center gap-1.5">
-          <FileText className="w-3.5 h-3.5 text-[#20A88A]" />
+      <form onSubmit={handleAddNote} className="p-4 rounded-2xl bg-white dark:bg-ink-surface border border-gray-200/80 dark:border-ink-border shadow-sm space-y-3">
+        <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-ink-200 flex items-center gap-1.5">
+          <FileText className="w-3.5 h-3.5 text-brand-700 dark:text-brand-300" />
           Nueva nota de seguimiento
         </label>
         <textarea
@@ -69,13 +69,13 @@ export const ApplicationTimelineTab: React.FC<ApplicationTimelineTabProps> = ({
           value={noteText}
           onChange={(e) => setNoteText(e.target.value)}
           placeholder="Ej. Llamó Camila de RRHH para agendar entrevista técnica el martes 15 a las 11:00..."
-          className="w-full text-xs p-3 rounded-xl border border-gray-200 dark:border-zinc-700 bg-gray-50 dark:bg-zinc-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-[#20A88A]/30 resize-none leading-relaxed"
+          className="w-full text-xs p-3 rounded-xl border border-gray-200 dark:border-ink-line bg-gray-50 dark:bg-ink-raised text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-[#20A88A]/30 resize-none leading-relaxed"
         />
         <div className="flex justify-end">
           <button
             type="submit"
             disabled={isSubmitting || !noteText.trim()}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#20A88A] hover:bg-[#18856d] text-white text-xs font-semibold shadow-xs transition disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold shadow-xs transition disabled:opacity-50"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>Guardar nota</span>
@@ -85,8 +85,8 @@ export const ApplicationTimelineTab: React.FC<ApplicationTimelineTabProps> = ({
 
       {/* Bitácora cronológica */}
       <div className="space-y-3">
-        <h4 className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 flex items-center gap-1.5">
-          <Clock className="w-3.5 h-3.5 text-[#20A88A]" />
+        <h4 className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-ink-200 flex items-center gap-1.5">
+          <Clock className="w-3.5 h-3.5 text-brand-700 dark:text-brand-300" />
           Historial de eventos
         </h4>
 
@@ -94,7 +94,7 @@ export const ApplicationTimelineTab: React.FC<ApplicationTimelineTabProps> = ({
           <div className="relative pl-6 space-y-4 before:absolute before:left-2.5 before:top-2 before:bottom-2 before:w-0.5 before:bg-gray-200 dark:before:bg-zinc-800">
             {history.map((evt, idx) => (
               <div key={evt.id || idx} className="relative space-y-1">
-                <span className="absolute -left-6 top-1.5 w-3 h-3 rounded-full bg-[#20A88A] border-2 border-white dark:border-zinc-900 shadow-xs" />
+                <span className="absolute -left-6 top-1.5 w-3 h-3 rounded-full bg-[#20A88A] border-2 border-white dark:border-ink-border shadow-xs" />
                 <div className="flex items-center justify-between text-xs">
                   <span className="font-semibold text-gray-900 dark:text-gray-100">
                     {evt.title}
@@ -104,7 +104,7 @@ export const ApplicationTimelineTab: React.FC<ApplicationTimelineTabProps> = ({
                   </span>
                 </div>
                 {evt.notes && evt.notes !== evt.title && (
-                  <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
+                  <p className="text-xs text-gray-600 dark:text-ink-200 leading-relaxed">
                     {evt.notes}
                   </p>
                 )}
@@ -112,7 +112,7 @@ export const ApplicationTimelineTab: React.FC<ApplicationTimelineTabProps> = ({
             ))}
           </div>
         ) : (
-          <div className="p-6 text-center rounded-2xl border border-dashed border-gray-200 dark:border-zinc-800 text-xs text-gray-400">
+          <div className="p-6 text-center rounded-2xl border border-dashed border-gray-200 dark:border-ink-border text-xs text-gray-400">
             Aún no hay eventos ni notas registradas para esta postulación.
           </div>
         )}

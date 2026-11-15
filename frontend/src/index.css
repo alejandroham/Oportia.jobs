@@ -12,6 +12,25 @@
   }
 }
 
+/* Modo oscuro: textos atenuados legibles.
+   Muchos componentes usan text-ink-muted / text-gray-400/500 sin variante dark:,
+   y sobre el fondo petróleo quedaban con contraste 2-3:1. Se aclaran aquí.
+   Va en @layer components para que una clase dark:text-* explícita (utilities) siga mandando. */
+@layer components {
+  /* :where() deja la especificidad en (0,2,0) y excluye la hoja del CV/carta, que siempre es blanca. */
+  .dark .text-ink-muted:where(:not(.printable-cv *)),
+  .dark .text-gray-400:where(:not(.printable-cv *)),
+  .dark .text-gray-500:where(:not(.printable-cv *)),
+  .dark .text-gray-600:where(:not(.printable-cv *)),
+  .dark .text-slate-500:where(:not(.printable-cv *)) {
+    color: #a9bfcf;
+  }
+  .dark .placeholder-gray-400::placeholder,
+  .dark .placeholder\:text-gray-400::placeholder {
+    color: #8fa9bc;
+  }
+}
+
 /* Oportia Glassmorphism */
 .apple-glass {
   background: rgba(255, 255, 255, 0.85);

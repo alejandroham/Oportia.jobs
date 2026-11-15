@@ -57,7 +57,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             success: <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />,
             error: <AlertCircle className="w-4 h-4 text-rose-500 shrink-0" />,
             warning: <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0" />,
-            info: <Info className="w-4 h-4 text-brand-500 shrink-0" />
+            info: <Info className="w-4 h-4 text-brand-700 shrink-0 dark:text-brand-300" />
           }[toast.type || 'info'];
 
           const borderStyle = {
@@ -70,7 +70,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           return (
             <div
               key={toast.id}
-              className={`pointer-events-auto apple-glass border ${borderStyle} px-4 py-2.5 rounded-2xl shadow-xl flex items-center space-x-3 max-w-md w-full sm:w-auto animate-fade-in transition-all backdrop-blur-xl bg-white/90 dark:bg-zinc-900/90 text-[#1D1D1F] dark:text-[#F5F5F7]`}
+              className={`pointer-events-auto apple-glass border ${borderStyle} px-4 py-2.5 rounded-2xl shadow-xl flex items-center space-x-3 max-w-md w-full sm:w-auto animate-fade-in transition-all backdrop-blur-xl bg-white/90 dark:bg-ink-surface/90 text-[#1D1D1F] dark:text-gray-100`}
               style={{ animation: 'toast-slide-up 0.25s cubic-bezier(0.16, 1, 0.3, 1)' }}
             >
               {icon}

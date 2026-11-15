@@ -34,7 +34,7 @@ export const CvExperienceSection: React.FC<CvExperienceSectionProps> = ({
       {experiences?.map((exp, idx) => (
         <div
           key={exp.id || idx}
-          className="p-3.5 rounded-xl bg-gray-50 dark:bg-zinc-800/60 border border-gray-200/70 dark:border-zinc-700/60 space-y-2"
+          className="p-3.5 rounded-xl bg-gray-50 dark:bg-ink-raised/60 border border-gray-200/70 dark:border-ink-line/60 space-y-2"
         >
           <div className="flex items-center justify-between">
             <span className="font-bold text-gray-900 dark:text-gray-100 text-xs">
@@ -51,7 +51,7 @@ export const CvExperienceSection: React.FC<CvExperienceSectionProps> = ({
             </button>
           </div>
           {exp.description && (
-            <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
+            <p className="text-gray-600 dark:text-ink-200 leading-relaxed">
               {exp.description}
             </p>
           )}
@@ -61,7 +61,7 @@ export const CvExperienceSection: React.FC<CvExperienceSectionProps> = ({
       <button
         type="button"
         onClick={handleAdd}
-        className="inline-flex items-center gap-1.5 px-3.5 py-2 min-h-[44px] rounded-xl border border-gray-200 dark:border-zinc-700 text-xs font-semibold text-ink dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-zinc-800 transition cursor-pointer active:scale-95 focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
+        className="inline-flex items-center gap-1.5 px-3.5 py-2 min-h-[44px] rounded-xl border border-gray-200 dark:border-ink-line text-xs font-semibold text-ink dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-ink-raised transition cursor-pointer active:scale-95 focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
       >
         <Plus className="w-3.5 h-3.5" /> Agregar experiencia
       </button>

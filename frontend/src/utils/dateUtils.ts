@@ -41,7 +41,7 @@ export function getOfferExpirationBadge(deadlineStr?: string | null): OfferBadge
     return {
       state: 'no_deadline',
       label: 'Sin fecha de término conocida',
-      badgeClass: 'bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-gray-400 border border-black/5 dark:border-white/5',
+      badgeClass: 'bg-gray-100 dark:bg-ink-raised text-gray-600 dark:text-ink-200 border border-black/5 dark:border-white/5',
       isExpired: false
     };
   }
@@ -53,7 +53,7 @@ export function getOfferExpirationBadge(deadlineStr?: string | null): OfferBadge
       return {
         state: 'no_deadline',
         label: 'Sin fecha de término conocida',
-        badgeClass: 'bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-gray-400 border border-black/5 dark:border-white/5',
+        badgeClass: 'bg-gray-100 dark:bg-ink-raised text-gray-600 dark:text-ink-200 border border-black/5 dark:border-white/5',
         isExpired: false
       };
     }
@@ -91,7 +91,7 @@ export function getOfferExpirationBadge(deadlineStr?: string | null): OfferBadge
     return {
       state: 'no_deadline',
       label: 'Sin fecha de término conocida',
-      badgeClass: 'bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-gray-400 border border-black/5 dark:border-white/5',
+      badgeClass: 'bg-gray-100 dark:bg-ink-raised text-gray-600 dark:text-ink-200 border border-black/5 dark:border-white/5',
       isExpired: false
     };
   }

@@ -33,7 +33,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
       {opiExpression ? (
         <OpiAvatar expression={opiExpression} size={112} className="mx-auto" decorative />
       ) : Icon ? (
-        <div className="w-14 h-14 mx-auto rounded-2xl bg-brand-50 dark:bg-brand-950/40 text-brand-600 dark:text-brand-400 flex items-center justify-center shadow-xs">
+        <div className="w-14 h-14 mx-auto rounded-2xl bg-brand-50 dark:bg-brand-950/40 text-brand-700 dark:text-brand-400 flex items-center justify-center shadow-xs">
           <Icon className="w-7 h-7" />
         </div>
       ) : null}
@@ -42,7 +42,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
         <h3 className="text-base font-bold text-ink dark:text-white tracking-tight">
           {title}
         </h3>
-        <p className="text-xs text-ink-muted dark:text-gray-400 leading-relaxed max-w-sm mx-auto">
+        <p className="text-xs text-ink-muted dark:text-ink-200 leading-relaxed max-w-sm mx-auto">
           {description}
         </p>
       </div>

@@ -37,9 +37,9 @@ export const ApplicationInterviewTab: React.FC<ApplicationInterviewTabProps> = (
       />
 
       {/* Preguntas anticipadas de la empresa */}
-      <div className="p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-gray-200/80 dark:border-zinc-800 shadow-sm space-y-3">
-        <h4 className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 flex items-center gap-1.5">
-          <HelpCircle className="w-3.5 h-3.5 text-[#20A88A]" />
+      <div className="p-5 rounded-2xl bg-white dark:bg-ink-surface border border-gray-200/80 dark:border-ink-border shadow-sm space-y-3">
+        <h4 className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-ink-200 flex items-center gap-1.5">
+          <HelpCircle className="w-3.5 h-3.5 text-brand-700 dark:text-brand-300" />
           Preguntas probables para {job.title}
         </h4>
 
@@ -47,7 +47,7 @@ export const ApplicationInterviewTab: React.FC<ApplicationInterviewTabProps> = (
           {anticipatedQuestions.map((q, idx) => (
             <div
               key={idx}
-              className="p-3 rounded-xl bg-gray-50 dark:bg-zinc-800/60 border border-gray-200/60 dark:border-zinc-700/60 text-xs text-gray-800 dark:text-gray-200 font-medium"
+              className="p-3 rounded-xl bg-gray-50 dark:bg-ink-raised/60 border border-gray-200/60 dark:border-ink-line/60 text-xs text-gray-800 dark:text-gray-200 font-medium"
             >
               {idx + 1}. {q}
             </div>
@@ -56,10 +56,10 @@ export const ApplicationInterviewTab: React.FC<ApplicationInterviewTabProps> = (
       </div>
 
       {/* Consejos de negociación y preguntas para hacer */}
-      <div className="p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-gray-200/80 dark:border-zinc-800 shadow-sm space-y-3">
+      <div className="p-5 rounded-2xl bg-white dark:bg-ink-surface border border-gray-200/80 dark:border-ink-border shadow-sm space-y-3">
         <div className="flex items-center justify-between">
-          <h4 className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 flex items-center gap-1.5">
-            <MessageSquare className="w-3.5 h-3.5 text-[#20A88A]" />
+          <h4 className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-ink-200 flex items-center gap-1.5">
+            <MessageSquare className="w-3.5 h-3.5 text-brand-700 dark:text-brand-300" />
             Estrategia de Entrevista y Preguntas para el Reclutador
           </h4>
           <button
@@ -81,8 +81,8 @@ export const ApplicationInterviewTab: React.FC<ApplicationInterviewTabProps> = (
               </span>
               <ul className="space-y-1 pl-2">
                 {questionsToAsk.map((item, i) => (
-                  <li key={i} className="text-gray-600 dark:text-gray-400 flex items-start gap-2">
-                    <span className="text-[#20A88A]">•</span>
+                  <li key={i} className="text-gray-600 dark:text-ink-200 flex items-start gap-2">
+                    <span className="text-brand-700 dark:text-brand-300">•</span>
                     <span>{item}</span>
                   </li>
                 ))}

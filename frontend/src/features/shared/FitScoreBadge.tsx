@@ -25,7 +25,7 @@ export const FitScoreBadge: React.FC<FitScoreBadgeProps> = ({
   if (score === null || score === undefined) {
     return (
       <span
-        className={`inline-flex items-center gap-1 font-medium rounded-full bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-zinc-700 ${
+        className={`inline-flex items-center gap-1 font-medium rounded-full bg-gray-100 dark:bg-ink-raised text-gray-500 dark:text-ink-200 border border-gray-200 dark:border-ink-line ${
           size === 'sm' ? 'px-2 py-0.5 text-[12px]' : size === 'lg' ? 'px-3.5 py-1.5 text-sm' : 'px-2.5 py-1 text-xs'
         } ${className}`}
       >
@@ -46,12 +46,12 @@ export const FitScoreBadge: React.FC<FitScoreBadgeProps> = ({
 
     const basicContent = (
       <span
-        className={`inline-flex items-center rounded-full border bg-slate-50 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 border-slate-200 dark:border-zinc-700 transition-all ${sizeClasses} ${
+        className={`inline-flex items-center rounded-full border bg-slate-50 dark:bg-ink-raised text-slate-700 dark:text-gray-200 border-slate-200 dark:border-ink-line transition-all ${sizeClasses} ${
           onClick ? 'cursor-pointer hover:shadow-xs hover:opacity-95' : ''
         } ${className}`}
         title="Estimación básica calculada determinísticamente por coincidencia de palabras clave (sin IA)."
       >
-        <span className="w-1.5 h-1.5 rounded-full bg-slate-400 dark:bg-zinc-500" />
+        <span className="w-1.5 h-1.5 rounded-full bg-slate-400 dark:bg-ink-line" />
         <span>{score}% · Estimación básica (sin IA)</span>
       </span>
     );
@@ -104,7 +104,7 @@ export const FitScoreBadge: React.FC<FitScoreBadgeProps> = ({
       <span className={`w-1.5 h-1.5 rounded-full ${dotColor}`} />
       <span>{score}% · {label}</span>
       {showPotential && delta > 0 && (
-        <span className="inline-flex items-center gap-0.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-white/70 dark:bg-zinc-900/70 px-1 rounded-full border border-emerald-200/50">
+        <span className="inline-flex items-center gap-0.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-white/70 dark:bg-ink-surface/70 px-1 rounded-full border border-emerald-200/50">
           <Sparkles className="w-2.5 h-2.5" />
           +{delta}%
         </span>

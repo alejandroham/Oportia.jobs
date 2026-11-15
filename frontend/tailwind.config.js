@@ -24,11 +24,18 @@ export default {
         },
         ink: {
           DEFAULT: '#173B50',
-          muted: '#64748B',
+          muted: '#56657A', // antes #64748B: 4,3:1 sobre fondos grises claros (mínimo AA 4,5)
           light: '#F4F7F9',
-          dark: '#142B3D',
-          surface: '#1E3B50', // tarjetas en modo oscuro
-          border: '#2C4A60' // bordes en modo oscuro
+          // Paleta oscura Oportia (petróleo). Usar SIEMPRE estos tonos en variantes dark:,
+          // nunca zinc/gray/black: mezclarlos dejaba fondos negros y bordes grises.
+          dark: '#142B3D', // fondo de página
+          surface: '#1E3B50', // tarjetas
+          raised: '#264860', // campos, píldoras y elementos dentro de tarjetas
+          hover: '#2E536C', // hover y elementos activos
+          border: '#365368', // bordes suaves
+          line: '#46667D', // bordes marcados / separadores
+          200: '#C9D7E1', // texto secundario
+          300: '#A9BFCF' // texto terciario
         },
         surface: {
           DEFAULT: '#FFFFFF',

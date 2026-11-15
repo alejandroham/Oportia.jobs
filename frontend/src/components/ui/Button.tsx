@@ -22,13 +22,13 @@ export const Button: React.FC<ButtonProps> = ({
 }) => {
   const variantStyles = {
     primary:
-      'bg-[#20A88A] hover:bg-[#18856D] text-white shadow-xs focus-visible:ring-[#20A88A]/50',
+      'bg-brand-600 hover:bg-brand-700 text-white shadow-xs focus-visible:ring-[#20A88A]/50',
     secondary:
-      'bg-teal-50 dark:bg-teal-950/40 text-[#20A88A] dark:text-teal-300 border border-teal-200/70 dark:border-teal-800/50 hover:bg-teal-100 dark:hover:bg-teal-900/40 focus-visible:ring-[#20A88A]/30',
+      'bg-teal-50 dark:bg-teal-950/40 text-brand-700 dark:text-teal-300 border border-teal-200/70 dark:border-teal-800/50 hover:bg-teal-100 dark:hover:bg-teal-900/40 focus-visible:ring-[#20A88A]/30',
     outline:
-      'bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-zinc-800 focus-visible:ring-gray-400',
+      'bg-white dark:bg-ink-surface border border-gray-200 dark:border-ink-line text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-ink-raised focus-visible:ring-gray-400',
     ghost:
-      'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-zinc-800 hover:text-gray-900 dark:hover:text-white focus-visible:ring-gray-300',
+      'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-ink-raised hover:text-gray-900 dark:hover:text-white focus-visible:ring-gray-300',
     danger:
       'bg-rose-600 hover:bg-rose-700 text-white shadow-xs focus-visible:ring-rose-500/50'
   };

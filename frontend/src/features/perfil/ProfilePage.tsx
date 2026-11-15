@@ -56,13 +56,13 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
         </div>
 
         {/* 4 pestañas accesibles */}
-        <div className="flex flex-wrap items-center gap-1.5 p-1 rounded-2xl bg-gray-100 dark:bg-zinc-800 text-xs font-semibold">
+        <div className="flex flex-wrap items-center gap-1.5 p-1 rounded-2xl bg-gray-100 dark:bg-ink-raised text-xs font-semibold">
           <button
             type="button"
             onClick={() => handleTabChange('cv')}
             className={`inline-flex items-center gap-1.5 px-3.5 py-2 min-h-[44px] rounded-xl transition cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none ${
               activeTab === 'cv'
-                ? 'bg-white dark:bg-zinc-900 text-ink dark:text-white shadow-xs font-bold'
+                ? 'bg-white dark:bg-ink-surface text-ink dark:text-white shadow-xs font-bold'
                 : 'text-ink-muted hover:text-ink dark:hover:text-white'
             }`}
           >
@@ -75,7 +75,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
             onClick={() => handleTabChange('busqueda')}
             className={`inline-flex items-center gap-1.5 px-3.5 py-2 min-h-[44px] rounded-xl transition cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none ${
               activeTab === 'busqueda'
-                ? 'bg-white dark:bg-zinc-900 text-ink dark:text-white shadow-xs font-bold'
+                ? 'bg-white dark:bg-ink-surface text-ink dark:text-white shadow-xs font-bold'
                 : 'text-ink-muted hover:text-ink dark:hover:text-white'
             }`}
           >
@@ -88,7 +88,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
             onClick={() => handleTabChange('logros')}
             className={`inline-flex items-center gap-1.5 px-3.5 py-2 min-h-[44px] rounded-xl transition cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none ${
               activeTab === 'logros'
-                ? 'bg-white dark:bg-zinc-900 text-ink dark:text-white shadow-xs font-bold'
+                ? 'bg-white dark:bg-ink-surface text-ink dark:text-white shadow-xs font-bold'
                 : 'text-ink-muted hover:text-ink dark:hover:text-white'
             }`}
           >
@@ -101,7 +101,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
             onClick={() => handleTabChange('memoria')}
             className={`inline-flex items-center gap-1.5 px-3.5 py-2 min-h-[44px] rounded-xl transition cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none ${
               activeTab === 'memoria'
-                ? 'bg-white dark:bg-zinc-900 text-ink dark:text-white shadow-xs font-bold'
+                ? 'bg-white dark:bg-ink-surface text-ink dark:text-white shadow-xs font-bold'
                 : 'text-ink-muted hover:text-ink dark:hover:text-white'
             }`}
           >

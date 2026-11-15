@@ -35,7 +35,7 @@ export const OnboardingStep2Preferences: React.FC<OnboardingStep2PreferencesProp
         <h2 className="text-base font-bold text-gray-900 dark:text-white">
           ¿Qué estás buscando?
         </h2>
-        <p className="text-xs text-gray-500 dark:text-gray-400">
+        <p className="text-xs text-gray-500 dark:text-ink-200">
           Cuéntanos tus preferencias para calibrar el radar y mostrarte vacantes compatibles.
         </p>
       </div>
@@ -43,7 +43,7 @@ export const OnboardingStep2Preferences: React.FC<OnboardingStep2PreferencesProp
       {/* Roles / Cargos */}
       <div className="space-y-2">
         <label htmlFor="target-role-input" className="text-xs font-semibold text-ink dark:text-gray-300 flex items-center gap-1.5">
-          <Briefcase className="w-3.5 h-3.5 text-brand-500" />
+          <Briefcase className="w-3.5 h-3.5 text-brand-700 dark:text-brand-300" />
           Cargo(s) o roles objetivo
         </label>
         <div className="flex gap-2">
@@ -59,12 +59,12 @@ export const OnboardingStep2Preferences: React.FC<OnboardingStep2PreferencesProp
               }
             }}
             placeholder="Ej. Enfermero TENS, Vendedor, Analista Contable..."
-            className="flex-1 text-xs min-h-[44px] px-3 py-2 rounded-xl bg-gray-50 dark:bg-zinc-800 border border-black/10 dark:border-white/10 text-ink dark:text-white focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
+            className="flex-1 text-xs min-h-[44px] px-3 py-2 rounded-xl bg-gray-50 dark:bg-ink-raised border border-black/10 dark:border-white/10 text-ink dark:text-white focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
           />
           <button
             type="button"
             onClick={handleAddRole}
-            className="px-4 py-2 min-h-[44px] bg-gray-200 dark:bg-zinc-700 hover:bg-gray-300 dark:hover:bg-zinc-600 rounded-xl text-xs font-semibold text-ink dark:text-white transition cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
+            className="px-4 py-2 min-h-[44px] bg-gray-200 dark:bg-ink-hover hover:bg-gray-300 dark:hover:bg-ink-line rounded-xl text-xs font-semibold text-ink dark:text-white transition cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
           >
             Agregar
           </button>
@@ -100,7 +100,7 @@ export const OnboardingStep2Preferences: React.FC<OnboardingStep2PreferencesProp
           value={preferredRegion}
           onChange={(e) => setPreferredRegion(e.target.value)}
           disabled={isRemoteOnly}
-          className="w-full text-xs min-h-[44px] p-2.5 rounded-xl bg-gray-50 dark:bg-zinc-800 border border-black/10 dark:border-white/10 text-ink dark:text-white disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
+          className="w-full text-xs min-h-[44px] p-2.5 rounded-xl bg-gray-50 dark:bg-ink-raised border border-black/10 dark:border-white/10 text-ink dark:text-white disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
         >
           {CHILE_REGIONS.map((r) => (
             <option key={r.id} value={r.name}>{r.name}</option>
@@ -112,7 +112,7 @@ export const OnboardingStep2Preferences: React.FC<OnboardingStep2PreferencesProp
             type="checkbox"
             checked={isRemoteOnly}
             onChange={(e) => setIsRemoteOnly(e.target.checked)}
-            className="rounded text-brand-600 focus:ring-brand-500 w-4 h-4 cursor-pointer"
+            className="rounded text-brand-700 focus:ring-brand-500 w-4 h-4 cursor-pointer dark:text-brand-300"
           />
           <span className="text-xs text-ink-muted dark:text-gray-300">
             Solo buscar ofertas 100% remotas (sin importar la región)

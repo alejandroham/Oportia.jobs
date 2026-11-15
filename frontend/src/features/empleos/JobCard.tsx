@@ -47,7 +47,7 @@ export const JobCard: React.FC<JobCardProps> = ({
       onKeyDown={(e) => {
         if (e.key === 'Enter') onViewDetail(job);
       }}
-      className="group relative flex flex-col justify-between p-4 sm:p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-gray-200/80 dark:border-zinc-800 shadow-xs hover:shadow-md hover:border-brand-500/50 transition-all cursor-pointer text-left focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
+      className="group relative flex flex-col justify-between p-4 sm:p-5 rounded-2xl bg-white dark:bg-ink-surface border border-gray-200/80 dark:border-ink-border shadow-xs hover:shadow-md hover:border-brand-500/50 transition-all cursor-pointer text-left focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
     >
       {/* Botón de descarte sutil en esquina superior derecha */}
       <button
@@ -132,7 +132,7 @@ export const JobCard: React.FC<JobCardProps> = ({
       </div>
 
       {/* Fila de acciones directas (2 acciones claras) */}
-      <div className="flex items-center justify-between gap-2 pt-4 mt-3 border-t border-gray-100 dark:border-zinc-800">
+      <div className="flex items-center justify-between gap-2 pt-4 mt-3 border-t border-gray-100 dark:border-ink-border">
         <button
           type="button"
           onClick={(e) => {
@@ -143,10 +143,10 @@ export const JobCard: React.FC<JobCardProps> = ({
           className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition min-h-[44px] cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none ${
             isTracked
               ? 'bg-brand-50 dark:bg-brand-950/40 text-brand-700 dark:text-brand-300 border-brand-200 dark:border-brand-800/60'
-              : 'bg-white dark:bg-zinc-800 text-ink dark:text-gray-300 border-gray-200 dark:border-zinc-700 hover:bg-gray-50'
+              : 'bg-white dark:bg-ink-raised text-ink dark:text-gray-300 border-gray-200 dark:border-ink-line hover:bg-gray-50'
           }`}
         >
-          {isTracked ? <BookmarkCheck className="w-3.5 h-3.5 text-brand" /> : <Bookmark className="w-3.5 h-3.5" />}
+          {isTracked ? <BookmarkCheck className="w-3.5 h-3.5 text-brand-700 dark:text-brand-300" /> : <Bookmark className="w-3.5 h-3.5" />}
           <span>{isTracked ? 'En seguimiento' : 'Guardar'}</span>
         </button>
 
@@ -156,7 +156,7 @@ export const JobCard: React.FC<JobCardProps> = ({
             e.stopPropagation();
             onViewDetail(job);
           }}
-          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-brand hover:bg-brand-600 text-white text-xs font-semibold shadow-xs transition min-h-[44px] cursor-pointer active:scale-95 focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
+          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold shadow-xs transition min-h-[44px] cursor-pointer active:scale-95 focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
         >
           <span>Ver detalle</span>
         </button>

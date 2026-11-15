@@ -23,9 +23,9 @@ export const GapsTab: React.FC<GapsTabProps> = ({
 
   return (
     <div className="space-y-4">
-      <div className="p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-gray-200/80 dark:border-zinc-800 shadow-sm">
+      <div className="p-4 rounded-2xl bg-white dark:bg-ink-surface border border-gray-200/80 dark:border-ink-border shadow-sm">
         <h2 className="text-sm font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-          <Target className="w-4 h-4 text-[#20A88A]" />
+          <Target className="w-4 h-4 text-brand-700 dark:text-brand-300" />
           Diagnóstico de Brechas y Competencias
         </h2>
         <p className="text-xs text-gray-500 mt-0.5">
@@ -41,14 +41,14 @@ export const GapsTab: React.FC<GapsTabProps> = ({
             return (
               <div
                 key={comp.id}
-                className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-gray-200/80 dark:border-zinc-800 shadow-xs space-y-3 text-xs"
+                className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-ink-surface border border-gray-200/80 dark:border-ink-border shadow-xs space-y-3 text-xs"
               >
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
                     <span className="font-bold text-sm text-gray-900 dark:text-gray-100">
                       {comp.name}
                     </span>
-                    <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-gray-300">
+                    <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-gray-100 dark:bg-ink-raised text-gray-600 dark:text-gray-300">
                       {comp.category || 'Técnica'}
                     </span>
                   </div>
@@ -60,7 +60,7 @@ export const GapsTab: React.FC<GapsTabProps> = ({
                     <button
                       type="button"
                       onClick={() => onSearchCourse(comp.name)}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-teal-50 dark:bg-teal-950/40 text-[#20A88A] hover:bg-teal-100 text-xs font-semibold border border-teal-200/60 dark:border-teal-800/40 transition"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-teal-50 dark:bg-teal-950/40 text-brand-700 hover:bg-teal-100 text-xs font-semibold border border-teal-200/60 dark:border-teal-800/40 transition dark:text-brand-300"
                     >
                       <BookOpen className="w-3.5 h-3.5" />
                       <span>Buscar curso</span>
@@ -71,7 +71,7 @@ export const GapsTab: React.FC<GapsTabProps> = ({
                 {/* Evidencias en CV */}
                 {comp.evidences && comp.evidences.length > 0 && (
                   <div className="space-y-1">
-                    <span className="text-xs font-bold uppercase tracking-wider text-gray-400 block">
+                    <span className="text-xs font-bold uppercase tracking-wider text-gray-500 block">
                       Evidencias demostradas en tu CV:
                     </span>
                     <ul className="space-y-1 pl-1 text-gray-600 dark:text-gray-300">
@@ -101,7 +101,7 @@ export const GapsTab: React.FC<GapsTabProps> = ({
             );
           })
         ) : (
-          <div className="p-8 text-center rounded-2xl border border-dashed border-gray-200 dark:border-zinc-800 text-xs text-gray-400">
+          <div className="p-8 text-center rounded-2xl border border-dashed border-gray-200 dark:border-ink-border text-xs text-gray-400">
             Aún no se han identificado brechas formativas. Evalúa más ofertas en el radar para que Opi detecte oportunidades de mejora.
           </div>
         )}

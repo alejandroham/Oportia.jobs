@@ -41,7 +41,7 @@ export const Field: React.FC<FieldProps> = ({
           {error}
         </p>
       ) : hint ? (
-        <p id={hintId} className="text-xs text-ink-muted dark:text-gray-400">
+        <p id={hintId} className="text-xs text-ink-muted dark:text-ink-200">
           {hint}
         </p>
       ) : null}

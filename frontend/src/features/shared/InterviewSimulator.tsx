@@ -106,11 +106,11 @@ export const InterviewSimulator: React.FC<InterviewSimulatorProps> = ({
   };
 
   return (
-    <div className={`p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-gray-200/80 dark:border-zinc-800 shadow-sm space-y-4 ${className}`}>
+    <div className={`p-5 rounded-2xl bg-white dark:bg-ink-surface border border-gray-200/80 dark:border-ink-border shadow-sm space-y-4 ${className}`}>
       {/* Cabecera del simulador */}
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-gray-100 dark:border-zinc-800 pb-3">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-gray-100 dark:border-ink-border pb-3">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-xl bg-brand-50 dark:bg-brand-950/50 flex items-center justify-center text-brand">
+          <div className="w-8 h-8 rounded-xl bg-brand-50 dark:bg-brand-950/50 flex items-center justify-center text-brand-700 dark:text-brand-300">
             <Sparkles className="w-4 h-4" />
           </div>
           <div>
@@ -135,9 +135,9 @@ export const InterviewSimulator: React.FC<InterviewSimulatorProps> = ({
       </div>
 
       {/* Pregunta a responder */}
-      <div className="p-3.5 rounded-xl bg-gray-50 dark:bg-zinc-800/60 border border-gray-200/60 dark:border-zinc-700/60">
-        <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1 flex items-center gap-1">
-          <HelpCircle className="w-3.5 h-3.5 text-brand" />
+      <div className="p-3.5 rounded-xl bg-gray-50 dark:bg-ink-raised/60 border border-gray-200/60 dark:border-ink-line/60">
+        <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-ink-200 mb-1 flex items-center gap-1">
+          <HelpCircle className="w-3.5 h-3.5 text-brand-700 dark:text-brand-300" />
           Pregunta de la entrevista:
         </label>
         <p className="text-xs sm:text-sm font-semibold text-gray-800 dark:text-gray-200">
@@ -162,7 +162,7 @@ export const InterviewSimulator: React.FC<InterviewSimulatorProps> = ({
               value={answer}
               onChange={(e) => setAnswer(e.target.value)}
               placeholder="Describe la Situación inicial, la Tarea o desafío que enfrentaste, las Acciones concretas que lideraste y los Resultados medibles que obtuviste..."
-              className="w-full text-xs sm:text-sm p-3.5 rounded-xl border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800/80 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-brand/30 resize-none leading-relaxed"
+              className="w-full text-xs sm:text-sm p-3.5 rounded-xl border border-gray-200 dark:border-ink-line bg-white dark:bg-ink-raised/80 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-brand/30 resize-none leading-relaxed"
             />
             {isRecording && (
               <div className="absolute top-2 right-2 flex items-center gap-1.5 bg-rose-50 text-rose-600 px-2 py-0.5 rounded-full text-xs font-medium border border-rose-200 animate-pulse">
@@ -179,7 +179,7 @@ export const InterviewSimulator: React.FC<InterviewSimulatorProps> = ({
               className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold border transition ${
                 isRecording
                   ? 'bg-rose-50 border-rose-300 text-rose-700'
-                  : 'bg-gray-50 dark:bg-zinc-800 border-gray-200 dark:border-zinc-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100'
+                  : 'bg-gray-50 dark:bg-ink-raised border-gray-200 dark:border-ink-line text-gray-700 dark:text-gray-300 hover:bg-gray-100'
               }`}
             >
               {isRecording ? <MicOff className="w-3.5 h-3.5 text-rose-600" /> : <Mic className="w-3.5 h-3.5 text-gray-500" />}
@@ -190,7 +190,7 @@ export const InterviewSimulator: React.FC<InterviewSimulatorProps> = ({
               type="button"
               onClick={handleEvaluate}
               disabled={isSubmitting || !answer.trim()}
-              className="inline-flex items-center gap-1.5 px-4 py-2 min-h-[44px] rounded-xl bg-brand hover:bg-brand-600 text-white text-xs font-semibold shadow-xs transition disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 px-4 py-2 min-h-[44px] rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold shadow-xs transition disabled:opacity-50"
             >
               <Send className="w-3.5 h-3.5" />
               <span>{isSubmitting ? 'Evaluando...' : 'Evaluar mi respuesta'}</span>
@@ -202,7 +202,7 @@ export const InterviewSimulator: React.FC<InterviewSimulatorProps> = ({
         <div className="space-y-4 pt-1 animate-fade-in">
           <div className="flex items-center justify-between p-3 rounded-xl bg-teal-50 dark:bg-teal-950/40 border border-teal-200/60 dark:border-teal-800/40">
             <div className="flex items-center gap-2">
-              <span className="text-xl font-bold text-brand">
+              <span className="text-xl font-bold text-brand-700 dark:text-brand-300">
                 {evaluationResult.score ?? evaluationResult.star_score ?? 85}%
               </span>
               <span className="text-xs font-medium text-teal-900 dark:text-teal-200">

@@ -82,9 +82,9 @@ export const SettingsPrivacyPanel: React.FC = () => {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
           {/* Download backup card */}
-          <div className="p-4 rounded-xl border border-black/8 dark:border-white/8 bg-gray-50/50 dark:bg-zinc-800/40 space-y-3">
+          <div className="p-4 rounded-xl border border-black/[0.08] dark:border-ink-border bg-gray-50/50 dark:bg-ink-raised/40 space-y-3">
             <h3 className="text-xs font-bold text-ink dark:text-white flex items-center gap-1.5">
-              <Download className="w-4 h-4 text-brand-600" />
+              <Download className="w-4 h-4 text-brand-700 dark:text-brand-300" />
               Descargar respaldo
             </h3>
             <p className="text-xs text-ink-muted leading-relaxed">
@@ -96,13 +96,13 @@ export const SettingsPrivacyPanel: React.FC = () => {
                 placeholder="Contraseña de cifrado (opcional)..."
                 value={exportPassword}
                 onChange={(e) => setExportPassword(e.target.value)}
-                className="w-full text-xs min-h-[44px] px-3 py-2 rounded-xl bg-white dark:bg-zinc-800 border border-black/10 dark:border-white/10 text-ink dark:text-white focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
+                className="w-full text-xs min-h-[44px] px-3 py-2 rounded-xl bg-white dark:bg-ink-raised border border-black/10 dark:border-white/10 text-ink dark:text-white focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
               />
               <button
                 type="button"
                 onClick={handleDownloadBackup}
                 disabled={isExporting}
-                className="w-full min-h-[44px] py-2 bg-brand-500 hover:bg-brand-600 text-white text-xs font-semibold rounded-xl shadow-xs transition cursor-pointer active:scale-95 disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
+                className="w-full min-h-[44px] py-2 bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold rounded-xl shadow-xs transition cursor-pointer active:scale-95 disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
               >
                 {isExporting ? 'Descargando...' : 'Descargar archivo (.oportia)'}
               </button>
@@ -110,7 +110,7 @@ export const SettingsPrivacyPanel: React.FC = () => {
           </div>
 
           {/* Restore backup card */}
-          <div className="p-4 rounded-xl border border-black/8 dark:border-white/8 bg-gray-50/50 dark:bg-zinc-800/40 space-y-3 flex flex-col justify-between">
+          <div className="p-4 rounded-xl border border-black/[0.08] dark:border-ink-border bg-gray-50/50 dark:bg-ink-raised/40 space-y-3 flex flex-col justify-between">
             <div>
               <h3 className="text-xs font-bold text-ink dark:text-white flex items-center gap-1.5">
                 <UploadCloud className="w-4 h-4 text-emerald-600" />

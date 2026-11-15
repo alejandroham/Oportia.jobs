@@ -247,7 +247,7 @@ export function getGeographicBadge(
     return {
       type: 'other_region',
       label: `🇨🇱 ${locText}`,
-      badgeClass: 'bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-zinc-700',
+      badgeClass: 'bg-gray-100 dark:bg-ink-raised text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-ink-line',
       detectedRegion: region,
       detectedCommune: commune
     };
@@ -256,7 +256,7 @@ export function getGeographicBadge(
   return {
     type: 'national',
     label: '🇨🇱 Chile',
-    badgeClass: 'bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-zinc-700',
+    badgeClass: 'bg-gray-100 dark:bg-ink-raised text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-ink-line',
     detectedRegion: null,
     detectedCommune: null
   };

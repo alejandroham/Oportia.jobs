@@ -63,7 +63,7 @@ export const Tabs: React.FC<TabsProps> = ({
               onKeyDown={(e) => handleKeyDown(e, idx)}
               className={`pb-3 pt-2 text-xs font-semibold flex items-center gap-2 border-b-2 transition-all whitespace-nowrap cursor-pointer ${
                 isActive
-                  ? 'border-brand-500 text-brand-600 dark:text-brand-400'
+                  ? 'border-brand-500 text-brand-700 dark:text-brand-400'
                   : 'border-transparent text-ink-muted hover:text-ink dark:hover:text-white'
               }`}
             >
@@ -74,7 +74,7 @@ export const Tabs: React.FC<TabsProps> = ({
                   className={`px-1.5 py-0.5 rounded-full text-[12px] font-bold ${
                     isActive
                       ? 'bg-brand-100 dark:bg-brand-950/60 text-brand-700 dark:text-brand-300'
-                      : 'bg-gray-100 dark:bg-zinc-800 text-gray-500'
+                      : 'bg-gray-100 dark:bg-ink-raised text-gray-500'
                   }`}
                 >
                   {tab.count}
@@ -92,7 +92,7 @@ export const Tabs: React.FC<TabsProps> = ({
       ref={tabListRef}
       role="tablist"
       aria-label="Pestañas de navegación"
-      className={`flex bg-gray-100/80 dark:bg-zinc-800/80 p-1 rounded-xl border border-gray-200/50 dark:border-zinc-700/50 gap-1 overflow-x-auto ${className}`}
+      className={`flex bg-gray-100/80 dark:bg-ink-raised/80 p-1 rounded-xl border border-gray-200/50 dark:border-ink-line/50 gap-1 overflow-x-auto ${className}`}
     >
       {items.map((tab, idx) => {
         const isActive = tab.id === activeId;
@@ -117,8 +117,8 @@ export const Tabs: React.FC<TabsProps> = ({
               <span
                 className={`px-1.5 py-0.5 rounded-full text-[12px] font-bold ${
                   isActive
-                    ? 'bg-brand-50 text-brand-600 dark:bg-brand-950/60 dark:text-brand-300'
-                    : 'bg-gray-200/70 dark:bg-zinc-700 text-gray-600 dark:text-gray-300'
+                    ? 'bg-brand-50 text-brand-700 dark:bg-brand-950/60 dark:text-brand-300'
+                    : 'bg-gray-200/70 dark:bg-ink-hover text-gray-600 dark:text-gray-300'
                 }`}
               >
                 {tab.count}

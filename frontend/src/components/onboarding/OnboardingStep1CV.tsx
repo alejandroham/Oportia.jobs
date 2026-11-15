@@ -28,14 +28,14 @@ export const OnboardingStep1CV: React.FC<OnboardingStep1CVProps> = ({
         <h2 className="text-base font-bold text-gray-900 dark:text-white">
           Sube tu CV para empezar
         </h2>
-        <p className="text-xs text-gray-500 dark:text-gray-400">
+        <p className="text-xs text-gray-500 dark:text-ink-200">
           Extraemos tu experiencia y habilidades de forma segura en tu navegador sin inventar datos.
         </p>
       </div>
 
       {/* Upload Box */}
       <label className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-brand-400/50 hover:border-brand-500 rounded-2xl bg-brand-50/30 dark:bg-brand-950/20 cursor-pointer transition">
-        <div className="w-12 h-12 rounded-2xl bg-brand-100 dark:bg-brand-900/40 text-brand-600 dark:text-brand-400 flex items-center justify-center mb-2">
+        <div className="w-12 h-12 rounded-2xl bg-brand-100 dark:bg-brand-900/40 text-brand-700 dark:text-brand-400 flex items-center justify-center mb-2">
           <Upload className="w-6 h-6" />
         </div>
         <span className="font-semibold text-ink dark:text-gray-200">
@@ -53,7 +53,7 @@ export const OnboardingStep1CV: React.FC<OnboardingStep1CVProps> = ({
 
       {/* Extracted preview card */}
       {(tempName || tempTitle) && (
-        <div className="p-4 rounded-2xl bg-gray-50 dark:bg-zinc-800/60 border border-black/5 dark:border-white/5 space-y-3">
+        <div className="p-4 rounded-2xl bg-gray-50 dark:bg-ink-raised/60 border border-black/5 dark:border-white/5 space-y-3">
           <span className="text-xs uppercase font-bold tracking-wider text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
             <CheckCircle2 className="w-3.5 h-3.5" />
             Información detectada en tu currículum
@@ -66,7 +66,7 @@ export const OnboardingStep1CV: React.FC<OnboardingStep1CVProps> = ({
                 type="text"
                 value={tempName}
                 onChange={(e) => setTempName(e.target.value)}
-                className="w-full text-xs min-h-[44px] p-2.5 rounded-xl bg-white dark:bg-zinc-800 border border-black/10 dark:border-white/10 text-ink dark:text-white focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
+                className="w-full text-xs min-h-[44px] p-2.5 rounded-xl bg-white dark:bg-ink-raised border border-black/10 dark:border-white/10 text-ink dark:text-white focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
               />
             </div>
             <div>
@@ -76,7 +76,7 @@ export const OnboardingStep1CV: React.FC<OnboardingStep1CVProps> = ({
                 type="text"
                 value={tempTitle}
                 onChange={(e) => setTempTitle(e.target.value)}
-                className="w-full text-xs min-h-[44px] p-2.5 rounded-xl bg-white dark:bg-zinc-800 border border-black/10 dark:border-white/10 text-ink dark:text-white focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
+                className="w-full text-xs min-h-[44px] p-2.5 rounded-xl bg-white dark:bg-ink-raised border border-black/10 dark:border-white/10 text-ink dark:text-white focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
               />
             </div>
           </div>
@@ -89,7 +89,7 @@ export const OnboardingStep1CV: React.FC<OnboardingStep1CVProps> = ({
               {tempSkills.map((s, idx) => (
                 <span
                   key={idx}
-                  className="px-2.5 py-1 rounded-lg bg-white dark:bg-zinc-700 text-ink dark:text-gray-300 border border-black/5 flex items-center gap-1.5 text-xs font-medium"
+                  className="px-2.5 py-1 rounded-lg bg-white dark:bg-ink-hover text-ink dark:text-gray-300 border border-black/5 flex items-center gap-1.5 text-xs font-medium"
                 >
                   {s}
                   <button

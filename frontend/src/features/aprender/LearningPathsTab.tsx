@@ -36,9 +36,9 @@ export const LearningPathsTab: React.FC<LearningPathsTabProps> = ({
   return (
     <div className="space-y-6">
       {/* Generador de Ruta con IA */}
-      <div className="p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-gray-200/80 dark:border-zinc-800 shadow-sm space-y-3">
+      <div className="p-5 rounded-2xl bg-white dark:bg-ink-surface border border-gray-200/80 dark:border-ink-border shadow-sm space-y-3">
         <div className="flex items-center gap-2">
-          <Route className="w-4 h-4 text-[#20A88A]" />
+          <Route className="w-4 h-4 text-brand-700 dark:text-brand-300" />
           <h2 className="text-sm font-bold text-gray-900 dark:text-gray-100">
             Diseñar Ruta de Aprendizaje Personalizada
           </h2>
@@ -53,13 +53,13 @@ export const LearningPathsTab: React.FC<LearningPathsTabProps> = ({
             value={roleInput}
             onChange={(e) => setRoleInput(e.target.value)}
             placeholder="Cargo objetivo (ej. Jefe de Bodega, Educadora de Párvulos, Analista Contable)..."
-            className="flex-1 min-w-[220px] px-3.5 py-2 rounded-xl bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 text-gray-900 dark:text-gray-100 focus:outline-none"
+            className="flex-1 min-w-[220px] px-3.5 py-2 rounded-xl bg-gray-50 dark:bg-ink-raised border border-gray-200 dark:border-ink-line text-gray-900 dark:text-gray-100 focus:outline-none"
           />
           <button
             type="button"
             onClick={handleGeneratePath}
             disabled={isGenerating || !roleInput.trim()}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#20A88A] hover:bg-[#18856d] text-white font-semibold shadow-xs transition disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold shadow-xs transition disabled:opacity-50"
           >
             {isGenerating ? (
               <>
@@ -82,9 +82,9 @@ export const LearningPathsTab: React.FC<LearningPathsTabProps> = ({
           learningPaths.map((path) => (
             <div
               key={path.id || path.title}
-              className="p-5 sm:p-6 rounded-2xl bg-white dark:bg-zinc-900 border border-gray-200/80 dark:border-zinc-800 shadow-sm space-y-4 text-xs"
+              className="p-5 sm:p-6 rounded-2xl bg-white dark:bg-ink-surface border border-gray-200/80 dark:border-ink-border shadow-sm space-y-4 text-xs"
             >
-              <div className="flex flex-wrap items-start justify-between gap-3 border-b border-gray-100 dark:border-zinc-800 pb-3">
+              <div className="flex flex-wrap items-start justify-between gap-3 border-b border-gray-100 dark:border-ink-border pb-3">
                 <div className="space-y-0.5">
                   <h3 className="text-base font-bold text-gray-900 dark:text-gray-100">
                     {path.title}
@@ -96,12 +96,12 @@ export const LearningPathsTab: React.FC<LearningPathsTabProps> = ({
 
                 <div className="flex items-center gap-2">
                   {path.estimated_weeks && (
-                    <span className="flex items-center gap-1 text-gray-500 bg-gray-50 dark:bg-zinc-800 px-2.5 py-1 rounded-lg border border-gray-200 dark:border-zinc-700">
+                    <span className="flex items-center gap-1 text-gray-500 bg-gray-50 dark:bg-ink-raised px-2.5 py-1 rounded-lg border border-gray-200 dark:border-ink-line">
                       <Clock className="w-3 h-3 text-gray-400" />
                       <span>{path.estimated_weeks} semanas estimadas</span>
                     </span>
                   )}
-                  <span className="px-2.5 py-1 rounded-lg bg-teal-50 dark:bg-teal-950/40 text-[#20A88A] font-bold border border-teal-200/60">
+                  <span className="px-2.5 py-1 rounded-lg bg-teal-50 dark:bg-teal-950/40 text-brand-700 font-bold border border-teal-200/60 dark:text-brand-300">
                     {path.progress_percentage || 0}% avance
                   </span>
                 </div>
@@ -123,7 +123,7 @@ export const LearningPathsTab: React.FC<LearningPathsTabProps> = ({
                   {path.milestones?.map((milestone, idx) => (
                     <div
                       key={idx}
-                      className="p-3.5 rounded-xl bg-gray-50 dark:bg-zinc-800/60 border border-gray-200/60 dark:border-zinc-700/60 flex items-start gap-3"
+                      className="p-3.5 rounded-xl bg-gray-50 dark:bg-ink-raised/60 border border-gray-200/60 dark:border-ink-line/60 flex items-start gap-3"
                     >
                       <div className="mt-0.5">
                         {milestone.status === 'completed' ? (
@@ -138,7 +138,7 @@ export const LearningPathsTab: React.FC<LearningPathsTabProps> = ({
                             Paso {milestone.step_number}: {milestone.title}
                           </span>
                         </div>
-                        <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
+                        <p className="text-gray-600 dark:text-ink-200 leading-relaxed">
                           {milestone.objective}
                         </p>
                         {milestone.practical_activity && (
@@ -154,7 +154,7 @@ export const LearningPathsTab: React.FC<LearningPathsTabProps> = ({
             </div>
           ))
         ) : (
-          <div className="p-8 text-center rounded-2xl border border-dashed border-gray-200 dark:border-zinc-800 text-xs text-gray-400">
+          <div className="p-8 text-center rounded-2xl border border-dashed border-gray-200 dark:border-ink-border text-xs text-gray-400">
             Aún no has generado rutas de aprendizaje. Escribe tu rol objetivo arriba para crear una.
           </div>
         )}

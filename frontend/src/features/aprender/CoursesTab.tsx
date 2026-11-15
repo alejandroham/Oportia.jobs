@@ -29,10 +29,10 @@ export const CoursesTab: React.FC<CoursesTabProps> = ({
   return (
     <div className="space-y-4">
       {/* Barra de búsqueda y filtros de cursos */}
-      <div className="p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-gray-200/80 dark:border-zinc-800 shadow-sm space-y-3">
+      <div className="p-4 rounded-2xl bg-white dark:bg-ink-surface border border-gray-200/80 dark:border-ink-border shadow-sm space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h2 className="text-sm font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-            <BookOpen className="w-4 h-4 text-[#20A88A]" />
+            <BookOpen className="w-4 h-4 text-brand-700 dark:text-brand-300" />
             Cursos Gratuitos y Verificados
           </h2>
           <span className="text-xs text-gray-500">
@@ -48,14 +48,14 @@ export const CoursesTab: React.FC<CoursesTabProps> = ({
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
               placeholder="Buscar por tema o habilidad (ej. Excel, Liderazgo, Prevención de riesgos)..."
-              className="w-full pl-9 pr-3 py-2 rounded-xl bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 text-gray-900 dark:text-gray-100 focus:outline-none"
+              className="w-full pl-9 pr-3 py-2 rounded-xl bg-gray-50 dark:bg-ink-raised border border-gray-200 dark:border-ink-line text-gray-900 dark:text-gray-100 focus:outline-none"
             />
           </div>
 
           <select
             value={costFilter}
             onChange={(e) => onCostFilterChange(e.target.value)}
-            className="px-3 py-2 rounded-xl bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 text-gray-700 dark:text-gray-300 focus:outline-none font-medium"
+            className="px-3 py-2 rounded-xl bg-gray-50 dark:bg-ink-raised border border-gray-200 dark:border-ink-line text-gray-700 dark:text-gray-300 focus:outline-none font-medium"
           >
             <option value="all">Todos los precios</option>
             <option value="Gratis">100% Gratuitos / Sence</option>
@@ -64,7 +64,7 @@ export const CoursesTab: React.FC<CoursesTabProps> = ({
 
           <button
             type="submit"
-            className="px-4 py-2 rounded-xl bg-[#20A88A] hover:bg-[#18856d] text-white font-semibold shadow-xs transition"
+            className="px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold shadow-xs transition"
           >
             Buscar
           </button>
@@ -81,11 +81,11 @@ export const CoursesTab: React.FC<CoursesTabProps> = ({
           {courses.map((course) => (
             <div
               key={course.id || course.title}
-              className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-gray-200/80 dark:border-zinc-800 shadow-xs flex flex-col justify-between gap-3 text-xs"
+              className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-ink-surface border border-gray-200/80 dark:border-ink-border shadow-xs flex flex-col justify-between gap-3 text-xs"
             >
               <div className="space-y-2">
                 <div className="flex items-center justify-between gap-2">
-                  <span className="font-bold text-[#20A88A] uppercase tracking-wider text-xs">
+                  <span className="font-bold text-brand-700 uppercase tracking-wider text-xs dark:text-brand-300">
                     {course.platform}
                   </span>
                   <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
@@ -99,7 +99,7 @@ export const CoursesTab: React.FC<CoursesTabProps> = ({
                   {course.title}
                 </h3>
 
-                <p className="text-gray-600 dark:text-gray-400 line-clamp-2 leading-relaxed">
+                <p className="text-gray-600 dark:text-ink-200 line-clamp-2 leading-relaxed">
                   {course.description}
                 </p>
 
@@ -119,12 +119,12 @@ export const CoursesTab: React.FC<CoursesTabProps> = ({
                 </div>
               </div>
 
-              <div className="pt-3 border-t border-gray-100 dark:border-zinc-800 flex justify-end">
+              <div className="pt-3 border-t border-gray-100 dark:border-ink-border flex justify-end">
                 <a
                   href={course.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gray-50 dark:bg-zinc-800 hover:bg-gray-100 text-gray-700 dark:text-gray-300 font-semibold border border-gray-200 dark:border-zinc-700 transition"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gray-50 dark:bg-ink-raised hover:bg-gray-100 text-gray-700 dark:text-gray-300 font-semibold border border-gray-200 dark:border-ink-line transition"
                 >
                   <span>Ir al curso</span>
                   <ExternalLink className="w-3 h-3" />
@@ -134,7 +134,7 @@ export const CoursesTab: React.FC<CoursesTabProps> = ({
           ))}
         </div>
       ) : (
-        <div className="p-8 text-center rounded-2xl border border-dashed border-gray-200 dark:border-zinc-800 text-xs text-gray-400">
+        <div className="p-8 text-center rounded-2xl border border-dashed border-gray-200 dark:border-ink-border text-xs text-gray-400">
           No se encontraron cursos con los filtros seleccionados.
         </div>
       )}

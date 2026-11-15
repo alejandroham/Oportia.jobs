@@ -81,7 +81,7 @@ export const Dialog: React.FC<DialogProps> = ({
               {description && (
                 <p
                   id="dialog-description"
-                  className="text-xs text-ink-muted dark:text-gray-400 mt-0.5"
+                  className="text-xs text-ink-muted dark:text-ink-200 mt-0.5"
                 >
                   {description}
                 </p>
