@@ -5,6 +5,20 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
 
 ---
 
+## [1.3.7] - 2026-11-16 — *README y manual al día, memoria interna fuera del repositorio*
+
+### 📘 Documentación
+- **README renovado:**
+  - mensaje "Tú manejas tu información. Nosotros te traemos las ofertas.";
+  - novedades de la 1.3: índice diario con vencimiento, análisis del CV con IA, cargos sugeridos y logros, compatibilidad automática y opiniones;
+  - diagrama de arquitectura actualizado: fuentes reales, Supabase y GitHub Actions;
+  - tabla de módulos al día;
+  - Node.js 20.19 o superior.
+- **Manual de usuario 1.3.7:** nuevo recuadro "Novedades de la versión 1.3" y explicación de "Borrar todos mis datos" con doble confirmación.
+
+### 🔒 Memoria interna fuera del repositorio público
+- `docs/PLAN_DE_MEJORAS.md`, `docs/MANUAL_MAESTRO_OPTIMIZACION_UI_UX.md` y `docs/ESPECIFICACIONES_DISENO_VISUAL_UI_UX.md` dejan de publicarse. Se conservan en el equipo del autor y quedan en `.gitignore`, junto con la carpeta `docs/interno/` para futuros documentos internos.
+
 ## [1.3.6] - 2026-11-16 — *Qué busco y Mis logros con IA, también desde Opi*
 
 ### 🎯 "Qué busco" y "Mis logros" con IA, también desde Opi

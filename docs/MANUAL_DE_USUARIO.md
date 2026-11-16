@@ -1,8 +1,20 @@
 # Manual de usuario — Oportia Jobs IA
 
-> Versión 1.3.6 · Guía paso a paso para encontrar trabajo con Oportia y Opi, tu copiloto.
+> Versión 1.3.7 · Guía paso a paso para encontrar trabajo con Oportia y Opi, tu copiloto.
 >
 > Las capturas muestran a **Paula Rojas**, una persona de demostración **ficticia** (Técnico en Enfermería). Las empresas que aparecen también son ficticias.
+
+### Novedades de la versión 1.3
+
+- **Ofertas cada mañana:** un índice diario de ofertas de Chile, con la fecha de vencimiento de cada una. Las vencidas se ocultan ([sección 6](#6-buscar-empleo)).
+- **Tu compatibilidad, sin pedirla:** con la IA activa, cada oferta muestra tu porcentaje, y Oportia te avisa si tu perfil cambió ([sección 6](#6-buscar-empleo)).
+- **Tu CV, bien leído:**
+  - la IA separa experiencia, títulos y cursos;
+  - "Reanalizar con IA" corrige tu perfil ([sección 4](#4-mi-perfil-tu-cv));
+  - la experiencia ahora se puede editar.
+- **Qué busco y Mis logros con IA:** cargos afines con su resumen y logros STAR desde tu CV; también desde el chat con Opi ([secciones 4, 5 y 9](#5-qué-buscas-tus-criterios)).
+- **Danos tu opinión,** con contacto solo si lo autorizas ([sección 12](#12-danos-tu-opinión)).
+- **"Borrar todos mis datos"** ahora pide dos confirmaciones y vuelve a la portada ([sección 11](#11-privacidad-y-respaldo-de-tus-datos)).
 
 ---
 
@@ -294,7 +306,7 @@ En **Ajustes → Privacidad & Datos** puedes:
 
 - **Descargar archivo (.oportia)**: un respaldo cifrado de todos tus datos.
 - **Restaurar respaldo**: cargarlo en otro navegador o equipo.
-- **Derecho al Olvido (Borrar Todo)**: eliminar todos tus datos de este navegador.
+- **Borrar todos mis datos**: elimina todos tus datos de este navegador. Antes te pide dos confirmaciones ("entiendo que no se puede deshacer" y "no quiero descargar un respaldo") o te deja descargar el respaldo ahí mismo. Después vuelves a la portada y la guía de inicio parte de cero.
 
 Más detalles en la [Política de Privacidad](../PRIVACY.md) (Ley N° 21.719).
 
