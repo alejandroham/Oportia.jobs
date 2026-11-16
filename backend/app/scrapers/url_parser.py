@@ -1,7 +1,10 @@
 import httpx
 from bs4 import BeautifulSoup
+import ipaddress
 import re
+import socket
 from typing import Dict, Any, Tuple
+from urllib.parse import urljoin, urlparse
 import logging
 
 logger = logging.getLogger(__name__)
@@ -39,6 +42,55 @@ def sanitize_job_text(raw_text: str) -> Tuple[str, bool]:
     cleaned = re.sub(r'\s+', ' ', cleaned).strip()
     return cleaned, is_suspicious
 
+MAX_REDIRECTS = 5
+MAX_BYTES = 3_000_000
+
+
+class UnsafeURLError(ValueError):
+    """La URL apunta a una dirección interna o no permitida (protección SSRF)."""
+
+
+def _is_public_ip(ip: str) -> bool:
+    addr = ipaddress.ip_address(ip)
+    if isinstance(addr, ipaddress.IPv6Address) and addr.ipv4_mapped:
+        addr = addr.ipv4_mapped
+    return addr.is_global and not (addr.is_multicast or addr.is_reserved or addr.is_loopback or addr.is_link_local or addr.is_private)
+
+
+def assert_public_url(url: str) -> None:
+    """
+    Protección SSRF de "Importar oferta por URL": solo http/https, puertos web y hosts cuyas
+    direcciones IP sean TODAS públicas (sin localhost, redes privadas, link-local ni metadatos de la nube).
+    """
+    parsed = urlparse(url)
+    if parsed.scheme not in ("http", "https"):
+        raise UnsafeURLError("Solo se aceptan enlaces http:// o https://.")
+    host = parsed.hostname
+    if not host or parsed.username or parsed.password:
+        raise UnsafeURLError("El enlace no es válido.")
+    if parsed.port not in (None, 80, 443, 8080, 8443):
+        raise UnsafeURLError("El enlace usa un puerto no permitido.")
+    try:
+        infos = socket.getaddrinfo(host, parsed.port or (443 if parsed.scheme == "https" else 80), proto=socket.IPPROTO_TCP)
+    except socket.gaierror:
+        raise UnsafeURLError("No se encontró el sitio del enlace.")
+    ips = {info[4][0] for info in infos}
+    if not ips or not all(_is_public_ip(ip) for ip in ips):
+        raise UnsafeURLError("El enlace apunta a una dirección interna y no se puede importar.")
+
+
+def _safe_get(client: httpx.Client, url: str) -> httpx.Response:
+    """GET siguiendo redirecciones a mano y validando CADA destino (una redirección no puede llevar a la red interna)."""
+    for _ in range(MAX_REDIRECTS + 1):
+        assert_public_url(url)
+        resp = client.get(url)
+        if resp.is_redirect and resp.headers.get("location"):
+            url = urljoin(url, resp.headers["location"])
+            continue
+        return resp
+    raise UnsafeURLError("El enlace redirige demasiadas veces.")
+
+
 def extract_job_from_url(url: str) -> Dict[str, Any]:
     """
     Fetches and parses a job posting webpage cleanly.
@@ -49,8 +101,10 @@ def extract_job_from_url(url: str) -> Dict[str, Any]:
     }
 
     try:
-        with httpx.Client(timeout=15.0, headers=headers, follow_redirects=True) as client:
-            resp = client.get(url)
+        with httpx.Client(timeout=15.0, headers=headers, follow_redirects=False) as client:
+            resp = _safe_get(client, url)
+            if len(resp.content) > MAX_BYTES:
+                return {"error": "La página es demasiado grande para importarla."}
             if resp.status_code != 200:
                 return {"error": f"Error al cargar la página (Status {resp.status_code})"}
             
@@ -83,6 +137,8 @@ def extract_job_from_url(url: str) -> Dict[str, Any]:
                 "url": url,
                 "is_suspicious": suspicious
             }
+    except UnsafeURLError as e:
+        return {"error": str(e)}
     except Exception as e:
         logger.error(f"Error parsing job URL {url}: {e}")
         return {"error": f"No se pudo extraer el contenido del enlace: {str(e)}"}

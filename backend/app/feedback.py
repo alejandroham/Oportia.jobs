@@ -29,6 +29,8 @@ class FeedbackRequest(BaseModel):
     contact_phone: Optional[str] = Field(default=None, max_length=40)
     contact_consent: bool = False
     trigger: str = "manual"
+    # Campo trampa: invisible para personas; si viene con texto, es un bot y no se guarda nada.
+    website: Optional[str] = Field(default=None, max_length=200)
 
     @field_validator("liked", "improve", "contact_email", "contact_phone", mode="before")
     @classmethod
@@ -70,6 +72,10 @@ class FeedbackUnavailable(Exception):
     pass
 
 
+class FeedbackRateLimited(Exception):
+    pass
+
+
 def save_feedback(fb: FeedbackRequest, app_version: str) -> str:
     base = (os.environ.get("SUPABASE_URL") or "").strip().rstrip("/")
     key = (os.environ.get("SUPABASE_PUBLISHABLE_KEY") or "").strip()
@@ -93,6 +99,8 @@ def save_feedback(fb: FeedbackRequest, app_version: str) -> str:
         headers["Authorization"] = f"Bearer {key}"
     res = requests.post(f"{base}/rest/v1/feedback", json=row, headers=headers, timeout=15)
     if res.status_code >= 300:
+        if "P0001" in res.text:  # tope anti-spam de la base de datos
+            raise FeedbackRateLimited("Recibimos muchas opiniones en poco tiempo. Intenta de nuevo en unos minutos.")
         raise FeedbackUnavailable(f"No se pudo guardar la opinión ({res.status_code}).")
     return feedback_id
 

@@ -88,3 +88,19 @@ def test_purge_deletes_rows_older_than_12_months(monkeypatch):
     assert url == "https://abc.supabase.co/rest/v1/feedback"
     assert params["created_at"].startswith("lt.")
     assert headers["apikey"] == "sb_secret_x"
+
+
+def test_honeypot_is_accepted_but_not_saved(env):
+    res = TestClient(app).post("/api/opinion", json={"rating": 5, "website": "http://spam.example"})
+    assert res.status_code == 200 and res.json()["ok"]
+    assert "row" not in env
+
+
+def test_database_cap_returns_429(monkeypatch):
+    class R:
+        status_code = 400
+        text = '{"code":"P0001","message":"Demasiadas opiniones en poco tiempo."}'
+
+    monkeypatch.setattr(fb.requests, "post", lambda *a, **k: R())
+    res = TestClient(app).post("/api/opinion", json={"rating": 5})
+    assert res.status_code == 429 and "minutos" in res.json()["detail"]

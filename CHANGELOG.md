@@ -5,6 +5,24 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
 
 ---
 
+## [1.3.3] - 2026-11-17 — *Corrección de seguridad (SSRF) y protección contra spam*
+
+### 🔒 Seguridad
+- **Corrección de SSRF en "Importar oferta por URL".** El servidor descargaba cualquier dirección, incluidas `localhost`, redes internas y los metadatos de la nube; la protección que describía `SECURITY.md` no existía en el código.
+  - Ahora valida protocolo y puerto, exige que todas las IP del host sean públicas y revisa cada redirección (máximo 5).
+  - Limita el tamaño de la página a 3 MB.
+  - Pruebas en `test_ssrf.py`.
+- **Opiniones contra el spam:**
+  - tope global en la base de datos de 30 opiniones cada 10 minutos y 300 por día, que también aplica a quien inserte directamente con la clave publicable;
+  - la fecha de cada opinión la fija la base de datos;
+  - campo trampa para bots;
+  - respuesta 429 con un mensaje claro.
+- **`SECURITY.md` reescrito:**
+  - versiones con soporte, reporte privado de vulnerabilidades y controles reales;
+  - se quitaron rutas locales del equipo del autor (`file:///Users/...`);
+  - nueva sección de configuración recomendada del repositorio.
+- **`.github/dependabot.yml`:** actualizaciones mensuales agrupadas de npm, pip (backend y raíz) y GitHub Actions.
+
 ## [1.3.2] - 2026-11-17 — *Compatibilidad automática, portada renovada y opiniones*
 
 ### 🎯 Compatibilidad con IA automática y aviso cuando cambia tu perfil

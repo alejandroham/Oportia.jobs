@@ -1,4 +1,5 @@
 import os
+import uuid
 import json
 import tempfile
 import logging
@@ -48,7 +49,7 @@ from app.utils.cache import job_search_cache
 from app.indexer.store import index_cache
 from app.indexer.search import search_index, search_index_for_profile
 from app.utils.rate_limiter import ai_rate_limiter, search_rate_limiter, feedback_rate_limiter
-from app.feedback import FeedbackRequest, FeedbackUnavailable, save_feedback
+from app.feedback import FeedbackRequest, FeedbackRateLimited, FeedbackUnavailable, save_feedback
 from app.scrapers.remote_boards import RemoteBoardsScraper
 from app.scrapers.linkedin_guest import LinkedInGuestScraper
 from app.scrapers.url_parser import extract_job_from_url
@@ -554,8 +555,13 @@ def _annotate_search_results(jobs: List[JobPosting], req: JobSearchRequest) -> N
 @app.post("/api/opinion", dependencies=[Depends(feedback_rate_limiter)])
 def submit_feedback(req: FeedbackRequest):
     """Opinión sobre la app. Contacto solo con autorización. No se guarda nada en el servidor."""
+    if req.website:
+        # Bot (llenó el campo trampa): se responde igual, sin guardar nada.
+        return {"ok": True, "id": str(uuid.uuid4())}
     try:
         feedback_id = save_feedback(req, settings.VERSION)
+    except FeedbackRateLimited as e:
+        raise HTTPException(status_code=429, detail=str(e))
     except FeedbackUnavailable as e:
         raise HTTPException(status_code=503, detail=str(e))
     return {"ok": True, "id": feedback_id}

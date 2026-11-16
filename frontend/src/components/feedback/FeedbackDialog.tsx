@@ -27,6 +27,7 @@ export const FeedbackDialog: React.FC = () => {
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [consent, setConsent] = useState(false);
+  const [website, setWebsite] = useState(''); // campo trampa para bots (invisible)
   const [sending, setSending] = useState(false);
   const [error, setError] = useState('');
   const [sentId, setSentId] = useState('');
@@ -56,6 +57,7 @@ export const FeedbackDialog: React.FC = () => {
         contact_email: consent ? email.trim() || undefined : undefined,
         contact_phone: consent ? phone.trim() || undefined : undefined,
         contact_consent: consent && hasContact,
+        website: website || undefined,
         trigger
       });
       markFeedbackDone();
@@ -173,6 +175,14 @@ export const FeedbackDialog: React.FC = () => {
               <p className="text-xs text-amber-800 dark:text-amber-200">Para enviar tu contacto marca la autorización, o borra el correo y el teléfono.</p>
             )}
           </fieldset>
+
+          {/* Campo trampa: las personas no lo ven; los bots que lo llenan no se guardan. */}
+          <div aria-hidden="true" className="absolute -left-[9999px] w-px h-px overflow-hidden">
+            <label>
+              Sitio web
+              <input type="text" tabIndex={-1} autoComplete="off" value={website} onChange={(e) => setWebsite(e.target.value)} />
+            </label>
+          </div>
 
           {donation}
 

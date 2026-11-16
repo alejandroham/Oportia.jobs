@@ -173,6 +173,8 @@ export interface OpinionPayload {
   contact_email?: string;
   contact_phone?: string;
   contact_consent: boolean;
+  /** Campo trampa (bots). */
+  website?: string;
   trigger: 'manual' | 'auto';
 }
 
