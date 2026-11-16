@@ -61,21 +61,26 @@ def download_index(timeout: float = 8.0) -> Optional[Dict[str, Any]]:
         return None
 
 
+def auth_headers(key: str) -> Dict[str, str]:
+    """
+    Claves antiguas (JWT "eyJ…"): en apikey y Authorization. Claves nuevas ("sb_secret_…"): solo en
+    apikey; Supabase las rechaza en Authorization ("Invalid Compact JWS") y genera el token por su cuenta.
+    """
+    key = key.strip()
+    if key.startswith("eyJ"):
+        return {"apikey": key, "Authorization": f"Bearer {key}"}
+    return {"apikey": key}
+
+
 def upload_index(index: Dict[str, Any]) -> None:
     base = (os.environ.get("SUPABASE_URL") or "").rstrip("/")
-    key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
+    key = (os.environ.get("SUPABASE_SERVICE_ROLE_KEY") or "").strip()
     if not base or not key:
         raise RuntimeError("Faltan SUPABASE_URL o SUPABASE_SERVICE_ROLE_KEY para publicar el índice.")
     res = requests.post(
         f"{base}/storage/v1/object/{INDEX_BUCKET}/{INDEX_OBJECT}",
         data=encode_index(index),
-        headers={
-            "Authorization": f"Bearer {key}",
-            "apikey": key,
-            "Content-Type": "application/gzip",
-            "Cache-Control": "max-age=1800",
-            "x-upsert": "true",
-        },
+        headers={**auth_headers(key), "Content-Type": "application/gzip", "Cache-Control": "max-age=1800", "x-upsert": "true"},
         timeout=60,
     )
     if res.status_code >= 300:

@@ -159,3 +159,8 @@ def test_computrabajo_parses_current_html():
     assert j.company == "Tienda SpA"
     assert j.location == "Santiago - Maipú, R.Metropolitana"
     assert j.url == "https://cl.computrabajo.com/ofertas-de-trabajo/oferta-de-trabajo-de-vendedor-A1"
+
+
+def test_auth_headers_support_new_and_legacy_keys():
+    assert store.auth_headers("sb_secret_abc") == {"apikey": "sb_secret_abc"}
+    assert store.auth_headers(" eyJhbGciOi.x.y\n") == {"apikey": "eyJhbGciOi.x.y", "Authorization": "Bearer eyJhbGciOi.x.y"}

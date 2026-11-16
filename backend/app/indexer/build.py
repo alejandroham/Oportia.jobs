@@ -309,6 +309,9 @@ def main(argv: Optional[List[str]] = None) -> int:
         f"Índice: {index['count']} ofertas ({index['new_today']} nuevas hoy) de {len(raw)} recolectadas "
         f"en {time.time() - started:.0f}s. Fuentes: {counts}. Áreas: {index['areas']}"
     )
+    import os
+    if os.environ.get("GITHUB_ACTIONS"):
+        print(f"::notice title=Índice diario::{index['count']} ofertas ({index['new_today']} nuevas hoy). Fuentes: {counts}")
     if args.out:
         with open(args.out, "wb") as f:
             f.write(encode_index(index))
@@ -318,5 +321,20 @@ def main(argv: Optional[List[str]] = None) -> int:
     return 0 if index["count"] else 1
 
 
+def _report_error(message: str) -> None:
+    """En GitHub Actions el error queda como anotación, visible sin iniciar sesión."""
+    import os
+    if os.environ.get("GITHUB_ACTIONS"):
+        print(f"::error title=Índice diario::{message}".replace("\n", " "))
+    logger.error(message)
+
+
 if __name__ == "__main__":
-    sys.exit(main())
+    try:
+        code = main()
+        if code:
+            _report_error("El índice quedó vacío: ninguna fuente entregó ofertas.")
+        sys.exit(code)
+    except Exception as e:  # noqa: BLE001 - informar la causa y fallar
+        _report_error(f"{type(e).__name__}: {e}")
+        sys.exit(1)
