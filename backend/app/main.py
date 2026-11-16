@@ -46,7 +46,7 @@ from app.agents.models import DEFAULT_GEMINI_MODEL, DEFAULT_OPENAI_MODEL, DEFAUL
 from app.agents.llm_context import current_llm_credentials, LLMCredentials
 from app.utils.cache import job_search_cache
 from app.indexer.store import index_cache
-from app.indexer.search import search_index
+from app.indexer.search import search_index, search_index_for_profile
 from app.utils.rate_limiter import ai_rate_limiter, search_rate_limiter
 from app.scrapers.remote_boards import RemoteBoardsScraper
 from app.scrapers.linkedin_guest import LinkedInGuestScraper
@@ -574,7 +574,10 @@ def search_jobs_stateless(req: JobSearchRequest):
     Results are cached in server RAM for 15 minutes.
     Zero server disk retention (db.save_jobs is NEVER called).
     """
-    cache_key = f"{normalize_keywords(req.keywords)}:{req.remote_only}:{req.search_scope}:{req.region}:{req.commune}:{req.live}"
+    cache_key = (
+        f"{normalize_keywords(req.keywords)}:{req.remote_only}:{req.search_scope}:{req.region}:{req.commune}:{req.live}:"
+        + "|".join(sorted(normalize_keywords(t) for t in (req.profile_keywords or [])[:15]))
+    )
     cached = job_search_cache.get(cache_key)
     if cached is not None:
         if isinstance(cached, JobSearchResponse):
@@ -593,7 +596,12 @@ def search_jobs_stateless(req: JobSearchRequest):
 
     # Índice diario (solo Chile): primero, y si alcanza, sin esperar a los portales.
     index = index_cache.get() if scope in ("chile", "all") else None
-    index_hits = search_index(index, kw, remote_only=req.remote_only) if index else []
+    profile_terms = [t for t in (req.profile_keywords or []) if t.strip()][:15]
+    if index and profile_terms:
+        # "Para ti": búsqueda + palabras clave del perfil (sin repetir).
+        index_hits = search_index_for_profile(index, ([kw] if kw else []) + profile_terms, remote_only=req.remote_only)
+    else:
+        index_hits = search_index(index, kw, remote_only=req.remote_only) if index else []
     index_meta = {
         "index_generated_at": (index or {}).get("generated_at"),
         "index_count": int((index or {}).get("count") or 0),
@@ -652,8 +660,10 @@ def search_jobs_stateless(req: JobSearchRequest):
 
     # Relevancia central (todas las fuentes): se descartan las que no son del área buscada
     # y se ordenan primero las que coinciden en el cargo.
-    if kw:
-        scored = [(relevance_score(j.title, j.description or "", kw), i, j) for i, j in enumerate(deduped)]
+    if kw or profile_terms:
+        # Con palabras clave del perfil, basta calzar con la búsqueda o con alguna de ellas.
+        terms = ([kw] if kw else []) + profile_terms
+        scored = [(max(relevance_score(j.title, j.description or "", t) for t in terms), i, j) for i, j in enumerate(deduped)]
         deduped = [j for score, i, j in sorted((x for x in scored if x[0] > 0), key=lambda x: (-x[0], x[1]))]
 
     response = JobSearchResponse(

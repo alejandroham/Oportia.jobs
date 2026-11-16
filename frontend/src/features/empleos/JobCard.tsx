@@ -10,6 +10,8 @@ interface JobCardProps {
   onViewDetail: (job: JobPosting) => void;
   onToggleTrack: (job: JobPosting) => void;
   onDiscard: (jobId: string) => void;
+  /** Palabras de tu perfil que aparecen en la oferta (afinidad sin IA). */
+  profileMatches?: string[];
 }
 
 export const JobCard: React.FC<JobCardProps> = ({
@@ -17,7 +19,8 @@ export const JobCard: React.FC<JobCardProps> = ({
   userRegion,
   onViewDetail,
   onToggleTrack,
-  onDiscard
+  onDiscard,
+  profileMatches = []
 }) => {
   const isTracked = job.status && job.status !== 'discovered';
   const isRegional = job.is_user_region || (userRegion && job.location?.toLowerCase().includes(userRegion.toLowerCase()));
@@ -123,6 +126,13 @@ export const JobCard: React.FC<JobCardProps> = ({
             </>
           )}
         </div>
+
+        {profileMatches.length > 0 && (
+          <p className="text-xs text-emerald-800 dark:text-emerald-200">
+            <span className="font-semibold">Calza con tu perfil:</span> {profileMatches.slice(0, 3).join(' · ')}
+            {profileMatches.length > 3 && ` y ${profileMatches.length - 3} más`}
+          </p>
+        )}
 
         {/* Fuente de la oferta y enlace al aviso original */}
         <div className="flex flex-wrap items-center justify-between gap-2">

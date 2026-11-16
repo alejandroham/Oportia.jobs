@@ -3,6 +3,7 @@ import { ArrowRight, X, Sparkles } from 'lucide-react';
 import { OpiAvatar } from '../ui/OpiAvatar';
 import { useAppStore, DEFAULT_EMPTY_PREFERENCES } from '../../state/useAppStore';
 import { api } from '../../api';
+import { withDetectedKeywords } from '../../utils/profileKeywords';
 import { useToast } from '../Toast';
 import { encryptApiKeyLocally } from '../../utils/crypto';
 import type { CandidateProfile, LLMSettings } from '../../types';
@@ -70,6 +71,7 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
     setIsUploading(true);
     try {
       const res = await api.uploadCV(file);
+      res.profile = withDetectedKeywords(res.profile);
       await setProfile(res.profile);
       setTempName(res.profile.name || '');
       const detectedTitle = res.profile.headline || res.profile.primary_profession || '';

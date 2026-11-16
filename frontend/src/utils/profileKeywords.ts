@@ -1,5 +1,5 @@
 import type { CandidateProfile, ProfileLink } from '../types';
-import { normalizeText } from './searchText';
+import { matchesQuery, normalizeText } from './searchText';
 
 /**
  * "Tecnologías y palabras clave" sugeridas según el área del perfil.
@@ -85,6 +85,55 @@ export function suggestKeywords(profile: CandidateProfile | null | undefined): s
     for (const k of area.keywords) {
       if (!have.has(normalizeText(k)) && !out.includes(k)) out.push(k);
     }
+  }
+  return out;
+}
+
+/** Texto completo del CV (para ver qué palabras clave aparecen de verdad). */
+export function profileText(profile: CandidateProfile | null | undefined): string {
+  if (!profile) return '';
+  return [
+    profile.headline,
+    profile.summary,
+    profile.primary_profession,
+    ...(profile.secondary_professions || []),
+    ...(profile.technical_skills || []),
+    ...(profile.certifications || []),
+    ...(profile.experiences || []).map((e) => [e.role, e.description, ...(e.bullet_achievements || []), ...(e.technologies || [])].join(' ')),
+    ...(profile.education || []).map((e) => `${e.degree} ${e.field_of_study}`)
+  ]
+    .filter(Boolean)
+    .join(' ');
+}
+
+/**
+ * Al subir el CV: agrega a "Tecnologías y palabras clave" las sugeridas de su área que
+ * APARECEN en el CV (máximo 12). Las demás quedan como sugerencias para que la persona elija.
+ */
+export function withDetectedKeywords(profile: CandidateProfile): CandidateProfile {
+  const text = profileText(profile);
+  const found = suggestKeywords(profile).filter((k) => matchesQuery(text, k));
+  if (!found.length) return profile;
+  const current = profile.keywords || [];
+  return { ...profile, keywords: [...current, ...found].slice(0, Math.max(current.length, 12)) };
+}
+
+/** Términos del perfil para buscar y ordenar ofertas: palabras clave, profesiones y habilidades técnicas. */
+export function profileSearchTerms(profile: CandidateProfile | null | undefined, max = 15): string[] {
+  if (!profile) return [];
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const t of [
+    ...(profile.keywords || []),
+    profile.primary_profession || '',
+    ...(profile.secondary_professions || []),
+    ...(profile.technical_skills || [])
+  ]) {
+    const n = normalizeText(t).trim();
+    if (n.length < 2 || seen.has(n)) continue;
+    seen.add(n);
+    out.push(t.trim());
+    if (out.length >= max) break;
   }
   return out;
 }

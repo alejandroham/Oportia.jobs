@@ -33,3 +33,25 @@ def search_index(index: Optional[Dict[str, Any]], keywords: str, remote_only: bo
     newest_first = sorted(jobs, key=lambda j: j.discovered_at or "", reverse=True)
     scored = [(relevance_score(j.title, j.description or "", kw), j) for j in newest_first]
     return [j for s, j in sorted((x for x in scored if x[0] > 0), key=lambda x: -x[0])]
+
+
+def search_index_for_profile(index: Optional[Dict[str, Any]], terms: List[str], remote_only: bool = False,
+                             limit: int = 120) -> List[JobPosting]:
+    """
+    "Para ti": ofertas del índice que calzan con tus palabras clave del perfil.
+    Más arriba las que calzan con más términos y con el término en el cargo.
+    """
+    if not index:
+        return []
+    terms = [t.strip() for t in terms if t and t.strip()][:15]
+    if not terms:
+        return []
+    jobs = [j for j in index_jobs(index) if not remote_only or j.is_remote]
+    ranked = []
+    for j in jobs:
+        scores = [relevance_score(j.title, j.description or "", t) for t in terms]
+        hits = [s for s in scores if s > 0]
+        if hits:
+            ranked.append((len(hits), max(hits), j.discovered_at or "", j))
+    ranked.sort(key=lambda x: (x[0], x[1], x[2]), reverse=True)
+    return [j for *_, j in ranked[:limit]]

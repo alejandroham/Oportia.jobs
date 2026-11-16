@@ -16,6 +16,8 @@ interface JobResultsFeedProps {
   onPageChange: (newPage: number) => void;
   onScan: () => void;
   isScanning?: boolean;
+  /** Palabras del perfil que calzan con cada oferta. */
+  getProfileMatches?: (job: JobPosting) => string[];
 }
 
 export const JobResultsFeed: React.FC<JobResultsFeedProps> = ({
@@ -28,7 +30,8 @@ export const JobResultsFeed: React.FC<JobResultsFeedProps> = ({
   totalPages,
   onPageChange,
   onScan,
-  isScanning = false
+  isScanning = false,
+  getProfileMatches
 }) => {
   const searchingBanner = isScanning ? (
     <div
@@ -73,6 +76,7 @@ export const JobResultsFeed: React.FC<JobResultsFeedProps> = ({
             onViewDetail={onViewDetail}
             onToggleTrack={onToggleTrack}
             onDiscard={onDiscard}
+            profileMatches={getProfileMatches?.(job)}
           />
         ))}
       </div>

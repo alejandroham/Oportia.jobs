@@ -7,6 +7,8 @@ import { JobSearchBar } from './JobSearchBar';
 import { JobAdvancedFilters } from './JobAdvancedFilters';
 import { JobResultsFeed } from './JobResultsFeed';
 import { IndexResultsBanner } from './IndexResultsBanner';
+import { profileMatcher, type ProfileMatch } from '../../utils/profileMatch';
+import { profileSearchTerms } from '../../utils/profileKeywords';
 import { FailedSourcesBanner } from './FailedSourcesBanner';
 import { JobDetailModal } from './JobDetailModal';
 import { FitEvaluationModal } from './FitEvaluationModal';
@@ -79,7 +81,9 @@ export const JobSearchPage: React.FC<JobSearchPageProps> = ({
         search_scope: regionFilter === 'user_region' ? 'chile' : 'all',
         region: selectedRegion || undefined,
         commune: selectedCommune || undefined,
-        live
+        live,
+        // Sin término de búsqueda: ofertas para tus palabras clave del perfil.
+        profile_keywords: searchTerm.trim() ? undefined : profileSearchTerms(profile)
       });
 
       setIndexInfo(
@@ -206,6 +210,20 @@ export const JobSearchPage: React.FC<JobSearchPageProps> = ({
     setSelectedSource('all'); setModalityFilter('all'); setRegionFilter('all');
   };
 
+  // Afinidad con el perfil (sin IA), memorizada por oferta.
+  const matchOf = useMemo(() => {
+    const match = profileMatcher(profile);
+    const cache = new Map<string, ProfileMatch>();
+    return (job: JobPosting) => {
+      let m = cache.get(job.id);
+      if (!m) {
+        m = match(job);
+        cache.set(job.id, m);
+      }
+      return m;
+    };
+  }, [profile]);
+
   // Filter and sort jobs
   const filteredJobs = useMemo(() => {
     return jobs.filter((j) => {
@@ -223,11 +241,12 @@ export const JobSearchPage: React.FC<JobSearchPageProps> = ({
       if (selectedSource !== 'all' && j.source?.toLowerCase() !== selectedSource.toLowerCase()) return false;
       return true;
     }).sort((a, b) => {
-      if (sortBy === 'fit_desc') return (b.fit_score ?? -1) - (a.fit_score ?? -1);
+      // Sin evaluación con IA se usa la afinidad con las palabras clave del perfil.
+      if (sortBy === 'fit_desc') return (b.fit_score ?? matchOf(b).score) - (a.fit_score ?? matchOf(a).score);
       if (sortBy === 'recent') return new Date(b.posted_at || b.discovered_at).getTime() - new Date(a.posted_at || a.discovered_at).getTime();
       return 0;
     });
-  }, [jobs, searchTerm, lastSearch, modalityFilter, regionFilter, selectedRegion, selectedSource, sortBy, userRegion]);
+  }, [jobs, searchTerm, lastSearch, modalityFilter, regionFilter, selectedRegion, selectedSource, sortBy, userRegion, matchOf]);
 
   const totalPages = Math.ceil(filteredJobs.length / pageSize) || 1;
   const paginatedJobs = filteredJobs.slice((page - 1) * pageSize, page * pageSize);
@@ -315,6 +334,7 @@ export const JobSearchPage: React.FC<JobSearchPageProps> = ({
         totalPages={totalPages}
         onPageChange={setPage}
         onScan={handleScan}
+        getProfileMatches={(job) => matchOf(job).matched}
       />
 
       {/* Modales de Detalle, Evaluación y Portales */}

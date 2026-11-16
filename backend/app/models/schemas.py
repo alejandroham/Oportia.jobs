@@ -470,3 +470,5 @@ class JobSearchRequest(BaseModel):
     # False: responde al instante con el índice diario si tiene suficientes ofertas.
     # True: consulta además los portales en vivo.
     live: bool = False
+    # Sin término de búsqueda: ofertas del índice para estas palabras clave del perfil (máx. 15).
+    profile_keywords: List[str] = []

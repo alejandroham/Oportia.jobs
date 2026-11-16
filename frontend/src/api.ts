@@ -405,6 +405,8 @@ export const api = {
     commune?: string;
     /** También consultar los portales en vivo (más lento). */
     live?: boolean;
+    /** Palabras clave del perfil (solo cuando no hay término de búsqueda). */
+    profile_keywords?: string[];
   }): Promise<JobSearchResponse> => {
     const res = await fetch(`${API_BASE}/jobs/search`, {
       method: 'POST',
@@ -415,7 +417,8 @@ export const api = {
         search_scope: req.search_scope || 'all',
         region: req.region,
         commune: req.commune,
-        live: Boolean(req.live)
+        live: Boolean(req.live),
+        profile_keywords: req.profile_keywords?.length ? req.profile_keywords : undefined
       })
     });
     const data = await handleResponse<JobSearchResponse | JobPosting[]>(res, 'Error al buscar empleos');

@@ -7,6 +7,15 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
 
 ## [Sin publicar]
 
+### 🎯 Palabras clave por perfil (Etapa D de la versión 1.3)
+- **"Para ti" sin escribir nada:** al buscar con el campo vacío, Oportia trae del índice diario las ofertas que calzan con tus palabras clave, profesiones y habilidades. Primero aparecen las que calzan con más términos.
+- **"Calza con tu perfil"** en cada tarjeta muestra qué palabras tuyas aparecen en la oferta.
+  - "Mayor compatibilidad" usa esa afinidad cuando la oferta aún no tiene evaluación con IA.
+  - Se calcula en tu equipo, sin IA.
+- **Al subir el CV** se agregan solas las palabras clave de tu área que aparecen en tu CV (máximo 12). El resto queda como sugerencia.
+- **"Copiar para el aviso por correo"** en Mi perfil copia tus palabras clave para pegarlas en el secreto `NOTIFY_KEYWORDS` del correo diario.
+- **Corrección:** en el filtro de la app, "TI" ya no calza con "**Ti**enda".
+
 ### ✉️ Correo diario con las ofertas nuevas (Etapa C de la versión 1.3)
 - **Después de armar el índice de las 08:00, un correo con solo las ofertas que aparecieron hoy** (enviado con Resend).
   - Agrupadas por área, o por tus búsquedas (`NOTIFY_KEYWORDS`).

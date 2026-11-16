@@ -37,6 +37,8 @@ export const matchesQuery = (text: string, query: string): boolean => {
   if (queryTokens.length === 0) return true;
   const textTokens = searchTokens(text);
   return queryTokens.every((q) => {
+    // Palabras cortas ("ti", "rrhh" no) deben calzar enteras: "ti" no es "tienda".
+    if (q.length <= 3) return textTokens.includes(q);
     const root = stemWord(q);
     return textTokens.some((t) => t.startsWith(root));
   });

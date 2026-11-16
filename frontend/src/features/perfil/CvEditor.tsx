@@ -7,8 +7,8 @@ import { CvEducationSection } from './CvEducationSection';
 import { CvLinksSection } from './CvLinksSection';
 import { CvLanguagesSection } from './CvLanguagesSection';
 import { TagInput } from '../../components/ui/TagInput';
-import { getProfileLinks, suggestKeywords } from '../../utils/profileKeywords';
-import { Upload, Eye, CheckCircle2, Circle, ChevronDown, ChevronUp, Save, Loader2 } from 'lucide-react';
+import { getProfileLinks, suggestKeywords, withDetectedKeywords } from '../../utils/profileKeywords';
+import { Upload, Eye, CheckCircle2, Circle, ChevronDown, ChevronUp, Save, Loader2, Mail } from 'lucide-react';
 import { api } from '../../api';
 import { useToast } from '../../components/Toast';
 
@@ -57,9 +57,16 @@ export const CvEditor: React.FC<CvEditorProps> = ({ profile, onProfileUpdated })
     try {
       const res = await api.uploadCV(file);
       if (res.profile) {
-        setFormData(withLinks(res.profile));
-        onProfileUpdated(res.profile);
-        toast.success('CV procesado y perfil actualizado exitosamente');
+        // Palabras clave de tu área que aparecen en el CV se agregan solas (se pueden quitar).
+        const updated = withDetectedKeywords(res.profile);
+        setFormData(withLinks(updated));
+        onProfileUpdated(updated);
+        const added = (updated.keywords || []).length - (res.profile.keywords || []).length;
+        if (added > 0) {
+          toast.success(`Agregué ${added} palabras clave de tu área que aparecen en tu CV. Revísalas en Habilidades.`, 'CV procesado y perfil actualizado');
+        } else {
+          toast.success('CV procesado y perfil actualizado exitosamente');
+        }
       }
     } catch (err: any) {
       toast.error('Error al subir CV: ' + (err?.message || err));
@@ -338,6 +345,23 @@ export const CvEditor: React.FC<CvEditorProps> = ({ profile, onProfileUpdated })
                   suggestionsLabel="Sugeridas para tu área"
                   helpText="Se usan para buscar y ordenar ofertas según tu perfil."
                 />
+                {(formData.keywords || []).length > 0 && (
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      const value = (formData.keywords || []).join(', ');
+                      try {
+                        await navigator.clipboard.writeText(value);
+                        toast.success('Pégalas en el secreto NOTIFY_KEYWORDS de GitHub para que el correo diario traiga solo ofertas de tu perfil.', 'Palabras clave copiadas');
+                      } catch {
+                        toast.info(value, 'Copia estas palabras clave para el aviso por correo');
+                      }
+                    }}
+                    className="inline-flex items-center gap-1.5 min-h-[40px] px-3 rounded-xl border border-gray-300 dark:border-ink-line text-xs font-semibold text-ink dark:text-white hover:bg-gray-50 dark:hover:bg-ink-hover cursor-pointer"
+                  >
+                    <Mail className="w-3.5 h-3.5" aria-hidden="true" /> Copiar para el aviso por correo
+                  </button>
+                )}
               </div>
             </div>
           )}

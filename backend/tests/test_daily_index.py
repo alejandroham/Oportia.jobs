@@ -189,3 +189,22 @@ def test_upload_retries_with_bearer_and_reports_key_kind(monkeypatch):
     with pytest.raises(RuntimeError) as e:
         store.upload_index({"jobs": []})
     assert "secreta nueva" in str(e.value) and "sb_secret_abc" not in str(e.value)
+
+
+def test_profile_keywords_search_index_for_you():
+    index_cache.set(build_index([
+        mk("Técnico de Soporte TI", url="https://x.cl/1"),
+        mk("Encargado de Redes y Soporte TI", url="https://x.cl/2"),
+        mk("Psicólogo", url="https://x.cl/3"),
+        mk("Analista de Mesa de Ayuda", url="https://x.cl/4"),
+    ] + [mk(f"Administrador de redes {i}", company=f"E{i}", url=f"https://x.cl/r{i}") for i in range(6)], {}, None, NOW))
+    with patch("app.main.ChilePortalsScraper.search_with_status", side_effect=AssertionError("no en vivo")), \
+         patch("app.main.RemoteBoardsScraper.search_with_status", side_effect=AssertionError("no en vivo")), \
+         patch("app.main.ats_scraper.search", side_effect=AssertionError("no en vivo")):
+        data = TestClient(app).post("/api/jobs/search", json={
+            "keywords": "", "profile_keywords": ["Soporte TI", "Redes", "Mesa de ayuda"]}).json()
+    titles = [j["title"] for j in data["jobs"]]
+    assert data["from_index"] is True
+    assert "Psicólogo" not in titles
+    assert titles[0] == "Encargado de Redes y Soporte TI"  # calza con más términos
+    assert "Analista de Mesa de Ayuda" in titles
