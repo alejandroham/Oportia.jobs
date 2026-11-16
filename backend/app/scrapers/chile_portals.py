@@ -28,7 +28,7 @@ from app.models.schemas import JobPosting
 from app.scrapers.base import BaseScraper
 from app.utils.chile_regions import detect_region_and_commune
 from app.utils.concurrency import run_with_deadline
-from app.utils.keywords import keyword_matches, relevance_score, tokens as kw_tokens, stem as kw_stem
+from app.utils.keywords import keyword_matches, normalize as normalize_text, relevance_score, tokens as kw_tokens, stem as kw_stem
 
 logger = logging.getLogger(__name__)
 
@@ -301,10 +301,10 @@ class CompuTrabajoCLScraper(BaseScraper):
         kw = keywords.strip() if keywords else ""
 
         try:
-            url = f"{self.BASE_URL}/trabajo"
-            params = {"q": kw} if kw else {}
-            if not remote_only:
-                params["l"] = "chile"
+            # Computrabajo cambió /trabajo?q=… (ahora redirige a la portada) por /trabajo-de-{cargo}.
+            slug = re.sub(r"[^a-z0-9]+", "-", normalize_text(kw)).strip("-")
+            url = f"{self.BASE_URL}/trabajo-de-{slug}" if slug else f"{self.BASE_URL}/ofertas-de-trabajo/"
+            params = {}
 
             with httpx.Client(timeout=14.0, headers=_BROWSER_HEADERS, follow_redirects=True) as client:
                 resp = client.get(url, params=params)
@@ -339,25 +339,28 @@ class CompuTrabajoCLScraper(BaseScraper):
                             company = "Empresa en CompuTrabajo"
                             loc = "Chile"
                         else:
-                            title_el = (
-                                card.find("h2")
-                                or card.find("a", class_=re.compile(r"js-job-link|offer_title"))
+                            # HTML actual: h2 > a.js-o-link (cargo), p > a (empresa), p > span (lugar).
+                            link_el = (
+                                card.select_one("h2 a.js-o-link")
+                                or card.select_one("h2 a")
                                 or card.find("a", href=re.compile(r"/oferta-de-trabajo/"))
                             )
-                            if not title_el:
+                            if not link_el:
                                 continue
-                            title = title_el.get_text(strip=True)
-                            href = title_el.get("href", "")
+                            title = link_el.get_text(" ", strip=True)
+                            href = (link_el.get("href", "") or "").split("#")[0]
                             job_url = f"{self.BASE_URL}{href}" if href.startswith("/") else href
 
-                            company_el = (
-                                card.find("a", class_=re.compile(r"company|empresa"))
-                                or card.find("p", class_=re.compile(r"fs16|company"))
-                            )
-                            company = company_el.get_text(strip=True) if company_el else "Empresa Confidencial"
+                            company_el = card.find("a", attrs={"offer-grid-article-company-url": True}) or card.select_one("p a.fc_base")
+                            company = company_el.get_text(" ", strip=True) if company_el else "Empresa confidencial"
 
-                            loc_el = card.find("span", class_=re.compile(r"d-block|location|loc"))
-                            loc = loc_el.get_text(strip=True) if loc_el else "Chile"
+                            loc = "Chile"
+                            for p_el in card.find_all("p"):
+                                span = p_el.find("span", recursive=False)
+                                # Se omite la nota de la empresa ("3,8"): el lugar lleva letras.
+                                if span and re.search(r"[A-Za-zÁÉÍÓÚáéíóúñ]", span.get_text()) and "," in span.get_text():
+                                    loc = span.get_text(" ", strip=True)
+                                    break
 
                         if not title:
                             continue

@@ -7,6 +7,21 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
 
 ## [Sin publicar]
 
+### ⚡ Índice diario de ofertas (Etapa B de la versión 1.3)
+- **Búsqueda al instante.** Todas las mañanas, a las 08:00 de Chile, una tarea de GitHub Actions junta **más de 1.500 ofertas de Chile de todas las áreas** y publica un índice comprimido de unos 160 KB en Supabase Storage.
+  - Fuentes: Empleos Públicos, GetOnBoard, Computrabajo y ChileTrabajos. LinkedIn no se usa.
+  - La búsqueda responde con ese índice en menos de un segundo, con el aviso **"Resultados del índice de hoy"** y el botón **"Buscar también en vivo"**. Si el índice tiene pocas coincidencias, busca en vivo automáticamente.
+- **Limpieza:** quita duplicados por URL y por cargo + empresa + ciudad, descarta ofertas vencidas o de más de 30 días y **clasifica por área** sin IA (17 áreas).
+- **Fecha en que apareció cada oferta,** para avisar solo las nuevas (Etapa C).
+- `GET /api/jobs/index/status`: fecha, total, nuevas de hoy, áreas y fuentes.
+- **Privacidad:** el índice solo tiene ofertas públicas y el servidor lo guarda en memoria, no en disco.
+  - Para publicarlo se usa una clave que solo está en los secretos de GitHub.
+  - Configuración en `docs/INDICE_DIARIO.md`.
+- **Computrabajo volvió a funcionar:** el portal cambió sus direcciones de búsqueda y su HTML, y la búsqueda en vivo devolvía 0 ofertas.
+- **Relevancia más precisa:**
+  - "TI" ya no calza con "**Ti**enda".
+  - La palabra buscada en el cargo pesa más que un sinónimo: "Guardia de Seguridad" queda antes que "Unidad de Seguridad del Paciente".
+
 ### 🎓 Brechas reales y cursos de todas las áreas (Etapa A3 de la versión 1.3)
 - **"Mis brechas" compara de verdad** los requisitos de tus ofertas guardadas o evaluadas (hasta 8) con tu CV: ✅ **cumples** (con la evidencia del CV: habilidad, título, certificación o cargo), 🟡 **en parte o transferible**, ❌ **brecha**, con las ofertas que lo piden. Antes solo listaba tus propias habilidades (`POST /api/coach/gaps`, sin estado).
   - **Tu profesión y el titular del CV cuentan como evidencia:** un TENS ya no ve "TENS" como brecha.

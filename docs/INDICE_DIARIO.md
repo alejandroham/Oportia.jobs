@@ -1,0 +1,58 @@
+# Índice diario de ofertas (Etapa B)
+
+Todas las mañanas, a las **08:00 de Chile**, GitHub Actions junta ofertas de Chile de todas las áreas, las limpia y publica un **índice comprimido** en Supabase Storage. La búsqueda de Oportia responde **al instante** con ese índice y ofrece **"Buscar también en vivo"** para lo publicado después.
+
+## Qué hace la tarea diaria
+
+1. **Recolecta**, con unas 90 consultas por área (salud, educación, tecnología, comercio, logística, oficios, gastronomía, seguridad, sector público y otras):
+   - **Empleos Públicos:** todas las convocatorias abiertas (API oficial).
+   - **GetOnBoard:** API oficial.
+   - **Computrabajo y ChileTrabajos:** lectura moderada, una ronda al día con pausas.
+   - **LinkedIn no se usa**, porque sus condiciones prohíben la recolección automática.
+   - **Laborum no se usa por ahora**, porque su sitio carga con JavaScript (Etapa E).
+2. **Limpia**:
+   - Quita duplicados por URL y por cargo + empresa + ciudad.
+   - Descarta las ofertas vencidas y las de más de 30 días sin fecha de cierre.
+3. **Clasifica** cada oferta por área con un diccionario, sin IA.
+4. **Recuerda qué día apareció cada oferta** (`discovered_at`), lo que permite avisar solo las nuevas (Etapa C).
+5. **Publica** `jobs-index.json.gz` en el bucket público `oportia-index`.
+
+El índice **solo contiene ofertas públicas**: nunca búsquedas ni datos de personas. El servidor lo guarda en memoria 30 minutos y no escribe nada en disco.
+
+## Configuración (una sola vez)
+
+1. **Crea un proyecto gratuito en [Supabase](https://supabase.com/dashboard)**. Elige la región más cercana: São Paulo.
+2. **Crea el bucket.** Ve a *Storage → New bucket*, ponle el nombre `oportia-index` y marca **Public bucket**.
+   - Otra forma: en *SQL Editor* ejecuta:
+     ```sql
+     insert into storage.buckets (id, name, public) values ('oportia-index', 'oportia-index', true);
+     ```
+3. **Copia los datos del proyecto** (*Project Settings → API*):
+   - **Project URL**, por ejemplo `https://abcd1234.supabase.co`.
+   - **service_role key**. Es **secreta**: solo va en GitHub, nunca en Vercel ni en el código.
+4. **Agrega los secretos en GitHub** (*Settings → Secrets and variables → Actions → New repository secret*):
+   - `SUPABASE_URL`: la Project URL.
+   - `SUPABASE_SERVICE_ROLE_KEY`: la service_role key.
+5. **Agrega la variable en Vercel** (*Settings → Environment Variables*):
+   - `SUPABASE_URL`: la misma Project URL. Es pública; la app solo **lee** el índice. Después vuelve a desplegar.
+6. **Prueba la tarea:** en GitHub ve a *Actions → Índice diario de ofertas → Run workflow*. Tarda entre 5 y 15 minutos.
+7. **Comprueba** en `https://oportia-jobs.vercel.app/api/jobs/index/status`. Debe mostrar `available: true`, el total y las áreas.
+
+Sin `SUPABASE_URL`, Oportia sigue funcionando como antes: busca en vivo.
+
+## Probarlo en tu equipo
+
+```bash
+cd backend && ../venv/bin/python -m app.indexer.build --no-upload --out /tmp/indice.json.gz
+```
+
+`--max-queries 5` sirve para una prueba corta.
+
+## Variables
+
+| Variable | Dónde | Para qué |
+|---|---|---|
+| `SUPABASE_URL` | GitHub (secreto) y Vercel | Dirección del proyecto. Con ella se arma la URL pública del índice |
+| `SUPABASE_SERVICE_ROLE_KEY` | Solo GitHub (secreto) | Publicar el índice |
+| `OPORTIA_INDEX_URL` | Opcional | URL completa del índice, si se aloja en otro lugar |
+| `OPORTIA_INDEX_BUCKET` | Opcional | Otro nombre de bucket (por defecto `oportia-index`) |

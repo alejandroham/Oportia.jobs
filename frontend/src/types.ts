@@ -276,6 +276,10 @@ export interface JobSearchResponse {
   jobs: JobPosting[];
   sources_failed: string[];
   total: number;
+  /** true: resultados solo del índice diario (al instante, sin consultar portales en vivo). */
+  from_index?: boolean;
+  index_generated_at?: string | null;
+  index_count?: number;
 }
 
 export interface OutcomeSubmission {

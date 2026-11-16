@@ -128,7 +128,14 @@ def expand_keywords(keywords: str) -> List[str]:
 
 def _phrase_in_tokens(phrase: str, text_tokens: List[str]) -> bool:
     words = tokens(phrase)
-    return bool(words) and all(any(t.startswith(stem(w)) for t in text_tokens) for w in words)
+
+    def present(w: str) -> bool:
+        # Palabras cortas ("ti", "rrhh" no) deben calzar exactas: "ti" no es "tienda".
+        if len(w) <= 3:
+            return w in text_tokens
+        return any(t.startswith(stem(w)) for t in text_tokens)
+
+    return bool(words) and all(present(w) for w in words)
 
 
 def keyword_matches(text: str, keywords: str) -> bool:
@@ -186,7 +193,12 @@ def relevance_score(title: str, description: str, keywords: str) -> int:
             return 0
         # El área en el CARGO pesa el doble que la palabra de cargo genérica: "Gestor TI" debe
         # quedar antes que "Director of Product Management" con "informática" solo en la descripción.
-        in_title = sum(_token_present(t, title_t) for t in domain)
+        # La palabra misma en el cargo vale 1; solo un sinónimo, 0,75 ("Guardia de Seguridad" antes
+        # que "Unidad de Seguridad del Paciente" al buscar "guardia de seguridad").
+        in_title = sum(
+            1.0 if _phrase_in_tokens(t, title_t) else 0.75 if _token_present(t, title_t) else 0.0
+            for t in domain
+        )
         score = 40 + int(40 * in_title / len(domain))
         if generic:
             score += int(20 * sum(_token_present(t, title_t) for t in generic) / len(generic))

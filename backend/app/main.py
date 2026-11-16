@@ -45,6 +45,8 @@ from app.agents.shared_ai import SharedAIRequest, current_shared_ai_request
 from app.agents.models import DEFAULT_GEMINI_MODEL, DEFAULT_OPENAI_MODEL, DEFAULT_CLAUDE_MODEL, CATALOG
 from app.agents.llm_context import current_llm_credentials, LLMCredentials
 from app.utils.cache import job_search_cache
+from app.indexer.store import index_cache
+from app.indexer.search import search_index
 from app.utils.rate_limiter import ai_rate_limiter, search_rate_limiter
 from app.scrapers.remote_boards import RemoteBoardsScraper
 from app.scrapers.linkedin_guest import LinkedInGuestScraper
@@ -528,6 +530,41 @@ def list_jobs(status: Optional[str] = None):
 # Límite por grupo de portales chilenos y total de la búsqueda (las funciones serverless cortan ~10 s).
 SEARCH_SOURCE_DEADLINE_SECONDS = 6.0
 SEARCH_TOTAL_DEADLINE_SECONDS = 7.0
+# Con al menos estas ofertas del índice diario se responde al instante, sin buscar en vivo.
+INDEX_MIN_RESULTS = 8
+
+def _annotate_search_results(jobs: List[JobPosting], req: JobSearchRequest) -> None:
+    """Región, comuna, modalidad y si la oferta está en la región de la persona."""
+    for j in jobs:
+        geo_cat, _, reg, comm = calculate_geographic_priority(
+            j.location,
+            user_region=req.region,
+            user_commune=req.commune
+        )
+        if reg and not j.region:
+            j.region = reg
+        if comm and not j.commune:
+            j.commune = comm
+        j.is_user_region = (geo_cat == "user_region")
+        if not j.modality:
+            j.modality = "Remoto" if j.is_remote else "Presencial"
+
+
+@app.get("/api/jobs/index/status")
+def job_index_status():
+    """Estado del índice diario (sin ofertas): fecha, total, nuevas de hoy, áreas y fuentes."""
+    index = index_cache.get()
+    if not index:
+        return {"available": False}
+    return {
+        "available": True,
+        "generated_at": index.get("generated_at"),
+        "count": index.get("count", 0),
+        "new_today": index.get("new_today", 0),
+        "areas": index.get("areas", {}),
+        "sources": index.get("sources", {}),
+    }
+
 
 @app.post("/api/jobs/search", response_model=JobSearchResponse, dependencies=[Depends(search_rate_limiter)])
 def search_jobs_stateless(req: JobSearchRequest):
@@ -537,7 +574,7 @@ def search_jobs_stateless(req: JobSearchRequest):
     Results are cached in server RAM for 15 minutes.
     Zero server disk retention (db.save_jobs is NEVER called).
     """
-    cache_key = f"{normalize_keywords(req.keywords)}:{req.remote_only}:{req.search_scope}:{req.region}:{req.commune}"
+    cache_key = f"{normalize_keywords(req.keywords)}:{req.remote_only}:{req.search_scope}:{req.region}:{req.commune}:{req.live}"
     cached = job_search_cache.get(cache_key)
     if cached is not None:
         if isinstance(cached, JobSearchResponse):
@@ -553,6 +590,20 @@ def search_jobs_stateless(req: JobSearchRequest):
 
     # "regional" (filtro "Solo mi región") busca en Chile; la región se aplica al anotar y en el frontend.
     scope = "chile" if req.search_scope == "regional" else req.search_scope
+
+    # Índice diario (solo Chile): primero, y si alcanza, sin esperar a los portales.
+    index = index_cache.get() if scope in ("chile", "all") else None
+    index_hits = search_index(index, kw, remote_only=req.remote_only) if index else []
+    index_meta = {
+        "index_generated_at": (index or {}).get("generated_at"),
+        "index_count": int((index or {}).get("count") or 0),
+    }
+    if index_hits and not req.live and len(index_hits) >= INDEX_MIN_RESULTS:
+        _annotate_search_results(index_hits, req)
+        response = JobSearchResponse(jobs=index_hits, total=len(index_hits), from_index=True, **index_meta)
+        job_search_cache.set(cache_key, response)
+        return response
+    jobs.extend(index_hits)
 
     def fetch_remote_boards():
         return RemoteBoardsScraper().search_with_status(keywords=kw, remote_only=req.remote_only, limit=20)
@@ -588,20 +639,7 @@ def search_jobs_stateless(req: JobSearchRequest):
         elif isinstance(result, list):
             jobs.extend(result)
 
-    # Annotate region, commune, and modality
-    for j in jobs:
-        geo_cat, _, reg, comm = calculate_geographic_priority(
-            j.location,
-            user_region=req.region,
-            user_commune=req.commune
-        )
-        if reg and not j.region:
-            j.region = reg
-        if comm and not j.commune:
-            j.commune = comm
-        j.is_user_region = (geo_cat == "user_region")
-        if not j.modality:
-            j.modality = "Remoto" if j.is_remote else "Presencial"
+    _annotate_search_results(jobs, req)
 
     # Deduplicate by url or title+company
     seen = set()
@@ -621,7 +659,8 @@ def search_jobs_stateless(req: JobSearchRequest):
     response = JobSearchResponse(
         jobs=deduped,
         sources_failed=sorted(list(set(sources_failed))),
-        total=len(deduped)
+        total=len(deduped),
+        **index_meta,
     )
     # No guardar en caché resultados incompletos: la próxima búsqueda reintenta las fuentes caídas.
     if not response.sources_failed:

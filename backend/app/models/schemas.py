@@ -192,6 +192,9 @@ class JobSearchResponse(BaseModel):
     jobs: List[JobPosting] = []
     sources_failed: List[str] = []
     total: int = 0
+    from_index: bool = False                 # True: resultados solo del índice diario (sin búsqueda en vivo)
+    index_generated_at: Optional[str] = None  # Cuándo se armó el índice usado
+    index_count: int = 0                      # Ofertas totales en el índice
 
 class OutcomeSubmission(BaseModel):
     job_id: str
@@ -464,3 +467,6 @@ class JobSearchRequest(BaseModel):
     search_scope: str = "all"
     region: Optional[str] = None
     commune: Optional[str] = None
+    # False: responde al instante con el índice diario si tiene suficientes ofertas.
+    # True: consulta además los portales en vivo.
+    live: bool = False

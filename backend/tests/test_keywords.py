@@ -66,3 +66,14 @@ def test_search_endpoint_drops_irrelevant_and_sorts(monkeypatch):
 def test_area_in_title_beats_generic_role_word():
     assert relevance_score("Gestor TI (Soporte)", "", "encargado informatica") > \
         relevance_score("Director of Product Management", "Área de informática", "encargado informatica")
+
+
+def test_short_synonyms_match_whole_words_only():
+    # "jefe ti" (sinónimo de informática) no debe calzar con "Jefe de Tienda".
+    assert relevance_score("Jefe de Tienda Alto Las Condes", "", "encargado informatica") == 0
+    assert relevance_score("Jefe TI", "", "encargado informatica") > 0
+
+
+def test_literal_word_in_title_beats_synonym():
+    q = "guardia de seguridad"
+    assert relevance_score("Guardia de Seguridad 4x4", "", q) > relevance_score("Encargado Unidad de Seguridad del Paciente", "", q)

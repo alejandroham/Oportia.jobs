@@ -6,6 +6,7 @@ import { useToast } from '../../components/Toast';
 import { JobSearchBar } from './JobSearchBar';
 import { JobAdvancedFilters } from './JobAdvancedFilters';
 import { JobResultsFeed } from './JobResultsFeed';
+import { IndexResultsBanner } from './IndexResultsBanner';
 import { FailedSourcesBanner } from './FailedSourcesBanner';
 import { JobDetailModal } from './JobDetailModal';
 import { FitEvaluationModal } from './FitEvaluationModal';
@@ -52,6 +53,8 @@ export const JobSearchPage: React.FC<JobSearchPageProps> = ({
   const [lastSearch, setLastSearch] = useState<{ term: string; ids: Set<string> }>({ term: '', ids: new Set() });
   const [isBatchRanking, setIsBatchRanking] = useState(false);
   const [sourcesFailed, setSourcesFailed] = useState<string[]>([]);
+  // Si la última búsqueda vino del índice diario: fecha del índice (para ofrecer "buscar también en vivo").
+  const [indexInfo, setIndexInfo] = useState<{ generatedAt: string | null; count: number } | null>(null);
   const [pageSize, setPageSize] = useState(12);
   const [page, setPage] = useState(1);
 
@@ -66,7 +69,7 @@ export const JobSearchPage: React.FC<JobSearchPageProps> = ({
   const userRegion = profile?.region || '';
 
   // Scan / Search jobs
-  const handleScan = async () => {
+  const runSearch = async (live: boolean) => {
     setIsScanning(true);
     try {
       const searchKw = searchTerm.trim() || (profile?.primary_profession || profile?.headline || '');
@@ -75,9 +78,15 @@ export const JobSearchPage: React.FC<JobSearchPageProps> = ({
         remote_only: modalityFilter === 'Remoto',
         search_scope: regionFilter === 'user_region' ? 'chile' : 'all',
         region: selectedRegion || undefined,
-        commune: selectedCommune || undefined
+        commune: selectedCommune || undefined,
+        live
       });
 
+      setIndexInfo(
+        !Array.isArray(searchRes) && searchRes?.from_index
+          ? { generatedAt: searchRes.index_generated_at || null, count: searchRes.index_count || 0 }
+          : null
+      );
       const found = Array.isArray(searchRes) ? searchRes : (searchRes?.jobs || []);
       const failed = Array.isArray(searchRes) ? [] : (searchRes?.sources_failed || []);
       setSourcesFailed(failed);
@@ -99,6 +108,9 @@ export const JobSearchPage: React.FC<JobSearchPageProps> = ({
       setIsScanning(false);
     }
   };
+
+  const handleScan = () => runSearch(false);
+  const handleScanLive = () => runSearch(true);
 
   // Toggle tracking
   const handleToggleTrack = async (job: JobPosting) => {
@@ -276,6 +288,11 @@ export const JobSearchPage: React.FC<JobSearchPageProps> = ({
           onSourceChange={setSelectedSource}
           onResetFilters={handleResetFilters}
         />
+      )}
+
+      {/* Resultados del índice diario (al instante) */}
+      {indexInfo && !isScanning && (
+        <IndexResultsBanner generatedAt={indexInfo.generatedAt} indexCount={indexInfo.count} onSearchLive={handleScanLive} />
       )}
 
       {/* Alerta de fuentes no disponibles */}
