@@ -6,9 +6,10 @@ Lo corre GitHub Actions cada mañana (ver .github/workflows/daily-index.yml):
     cd backend && python -m app.indexer.build            # arma y publica
     cd backend && python -m app.indexer.build --no-upload --out /tmp/index.json.gz
 
-Fuentes: Empleos Públicos y GetOnBoard (API oficiales) y Computrabajo y ChileTrabajos (lectura
-moderada: una ronda al día con pausas). LinkedIn NO se usa: sus condiciones prohíben la
-recolección automática.
+Fuentes: Empleos Públicos y GetOnBoard (API oficiales), portales de empleo de empresas (API públicas
+de Greenhouse, Lever, Ashby y SmartRecruiters) y ChileTrabajos (lectura moderada: una ronda al día
+con pausas). NO se usan LinkedIn, Computrabajo ni Laborum: sus condiciones prohíben la recolección
+automática o la reproducción de sus avisos.
 """
 
 import argparse
@@ -26,15 +27,16 @@ from app.models.schemas import JobPosting
 from app.scrapers.chile_portals import (
     ChilePortalsScraper,
     ChileTrabajosСraper,
-    CompuTrabajoCLScraper,
     EmpleosPublicosScraper,
     GetOnBoardScraper,
 )
+from app.scrapers.company_boards import FETCHERS as _COMPANY_FETCHERS, fetch_company_boards
 from app.utils.keywords import keyword_matches, normalize
 
 logger = logging.getLogger("oportia.indexer")
 
 INDEX_VERSION = 1
+COMPANY_BOARD_SOURCES = set(_COMPANY_FETCHERS)
 MAX_AGE_DAYS = 30
 DESCRIPTION_CHARS = 500
 
@@ -125,9 +127,8 @@ AREAS: Dict[str, Dict[str, List[str]]] = {
 # Fuentes por consulta (Empleos Públicos se lee una sola vez, completo).
 QUERY_SOURCES: Dict[str, Callable[[], object]] = {
     "GetOnBoard": GetOnBoardScraper,
-    "Computrabajo": CompuTrabajoCLScraper,
     "ChileTrabajos": ChileTrabajosСraper,
-    # Laborum queda fuera: su sitio carga las ofertas con JavaScript (pendiente para la Etapa E).
+    # Computrabajo y Laborum quedan fuera: sus condiciones prohíben el acceso automatizado.
 }
 
 
@@ -189,6 +190,9 @@ def is_current(job: JobPosting, now: datetime) -> bool:
     if deadline:
         # Con fecha de cierre manda el cierre (una convocatoria abierta hace 40 días sigue vigente).
         return deadline.date() >= now.date()
+    # En los portales de empresas, una oferta publicada está abierta, aunque sea antigua.
+    if job.source in COMPANY_BOARD_SOURCES:
+        return True
     posted = _parse_date(job.posted_at)
     if posted and posted < now - timedelta(days=MAX_AGE_DAYS):
         return False
@@ -262,6 +266,10 @@ def collect(queries: List[str], per_source: int = 25, pause: float = 1.0, worker
             public = []
         counts["Empleos Públicos"] = len(public)
         jobs.extend(public)
+        # Portales de empleo de empresas (API públicas): ofertas directas, una consulta por empresa.
+        company = [j for found in fetch_company_boards().values() for j in found]
+        counts["Portales de empresas"] = len(company)
+        jobs.extend(company)
         for label, fut in futures.items():
             found = fut.result()
             counts[label] = len(found)

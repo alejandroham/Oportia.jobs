@@ -5,10 +5,11 @@ Portales integrados con sus estrategias específicas:
 
 1. GetOnBoard.com  → API REST pública oficial (v0, sin autenticación)
 2. LinkedIn Chile  → Guest HTML scraper (presencial + híbrido + remoto en CL)
-3. CompuTrabajo CL → HTML scraper con BeautifulSoup
-4. ChileTrabajos   → HTML scraper ligero (paginado)
-5. Laborum.cl      → HTML scraper con BeautifulSoup
-6. EmpleosPúblicos → API REST oficial de convocatorias del Estado (empleospublicos.cl)
+3. ChileTrabajos   → HTML scraper ligero (paginado)
+4. EmpleosPúblicos → API REST oficial de convocatorias del Estado (empleospublicos.cl)
+
+Computrabajo y Laborum NO se usan: sus condiciones de uso prohíben el acceso automatizado
+y la reproducción de sus avisos (revisado el 2026-11-17).
 
 Principios de diseño:
 - Preferir APIs públicas oficiales sobre HTML scraping cuando estén disponibles.
@@ -28,7 +29,7 @@ from app.models.schemas import JobPosting
 from app.scrapers.base import BaseScraper
 from app.utils.chile_regions import detect_region_and_commune
 from app.utils.concurrency import run_with_deadline
-from app.utils.keywords import keyword_matches, normalize as normalize_text, relevance_score, tokens as kw_tokens, stem as kw_stem
+from app.utils.keywords import keyword_matches, relevance_score, tokens as kw_tokens, stem as kw_stem
 
 logger = logging.getLogger(__name__)
 
@@ -281,127 +282,6 @@ class LinkedInChileScraper(BaseScraper):
 
 
 # ---------------------------------------------------------------------------
-# 3. CompuTrabajo Chile — HTML scraper
-# ---------------------------------------------------------------------------
-
-class CompuTrabajoCLScraper(BaseScraper):
-    """
-    Scrapes CompuTrabajo Chile (cl.computrabajo.com).
-    URL pattern: https://cl.computrabajo.com/trabajo?q={keyword}
-    Note: Renders HTML server-side; no JS required for listings page.
-    """
-    BASE_URL = "https://cl.computrabajo.com"
-
-    @property
-    def name(self) -> str:
-        return "computrabajo"
-
-    def search(self, keywords: str = "", remote_only: bool = False, limit: int = 15) -> List[JobPosting]:
-        jobs: List[JobPosting] = []
-        kw = keywords.strip() if keywords else ""
-
-        try:
-            # Computrabajo cambió /trabajo?q=… (ahora redirige a la portada) por /trabajo-de-{cargo}.
-            slug = re.sub(r"[^a-z0-9]+", "-", normalize_text(kw)).strip("-")
-            url = f"{self.BASE_URL}/trabajo-de-{slug}" if slug else f"{self.BASE_URL}/ofertas-de-trabajo/"
-            params = {}
-
-            with httpx.Client(timeout=14.0, headers=_BROWSER_HEADERS, follow_redirects=True) as client:
-                resp = client.get(url, params=params)
-
-                if resp.status_code == 403:
-                    logger.warning("[CompuTrabajo] Blocked (403). Skipping.")
-                    return jobs
-                if resp.status_code != 200:
-                    logger.warning(f"[CompuTrabajo] HTTP {resp.status_code}")
-                    return jobs
-
-                soup = BeautifulSoup(resp.text, "html.parser")
-
-                # Job cards can appear in different containers
-                cards = (
-                    soup.find_all("article", class_=lambda c: c and "box_offer" in c)
-                    or soup.find_all("div", class_=lambda c: c and "bRS" in (c or ""))
-                    or soup.select("div[data-id]")
-                )
-
-                if not cards:
-                    # Fallback: look for any element with job title link pattern
-                    cards = soup.find_all("a", href=re.compile(r"/oferta-de-trabajo/"))
-
-                for card in cards[:limit]:
-                    try:
-                        if card.name == "a":
-                            # Fallback mode: the card IS the link
-                            title = card.get_text(strip=True)
-                            href = card.get("href", "")
-                            job_url = f"{self.BASE_URL}{href}" if href.startswith("/") else href
-                            company = "Empresa en CompuTrabajo"
-                            loc = "Chile"
-                        else:
-                            # HTML actual: h2 > a.js-o-link (cargo), p > a (empresa), p > span (lugar).
-                            link_el = (
-                                card.select_one("h2 a.js-o-link")
-                                or card.select_one("h2 a")
-                                or card.find("a", href=re.compile(r"/oferta-de-trabajo/"))
-                            )
-                            if not link_el:
-                                continue
-                            title = link_el.get_text(" ", strip=True)
-                            href = (link_el.get("href", "") or "").split("#")[0]
-                            job_url = f"{self.BASE_URL}{href}" if href.startswith("/") else href
-
-                            company_el = card.find("a", attrs={"offer-grid-article-company-url": True}) or card.select_one("p a.fc_base")
-                            company = company_el.get_text(" ", strip=True) if company_el else "Empresa confidencial"
-
-                            loc = "Chile"
-                            for p_el in card.find_all("p"):
-                                span = p_el.find("span", recursive=False)
-                                # Se omite la nota de la empresa ("3,8"): el lugar lleva letras.
-                                if span and re.search(r"[A-Za-zÁÉÍÓÚáéíóúñ]", span.get_text()) and "," in span.get_text():
-                                    loc = span.get_text(" ", strip=True)
-                                    break
-
-                        if not title:
-                            continue
-
-                        is_remote = any(
-                            k in f"{title} {loc}".lower()
-                            for k in ["remoto", "remote", "teletrabajo", "work from home"]
-                        )
-
-                        if remote_only and not is_remote:
-                            continue
-
-                        if not _keyword_match(title, keywords):
-                            continue
-
-                        jobs.append(JobPosting(
-                            title=title,
-                            company=company,
-                            location=loc,
-                            is_remote=is_remote,
-                            description=f"Oferta de trabajo en CompuTrabajo Chile: {title} en {company}. Ubicación: {loc}.",
-                            url=job_url,
-                            source="computrabajo",
-                            tags=[keywords] if keywords else [],
-                        ))
-
-                        if len(jobs) >= limit:
-                            break
-
-                    except Exception as inner_e:
-                        logger.debug(f"[CompuTrabajo] Card parse error: {inner_e}")
-                        continue
-
-        except Exception as e:
-            logger.warning(f"[CompuTrabajo] Error: {e}")
-
-        logger.info(f"[CompuTrabajo] Retrieved {len(jobs)} jobs for '{keywords}'")
-        return jobs
-
-
-# ---------------------------------------------------------------------------
 # 4. ChileTrabajos — HTML scraper (paginado)
 # ---------------------------------------------------------------------------
 
@@ -518,122 +398,6 @@ class ChileTrabajosСraper(BaseScraper):
             logger.warning(f"[ChileTrabajos] Error: {e}")
 
         logger.info(f"[ChileTrabajos] Retrieved {len(jobs)} jobs for '{keywords}'")
-        return jobs
-
-
-# ---------------------------------------------------------------------------
-# 5. Laborum.cl — HTML scraper
-# ---------------------------------------------------------------------------
-
-class LaborumScraper(BaseScraper):
-    """
-    Scrapes laborum.cl — major Chilean job portal.
-    URL pattern: https://www.laborum.cl/buscar?q={keyword}
-    """
-    BASE_URL = "https://www.laborum.cl"
-
-    @property
-    def name(self) -> str:
-        return "laborum"
-
-    def search(self, keywords: str = "", remote_only: bool = False, limit: int = 15) -> List[JobPosting]:
-        jobs: List[JobPosting] = []
-        kw = keywords.strip() if keywords else ""
-
-        try:
-            params = {}
-            if kw:
-                params["q"] = kw
-            if remote_only:
-                params["modalidad"] = "teletrabajo"
-
-            with httpx.Client(timeout=14.0, headers=_BROWSER_HEADERS, follow_redirects=True) as client:
-                resp = client.get(f"{self.BASE_URL}/buscar", params=params)
-
-                if resp.status_code == 403:
-                    logger.warning("[Laborum] Blocked (403). Skipping.")
-                    return jobs
-                if resp.status_code != 200:
-                    logger.warning(f"[Laborum] HTTP {resp.status_code}")
-                    return jobs
-
-                soup = BeautifulSoup(resp.text, "html.parser")
-
-                # Job card selectors
-                cards = (
-                    soup.find_all("article")
-                    or soup.find_all("div", class_=lambda c: c and "aviso" in (c or "").lower())
-                    or soup.find_all("div", class_=lambda c: c and "job-item" in (c or "").lower())
-                )
-
-                if not cards:
-                    cards = soup.find_all("a", href=re.compile(r"/empleos/|/aviso/|/trabajo/"))
-
-                for card in cards[:limit]:
-                    try:
-                        if card.name == "a":
-                            title = card.get_text(strip=True)
-                            href = card.get("href", "")
-                            job_url = f"{self.BASE_URL}{href}" if href.startswith("/") else href
-                            company = "Empresa en Laborum"
-                            loc = "Chile"
-                        else:
-                            title_el = (
-                                card.find("h2")
-                                or card.find("h3")
-                                or card.find("a", href=re.compile(r"/empleos/|/aviso/"))
-                            )
-                            if not title_el:
-                                continue
-
-                            title = title_el.get_text(strip=True)
-                            href = title_el.get("href", "") if title_el.name == "a" else ""
-                            if not href and title_el.find("a"):
-                                href = title_el.find("a").get("href", "")
-                            job_url = f"{self.BASE_URL}{href}" if href.startswith("/") else href
-
-                            company_el = card.find(class_=re.compile(r"empresa|company|org"))
-                            company = company_el.get_text(strip=True) if company_el else "Empresa Confidencial"
-
-                            loc_el = card.find(class_=re.compile(r"ciudad|location|lugar|region"))
-                            loc = loc_el.get_text(strip=True) if loc_el else "Chile"
-
-                        if not title:
-                            continue
-
-                        is_remote = any(
-                            k in f"{title} {loc}".lower()
-                            for k in ["remoto", "teletrabajo", "remote", "work from home"]
-                        )
-
-                        if remote_only and not is_remote:
-                            continue
-
-                        if not _keyword_match(title, keywords):
-                            continue
-
-                        jobs.append(JobPosting(
-                            title=title,
-                            company=company,
-                            location=loc,
-                            is_remote=is_remote,
-                            description=f"Oferta de empleo en Laborum Chile: {title} en {company}. Ubicación: {loc}.",
-                            url=job_url,
-                            source="laborum",
-                            tags=[keywords] if keywords else [],
-                        ))
-
-                        if len(jobs) >= limit:
-                            break
-
-                    except Exception as inner_e:
-                        logger.debug(f"[Laborum] Card parse error: {inner_e}")
-                        continue
-
-        except Exception as e:
-            logger.warning(f"[Laborum] Error: {e}")
-
-        logger.info(f"[Laborum] Retrieved {len(jobs)} jobs for '{keywords}'")
         return jobs
 
 
@@ -813,9 +577,7 @@ class ChilePortalsScraper(BaseScraper):
     Sources used:
       - GetOnBoard (API oficial, alta confianza)
       - LinkedIn Chile (presencial + híbrido + remoto en Chile)
-      - CompuTrabajo Chile (HTML)
       - ChileTrabajos (HTML)
-      - Laborum (HTML)
       - Empleos Públicos CL (API oficial de convocatorias del Estado de Chile)
     """
 
@@ -827,9 +589,7 @@ class ChilePortalsScraper(BaseScraper):
     SOURCES = {
         "GetOnBoard": GetOnBoardScraper,
         "LinkedIn Chile": LinkedInChileScraper,
-        "Computrabajo": CompuTrabajoCLScraper,
         "ChileTrabajos": ChileTrabajosСraper,
-        "Laborum": LaborumScraper,
         "Empleos Públicos": EmpleosPublicosScraper,
     }
 

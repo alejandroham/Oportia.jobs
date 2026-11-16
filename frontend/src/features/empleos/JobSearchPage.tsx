@@ -16,6 +16,7 @@ import { ImportUrlModal } from './ImportUrlModal';
 import { CompanyPortalsModal } from './CompanyPortalsModal';
 import { HelpCircle } from 'lucide-react';
 import { matchesQuery, normalizeText } from '../../utils/searchText';
+import { isCompanyBoardSource } from '../../utils/jobSource';
 
 interface JobSearchPageProps {
   jobs: JobPosting[];
@@ -238,7 +239,9 @@ export const JobSearchPage: React.FC<JobSearchPageProps> = ({
       if (modalityFilter === 'Presencial' && j.is_remote) return false;
       if (regionFilter === 'user_region' && userRegion && !normalizeText(j.location || '').includes(normalizeText(userRegion)) && !j.is_user_region) return false;
       if (selectedRegion && !normalizeText(j.location || '').includes(normalizeText(selectedRegion)) && j.region !== selectedRegion) return false;
-      if (selectedSource !== 'all' && j.source?.toLowerCase() !== selectedSource.toLowerCase()) return false;
+      if (selectedSource === 'empresa') {
+        if (!isCompanyBoardSource(j.source)) return false;
+      } else if (selectedSource !== 'all' && !(j.source || '').toLowerCase().startsWith(selectedSource.toLowerCase())) return false;
       return true;
     }).sort((a, b) => {
       // Sin evaluación con IA se usa la afinidad con las palabras clave del perfil.

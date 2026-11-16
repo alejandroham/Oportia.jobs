@@ -7,6 +7,14 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
 
 ## [Sin publicar]
 
+### 🏢 Ofertas directas de empresas y fuentes que lo permiten (Etapa E de la versión 1.3)
+- **Portales de empleo de empresas:** el índice diario suma las ofertas en Chile, o remotas para Latinoamérica, que las empresas publican en Greenhouse, Lever, Ashby y SmartRecruiters.
+  - Hoy son unas 100 ofertas de Accor, Bosch, Toku, BTG Pactual Chile, Cabify, PedidosYa, Xepelin, Experian, Fintual, Clara y Acid Labs.
+  - Siguen vigentes mientras estén publicadas.
+- **Fuente "Portales de empresas"** en los filtros de Buscar empleo.
+- **Fuera Computrabajo y Laborum**, tanto del índice como de la búsqueda en vivo: sus condiciones de uso prohíben el acceso automatizado y la reproducción de sus avisos.
+- Google descartado como fuente: su API de búsqueda programable no acepta clientes nuevos.
+
 ### 🎯 Palabras clave por perfil (Etapa D de la versión 1.3)
 - **"Para ti" sin escribir nada:** al buscar con el campo vacío, Oportia trae del índice diario las ofertas que calzan con tus palabras clave, profesiones y habilidades. Primero aparecen las que calzan con más términos.
 - **"Calza con tu perfil"** en cada tarjeta muestra qué palabras tuyas aparecen en la oferta.

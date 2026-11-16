@@ -19,7 +19,7 @@ NOW = datetime(2026, 11, 16, 11, 0, tzinfo=timezone.utc)
 
 def mk(title, company="Empresa", url=None, location="Santiago, Región Metropolitana", **kw):
     return JobPosting(title=title, company=company, location=location, description=kw.pop("description", title),
-                      url=url, source=kw.pop("source", "computrabajo"), **kw)
+                      url=url, source=kw.pop("source", "chiletrabajos"), **kw)
 
 
 @pytest.fixture(autouse=True)
@@ -70,7 +70,7 @@ def test_merge_dedupes_drops_expired_and_keeps_first_seen():
 
 
 def test_build_index_summary_and_roundtrip():
-    index = build_index([mk("TENS", url="https://x.cl/1"), mk("Bodeguero", url="https://x.cl/2")], {"Computrabajo": 2}, None, NOW)
+    index = build_index([mk("TENS", url="https://x.cl/1"), mk("Bodeguero", url="https://x.cl/2")], {"ChileTrabajos": 2}, None, NOW)
     assert index["count"] == 2 and index["new_today"] == 2
     assert index["areas"] == {"Salud": 1, "Logística y transporte": 1}
     data = encode_index(index)
@@ -131,34 +131,6 @@ def test_public_url_and_upload_needs_secret(monkeypatch):
     monkeypatch.delenv("SUPABASE_SERVICE_ROLE_KEY", raising=False)
     with pytest.raises(RuntimeError):
         store.upload_index({"jobs": []})
-
-
-COMPUTRABAJO_HTML = """
-<article class="box_offer" data-id="A1">
- <h2 class="fs18"><a class="js-o-link fc_base" href="/ofertas-de-trabajo/oferta-de-trabajo-de-vendedor-A1#lc=x">Vendedor de tienda</a>
-  <div class="tags"><span class="tag">Postulado</span><span class="tag">Vista</span></div></h2>
- <p class="dFlex"><span class="fwB">3,8</span><a class="fc_base" offer-grid-article-company-url="" href="/empresas/x">Tienda SpA</a></p>
- <p class="fs16"><span class="mr10">Santiago - Maipú, R.Metropolitana</span></p>
-</article>
-"""
-
-
-def test_computrabajo_parses_current_html():
-    from app.scrapers.chile_portals import CompuTrabajoCLScraper
-
-    class Resp:
-        status_code = 200
-        text = COMPUTRABAJO_HTML
-
-    with patch("app.scrapers.chile_portals.httpx.Client.get", return_value=Resp()) as get:
-        jobs = CompuTrabajoCLScraper().search(keywords="vendedor tienda", limit=5)
-    assert get.call_args.args[0] == "https://cl.computrabajo.com/trabajo-de-vendedor-tienda"
-    assert len(jobs) == 1
-    j = jobs[0]
-    assert j.title == "Vendedor de tienda"
-    assert j.company == "Tienda SpA"
-    assert j.location == "Santiago - Maipú, R.Metropolitana"
-    assert j.url == "https://cl.computrabajo.com/ofertas-de-trabajo/oferta-de-trabajo-de-vendedor-A1"
 
 
 def test_auth_headers_support_new_and_legacy_keys():

@@ -12,8 +12,20 @@ const SOURCE_LABELS: Record<string, string> = {
   remoteok: 'RemoteOK',
   url_import: 'Enlace importado',
   ats: 'Portal de la empresa',
+  greenhouse: 'Portal de la empresa',
+  lever: 'Portal de la empresa',
+  ashby: 'Portal de la empresa',
+  smartrecruiters: 'Portal de la empresa',
   demo: 'Demostración'
 };
+
+const COMPANY_BOARD_SOURCES = new Set(['ats', 'greenhouse', 'lever', 'ashby', 'smartrecruiters']);
+
+/** Ofertas publicadas por la propia empresa en su portal de empleo. */
+export function isCompanyBoardSource(source?: string | null): boolean {
+  const key = (source || '').toLowerCase();
+  return COMPANY_BOARD_SOURCES.has(key) || key.startsWith('ats');
+}
 
 export function getSourceLabel(source?: string | null): string {
   if (!source) return 'Fuente desconocida';

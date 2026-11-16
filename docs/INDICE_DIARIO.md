@@ -4,12 +4,12 @@ Todas las mañanas, a las **08:00 de Chile**, GitHub Actions junta ofertas de Ch
 
 ## Qué hace la tarea diaria
 
-1. **Recolecta**, con unas 90 consultas por área (salud, educación, tecnología, comercio, logística, oficios, gastronomía, seguridad, sector público y otras):
+1. **Recolecta** de fuentes que permiten este uso:
    - **Empleos Públicos:** todas las convocatorias abiertas (API oficial).
-   - **GetOnBoard:** API oficial.
-   - **Computrabajo y ChileTrabajos:** lectura moderada, una ronda al día con pausas.
-   - **LinkedIn no se usa**, porque sus condiciones prohíben la recolección automática.
-   - **Laborum no se usa por ahora**, porque su sitio carga con JavaScript (Etapa E).
+   - **GetOnBoard:** API oficial, con unas 90 consultas por área.
+   - **Portales de empleo de empresas:** API públicas de Greenhouse, Lever, Ashby y SmartRecruiters. Solo ofertas en Chile o remotas para Latinoamérica. La lista de empresas está en `backend/app/scrapers/company_boards.py`.
+   - **ChileTrabajos:** lectura moderada, una ronda al día con pausas. Sus condiciones no prohíben robots.
+   - **No se usan LinkedIn, Computrabajo ni Laborum.** Sus condiciones de uso prohíben el acceso automatizado o la reproducción de sus avisos (revisado el 17-11-2026).
 2. **Limpia**:
    - Quita duplicados por URL y por cargo + empresa + ciudad.
    - Descarta las ofertas vencidas y las de más de 30 días sin fecha de cierre.
@@ -66,6 +66,16 @@ Para ver cómo queda el correo sin enviarlo:
 ```bash
 cd backend && ../venv/bin/python -m app.indexer.build --no-upload --max-queries 5 --preview-email /tmp/correo.html
 ```
+
+## Agregar una empresa
+
+1. Busca su portal de empleo. Debe ser una dirección como `boards.greenhouse.io/<id>`, `jobs.lever.co/<id>`, `jobs.ashbyhq.com/<id>` o `jobs.smartrecruiters.com/<id>`.
+2. Verifica que su API responde:
+   - Greenhouse: `https://boards-api.greenhouse.io/v1/boards/<id>/jobs`
+   - Lever: `https://api.lever.co/v0/postings/<id>?mode=json`
+   - Ashby: `https://api.ashbyhq.com/posting-api/job-board/<id>`
+   - SmartRecruiters: `https://api.smartrecruiters.com/v1/companies/<id>/postings?country=cl`
+3. Agrégala a `COMPANY_BOARDS` en `backend/app/scrapers/company_boards.py`.
 
 ## Probarlo en tu equipo
 

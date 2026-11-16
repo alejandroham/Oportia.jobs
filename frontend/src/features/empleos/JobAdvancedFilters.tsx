@@ -116,10 +116,11 @@ export const JobAdvancedFilters: React.FC<JobAdvancedFiltersProps> = ({
             className="w-full px-2.5 py-1.5 rounded-xl bg-gray-50 dark:bg-ink-raised border border-gray-200 dark:border-ink-line text-gray-900 dark:text-gray-100 focus:outline-none"
           >
             <option value="all">Todas las fuentes</option>
+            <option value="empresa">Portales de empresas</option>
+            <option value="empleospublicos">Empleos Públicos</option>
             <option value="getonbrd">Get on Board</option>
-            <option value="computrabajo">CompuTrabajo</option>
-            <option value="linkedin">LinkedIn</option>
             <option value="chiletrabajos">ChileTrabajos</option>
+            <option value="linkedin">LinkedIn</option>
             <option value="manual">Importadas manualmente</option>
           </select>
         </div>

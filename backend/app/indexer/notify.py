@@ -29,7 +29,9 @@ MAX_PER_AREA = 8
 MAX_PER_COMPANY = 2
 MAX_TOTAL = 80
 SOURCE_LABELS = {"computrabajo": "Computrabajo", "empleospublicos": "Empleos Públicos", "getonbrd": "GetOnBoard",
-                 "chiletrabajos": "ChileTrabajos", "laborum": "Laborum"}
+                 "chiletrabajos": "ChileTrabajos", "laborum": "Laborum", "greenhouse": "portal de la empresa (Greenhouse)",
+                 "lever": "portal de la empresa (Lever)", "ashby": "portal de la empresa (Ashby)",
+                 "smartrecruiters": "portal de la empresa (SmartRecruiters)"}
 
 
 def new_jobs(index: Dict, today: Optional[str] = None) -> List[Dict]:
