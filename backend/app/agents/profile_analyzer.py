@@ -169,182 +169,216 @@ def _infer_profession_metadata(text: str) -> Dict[str, Any]:
         "sectors": ["Servicios Profesionales"]
     }
 
+_SECTION_HEADINGS = {
+    "summary": ["perfil profesional", "perfil", "resumen", "resumen profesional", "extracto", "sobre mi", "objetivo",
+                "objetivo profesional", "presentacion"],
+    "experience": ["experiencia laboral", "experiencia profesional", "experiencia", "historial laboral",
+                   "antecedentes laborales", "trayectoria laboral", "trayectoria profesional", "empleos"],
+    "education": ["formacion academica", "educacion", "estudios", "antecedentes academicos", "titulos",
+                  "formacion", "titulos y grados", "formacion profesional"],
+    "courses": ["cursos", "capacitaciones", "certificaciones", "cursos y certificaciones", "cursos y capacitaciones",
+                "perfeccionamiento", "formacion complementaria", "diplomados y cursos", "licencias", "certificados"],
+    "skills": ["habilidades", "competencias", "conocimientos", "habilidades tecnicas", "competencias tecnicas",
+               "skills", "herramientas", "software", "conocimientos tecnicos", "aptitudes"],
+    "languages": ["idiomas", "idioma", "languages"],
+    "other": ["referencias", "referencias laborales", "intereses", "datos personales", "informacion adicional",
+              "otros antecedentes", "pretension de renta", "disponibilidad"],
+}
+_HEADING_INDEX = {h: sec for sec, hs in _SECTION_HEADINGS.items() for h in hs}
+_MONTHS = r"(?:ene(?:ro)?|feb(?:rero)?|mar(?:zo)?|abr(?:il)?|may(?:o)?|jun(?:io)?|jul(?:io)?|ago(?:sto)?|sep(?:tiembre)?|set(?:iembre)?|oct(?:ubre)?|nov(?:iembre)?|dic(?:iembre)?)"
+_DATE = rf"(?:{_MONTHS}\.?\s*(?:de\s+)?)?(?:\d{{1,2}}/)?(?:19|20)\d{{2}}"
+_RANGE_RE = re.compile(rf"({_DATE})\s*(?:-|–|—|a|al|hasta)\s*({_DATE}|actual(?:idad)?|presente|a la fecha|hoy)", re.I)
+_YEAR_RE = re.compile(r"\b(19|20)\d{2}\b")
+_BULLET_RE = re.compile(r"^[●•▪■◦\-–*·]\s*")
+
+
+def _heading_of(line: str) -> Optional[str]:
+    t = re.sub(r"[^a-z\s]", "", _norm(line)).strip()
+    if not t or len(t) > 40:
+        return None
+    return _HEADING_INDEX.get(t)
+
+
+def _split_sections(text: str) -> Dict[str, List[str]]:
+    sections: Dict[str, List[str]] = {"header": []}
+    current = "header"
+    for raw in text.splitlines():
+        line = raw.strip()
+        if not line:
+            sections.setdefault(current, []).append("")
+            continue
+        head = _heading_of(line.rstrip(":"))
+        if head:
+            current = head
+            sections.setdefault(current, [])
+            continue
+        sections.setdefault(current, []).append(line)
+    return sections
+
+
+def _blocks(lines: List[str]) -> List[List[str]]:
+    """Agrupa líneas en bloques separados por líneas vacías."""
+    out, cur = [], []
+    for l in lines:
+        if not l:
+            if cur:
+                out.append(cur)
+                cur = []
+        else:
+            cur.append(l)
+    if cur:
+        out.append(cur)
+    return out
+
+
+def _parse_experiences(lines: List[str], loc: str) -> List[WorkExperience]:
+    """Cada experiencia empieza en una línea con un rango de fechas (o un bloque nuevo con cargo y empresa)."""
+    entries: List[Dict[str, Any]] = []
+    pending_header: List[str] = []
+    for line in lines + [""]:
+        if not line:
+            continue
+        m = _RANGE_RE.search(line)
+        if m:
+            rest = _RANGE_RE.sub("", line).strip(" |,-–—()")
+            header = [h for h in pending_header + ([rest] if rest else []) if h]
+            entries.append({"header": header, "start": m.group(1), "end": m.group(2), "body": []})
+            pending_header = []
+        elif _BULLET_RE.match(line) or (entries and len(line) > 70):
+            target = entries[-1]["body"] if entries else pending_header
+            target.append(_BULLET_RE.sub("", line))
+        else:
+            # Línea corta sin fecha: cargo o empresa de la próxima experiencia (o continuación de la actual).
+            if entries and not entries[-1]["header"]:
+                entries[-1]["header"].append(line)
+            else:
+                pending_header.append(line)
+    experiences: List[WorkExperience] = []
+    for e in entries:
+        parts: List[str] = []
+        for h in e["header"]:
+            parts += [p.strip() for p in re.split(r"\s[|–—-]\s|,\s(?=[A-ZÁÉÍÓÚ])", h) if p.strip()]
+        role = parts[0] if parts else "Cargo"
+        company = parts[1] if len(parts) > 1 else ""
+        bullets = [b for b in e["body"] if len(b) > 3]
+        experiences.append(WorkExperience(
+            company=company, role=role, start_date=e["start"], end_date=e["end"].capitalize() if re.match(r"(?i)actual|presente|hoy|a la fecha", e["end"]) else e["end"],
+            location=loc, is_remote=any("remot" in b.lower() for b in bullets), description=" ".join(bullets[:2])[:400],
+            bullet_achievements=bullets[:6], technologies=[]))
+    return experiences
+
+
+def _parse_education(lines: List[str]) -> List[EducationItem]:
+    items = []
+    entries: List[List[str]] = []
+    for block in _blocks(lines):
+        # Si cada línea ya es un título completo ("Título | Institución | Año"), cada línea es una entrada.
+        if len(block) > 1 and all(re.search(r"\s[|–—]\s|\s-\s", l) for l in block):
+            entries.extend([l] for l in block)
+        else:
+            entries.append(block)
+    for block in entries:
+        text = " | ".join(block)
+        year = _YEAR_RE.findall(text)
+        years = re.findall(r"(?:19|20)\d{2}", text)
+        clean = _RANGE_RE.sub("", text)
+        clean = re.sub(r"(?:19|20)\d{2}", "", clean)
+        parts = [p.strip(" |,-–—()") for p in re.split(r"\s*[|–—]\s*|\s-\s", clean) if p.strip(" |,-–—()")]
+        if not parts:
+            continue
+        inst = next((p for p in parts if re.search(r"(?i)universidad|instituto|cft|centro de formaci|liceo|colegio|escuela|inacap|duoc|aiep|santo tom", p)), "")
+        degree = next((p for p in parts if p != inst), parts[0])
+        items.append(EducationItem(institution=inst, degree=degree, field_of_study="", graduation_year=years[-1] if years else ""))
+    return items
+
+
+def _split_list(lines: List[str]) -> List[str]:
+    out = []
+    for l in lines:
+        if not l:
+            continue
+        for chunk in re.split(r"[●•▪■|;]|,\s(?![^()]*\))", _BULLET_RE.sub("", l)):
+            chunk = re.sub(r"^[A-Za-zÁÉÍÓÚáéíóú\s]{2,25}:\s*", "", chunk.strip())
+            if 2 < len(chunk) < 90 and chunk not in out:
+                out.append(chunk)
+    return out
+
+
 def deterministic_cv_parser(text: str) -> CandidateProfile:
     """
-    Robust rule-based parser that extracts the candidate's genuine experience,
-    education, skills, contact data and geographic preferences directly from text.
-    Works universally across ANY profession, craft or specialty.
+    Lector por secciones, sin IA. Reconoce los títulos de sección como líneas propias
+    (Experiencia laboral, Formación académica, Cursos, Habilidades, Idiomas) en vez de buscar la palabra
+    en cualquier parte del texto. Funciona para cualquier profesión u oficio.
     """
-    # 1. Contact Info & Name
-    name_match = re.match(r'^\s*([A-ZÁÉÍÓÚ][a-záéíóúA-ZÁÉÍÓÚ\s]{4,45}?)(?=\s+Técnico|\s+Ingeniero|\s+Licenciado|\s+Arquitecto|\s+Abogado|\s+Profesor|\s+Médico|\s+\||Teléfono|\n)', text)
-    if name_match:
-        name = name_match.group(1).strip()
-    else:
-        lines = [l.strip() for l in text.splitlines() if l.strip()]
-        name = lines[0][:40] if lines else "Candidato"
+    sections = _split_sections(text)
+    header_lines = [l for l in sections.get("header", []) if l]
 
-    email_match = re.search(r'[\w\.-]+@[\w\.-]+\.\w+', text)
-    email = email_match.group(0) if email_match else None
+    # Nombre: primera línea con 2 a 5 palabras sin dígitos ni @.
+    name = next((l for l in header_lines[:6] if 1 < len(l.split()) <= 5 and not re.search(r"[\d@:/]", l)), None)
+    name = name or (header_lines[0][:40] if header_lines else "Candidato")
 
-    phone_match = re.search(r'Tel[eé]fono:\s*([^\n|]+)', text, re.I)
-    phone = phone_match.group(1).strip() if phone_match else None
-
-    loc_match = re.search(r'Ubicaci[oó]n:\s*([^\n|]+)', text, re.I)
+    email_match = re.search(r"[\w\.-]+@[\w\.-]+\.\w+", text)
+    phone_match = re.search(r"(?:\+?56\s?)?(?:9[\s.-]?)\d{4}[\s.-]?\d{4}", text) or re.search(r"Tel[eé]fono:\s*([^\n|]+)", text, re.I)
+    loc_match = re.search(r"(?:Ubicaci[oó]n|Direcci[oó]n|Ciudad|Comuna):\s*([^\n|]+)", text, re.I)
     loc = loc_match.group(1).strip() if loc_match else "Chile"
-
-    # Detect region and commune dynamically from CV
     detected_reg, detected_comm, _ = detect_region_and_commune(f"{loc} {text[:800]}")
-    user_region = detected_reg
-    user_commune = detected_comm
+    linkedin_match = re.search(r"https?://[^\s|]*linkedin[^\s|]*", text, re.I)
+    portfolio_match = re.search(r"https?://[^\s|]*(?:github|behance|portfolio|artstation)[^\s|]*", text, re.I)
 
-    linkedin_match = re.search(r'https?://[^\s|]*linkedin[^\s|]*', text, re.I)
-    linkedin = linkedin_match.group(0) if linkedin_match else None
-
-    portfolio_match = re.search(r'https?://[^\s|]*(?:github|behance|portfolio|artstation)[^\s|]*', text, re.I)
-    portfolio = portfolio_match.group(0) if portfolio_match else None
-
-    # Infer profession taxonomy
     prof_meta = _infer_profession_metadata(text)
     primary_profession = prof_meta["primary"]
-    equivalent_roles = prof_meta["equivalents"]
-    related_roles = prof_meta["related"]
-    economic_sectors = prof_meta["sectors"]
+    headline_line = next((l for l in header_lines[1:6] if l != name and not re.search(r"[@\d]", l) and len(l) < 80), None)
+    headline = headline_line or primary_profession
 
-    # Headline
-    headline_match = re.search(r'(?:Titular|Perfil|Cargo):\s*([^\n|]+)', text, re.I)
-    if headline_match:
-        headline = headline_match.group(1).strip()
-    else:
-        headline = primary_profession
+    summary = " ".join(l for l in sections.get("summary", []) if l)[:1200]
 
-    # Summary
-    summary = ""
-    summary_match = re.search(r'(?:Perfil Profesional|Resumen|Extracto|Sobre mí)\s*(.*?)(?=Competencias|Experiencia|Formación|\n\s*●)', text, re.DOTALL | re.I)
-    if summary_match:
-        summary = summary_match.group(1).strip()
-    else:
-        summary = text[:400].strip()
+    experiences = _parse_experiences(sections.get("experience", []), loc)
+    education = _parse_education(sections.get("education", []))
+    certifications = _split_list(sections.get("courses", []))
+    # Diplomados y títulos que quedaron en "cursos" pasan a educación.
+    for c in list(certifications):
+        if re.search(r"(?i)diplomado|post[ií]tulo|mag[ií]ster|t[ií]tulo", c):
+            certifications.remove(c)
+            education.append(EducationItem(institution="", degree=c, field_of_study="", graduation_year=""))
 
-    # Years of experience calculation
-    years = 3.0
-    exp_year_match = re.search(r'(\d+)\s*(?:\+)?\s*a[ñn]os', text, re.I)
-    if exp_year_match:
-        years = float(exp_year_match.group(1))
+    technical_skills, soft_skills = [], []
+    for val in _split_list(sections.get("skills", [])):
+        is_soft = any(k in val.lower() for k in ["liderazgo", "comunicación", "comunicacion", "trabajo en equipo",
+                                                "resolución", "empatía", "proactiv", "responsab", "adaptabilidad"])
+        (soft_skills if is_soft else technical_skills).append(val)
 
-    # Skills extraction
-    technical_skills: List[str] = []
-    soft_skills: List[str] = []
-    skills_match = re.search(r'(?:Competencias|Habilidades|Skills)\s*(.*?)(?=Experiencia|Formación|Educación|$)', text, re.DOTALL | re.I)
-    if skills_match:
-        skills_block = skills_match.group(1)
-        chunks = re.split(r'[●•\n|,]+', skills_block)
-        for chunk in chunks:
-            val = re.sub(r'^[A-Za-záéíóú\s]+:\s*', '', chunk).strip()
-            if len(val) > 2 and len(val) < 60:
-                is_soft = any(k in val.lower() for k in ["liderazgo", "comunicación", "trabajo en equipo", "resolución", "empatía", "gestión"])
-                if is_soft:
-                    if val not in soft_skills:
-                        soft_skills.append(val)
-                else:
-                    if val not in technical_skills:
-                        technical_skills.append(val)
+    languages: Dict[str, str] = {}
+    for line in sections.get("languages", []):
+        for val in re.split(r"[●•|;,]", _BULLET_RE.sub("", line)):
+            m = re.match(r"\s*([A-Za-zÁÉÍÓÚáéíóúñ]+)\s*[:(\-–]?\s*([A-Za-zÁÉÍÓÚáéíóú0-9\s]+)?", val)
+            if m and len(m.group(1)) > 2:
+                languages[m.group(1).capitalize()] = (m.group(2) or "Intermedio").strip(" )").capitalize()
+    if not languages and re.search(r"español", text, re.I):
+        languages["Español"] = "Nativo"
 
-    # Experience extraction
-    experiences: List[WorkExperience] = []
-    exp_match = re.search(r'(?:Experiencia Laboral|Experiencia|Historial Laboral)\s*(.*?)(?=Formación|Educación|Idiomas|Certificaciones|$)', text, re.DOTALL | re.I)
-    if exp_match:
-        exp_block = exp_match.group(1).strip()
-        lines = [l.strip() for l in exp_block.splitlines() if l.strip()]
-        cur_role = primary_profession
-        cur_comp = "Institución / Empresa"
-        cur_bullets = []
-        cur_date = "Periodo registrado"
-
-        for line in lines:
-            if any(sep in line for sep in [' - ', ' – ', ' | ']) and len(line) < 120:
-                if cur_bullets or cur_role != primary_profession:
-                    experiences.append(WorkExperience(
-                        company=cur_comp,
-                        role=cur_role,
-                        start_date=cur_date,
-                        end_date="",
-                        location=loc,
-                        is_remote="remot" in line.lower(),
-                        description=f"Desempeño profesional en {cur_comp}.",
-                        bullet_achievements=cur_bullets[:4],
-                        technologies=technical_skills[:4]
-                    ))
-                    cur_bullets = []
-                parts = [p.strip() for p in re.split(r'[|–—\-]', line)]
-                cur_role = parts[0] if parts else primary_profession
-                cur_comp = parts[1] if len(parts) > 1 else "Organización"
-                cur_date = parts[2] if len(parts) > 2 else "Periodo registrado"
-            elif line.startswith(('●', '•', '-')):
-                cur_bullets.append(line.lstrip('●•- ').strip())
-
-        if cur_role:
-            experiences.append(WorkExperience(
-                company=cur_comp,
-                role=cur_role,
-                start_date=cur_date,
-                end_date="",
-                location=loc,
-                is_remote=False,
-                description=f"Desempeño profesional en {cur_comp}.",
-                bullet_achievements=cur_bullets[:4],
-                technologies=technical_skills[:4]
-            ))
-
-    # Education extraction
-    education: List[EducationItem] = []
-    edu_match = re.search(r'(?:Formación Académica|Educación|Estudios)\s*(.*?)(?=Idiomas|Certificaciones|$)', text, re.DOTALL | re.I)
-    if edu_match:
-        edu_block = edu_match.group(1).strip()
-        for edu_c in re.split(r'[●•\n]+', edu_block):
-            edu_c = edu_c.strip()
-            if len(edu_c) < 10:
-                continue
-            parts = [p.strip() for p in re.split(r'[|–—\-]', edu_c)]
-            degree = parts[0] if parts else primary_profession
-            inst = parts[1] if len(parts) > 1 else "Institución de Educación Superior"
-            education.append(EducationItem(
-                institution=inst,
-                degree=degree,
-                field_of_study=primary_profession,
-                graduation_year=""
-            ))
-
-    # Languages
-    languages = {}
-    if re.search(r'español', text, re.I):
-        languages['Español'] = 'Nativo'
-    if re.search(r'ingl[eé]s', text, re.I):
-        languages['Inglés'] = 'Intermedio'
+    # Años de experiencia: suma de los rangos detectados (o el número declarado).
+    years = 0.0
+    for e in experiences:
+        ys = [int(y) for y in re.findall(r"(?:19|20)\d{2}", f"{e.start_date} {e.end_date}")]
+        end_y = ys[-1] if len(ys) > 1 else (2026 if re.match(r"(?i)actual|presente|hoy|a la fecha", e.end_date or "") else (ys[0] if ys else 0))
+        if ys:
+            years += max(0, end_y - ys[0])
+    if not years:
+        m = re.search(r"(\d+)\s*(?:\+)?\s*a[ñn]os\s+de\s+experiencia", text, re.I)
+        years = float(m.group(1)) if m else 0.0
 
     return CandidateProfile(
-        name=name,
-        email=email,
-        phone=phone,
-        location=loc,
-        linkedin_url=linkedin,
-        portfolio_url=portfolio,
-        headline=headline,
-        summary=summary,
-        years_of_experience=years,
-        primary_profession=primary_profession,
-        secondary_professions=[],
-        equivalent_roles=equivalent_roles,
-        related_roles=related_roles,
-        economic_sectors=economic_sectors,
+        name=name, email=email_match.group(0) if email_match else None,
+        phone=(phone_match.group(1) if phone_match and phone_match.groups() else phone_match.group(0)).strip() if phone_match else None,
+        location=loc, linkedin_url=linkedin_match.group(0) if linkedin_match else None,
+        portfolio_url=portfolio_match.group(0) if portfolio_match else None,
+        headline=headline, summary=summary, years_of_experience=years,
+        primary_profession=primary_profession, secondary_professions=[],
+        equivalent_roles=prof_meta["equivalents"], related_roles=prof_meta["related"], economic_sectors=prof_meta["sectors"],
         seniority_level="Profesional Especialista" if years >= 4 else "Profesional",
-        region=user_region,
-        commune=user_commune,
-        technical_skills=technical_skills,
-        soft_skills=soft_skills,
-        languages=languages,
-        experiences=experiences,
-        education=education,
-        raw_cv_text=text
+        region=detected_reg, commune=detected_comm,
+        technical_skills=technical_skills, soft_skills=soft_skills, languages=languages,
+        experiences=experiences, education=education, certifications=certifications, raw_cv_text=text,
     )
 
 _LINK_LABELS = [
@@ -393,133 +427,187 @@ def attach_links_from_text(profile: CandidateProfile, raw_text: str) -> Candidat
     return profile
 
 
-def analyze_cv_content(raw_text: str, save_to_db: bool = True) -> CandidateProfile:
-    """
-    Parses CV using LLM if configured; otherwise uses deterministic_cv_parser
-    to guarantee 100% fidelity with the candidate's actual text.
-    Universally adaptable to ANY profession or trade without IT restrictions.
-    """
-    has_key = bool(settings.GEMINI_API_KEY or settings.OPENAI_API_KEY or settings.ANTHROPIC_API_KEY)
-    
-    if has_key:
-        system_prompt = (
-            "Eres un analista experto de talento y empleabilidad para cualquier profesión, oficio o especialidad. "
-            "Tu misión es extraer de manera fiel, estructurada y verificable toda la información del currículum (CV) "
-            "del candidato SIN inventar datos, títulos ni competencias que no posea. "
-            "Identifica la profesión real del candidato a partir de su CV y NO condiciones la respuesta al área TI. "
-            "REGLAS CRÍTICAS DE CLASIFICACIÓN:\n"
-            "1. 'experiences': Corresponde ÚNICAMENTE a experiencia laboral previa (empresas, instituciones donde trabajó, cargos y responsabilidades).\n"
-            "2. 'education': Corresponde ÚNICAMENTE a formación académica reglada (universidades, institutos profesionales, títulos de pregrado o posgrado, carreras técnicas, diplomados y educación media/secundaria).\n"
-            "3. NUNCA coloques un empleo, cargo profesional o experiencia laboral en la lista de 'education'.\n"
-            "4. NUNCA coloques una carrera universitaria o título en la lista de 'experiences'."
-        )
+CV_SYSTEM_PROMPT = (
+    "Eres un analista experto de talento y empleabilidad para cualquier profesión, oficio o especialidad en Chile. "
+    "Extraes de forma fiel y verificable la información del currículum, SIN inventar datos, títulos, empresas ni "
+    "competencias. Identificas la profesión real de la persona y no condicionas la respuesta al área TI."
+)
 
-        prompt = f"""
-Analiza el siguiente currículum y genera un perfil profesional estructurado universal en formato JSON exacto:
+CV_PROMPT = """
+Analiza el currículum y devuelve un JSON EXACTO con esta estructura:
 {{
   "name": "Nombre completo",
-  "email": "correo electrónico",
-  "phone": "teléfono de contacto",
-  "location": "ubicación declarada",
-  "detected_region": "Región de Chile (e.g. Región del Biobío, Región Metropolitana, etc.)",
-  "detected_commune": "Comuna chilena si se indica (e.g. Concepción, Talcahuano, Chillán, etc.)",
-  "linkedin_url": "url",
-  "portfolio_url": "url de portafolio o repositorio si aplica",
-  "headline": "Titular profesional claro y representativo",
-  "summary": "Resumen profesional del candidato basado estrictamente en el CV",
-  "primary_profession": "Profesión u oficio principal identificado del CV",
-  "secondary_professions": ["Especialidad o área secundaria si aplica"],
-  "equivalent_roles": ["Denominaciones alternativas y sinónimos usados en portales de empleo de Chile"],
-  "related_roles": ["Cargos que puede desempeñar por competencias transferibles y experiencia"],
-  "economic_sectors": ["Sectores económicos afines (ej: Salud, Construcción, Minería, Educación, etc.)"],
-  "seniority_level": "Nivel de experiencia (Junior / Semi-Senior / Senior / Jefatura / Especialista)",
+  "email": "correo", "phone": "teléfono", "location": "ubicación declarada",
+  "detected_region": "Región de Chile si se indica", "detected_commune": "Comuna si se indica",
+  "linkedin_url": "url", "portfolio_url": "url",
+  "headline": "Titular profesional", "summary": "Resumen basado estrictamente en el CV",
+  "primary_profession": "Profesión u oficio principal",
+  "secondary_professions": ["Otras profesiones u oficios que ejerce o en que está titulado"],
+  "equivalent_roles": ["Nombres equivalentes del cargo en portales de empleo de Chile"],
+  "related_roles": ["Cargos a los que puede postular por su experiencia"],
+  "economic_sectors": ["Sectores económicos afines"],
+  "seniority_level": "Junior | Semi-Senior | Senior | Jefatura | Especialista",
   "years_of_experience": 5.0,
-  "technical_skills": ["Competencias técnicas y conocimientos específicos del área"],
-  "soft_skills": ["Habilidades transversales y de gestión"],
-  "languages": {{"Español": "Nativo", "Inglés": "Intermedio"}},
-  "experiences": [
-    {{
-      "company": "Empresa o Institución",
-      "role": "Cargo desempeñado",
-      "start_date": "Fecha inicio",
-      "end_date": "Fecha término o Presente",
-      "location": "Ubicación",
-      "is_remote": false,
-      "description": "Responsabilidades y funciones",
-      "technologies": ["Herramientas o técnicas aplicadas"],
-      "bullet_achievements": ["Logro 1", "Logro 2"]
-    }}
-  ],
-  "education": [
-    {{
-      "institution": "Institución Educativa",
-      "degree": "Título profesional o grado",
-      "field_of_study": "Área de estudio",
-      "graduation_year": "Año de graduación"
-    }}
-  ],
-  "certifications": ["Certificación o registro profesional"]
+  "technical_skills": ["Competencias técnicas"], "soft_skills": ["Habilidades transversales"],
+  "languages": {{"Español": "Nativo"}},
+  "experiences": [{{"company": "Empresa", "role": "Cargo", "start_date": "Mes Año", "end_date": "Mes Año o Actual",
+                    "location": "Ciudad", "is_remote": false, "description": "Funciones",
+                    "technologies": ["Herramientas"], "bullet_achievements": ["Logro"]}}],
+  "education": [{{"institution": "Institución", "degree": "Título o grado", "field_of_study": "Carrera o área",
+                  "graduation_year": "Año"}}],
+  "certifications": ["Nombre completo del curso o certificación — Institución (año)"]
 }}
+
+REGLAS DE CLASIFICACIÓN (MUY IMPORTANTES):
+1. "experiences": TODOS los trabajos, uno por cada cargo (si en una empresa tuvo dos cargos, son dos entradas).
+   Incluye prácticas profesionales, trabajos independientes y voluntariados con funciones. Ordénalos del más
+   reciente al más antiguo. Revisa el CV completo: no te detengas en la primera experiencia.
+2. "education": SOLO títulos y grados: enseñanza media técnico-profesional, carreras técnicas (CFT, IP),
+   carreras profesionales y universitarias, postítulos, diplomados, magíster y doctorados.
+3. "certifications": SOLO cursos, capacitaciones, certificaciones y licencias (por ejemplo, curso SENCE, OS-10,
+   licencia de conducir, certificación ChileValora). Escribe el NOMBRE COMPLETO de cada curso, no palabras sueltas.
+4. Un título NUNCA va en "certifications", y un curso NUNCA va en "education".
+5. NUNCA pongas un empleo en "education" ni un título en "experiences".
+6. Las habilidades van en "technical_skills" o "soft_skills", nunca en "certifications".
+7. Si un dato no está en el CV, déjalo vacío. No lo inventes.
 
 TEXTO DEL CURRÍCULUM:
 ---
-{raw_text[:65000]}
+{cv}
 ---
 """
+
+_COURSE_WORDS = re.compile(r"\b(curso|capacitaci[oó]n|certificaci[oó]n|certificado|licencia|taller|seminario|sence|otec|os-?10)\b", re.I)
+_DEGREE_WORDS = re.compile(r"\b(t[ií]tulo|t[eé]cnico|ingenier|licenciad|magíster|magister|mag[ií]ster|doctor|diplomado|post[ií]tulo|"
+                           r"bachiller|carrera|profesional|enseñanza media|educaci[oó]n media|universidad|instituto|cft)\b", re.I)
+
+
+def _norm(text: str) -> str:
+    import unicodedata
+    t = unicodedata.normalize("NFKD", (text or "").lower())
+    return "".join(c for c in t if not unicodedata.combining(c))
+
+
+def _name_in_text(name: str, raw_text: str) -> bool:
+    """El nombre que leyó la IA debe aparecer en el CV (al menos dos de sus palabras), sin importar tildes ni saltos."""
+    words = [w for w in re.findall(r"[a-z]+", _norm(name)) if len(w) > 2]
+    text = _norm(raw_text)
+    return bool(words) and sum(1 for w in words if w in text) >= min(2, len(words))
+
+
+def _clean_ai_sections(result: Dict[str, Any]) -> Dict[str, Any]:
+    """Corrige clasificaciones típicas: cursos que quedaron como títulos y viceversa, y 'certificaciones' que son habilidades."""
+    education = [e for e in result.get("education") or [] if isinstance(e, dict)]
+    certs = [str(c).strip() for c in result.get("certifications") or [] if str(c).strip()]
+    skills = {_norm(x) for x in (result.get("technical_skills") or []) + (result.get("soft_skills") or [])}
+    kept_edu = []
+    for e in education:
+        label = f"{e.get('degree', '')} {e.get('field_of_study', '')}"
+        if _COURSE_WORDS.search(label) and not _DEGREE_WORDS.search(label):
+            certs.append(" — ".join(x for x in [label.strip(), e.get("institution", "")] if x))
+        else:
+            kept_edu.append(e)
+    # Una "certificación" de 1-2 palabras que además es una habilidad declarada no es una certificación.
+    certs = [c for c in certs if not (_norm(c) in skills and len(c.split()) <= 2)]
+    seen, unique = set(), []
+    for c in certs:
+        if _norm(c) not in seen:
+            seen.add(_norm(c))
+            unique.append(c)
+    result["education"] = kept_edu
+    result["certifications"] = unique
+    return result
+
+
+def _profile_from_ai(result: Dict[str, Any], raw_text: str) -> CandidateProfile:
+    result = _clean_ai_sections(result)
+    experiences = []
+    for exp in result.get("experiences") or []:
+        if isinstance(exp, dict) and (exp.get("role") or exp.get("company")):
+            exp = {k: v for k, v in exp.items() if v is not None}
+            exp.setdefault("company", "")
+            exp.setdefault("role", "")
+            exp.setdefault("start_date", "")
+            exp.setdefault("description", "")
+            experiences.append(WorkExperience(**exp))
+    education = []
+    for edu in result.get("education") or []:
+        edu = {k: (v if v is not None else "") for k, v in edu.items()}
+        edu.setdefault("institution", "")
+        edu.setdefault("degree", "")
+        edu.setdefault("field_of_study", "")
+        education.append(EducationItem(**edu))
+    loc = result.get("location") or "Chile"
+    det_reg, det_comm = result.get("detected_region"), result.get("detected_commune")
+    if not det_reg or not det_comm:
+        r, c, _ = detect_region_and_commune(f"{loc} {raw_text[:800]}")
+        det_reg, det_comm = det_reg or r, det_comm or c
+    try:
+        years = float(result.get("years_of_experience") or 0)
+    except (TypeError, ValueError):
+        years = 0.0
+    profile = CandidateProfile(
+        name=result.get("name") or "Candidato",
+        email=result.get("email"), phone=result.get("phone"), location=loc,
+        linkedin_url=result.get("linkedin_url"), portfolio_url=result.get("portfolio_url"),
+        headline=result.get("headline") or result.get("primary_profession") or "Profesional",
+        summary=result.get("summary") or "",
+        years_of_experience=years,
+        primary_profession=result.get("primary_profession"),
+        secondary_professions=result.get("secondary_professions") or [],
+        equivalent_roles=result.get("equivalent_roles") or [],
+        related_roles=result.get("related_roles") or [],
+        economic_sectors=result.get("economic_sectors") or [],
+        seniority_level=result.get("seniority_level") or "Profesional",
+        region=det_reg, commune=det_comm,
+        technical_skills=result.get("technical_skills") or [],
+        soft_skills=result.get("soft_skills") or [],
+        languages=result.get("languages") or {},
+        experiences=experiences, education=education,
+        certifications=result.get("certifications") or [],
+        raw_cv_text=raw_text,
+    )
+    return attach_links_from_text(profile, raw_text)
+
+
+def _ai_available() -> bool:
+    from app.agents import shared_ai
+    from app.agents.llm_context import current_llm_credentials
+    creds = current_llm_credentials.get()
+    return bool(creds and creds.api_key) or shared_ai.is_enabled() or bool(
+        settings.GEMINI_API_KEY or settings.OPENAI_API_KEY or settings.ANTHROPIC_API_KEY)
+
+
+def analyze_cv(raw_text: str) -> "tuple[CandidateProfile, str, Optional[str]]":
+    """
+    Analiza el CV. Devuelve (perfil, método, aviso):
+    - método "ia": la IA ordenó experiencia, títulos y cursos (con tu clave o con la IA gratuita aceptada).
+    - método "reglas": lector por secciones, sin IA; el aviso explica por qué y cómo mejorar el análisis.
+    """
+    from app.agents.llm_provider import AIRestingError, AINotConnectedError, LLMProviderError
+    note = "Analizamos tu CV sin IA (lectura básica por secciones). Activa la IA y usa «Reanalizar con IA» para ordenar mejor tu experiencia, títulos y cursos."
+    if _ai_available():
         try:
-            result = llm.generate_json(prompt, system_instruction=system_prompt)
-            extracted_name = result.get("name", "")
-            # Verify candidate name exists in text to prevent simulator/hallucination spillover
-            if extracted_name and extracted_name.lower() in raw_text.lower():
-                experiences = [WorkExperience(**exp) for exp in result.get("experiences", [])]
-                education = [EducationItem(**edu) for edu in result.get("education", [])]
-
-                # Resolve region and commune
-                loc = result.get("location", "Chile")
-                det_reg = result.get("detected_region")
-                det_comm = result.get("detected_commune")
-                if not det_reg or not det_comm:
-                    r, c, _ = detect_region_and_commune(f"{loc} {raw_text[:800]}")
-                    det_reg = det_reg or r
-                    det_comm = det_comm or c
-
-                profile = CandidateProfile(
-                    name=result.get("name", "Candidato"),
-                    email=result.get("email"),
-                    phone=result.get("phone"),
-                    location=loc,
-                    linkedin_url=result.get("linkedin_url"),
-                    portfolio_url=result.get("portfolio_url"),
-                    headline=result.get("headline", result.get("primary_profession", "Profesional")),
-                    summary=result.get("summary", ""),
-                    years_of_experience=float(result.get("years_of_experience", 0)),
-                    primary_profession=result.get("primary_profession"),
-                    secondary_professions=result.get("secondary_professions", []),
-                    equivalent_roles=result.get("equivalent_roles", []),
-                    related_roles=result.get("related_roles", []),
-                    economic_sectors=result.get("economic_sectors", []),
-                    seniority_level=result.get("seniority_level", "Profesional"),
-                    region=det_reg,
-                    commune=det_comm,
-                    technical_skills=result.get("technical_skills", []),
-                    soft_skills=result.get("soft_skills", []),
-                    languages=result.get("languages", {}),
-                    experiences=experiences,
-                    education=education,
-                    certifications=result.get("certifications", []),
-                    raw_cv_text=raw_text
-                )
-                profile = attach_links_from_text(profile, raw_text)
-                if save_to_db:
-                    db.save_profile(profile)
-                    # Automatically synchronize user preferences with the detected profile
-                    _sync_preferences_from_profile(profile)
-                return profile
-        except Exception as e:
+            result = llm.generate_json(CV_PROMPT.format(cv=raw_text[:65000]), system_instruction=CV_SYSTEM_PROMPT)
+            if isinstance(result, dict) and _name_in_text(result.get("name") or "", raw_text):
+                return _profile_from_ai(result, raw_text), "ia", None
+            logger.warning("La IA devolvió un CV que no coincide con el texto; se usa el lector por secciones.")
+            note = "La IA no pudo leer bien tu CV; usamos la lectura básica por secciones. Revisa tus datos o vuelve a intentarlo."
+        except AIRestingError as e:
+            note = e.message + " Mientras tanto usamos la lectura básica por secciones; luego puedes «Reanalizar con IA»."
+        except AINotConnectedError:
+            pass  # sin clave o sin aceptar la IA gratuita: se usa el aviso por defecto
+        except LLMProviderError as e:
+            logger.info(f"CV sin IA ({e.code}).")
+        except Exception as e:  # noqa: BLE001
             logger.warning(f"LLM parsing failed, falling back to deterministic parser: {e}")
-
-    # Fallback to deterministic parser
     profile = attach_links_from_text(deterministic_cv_parser(raw_text), raw_text)
+    return profile, "reglas", note
+
+
+def analyze_cv_content(raw_text: str, save_to_db: bool = True) -> CandidateProfile:
+    """Compatibilidad: devuelve solo el perfil (y lo guarda si no es modo sin estado)."""
+    profile, _, _ = analyze_cv(raw_text)
     if save_to_db:
         db.save_profile(profile)
         _sync_preferences_from_profile(profile)

@@ -27,7 +27,8 @@ export const OnboardingStep3AI: React.FC<OnboardingStep3AIProps> = ({
           </h2>
         </div>
         <p className="text-xs text-gray-500 dark:text-ink-200 leading-relaxed">
-          Adapta tu currículum a cada vacante, redacta cartas convincentes y simula entrevistas con Opi.
+          Actívala antes de subir tu CV: la IA es la que lo lee bien y separa tu experiencia laboral, tus títulos y tus
+          cursos. También adapta tu CV y tu carta a cada vacante, calcula tu compatibilidad y te prepara para la entrevista.
           Puedes usar la IA gratuita de Oportia o tu propia clave, que viaja cifrada y nunca se guarda en el servidor.
         </p>
       </div>

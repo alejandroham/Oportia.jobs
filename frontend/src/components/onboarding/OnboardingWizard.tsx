@@ -80,7 +80,8 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
       if (detectedTitle && targetRoles.length === 0) {
         setTargetRoles([detectedTitle]);
       }
-      toast.success('CV procesado correctamente');
+      if (res.method === 'ia') toast.success('La IA ordenó tu experiencia, tus títulos y tus cursos.', 'CV analizado');
+      else toast.info(res.note || 'Analizamos tu CV sin IA (lectura básica).', 'CV analizado sin IA');
     } catch (err: any) {
       toast.error('Error al procesar CV: ' + (err?.message || err));
     } finally {
@@ -88,6 +89,31 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
     }
   };
 
+  // Paso 1: la IA (primero, para que el CV se analice con IA).
+  const handleSaveAI = async () => {
+    if (apiKey.trim()) {
+      setIsSavingAI(true);
+      try {
+        const encrypted = await encryptApiKeyLocally(apiKey.trim());
+        localStorage.setItem(`job_search_llm_key_${provider}`, encrypted);
+        localStorage.setItem('job_search_default_provider', provider);
+        const updatedSettings: LLMSettings = {
+          ...settings,
+          provider,
+          has_own_key: true,
+          has_active_key: true,
+          status_label: 'IA conectada',
+          status_color: 'green'
+        };
+        await setSettings(updatedSettings);
+      } finally {
+        setIsSavingAI(false);
+      }
+    }
+    setStep(2);
+  };
+
+  // Paso 2: el CV.
   const handleConfirmStep1 = async () => {
     if (profile) {
       const updatedProfile: CandidateProfile = {
@@ -98,10 +124,10 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
       };
       await setProfile(updatedProfile);
     }
-    setStep(2);
+    setStep(3);
   };
 
-  // Step 2: preferences
+  // Paso 3: lo que busca (y terminar).
   const handleConfirmStep2 = async () => {
     const updatedPrefs = {
       ...(preferences || DEFAULT_EMPTY_PREFERENCES),
@@ -110,28 +136,13 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
       remote_only: isRemoteOnly
     };
     await setPreferences(updatedPrefs);
-    setStep(3);
+    await handleFinish();
   };
 
-  // Step 3: finish & launch initial search
-  const handleFinish = async (connectAI: boolean) => {
+  // Terminar y lanzar la primera búsqueda.
+  const handleFinish = async () => {
     setIsSavingAI(true);
     try {
-      if (connectAI && apiKey.trim()) {
-        const encrypted = await encryptApiKeyLocally(apiKey.trim());
-        localStorage.setItem(`job_search_llm_key_${provider}`, encrypted);
-        localStorage.setItem('job_search_default_provider', provider);
-
-        const updatedSettings: LLMSettings = {
-          ...settings,
-          provider,
-          has_active_key: true,
-          status_label: 'IA conectada',
-          status_color: 'green'
-        };
-        await setSettings(updatedSettings);
-      }
-
       await setOnboardingCompleted(true);
       toast.success('¡Bienvenido a Oportia Jobs IA!', 'Buscando primeras oportunidades para ti...');
 
@@ -171,7 +182,7 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
         {/* Header & Step Indicator */}
         <div className="p-5 border-b border-black/5 dark:border-white/5 flex items-center justify-between bg-gray-50/60 dark:bg-ink-raised/40">
           <div className="flex items-center gap-3">
-          <OpiAvatar expression={step === 1 ? 'saludando' : step === 2 ? 'curioso' : 'pensando'} size={52} decorative />
+          <OpiAvatar expression={step === 1 ? 'pensando' : step === 2 ? 'curioso' : 'saludando'} size={52} decorative />
           <div>
             <div className="flex items-center space-x-2">
               <span className="text-xs font-bold text-brand-700 dark:text-brand-400 uppercase tracking-wider">
@@ -179,7 +190,7 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
               </span>
               <span className="text-gray-300 dark:text-ink-300">•</span>
               <span className="text-xs font-semibold text-ink dark:text-gray-300">
-                {step === 1 ? 'Tu currículum' : step === 2 ? 'Qué estás buscando' : 'Conecta la IA'}
+                {step === 1 ? 'Conecta la IA' : step === 2 ? 'Tu currículum' : 'Qué estás buscando'}
               </span>
             </div>
             <div className="flex space-x-1.5 mt-2">
@@ -213,19 +224,39 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
         {/* Wizard Step Body */}
         <div className="p-6 overflow-y-auto space-y-5 flex-1">
           {step === 1 && (
-            <OnboardingStep1CV
-              isUploading={isUploading}
-              onFileUpload={handleFileUpload}
-              tempName={tempName}
-              setTempName={setTempName}
-              tempTitle={tempTitle}
-              setTempTitle={setTempTitle}
-              tempSkills={tempSkills}
-              setTempSkills={setTempSkills}
+            <OnboardingStep3AI
+              apiKey={apiKey}
+              setApiKey={setApiKey}
+              provider={provider}
+              setProvider={setProvider}
             />
           )}
 
           {step === 2 && (
+            <>
+              {!settings.has_active_key && (
+                <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-400/30 text-amber-900 dark:text-amber-100">
+                  <span className="font-semibold">La IA no está activa.</span> Tu CV se leerá de forma básica y puede clasificar mal tu
+                  experiencia, tus títulos y tus cursos.{' '}
+                  <button type="button" onClick={() => setStep(1)} className="underline font-semibold cursor-pointer">
+                    Volver a activar la IA
+                  </button>
+                </div>
+              )}
+              <OnboardingStep1CV
+                isUploading={isUploading}
+                onFileUpload={handleFileUpload}
+                tempName={tempName}
+                setTempName={setTempName}
+                tempTitle={tempTitle}
+                setTempTitle={setTempTitle}
+                tempSkills={tempSkills}
+                setTempSkills={setTempSkills}
+              />
+            </>
+          )}
+
+          {step === 3 && (
             <OnboardingStep2Preferences
               targetRoles={targetRoles}
               setTargetRoles={setTargetRoles}
@@ -235,34 +266,17 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
               setIsRemoteOnly={setIsRemoteOnly}
             />
           )}
-
-          {step === 3 && (
-            <OnboardingStep3AI
-              apiKey={apiKey}
-              setApiKey={setApiKey}
-              provider={provider}
-              setProvider={setProvider}
-            />
-          )}
         </div>
 
         {/* Footer Navigation Actions */}
         <div className="p-4 border-t border-black/5 dark:border-white/5 flex items-center justify-between bg-gray-50/40 dark:bg-ink-raised/40">
           {step === 1 && (
             <>
-              <button
-                type="button"
-                onClick={() => setStep(2)}
-                className="min-h-[44px] px-3 text-xs text-ink-muted hover:text-ink dark:hover:text-white font-medium cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none rounded-xl"
-              >
-                Omitir por ahora
+              <button type="button" onClick={() => setStep(2)} className="min-h-[44px] px-3 text-xs text-ink-muted hover:text-ink dark:hover:text-white font-medium cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none rounded-xl">
+                Lo haré después
               </button>
-              <button
-                type="button"
-                onClick={handleConfirmStep1}
-                className="px-5 py-2.5 min-h-[44px] rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold text-xs transition flex items-center gap-1.5 shadow-xs cursor-pointer active:scale-95 focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
-              >
-                <span>{tempName ? 'Se ve bien, continuar' : 'Continuar'}</span>
+              <button type="button" onClick={handleSaveAI} disabled={isSavingAI} className="px-5 py-2.5 min-h-[44px] rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold text-xs transition flex items-center gap-1.5 shadow-xs cursor-pointer active:scale-95 disabled:opacity-60 focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none">
+                <span>{apiKey.trim() ? 'Guardar clave y continuar' : 'Continuar'}</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </>
@@ -270,19 +284,11 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
 
           {step === 2 && (
             <>
-              <button
-                type="button"
-                onClick={() => setStep(3)}
-                className="min-h-[44px] px-3 text-xs text-ink-muted hover:text-ink dark:hover:text-white font-medium cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none rounded-xl"
-              >
+              <button type="button" onClick={() => setStep(3)} className="min-h-[44px] px-3 text-xs text-ink-muted hover:text-ink dark:hover:text-white font-medium cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none rounded-xl">
                 Omitir por ahora
               </button>
-              <button
-                type="button"
-                onClick={handleConfirmStep2}
-                className="px-5 py-2.5 min-h-[44px] rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold text-xs transition flex items-center gap-1.5 shadow-xs cursor-pointer active:scale-95 focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
-              >
-                <span>Guardar y continuar</span>
+              <button type="button" onClick={handleConfirmStep1} className="px-5 py-2.5 min-h-[44px] rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold text-xs transition flex items-center gap-1.5 shadow-xs cursor-pointer active:scale-95 disabled:opacity-60 focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none">
+                <span>{tempName ? 'Se ve bien, continuar' : 'Continuar'}</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </>
@@ -290,22 +296,12 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
 
           {step === 3 && (
             <>
-              <button
-                type="button"
-                onClick={() => handleFinish(false)}
-                disabled={isSavingAI}
-                className="min-h-[44px] px-3 text-xs text-ink-muted hover:text-ink dark:hover:text-white font-semibold cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none rounded-xl"
-              >
-                Lo haré después
+              <button type="button" onClick={handleFinish} disabled={isSavingAI} className="min-h-[44px] px-3 text-xs text-ink-muted hover:text-ink dark:hover:text-white font-medium cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none rounded-xl">
+                Omitir por ahora
               </button>
-              <button
-                type="button"
-                onClick={() => handleFinish(true)}
-                disabled={isSavingAI}
-                className="px-5 py-2.5 min-h-[44px] rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs transition flex items-center gap-1.5 shadow-xs cursor-pointer active:scale-95 focus-visible:ring-2 focus-visible:ring-emerald-500/40 focus-visible:outline-none"
-              >
+              <button type="button" onClick={handleConfirmStep2} disabled={isSavingAI} className="px-5 py-2.5 min-h-[44px] rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold text-xs transition flex items-center gap-1.5 shadow-xs cursor-pointer active:scale-95 disabled:opacity-60 focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none">
                 <Sparkles className="w-3.5 h-3.5" />
-                <span>{apiKey.trim() ? 'Conectar y buscar ofertas' : 'Finalizar y buscar ofertas'}</span>
+                <span>Guardar y buscar ofertas</span>
               </button>
             </>
           )}

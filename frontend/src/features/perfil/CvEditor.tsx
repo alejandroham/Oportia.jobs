@@ -8,9 +8,14 @@ import { CvLinksSection } from './CvLinksSection';
 import { CvLanguagesSection } from './CvLanguagesSection';
 import { TagInput } from '../../components/ui/TagInput';
 import { getProfileLinks, suggestKeywords, withDetectedKeywords } from '../../utils/profileKeywords';
-import { Upload, Eye, CheckCircle2, Circle, ChevronDown, ChevronUp, Save, Loader2, Mail } from 'lucide-react';
+import { Upload, Eye, CheckCircle2, Circle, ChevronDown, ChevronUp, Save, Loader2, Mail, Sparkles, AlertTriangle } from 'lucide-react';
 import { api } from '../../api';
 import { useToast } from '../../components/Toast';
+import { useAppStore } from '../../state/useAppStore';
+import { getAIStatus } from '../../utils/aiStatus';
+import { Dialog } from '../../components/ui/Dialog';
+import { SharedAICard } from '../../components/settings/SharedAICard';
+import { useNavigate } from 'react-router-dom';
 
 interface CvEditorProps {
   profile: CandidateProfile;
@@ -31,6 +36,14 @@ export const CvEditor: React.FC<CvEditorProps> = ({ profile, onProfileUpdated })
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const toast = useToast();
+  const navigate = useNavigate();
+  const settings = useAppStore((st) => st.settings);
+  const aiReady = Boolean(settings.has_active_key) && getAIStatus(settings).ready;
+  // Activar la IA ANTES de analizar el CV: archivo en espera mientras la persona decide.
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [analysis, setAnalysis] = useState<{ method?: 'ia' | 'reglas'; note?: string | null } | null>(null);
+  const [isReanalyzing, setIsReanalyzing] = useState(false);
+  const rawCvText = formData.raw_cv_text || profile.raw_cv_text || '';
 
   const toggleSection = (sec: string) => {
     setOpenSections((prev) => ({ ...prev, [sec]: !prev[sec] }));
@@ -49,31 +62,68 @@ export const CvEditor: React.FC<CvEditorProps> = ({ profile, onProfileUpdated })
     toast.success('Perfil y CV guardados en tu navegador');
   };
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const applyAnalysis = (res: { profile: CandidateProfile; method?: 'ia' | 'reglas'; note?: string | null }, keepFrom?: CandidateProfile) => {
+    // Palabras clave de tu área que aparecen en el CV se agregan solas (se pueden quitar).
+    let updated = withDetectedKeywords(res.profile);
+    if (keepFrom) {
+      // Al reanalizar se conservan tus enlaces y tus palabras clave.
+      const kw = Array.from(new Set([...(keepFrom.keywords || []), ...(updated.keywords || [])]));
+      updated = { ...updated, keywords: kw, links: getProfileLinks(keepFrom).length ? getProfileLinks(keepFrom) : updated.links };
+    }
+    updated = { ...updated, updated_at: new Date().toISOString() };
+    setFormData(withLinks(updated));
+    onProfileUpdated(updated);
+    setAnalysis({ method: res.method, note: res.note });
+    setOpenSections((prev) => ({ ...prev, experience: true, education: true, certifications: true }));
+    if (res.method === 'ia') {
+      toast.success(`Encontré ${updated.experiences?.length || 0} experiencias, ${updated.education?.length || 0} títulos y ${updated.certifications?.length || 0} cursos. Revísalos y guarda.`, 'CV analizado con IA');
+    } else {
+      toast.info(res.note || 'Analizamos tu CV sin IA (lectura básica). Revisa tus datos.', 'CV analizado sin IA');
+    }
+  };
 
+  const uploadFile = async (file: File) => {
     setIsUploading(true);
     try {
       const res = await api.uploadCV(file);
-      if (res.profile) {
-        // Palabras clave de tu área que aparecen en el CV se agregan solas (se pueden quitar).
-        const updated = withDetectedKeywords(res.profile);
-        setFormData(withLinks(updated));
-        onProfileUpdated(updated);
-        const added = (updated.keywords || []).length - (res.profile.keywords || []).length;
-        if (added > 0) {
-          toast.success(`Agregué ${added} palabras clave de tu área que aparecen en tu CV. Revísalas en Habilidades.`, 'CV procesado y perfil actualizado');
-        } else {
-          toast.success('CV procesado y perfil actualizado exitosamente');
-        }
-      }
+      if (res.profile) applyAnalysis(res);
     } catch (err: any) {
       toast.error('Error al subir CV: ' + (err?.message || err));
     } finally {
       setIsUploading(false);
     }
   };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    if (!aiReady) {
+      setPendingFile(file); // primero, activar la IA
+      return;
+    }
+    await uploadFile(file);
+  };
+
+  const handleReanalyze = async () => {
+    if (!rawCvText) return;
+    if (!aiReady) {
+      setPendingFile(null);
+      setIsAiGateForReanalyze(true);
+      return;
+    }
+    if (!window.confirm('La IA volverá a leer tu CV y reemplazará tu experiencia, títulos, cursos y habilidades. Se conservan tus palabras clave y tus enlaces. ¿Continuar?')) return;
+    setIsReanalyzing(true);
+    try {
+      const res = await api.reanalyzeCV(rawCvText);
+      applyAnalysis(res, formData);
+    } catch (err: any) {
+      toast.error('No se pudo reanalizar: ' + (err?.message || err));
+    } finally {
+      setIsReanalyzing(false);
+    }
+  };
+  const [isAiGateForReanalyze, setIsAiGateForReanalyze] = useState(false);
 
   // Verificadores de completitud por bloque
   const isPersonalComplete = Boolean(formData.name && (formData.email || formData.phone));
@@ -103,6 +153,20 @@ export const CvEditor: React.FC<CvEditorProps> = ({ profile, onProfileUpdated })
             <input type="file" accept=".pdf,.docx,.doc" onChange={handleFileUpload} className="hidden" />
           </label>
 
+          {/* Reanalizar con IA (el CV ya cargado) */}
+          {rawCvText && (
+            <button
+              type="button"
+              onClick={handleReanalyze}
+              disabled={isReanalyzing}
+              title="La IA vuelve a leer tu CV y ordena experiencia, títulos y cursos"
+              className="inline-flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-xl border border-brand-300 dark:border-brand-700/60 text-xs font-semibold text-brand-700 dark:text-brand-300 hover:bg-brand-50 dark:hover:bg-brand-950/40 cursor-pointer disabled:opacity-60"
+            >
+              {isReanalyzing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
+              <span>{isReanalyzing ? 'Analizando…' : 'Reanalizar con IA'}</span>
+            </button>
+          )}
+
           {/* Ver CV */}
           <button
             type="button"
@@ -124,6 +188,32 @@ export const CvEditor: React.FC<CvEditorProps> = ({ profile, onProfileUpdated })
           </button>
         </div>
       </div>
+
+      {/* Resultado del análisis del CV */}
+      {analysis && (
+        <div
+          role="status"
+          className={`flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3.5 rounded-2xl border text-xs ${
+            analysis.method === 'ia'
+              ? 'bg-emerald-50 border-emerald-200 text-emerald-900 dark:bg-emerald-500/10 dark:border-emerald-400/30 dark:text-emerald-100'
+              : 'bg-amber-50 border-amber-200 text-amber-900 dark:bg-amber-500/10 dark:border-amber-400/30 dark:text-amber-100'
+          }`}
+        >
+          <p className="flex items-start gap-2">
+            {analysis.method === 'ia' ? <Sparkles className="w-4 h-4 shrink-0" aria-hidden="true" /> : <AlertTriangle className="w-4 h-4 shrink-0" aria-hidden="true" />}
+            <span>
+              {analysis.method === 'ia'
+                ? 'La IA analizó tu CV. Revisa cada sección (experiencia, títulos y cursos), corrige lo necesario y pulsa «Guardar cambios».'
+                : analysis.note || 'Analizamos tu CV sin IA. Revisa cada sección.'}
+            </span>
+          </p>
+          {analysis.method !== 'ia' && rawCvText && (
+            <button type="button" onClick={handleReanalyze} className="shrink-0 min-h-[40px] px-3 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-semibold cursor-pointer">
+              Reanalizar con IA
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Bloques de edición colapsables */}
       <div className="space-y-3">
@@ -367,6 +457,61 @@ export const CvEditor: React.FC<CvEditorProps> = ({ profile, onProfileUpdated })
           )}
         </div>
       </div>
+
+      {/* Activar la IA antes de analizar el CV */}
+      <Dialog
+        isOpen={Boolean(pendingFile) || isAiGateForReanalyze}
+        onClose={() => {
+          setPendingFile(null);
+          setIsAiGateForReanalyze(false);
+        }}
+        title="Activa la IA para analizar tu CV"
+        description="Con IA, Oportia separa bien tu experiencia laboral, tus títulos y tus cursos. Sin IA, la lectura es básica y puede clasificar mal."
+        maxWidth="lg"
+      >
+        <div className="space-y-4 text-xs">
+          <SharedAICard />
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <button
+              type="button"
+              onClick={() => navigate('/ajustes')}
+              className="min-h-[44px] px-3 rounded-xl text-ink-muted hover:text-ink dark:hover:text-white font-semibold cursor-pointer"
+            >
+              Usar mi propia clave (Ajustes)
+            </button>
+            <div className="flex flex-wrap gap-2">
+              {pendingFile && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const f = pendingFile;
+                    setPendingFile(null);
+                    uploadFile(f);
+                  }}
+                  className="min-h-[44px] px-3 rounded-xl border border-gray-300 dark:border-ink-line font-semibold cursor-pointer hover:bg-gray-50 dark:hover:bg-ink-hover"
+                >
+                  Subir sin IA (lectura básica)
+                </button>
+              )}
+              <button
+                type="button"
+                disabled={!aiReady}
+                onClick={() => {
+                  const f = pendingFile;
+                  setPendingFile(null);
+                  setIsAiGateForReanalyze(false);
+                  if (f) uploadFile(f);
+                  else handleReanalyze();
+                }}
+                className="inline-flex items-center gap-1.5 min-h-[44px] px-4 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Sparkles className="w-3.5 h-3.5" aria-hidden="true" /> Analizar con IA
+              </button>
+            </div>
+          </div>
+          {!aiReady && <p className="text-ink-muted dark:text-ink-200">Activa la IA gratuita arriba (o usa tu clave) para habilitar «Analizar con IA».</p>}
+        </div>
+      </Dialog>
 
       {/* Modal Vista Previa de CV */}
       <CvPreviewModal

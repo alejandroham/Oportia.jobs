@@ -166,6 +166,14 @@ export async function handleResponse<T = any>(res: Response, defaultError = 'Err
   return parsed as T;
 }
 
+export interface CVAnalysisResult {
+  message?: string;
+  profile: CandidateProfile;
+  /** "ia": la IA ordenó el CV; "reglas": lectura básica por secciones. */
+  method?: 'ia' | 'reglas';
+  note?: string | null;
+}
+
 export interface OpinionPayload {
   rating: number;
   liked?: string;
@@ -206,18 +214,30 @@ export const api = {
     });
     return res.json();
   },
-  uploadCV: async (file: File): Promise<{ message: string; profile: CandidateProfile }> => {
+  /**
+   * Sube el CV y lo analiza. Envía la clave propia o la aceptación de la IA gratuita: sin esto el servidor
+   * no puede usar IA y el CV se lee de forma básica (method = "reglas", con un aviso en note).
+   */
+  uploadCV: async (file: File): Promise<CVAnalysisResult> => {
     const formData = new FormData();
     formData.append('file', file);
+    const llmHeaders = await getLLMHeaders();
     const res = await fetch(`${API_BASE}/profile/upload`, {
       method: 'POST',
+      headers: { ...llmHeaders },
       body: formData
     });
-    if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.detail || 'Error al procesar el CV');
-    }
-    return res.json();
+    return handleResponse<CVAnalysisResult>(res, 'Error al procesar el CV');
+  },
+  /** Vuelve a analizar con IA el texto del CV ya cargado (no hace falta subir el archivo otra vez). */
+  reanalyzeCV: async (text: string): Promise<CVAnalysisResult> => {
+    const llmHeaders = await getLLMHeaders();
+    const res = await fetch(`${API_BASE}/profile/reanalyze`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...llmHeaders },
+      body: JSON.stringify({ text })
+    });
+    return handleResponse<CVAnalysisResult>(res, 'Error al reanalizar el CV');
   },
   extractCVPreview: async (file: File): Promise<{ message: string; extracted_profile: CandidateProfile; filename: string; text_length: number }> => {
     const formData = new FormData();

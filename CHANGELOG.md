@@ -5,6 +5,29 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
 
 ---
 
+## [1.3.5] - 2026-11-16 — *Análisis del CV con IA, experiencia editable y la IA antes del CV*
+
+### 📄 Análisis del CV corregido (feedback: experiencia, títulos y cursos mal clasificados)
+- **Causa principal:** al subir el CV la app **no enviaba tu clave ni la aceptación de la IA gratuita**, así que el servidor nunca usaba IA y siempre caía en el lector por reglas. Ahora `uploadCV` envía las credenciales.
+- **Nuevo `analyze_cv`:** informa a la app si el CV se analizó **con IA** (`method: "ia"`) o **sin IA** (`"reglas"`), con un aviso (`note`).
+- **Instrucciones a la IA más claras:**
+  - todas las experiencias, una por cargo y de la más reciente a la más antigua;
+  - **Educación y títulos:** carreras, títulos, postítulos y diplomados;
+  - **Certificaciones y cursos:** cursos, capacitaciones y licencias con su nombre completo, nunca palabras sueltas.
+- **Limpieza posterior:**
+  - cursos que la IA dejó como títulos pasan a Certificaciones y cursos;
+  - las habilidades sueltas salen de Certificaciones y cursos;
+  - el nombre se valida sin depender de tildes ni mayúsculas.
+- **Lector por reglas reescrito por secciones.** Antes buscaba la palabra "experiencia" en cualquier parte del texto; si el resumen decía "8 años de experiencia", empezaba a leer ahí y mezclaba todo. Ahora reconoce los títulos de sección y separa cada experiencia por su rango de fechas. Con un CV de prueba lee 4 experiencias, 2 títulos, 3 cursos, habilidades e idiomas.
+- **"Reanalizar con IA"** en Mi perfil (`POST /api/profile/reanalyze`, sin estado): vuelve a leer el CV ya cargado, sin subirlo otra vez, y conserva tus palabras clave y enlaces.
+- **La IA va antes del CV:**
+  - **Guía de inicio** en el orden Conecta la IA → Tu currículum → Qué buscas;
+  - **Mi perfil:** si la IA no está activa al subir el CV, se pide activarla (o seguir sin IA con lectura básica);
+  - al terminar, un aviso indica el método usado.
+- **Experiencia laboral editable:** antes solo se podía borrar y "Agregar" creaba una entrada fija. Ahora se editan cargo, empresa, fechas ("trabajo aquí actualmente"), ubicación, modalidad, funciones, logros y herramientas, y se puede reordenar.
+- **Pruebas nuevas:** `backend/tests/test_cv_analysis.py`, con un CV ficticio de técnico en construcción, y `frontend/e2e/cv-analysis.spec.ts`.
+- **Manual:** guía de inicio en el nuevo orden, "Reanalizar con IA" y edición de experiencia, con capturas nuevas.
+
 ## [1.3.4] - 2026-11-16 — *Ofertas de construcción, ChileTrabajos reparado y borrado completo de datos*
 
 ### 🏗️ Construcción: ofertas para técnicos y supervisión (feedback de un técnico en construcción)

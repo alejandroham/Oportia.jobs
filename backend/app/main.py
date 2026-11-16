@@ -15,6 +15,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 
 from app.config import settings
+from pydantic import BaseModel, Field
 from app.models.schemas import (
     CandidateProfile, UserPreferences, JobPosting, 
     FitEvaluation, ApplicationDraft, FeedbackAction, LLMConfig,
@@ -30,7 +31,7 @@ from app.models.schemas import (
 )
 from app.storage.db import db
 from app.agents.profile_analyzer import (
-    extract_text_from_file, analyze_cv_content, assist_profile_content,
+    extract_text_from_file, analyze_cv, analyze_cv_content, assist_profile_content,
     suggest_roles_from_experience, tailor_profile_for_role
 )
 from app.agents.fit_evaluator import fit_evaluator
@@ -212,7 +213,7 @@ def update_profile(profile: CandidateProfile):
     db.save_profile(profile)
     return profile
 
-@app.post("/api/profile/upload")
+@app.post("/api/profile/upload", dependencies=[Depends(ai_rate_limiter)])
 async def upload_cv(file: UploadFile = File(...)):
     filename = file.filename or "cv.pdf"
     suffix = Path(filename).suffix.lower()
@@ -238,9 +239,21 @@ async def upload_cv(file: UploadFile = File(...)):
     if not text:
         raise HTTPException(status_code=400, detail="No se pudo extraer texto del archivo subido.")
 
-    # Option A: Do not save to DB (returns profile for client storage in IndexedDB)
-    profile = analyze_cv_content(text, save_to_db=False)
-    return {"message": "CV analizado exitosamente", "profile": profile}
+    # Sin estado: el perfil vuelve al navegador (IndexedDB); el servidor no lo guarda.
+    # Usa la IA si la persona tiene su clave o aceptó la IA gratuita; si no, el lector por secciones.
+    profile, method, note = analyze_cv(text)
+    return {"message": "CV analizado exitosamente", "profile": profile, "method": method, "note": note}
+
+
+class ReanalyzeCVRequest(BaseModel):
+    text: str = Field(min_length=50, max_length=200_000)
+
+
+@app.post("/api/profile/reanalyze", dependencies=[Depends(ai_rate_limiter)])
+def reanalyze_cv(req: ReanalyzeCVRequest):
+    """Vuelve a analizar el texto del CV ya cargado (por ejemplo, después de activar la IA). Sin estado."""
+    profile, method, note = analyze_cv(req.text)
+    return {"profile": profile, "method": method, "note": note}
 
 @app.post("/api/profile/extract-preview")
 async def extract_profile_preview(file: UploadFile = File(...)):

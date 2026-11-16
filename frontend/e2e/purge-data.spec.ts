@@ -39,9 +39,8 @@ test('borrar todo pide confirmar sin respaldo y vuelve a la portada limpia', asy
   expect(left.profile).toBeNull();
   expect(left.keys).toEqual(['oportia_theme']); // solo se conserva el tema
   expect(left.clientId).not.toBe('id-anterior'); // el identificador anónimo del cupo de IA es nuevo
-  // La guía parte de cero, con el paso "Conecta la IA (opcional)".
+  // La guía parte de cero y su primer paso es "Conecta la IA (opcional)".
   await page.getByRole('button', { name: 'Comenzar', exact: true }).click();
-  await page.getByRole('button', { name: /Continuar|Omitir/ }).first().click();
-  await page.getByRole('button', { name: /Continuar|Omitir/ }).first().click();
-  await expect(page.getByText(/Conecta la IA/).first()).toBeVisible();
+  await expect(page.getByText('Paso 1 de 3')).toBeVisible();
+  await expect(page.getByRole('heading', { name: /Conecta la IA/ })).toBeVisible();
 });

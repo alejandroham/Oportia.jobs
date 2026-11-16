@@ -232,13 +232,13 @@ test('manual: primera visita y guía de inicio', async ({ browser }) => {
   await shot(page, '01-portada');
   await page.getByRole('button', { name: 'Comenzar', exact: true }).click();
   await settle(page);
-  await shot(page, '02-guia-paso1-cv');
+  await shot(page, '02-guia-paso1-ia');
   await page.getByRole('button', { name: /Continuar|Omitir/ }).first().click();
   await settle(page);
-  await shot(page, '03-guia-paso2-busqueda');
+  await shot(page, '03-guia-paso2-cv');
   await page.getByRole('button', { name: /Continuar|Omitir/ }).first().click();
   await settle(page);
-  await shot(page, '04-guia-paso3-ia');
+  await shot(page, '04-guia-paso3-busqueda');
   await context.close();
 });
 

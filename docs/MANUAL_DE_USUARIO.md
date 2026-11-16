@@ -1,6 +1,6 @@
 # Manual de usuario — Oportia Jobs IA
 
-> Versión 1.3.2 · Guía paso a paso para encontrar trabajo con Oportia y Opi, tu copiloto.
+> Versión 1.3.5 · Guía paso a paso para encontrar trabajo con Oportia y Opi, tu copiloto.
 >
 > Las capturas muestran a **Paula Rojas**, una persona de demostración **ficticia** (Técnico en Enfermería). Las empresas que aparecen también son ficticias.
 
@@ -49,17 +49,17 @@ En el celular, Oportia funciona igual y tiene una barra de navegación abajo.
 
 La guía tiene 3 pasos. Puedes cerrarla en cualquier momento (con la **X** o la tecla **Esc**) y repetirla después desde Inicio con **Repetir guía de inicio**.
 
-**Paso 1 — Sube tu CV.** Arrastra tu archivo PDF, Word (DOCX) o TXT (máximo 10 MB). Oportia lee tu experiencia y tus habilidades **sin inventar datos**.
+**Paso 1 — Conecta la IA (recomendado).** Activa la **IA gratuita de Oportia** o pega tu propia clave de IA (ver la [sección 10](#10-ia-gratuita-o-tu-propia-clave)). Va primero porque **la IA es la que lee bien tu CV**: separa tu experiencia laboral, tus títulos y tus cursos. Si prefieres no usarla ahora, pulsa **Lo haré después**.
 
-![Guía de inicio, paso 1](manual/img/02-guia-paso1-cv.jpg)
+![Guía de inicio, paso 1](manual/img/02-guia-paso1-ia.jpg)
 
-**Paso 2 — Cuéntanos qué buscas.** Escribe los cargos que te interesan, tu región y si quieres solo trabajo remoto.
+**Paso 2 — Sube tu CV.** Arrastra tu archivo PDF o Word (DOCX), de máximo 10 MB. Oportia lee tu experiencia, tus títulos y tus cursos **sin inventar datos**. Si la IA no está activa, verás un aviso: la lectura será básica y puede clasificar mal.
 
-![Guía de inicio, paso 2](manual/img/03-guia-paso2-busqueda.jpg)
+![Guía de inicio, paso 2](manual/img/03-guia-paso2-cv.jpg)
 
-**Paso 3 — Conecta la IA (opcional).** Puedes activar la **IA gratuita de Oportia** o pegar tu propia clave de IA. Lo explicamos en la [sección 10](#10-ia-gratuita-o-tu-propia-clave). Si no quieres usar IA ahora, pulsa **Lo haré después**.
+**Paso 3 — Cuéntanos qué buscas.** Escribe los cargos que te interesan, tu región y si quieres solo trabajo remoto. Al guardar, Oportia hace tu primera búsqueda.
 
-![Guía de inicio, paso 3](manual/img/04-guia-paso3-ia.jpg)
+![Guía de inicio, paso 3](manual/img/04-guia-paso3-busqueda.jpg)
 
 ---
 
@@ -86,8 +86,10 @@ Oportia tiene **modo claro y modo oscuro**. Cámbialo en **Ajustes → Aparienci
 
 En **Mi perfil → Mi CV** puedes:
 
-1. **Subir CV (PDF/Word)** para cargarlo o reemplazarlo.
-2. **Editar** tus datos por secciones: contacto y **enlaces** (LinkedIn, portafolio, GitHub u otros), profesión y titular, experiencia, **varios títulos**, habilidades, **idiomas con nivel** y **Tecnologías y palabras clave**.
+1. **Subir CV (PDF/Word)** para cargarlo o reemplazarlo. Si la IA no está activa, Oportia te pide activarla primero; también puedes seguir **sin IA** (lectura básica).
+   - Al terminar, un aviso indica si el CV se analizó **con IA** o **sin IA**. Revisa cada sección y pulsa **Guardar cambios**.
+   - **Reanalizar con IA** vuelve a leer el CV que ya cargaste, sin subirlo otra vez. Úsalo si se analizó sin IA o si algo quedó mal clasificado. Conserva tus palabras clave y tus enlaces.
+2. **Editar** tus datos por secciones. En **Experiencia laboral**, pulsa cada trabajo para editar cargo, empresa, fechas ("Trabajo aquí actualmente"), ubicación, funciones, logros y herramientas; puedes reordenarlos con las flechas. **Educación y títulos** guarda carreras, títulos y diplomados; **Certificaciones y cursos**, los cursos, capacitaciones y licencias. Las secciones son: contacto y **enlaces** (LinkedIn, portafolio, GitHub u otros), profesión y titular, experiencia, **varios títulos**, habilidades, **idiomas con nivel** y **Tecnologías y palabras clave**.
 3. Pulsar **Guardar cambios**.
 
 **Tecnologías y palabras clave.** Son los términos con los que te buscaría una empresa, por ejemplo "TENS", "Curaciones" o "Soporte TI".
