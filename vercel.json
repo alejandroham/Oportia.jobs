@@ -19,5 +19,10 @@
       "src": "/(.*)",
       "dest": "/index.html"
     }
-  ]
+  ],
+  "git": {
+    "deploymentEnabled": {
+      "dependabot/**": false
+    }
+  }
 }

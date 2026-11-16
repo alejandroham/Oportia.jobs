@@ -37,11 +37,11 @@ jobs:
 
       - name: Checkout del código
         if: steps.gate.outputs.run == 'true'
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
       - name: Configurar Python 3.11
         if: steps.gate.outputs.run == 'true'
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
           python-version: '3.11'
           cache: 'pip'
