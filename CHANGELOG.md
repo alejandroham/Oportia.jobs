@@ -5,7 +5,7 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
 
 ---
 
-## [Sin publicar]
+## [1.3.0] - 2026-11-17 — *Índice diario de ofertas, correo de avisos y perfil completo*
 
 ### 🏢 Ofertas directas de empresas y fuentes que lo permiten (Etapa E de la versión 1.3)
 - **Portales de empleo de empresas:** el índice diario suma las ofertas en Chile, o remotas para Latinoamérica, que las empresas publican en Greenhouse, Lever, Ashby y SmartRecruiters.

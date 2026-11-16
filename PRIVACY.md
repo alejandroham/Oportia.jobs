@@ -1,7 +1,7 @@
 # Política de Privacidad y Soberanía Digital — Oportia Jobs IA
 
-**Última actualización:** 14 de noviembre de 2026  
-**Versión de política:** 1.2.0  
+**Última actualización:** 17 de noviembre de 2026  
+**Versión de política:** 1.3.0  
 **Marco normativo:** Ley N° 21.719 de Protección de Datos Personales (Chile) y principios de *Privacy by Design*.
 
 ---
@@ -42,6 +42,12 @@ El servidor backend de Oportia Jobs IA funciona estrictamente como un **motor de
 4. **Caché en memoria volátil de ofertas:** Para acelerar la navegación de empleo y evitar peticiones redundantes a los portales, las ofertas de empleo públicas se almacenan en un caché volátil (`RAM`) con tiempo de expiración de 15 minutos, sin asociar ninguna búsqueda a la identidad de un usuario.
 
 ---
+
+### 3.1 Índice diario de ofertas y correo de avisos (versión 1.3)
+- **El índice diario solo contiene ofertas de empleo públicas.** Viene de Empleos Públicos, GetOnBoard, portales de empleo de empresas y ChileTrabajos, y se publica en Supabase Storage. **No contiene búsquedas, perfiles ni datos de personas.** El servidor lo guarda en memoria hasta 30 minutos.
+- **Las búsquedas al índice** envían al servidor el término y, si buscas sin escribir nada, tus palabras clave del perfil. Se usan solo para responder esa búsqueda y no se guardan; es lo mismo que ocurre con cualquier búsqueda.
+- **La afinidad "Calza con tu perfil" se calcula en tu navegador**, sin IA y sin enviar tu perfil.
+- **El correo diario de avisos** lo configura quien despliega Oportia, con secretos de GitHub (`NOTIFY_EMAIL`, `RESEND_API_KEY`). La dirección nunca queda en el código ni en los registros, y se oculta si un error del servicio de correo la incluye. Se envía con Resend.
 
 ## 4. Custodia y Cifrado de Claves de IA (BYOK — Bring Your Own Key)
 

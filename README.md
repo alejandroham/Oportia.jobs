@@ -3,7 +3,7 @@
 <div align="center">
 
 [![CI — Integración Continua](https://github.com/alejandroham/Oportia.jobs/actions/workflows/ci.yml/badge.svg)](https://github.com/alejandroham/Oportia.jobs/actions/workflows/ci.yml)
-[![Version](https://img.shields.io/badge/Versi%C3%B3n-1.2.0-blue.svg?style=for-the-badge)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/Versi%C3%B3n-1.3.0-blue.svg?style=for-the-badge)](CHANGELOG.md)
 [![Privacy: Ley 21.719](https://img.shields.io/badge/Privacidad-Ley%2021.719%20Chile-emerald.svg?style=for-the-badge)](PRIVACY.md)
 [![Security Policy](https://img.shields.io/badge/Seguridad-Security%20Policy-blueviolet.svg?style=for-the-badge)](SECURITY.md)
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Falejandroham%2FOportia.jobs)
@@ -30,6 +30,8 @@
 
 - **Automatización asistida con autonomía humana:** Rastrea vacantes en las 16 regiones de Chile y remotas globales, convoca al **Comité Oportia**, calcula la **Compatibilidad Oportia** con citas textuales verificables de tu currículum, redacta CVs y cartas adaptadas con logros STAR y te conecta con cursos gratuitos certificados.
 - **Para todas las áreas, no solo tecnología:** salud, educación, comercio, construcción, logística, administración, sector público y oficios. La búsqueda reconoce sinónimos y equivalentes en inglés (enfermera ↔ TENS ↔ nurse).
+- **Índice diario de ofertas (1.3):** cada mañana a las 08:00 de Chile se arma un índice de cientos de ofertas, que la búsqueda consulta al instante. Viene de Empleos Públicos, GetOnBoard, portales de empleo de empresas y ChileTrabajos, y solo usa fuentes que permiten este uso. Opcionalmente, envía un correo con las ofertas nuevas del día. Ver [docs/INDICE_DIARIO.md](docs/INDICE_DIARIO.md).
+- **Tu perfil guía la búsqueda (1.3):** "Para ti" trae ofertas para tus palabras clave, y cada tarjeta muestra qué palabras de tu perfil calzan. La sección Brechas compara tu CV con lo que piden las ofertas y propone cursos de cualquier área.
 - **IA gratuita o tu propia clave:** quien no tiene clave de IA puede activar la IA gratuita de Oportia (con cupo diario y aviso de privacidad); quien la tiene, la usa sin límite.
 - **Soberanía y control absoluto:** No usamos bots que arriesguen tus cuentas. Tus datos solo salen de tu navegador hacia el proveedor de IA que tú eliges (Gemini, OpenAI o Claude) cuando usas una función de IA. Postulas siempre en **1 clic en el enlace oficial de la empresa o portal estatal con ClaveÚnica**.
 
@@ -160,10 +162,10 @@ El lanzador valida dependencias, compila el frontend y levanta la aplicación en
 El proyecto cuenta con una suite integral de pruebas con **100% de ejecución offline** y cero dependencias de red externa:
 
 ```bash
-# 1. Pruebas de Backend (Pytest — 72 pruebas unitarias y de integración offline)
+# 1. Pruebas de Backend (Pytest — 126 pruebas unitarias y de integración offline)
 pytest backend/tests -v
 
-# 2. Pruebas de Frontend (Vitest — 47 pruebas unitarias en entorno happy-dom)
+# 2. Pruebas de Frontend (Vitest — 74 pruebas unitarias en entorno happy-dom)
 cd frontend && npm test
 
 # 3. Flujo Crítico End-to-End (Playwright — Chromium headless)
@@ -186,6 +188,7 @@ El pipeline de **GitHub Actions** ([.github/workflows/ci.yml](.github/workflows/
 - **Render / Railway / Fly.io (Backend Completo):**
   - Render: Configurado mediante `render.yaml`.
   - Docker / Contenedores: Ejecuta `python run.py` escuchando en el puerto `$PORT` asignado por la plataforma.
+- **Índice diario y correo (opcional):** GitHub Actions + Supabase Storage + Resend; configuración en [docs/INDICE_DIARIO.md](docs/INDICE_DIARIO.md).
 - **IA gratuita de Oportia (opcional):** define `GEMINI_API_KEY` en el servidor con una clave de un proyecto de Google **sin facturación** (plan gratuito). Ajusta el cupo con `SHARED_AI_DAILY_LIMIT_PER_USER`, `SHARED_AI_DAILY_LIMIT_PER_IP` y `SHARED_AI_DAILY_LIMIT_TOTAL` (ver `.env.example`). Sin esa variable, solo funciona la clave propia de cada persona.
 
 ---
