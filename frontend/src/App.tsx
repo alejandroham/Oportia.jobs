@@ -10,6 +10,7 @@ import { WelcomeHub } from './components/WelcomeHub';
 import { LandingPage } from './components/landing/LandingPage';
 import { OnboardingWizard } from './components/onboarding/OnboardingWizard';
 import { FeedbackDialog } from './components/feedback/FeedbackDialog';
+import { PURGED_FLAG } from './components/settings/SettingsPrivacyPanel';
 import { useFeedbackStore } from './state/useFeedbackStore';
 import { addUsageMinute, markPrompted, shouldPrompt } from './utils/feedbackPrompt';
 import { Footer } from './components/Footer';
@@ -102,6 +103,15 @@ export function App() {
       }
     }, 60_000);
     return () => window.clearInterval(id);
+  }, []);
+
+  // Aviso tras "Borrar todos mis datos" (la app se recargó en la página principal).
+  useEffect(() => {
+    if (sessionStorage.getItem(PURGED_FLAG)) {
+      sessionStorage.removeItem(PURGED_FLAG);
+      toast.success('Tus datos fueron borrados de este navegador. Puedes empezar de nuevo cuando quieras.', 'Listo');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Cupo de la IA gratuita: el servidor lo informa en cada respuesta que usa IA.

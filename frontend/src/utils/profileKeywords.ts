@@ -44,8 +44,13 @@ export const KEYWORD_AREAS: Area[] = [
   },
   {
     name: 'Construcción y mantención',
-    detect: /construc|obra|arquitect|electric|mantencion|mantenimiento|soldad|gasfiter|prevencion de riesgos|terreno/,
-    keywords: ['Lectura de planos', 'AutoCAD', 'Prevención de riesgos', 'Mantención', 'Electricidad', 'Supervisión de obra', 'Control de calidad', 'Seguridad laboral']
+    detect: /construc|obra|edificacion|arquitect|electric|mantencion|mantenimiento|soldad|gasfiter|prevencion de riesgos|terreno|capataz|cubicac|\bbim\b/,
+    keywords: [
+      'Supervisión de obra', 'Coordinación de cuadrillas', 'Cubicaciones', 'Presupuesto de obra', 'Programación de obra',
+      'MS Project', 'BIM', 'Revit', 'AutoCAD', 'Lean Construction', 'Lectura de planos', 'Control de calidad',
+      'Inspección técnica de obra (ITO)', 'Informes técnicos', 'Prevención de riesgos', 'Construcción sostenible',
+      'Mantención', 'Electricidad'
+    ]
   },
   {
     name: 'Gastronomía y turismo',

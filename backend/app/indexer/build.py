@@ -89,9 +89,15 @@ AREAS: Dict[str, Dict[str, List[str]]] = {
     },
     "Construcción y oficios": {
         "queries": ["maestro de construcción", "electricista", "técnico en mantención", "soldador", "gasfíter",
-                    "jornal", "prevencionista de riesgos"],
+                    "jornal", "prevencionista de riesgos",
+                    # Nivel técnico y de supervisión (técnico en construcción, constructor civil).
+                    "técnico en construcción", "supervisor de obra", "jefe de obra", "jefe de terreno", "capataz",
+                    "inspector técnico de obra", "administrador de obra", "oficina técnica", "cubicador",
+                    "presupuestista", "constructor civil", "BIM"],
         "terms": ["construccion", "obra", "maestro", "electric", "mantencion", "mantenimiento", "soldador",
-                  "gasfiter", "jornal", "carpinter", "prevencion de riesgos", "prevencionista", "mecanic"],
+                  "gasfiter", "jornal", "carpinter", "prevencion de riesgos", "prevencionista", "mecanic",
+                  "edificacion", "capataz", "jefe de terreno", "inspector tecnico", "cubicac", "presupuestista",
+                  "oficina tecnica", "revit", "topograf", "constructor civil"],
     },
     "Ingeniería e industria": {
         "queries": ["ingeniero civil", "ingeniero industrial", "operario de producción", "supervisor de planta"],

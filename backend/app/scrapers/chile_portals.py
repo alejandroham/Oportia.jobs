@@ -296,107 +296,60 @@ class ChileTrabajosСraper(BaseScraper):
     def name(self) -> str:
         return "chiletrabajos"
 
+    MONTHS = {"enero": 1, "febrero": 2, "marzo": 3, "abril": 4, "mayo": 5, "junio": 6, "julio": 7, "agosto": 8,
+              "septiembre": 9, "setiembre": 9, "octubre": 10, "noviembre": 11, "diciembre": 12}
+
+    @classmethod
+    def _parse_date(cls, text: str) -> Optional[str]:
+        """'03 de  Noviembre de 2026' -> '2026-11-03'."""
+        m = re.search(r"(\d{1,2})\s+de\s+([a-záéíóú]+)\s+de\s+(\d{4})", (text or "").lower())
+        if not m or m.group(2) not in cls.MONTHS:
+            return None
+        return f"{m.group(3)}-{cls.MONTHS[m.group(2)]:02d}-{int(m.group(1)):02d}"
+
     def search(self, keywords: str = "", remote_only: bool = False, limit: int = 15) -> List[JobPosting]:
+        """Búsqueda pública de ChileTrabajos (/encuentra-un-empleo?2=…). Tarjetas div.job-item."""
         jobs: List[JobPosting] = []
         kw = keywords.strip() if keywords else ""
-
         try:
-            # ChileTrabajos search URL structure
-            search_url = f"{self.BASE_URL}/empleos"
-            params = {}
-            if kw:
-                params["buscar"] = kw
-            if remote_only:
-                params["tipo_jornada"] = "teletrabajo"
-
             with httpx.Client(timeout=14.0, headers=_BROWSER_HEADERS, follow_redirects=True) as client:
-                resp = client.get(search_url, params=params)
-
-                if resp.status_code == 403:
-                    logger.warning("[ChileTrabajos] Blocked (403). Trying alternate URL...")
-                    # Try alternate URL format
-                    resp = client.get(f"{self.BASE_URL}/buscar-empleo", params=params)
-
+                resp = client.get(f"{self.BASE_URL}/encuentra-un-empleo", params={"2": kw} if kw else {})
                 if resp.status_code != 200:
                     logger.warning(f"[ChileTrabajos] HTTP {resp.status_code}")
                     return jobs
-
                 soup = BeautifulSoup(resp.text, "html.parser")
-
-                # Multiple possible selectors for job cards
-                cards = (
-                    soup.find_all("div", class_=lambda c: c and "empleo" in (c or "").lower())
-                    or soup.find_all("article")
-                    or soup.find_all("div", class_=lambda c: c and "job" in (c or "").lower())
-                )
-
-                if not cards:
-                    # Deep fallback: any link with common job URL patterns
-                    cards = soup.find_all("a", href=re.compile(r"/empleo-|/trabajo-|/oferta-"))
-
-                for card in cards[:limit]:
-                    try:
-                        if card.name == "a":
-                            title = card.get_text(strip=True)
-                            href = card.get("href", "")
-                            job_url = f"{self.BASE_URL}{href}" if href.startswith("/") else href
-                            company = "Empresa en ChileTrabajos"
-                            loc = "Chile"
-                        else:
-                            title_el = (
-                                card.find("h2")
-                                or card.find("h3")
-                                or card.find("a", href=re.compile(r"/empleo-|/trabajo-"))
-                            )
-                            if not title_el:
-                                continue
-                            title = title_el.get_text(strip=True)
-                            href = title_el.get("href", "") if title_el.name == "a" else ""
-                            if not href and title_el.find("a"):
-                                href = title_el.find("a").get("href", "")
-                            job_url = f"{self.BASE_URL}{href}" if href.startswith("/") else href
-
-                            company_el = card.find(class_=re.compile(r"empresa|company"))
-                            company = company_el.get_text(strip=True) if company_el else "Empresa en ChileTrabajos"
-
-                            loc_el = card.find(class_=re.compile(r"ciudad|region|location|lugar"))
-                            loc = loc_el.get_text(strip=True) if loc_el else "Chile"
-
-                        if not title:
-                            continue
-
-                        is_remote = any(
-                            k in f"{title} {loc}".lower()
-                            for k in ["remoto", "teletrabajo", "remote", "work from home"]
-                        )
-
-                        if remote_only and not is_remote:
-                            continue
-
-                        if not _keyword_match(title, keywords):
-                            continue
-
-                        jobs.append(JobPosting(
-                            title=title,
-                            company=company,
-                            location=loc,
-                            is_remote=is_remote,
-                            description=f"Oferta de empleo en ChileTrabajos: {title} en {company}. Ubicación: {loc}.",
-                            url=job_url,
-                            source="chiletrabajos",
-                            tags=[keywords] if keywords else [],
-                        ))
-
-                        if len(jobs) >= limit:
-                            break
-
-                    except Exception as inner_e:
-                        logger.debug(f"[ChileTrabajos] Card parse error: {inner_e}")
+                for card in soup.select("div.job-item"):
+                    link = card.select_one("h2.title a") or card.select_one("h2 a")
+                    if not link:
                         continue
-
-        except Exception as e:
+                    title = link.get_text(" ", strip=True)
+                    url = link.get("href", "")
+                    url = f"{self.BASE_URL}{url}" if url.startswith("/") else url
+                    metas = card.select("h3.meta")
+                    company, loc, posted = "Empresa en ChileTrabajos", "Chile", None
+                    if metas:
+                        city = metas[0].find("a")
+                        loc = city.get_text(" ", strip=True) if city else "Chile"
+                        company = metas[0].get_text(" ", strip=True).replace(loc, "").strip().rstrip(",").strip() or company
+                    for m in metas[1:]:
+                        posted = posted or self._parse_date(m.get_text(" ", strip=True))
+                    desc_el = card.select_one("p.description")
+                    desc = desc_el.get_text(" ", strip=True).replace("Ver más", "").strip() if desc_el else ""
+                    is_remote = bool(re.search(r"remot|teletrabajo|home office", f"{title} {loc} {desc}", re.I))
+                    if remote_only and not is_remote:
+                        continue
+                    if kw and not _keyword_match(f"{title} {desc}", kw):
+                        continue
+                    jobs.append(JobPosting(
+                        title=title, company=company, location=loc, is_remote=is_remote,
+                        modality="Remoto" if is_remote else "Presencial",
+                        description=desc or f"{title} en {company}. Ubicación: {loc}.",
+                        url=url, source="chiletrabajos", posted_at=posted, tags=[kw] if kw else [],
+                    ))
+                    if len(jobs) >= limit:
+                        break
+        except Exception as e:  # noqa: BLE001
             logger.warning(f"[ChileTrabajos] Error: {e}")
-
         logger.info(f"[ChileTrabajos] Retrieved {len(jobs)} jobs for '{keywords}'")
         return jobs
 

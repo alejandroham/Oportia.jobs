@@ -201,3 +201,42 @@ def test_offers_without_dates_leave_the_index_after_45_days():
     assert merge_jobs([job], old, NOW) == []
     kept = merge_jobs([job], recent, NOW)
     assert kept[0]["expires_at"] == "2026-11-24" and kept[0]["expires_estimated"] is True
+
+
+CHILETRABAJOS_HTML = """
+<div class="job-item with-thumb">
+  <h2 class="title"><a href="https://www.chiletrabajos.cl/trabajo/tecnico-en-construccion-1">Tecnico en construccion</a></h2>
+  <h3 class="meta">Desarrollos urbanos spa, <a href="/ciudad/santiago.html">Santiago</a></h3>
+  <h3 class="meta"><a href="#"><i></i> 16 de  Noviembre de 2026</a></h3>
+  <p class="description">Supervisión de partidas, cubicaciones y BIM… <a class="ver-mas-btn">Ver más</a></p>
+</div>
+"""
+
+
+def test_chiletrabajos_parses_current_html():
+    from app.scrapers.chile_portals import ChileTrabajosСraper
+
+    class Resp:
+        status_code = 200
+        text = CHILETRABAJOS_HTML
+
+    with patch("app.scrapers.chile_portals.httpx.Client.get", return_value=Resp()) as get:
+        jobs = ChileTrabajosСraper().search(keywords="técnico en construcción", limit=5)
+    assert get.call_args.args[0] == "https://www.chiletrabajos.cl/encuentra-un-empleo"
+    assert get.call_args.kwargs["params"] == {"2": "técnico en construcción"}
+    j = jobs[0]
+    assert (j.title, j.company, j.location, j.posted_at) == ("Tecnico en construccion", "Desarrollos urbanos spa", "Santiago", "2026-11-16")
+    assert "BIM" in j.description and "Ver más" not in j.description
+    assert compute_expiry_for(j) == ("2026-12-16", True)  # publicación + 30 días
+
+
+def compute_expiry_for(job):
+    from app.indexer.build import compute_expiry
+    return compute_expiry(job, "2026-11-17", NOW)
+
+
+def test_construction_synonyms_find_supervision_roles():
+    from app.utils.keywords import relevance_score
+    for title in ["Capataz de obra gruesa", "Jefe de Terreno", "Inspector Técnico de Obra (ITO)", "Supervisor de obra"]:
+        assert relevance_score(title, "", "técnico en construcción") > 0, title
+    assert relevance_score("Modelador BIM / Revit", "", "BIM") > 0

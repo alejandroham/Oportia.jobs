@@ -4,6 +4,10 @@ import { useAppStore } from '../../state/useAppStore';
 import { useToast } from '../Toast';
 import { api } from '../../api';
 import { exportSessionBackupFile, parseSessionBackupFile, getClientStore } from '../../utils/storage';
+import { PurgeDataDialog } from './PurgeDataDialog';
+
+/** Tras borrar todo se recarga la app en la página principal; este aviso se muestra al volver. */
+export const PURGED_FLAG = 'oportia_purged_notice';
 
 export const SettingsPrivacyPanel: React.FC = () => {
   const toast = useToast();
@@ -26,6 +30,7 @@ export const SettingsPrivacyPanel: React.FC = () => {
   // Respaldo cifrado esperando su contraseña
   const [pendingEncrypted, setPendingEncrypted] = useState<{ file: File; hint?: string } | null>(null);
   const [importPassword, setImportPassword] = useState('');
+  const [isPurgeOpen, setIsPurgeOpen] = useState(false);
 
   const handleDownloadBackup = async () => {
     setIsExporting(true);
@@ -82,16 +87,17 @@ export const SettingsPrivacyPanel: React.FC = () => {
   };
 
   const handlePurgeAll = async () => {
-    if (!window.confirm('¿Confirmas que deseas eliminar de forma definitiva tus datos personales, historial y claves de este equipo? Esta acción no se puede deshacer.')) {
-      return;
-    }
     try {
       await api.purgeSettings().catch(() => {});
       await api.purgeAllServerData().catch(() => {});
       await clearAllLocalData();
-      toast.success('Todos los datos personales y claves de IA han sido borrados de este equipo.');
+      // Recarga completa en la página principal: la app parte de cero (portada, guía de inicio y
+      // "Conecta la IA (opcional)"), sin nada en memoria.
+      sessionStorage.setItem(PURGED_FLAG, '1');
+      window.location.replace('/');
     } catch (err: any) {
       toast.error('Error al borrar datos: ' + (err?.message || err));
+      setIsPurgeOpen(false);
     }
   };
 
@@ -218,7 +224,7 @@ export const SettingsPrivacyPanel: React.FC = () => {
           </div>
           <button
             type="button"
-            onClick={handlePurgeAll}
+            onClick={() => setIsPurgeOpen(true)}
             className="px-4 py-2 min-h-[44px] bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold rounded-xl shadow-xs transition flex items-center gap-1.5 cursor-pointer shrink-0 active:scale-95 focus-visible:ring-2 focus-visible:ring-rose-500/40 focus-visible:outline-none"
           >
             <Trash2 className="w-3.5 h-3.5" />
@@ -226,6 +232,13 @@ export const SettingsPrivacyPanel: React.FC = () => {
           </button>
         </div>
       </div>
+
+      <PurgeDataDialog
+        isOpen={isPurgeOpen}
+        onClose={() => setIsPurgeOpen(false)}
+        onDownloadBackup={handleDownloadBackup}
+        onConfirm={handlePurgeAll}
+      />
     </div>
   );
 };

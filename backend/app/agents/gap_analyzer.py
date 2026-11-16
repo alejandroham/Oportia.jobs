@@ -53,7 +53,9 @@ REQUIREMENT_TERMS: Dict[str, List[str]] = {
     "Administración": ["Contabilidad", "Remuneraciones", "Conciliaciones bancarias", "ERP", "Facturación",
                        "Presupuesto", "Gestión de personas"],
     "Construcción": ["Lectura de planos", "AutoCAD", "Prevención de riesgos", "Mantención", "Electricidad",
-                     "Supervisión de obra", "Control de calidad"],
+                     "Supervisión de obra", "Control de calidad", "BIM", "Revit", "Cubicaciones",
+                     "Presupuesto de obra", "MS Project", "Lean Construction", "Programación de obra",
+                     "Informes técnicos", "Construcción sostenible"],
     "Gastronomía": ["Manipulación de alimentos", "Inocuidad alimentaria", "Cocina"],
     "Sector público": ["Ley de Transparencia", "Compras públicas", "Gestión pública", "Intervención social"],
 }

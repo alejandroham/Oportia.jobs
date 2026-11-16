@@ -149,6 +149,12 @@ export async function clearClientStore(): Promise<void> {
       'oportia_sec_seed_v1'
     ];
     keysToRemove.forEach((k) => localStorage.removeItem(k));
+    // Todo lo demás de Oportia en este navegador: guía completada, aceptación de la IA gratuita, modelos de IA,
+    // tiempo de uso, invitación a opinar… (se conserva solo el tema claro/oscuro, que no es un dato personal).
+    for (let i = localStorage.length - 1; i >= 0; i--) {
+      const k = localStorage.key(i);
+      if (k && k !== 'oportia_theme' && /^(oportia_|nexusjob_|nexus_|job_search_)/.test(k)) localStorage.removeItem(k);
+    }
     clearDeviceCryptoSeed();
   } catch {
     // ignore

@@ -5,6 +5,27 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
 
 ---
 
+## [1.3.4] - 2026-11-17 — *Ofertas de construcción, ChileTrabajos reparado y borrado completo de datos*
+
+### 🏗️ Construcción: ofertas para técnicos y supervisión (feedback de un técnico en construcción)
+- **ChileTrabajos volvió a funcionar.** El portal cambió su búsqueda a `/encuentra-un-empleo` y Oportia leía 0 ofertas.
+  - Ahora trae cargo, empresa, ciudad, descripción y **fecha de publicación**, que se usa para el vencimiento.
+  - Ejemplos: "supervisor de obra" da 19 ofertas, "técnico en construcción" 19 y "capataz" 14.
+- **Índice diario:** nuevas consultas de construcción de nivel técnico y de supervisión: técnico en construcción, supervisor de obra, jefe de obra, jefe de terreno, capataz, ITO, administrador de obra, oficina técnica, cubicador, presupuestista, constructor civil y BIM.
+- **Sinónimos:** "construcción" ahora también reconoce edificación, obras civiles, capataz, jefe de obra o de terreno, supervisor de obra, ITO y oficina técnica. Hay sinónimos nuevos para cubicación, presupuesto de obra, BIM/Revit y Lean Construction.
+- **Palabras clave sugeridas y brechas de construcción:**
+  - Supervisión de obra, coordinación de cuadrillas, cubicaciones y presupuesto de obra.
+  - MS Project, BIM, Revit y Lean Construction.
+  - ITO, informes técnicos y construcción sostenible.
+
+### 🗑️ "Borrar todos mis datos": confirmación clara y vuelta a la portada
+- **Nuevo diálogo** con dos casillas: "entiendo que no se puede deshacer" y "confirmo que no quiero descargar un respaldo". También permite **descargar el respaldo ahí mismo**.
+- **Al borrar, la app se recarga en la página principal**:
+  - la guía de inicio parte de cero, incluido "Conecta la IA (opcional)";
+  - aparece el aviso "Tus datos fueron borrados".
+- **El borrado ahora es completo.** Antes quedaban en el navegador la guía completada, la aceptación de la IA gratuita, los modelos de IA, el tiempo de uso y la invitación a opinar. Solo se conserva el tema claro u oscuro.
+- Nuevo test de extremo a extremo: `frontend/e2e/purge-data.spec.ts`.
+
 ## [1.3.3] - 2026-11-17 — *Corrección de seguridad (SSRF) y protección contra spam*
 
 ### 🔒 Seguridad
