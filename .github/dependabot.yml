@@ -11,6 +11,10 @@ updates:
       dependencias-frontend:
         patterns: ["*"]
         update-types: ["minor", "patch"]
+    ignore:
+      # Las versiones mayores cambian cosas de fondo: se actualizan a mano, con revisión.
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: pip
     directory: /backend
@@ -21,13 +25,23 @@ updates:
       dependencias-backend:
         patterns: ["*"]
         update-types: ["minor", "patch"]
+    ignore:
+      # Las versiones mayores cambian cosas de fondo: se actualizan a mano, con revisión.
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: pip
     directory: /          # requirements.txt de la raíz (lo usa Vercel)
     schedule:
       interval: monthly
     open-pull-requests-limit: 3
+    ignore:
+      # Las versiones mayores cambian cosas de fondo: se actualizan a mano, con revisión.
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
 
+  # En GitHub Actions las versiones mayores (p. ej. checkout@v5 -> v6) son la forma normal de actualizar
+  # y rara vez rompen algo: se mantienen.
   - package-ecosystem: github-actions
     directory: /
     schedule:
