@@ -164,3 +164,28 @@ def test_computrabajo_parses_current_html():
 def test_auth_headers_support_new_and_legacy_keys():
     assert store.auth_headers("sb_secret_abc") == {"apikey": "sb_secret_abc"}
     assert store.auth_headers(" eyJhbGciOi.x.y\n") == {"apikey": "eyJhbGciOi.x.y", "Authorization": "Bearer eyJhbGciOi.x.y"}
+    assert store.auth_headers('"Bearer eyJa.b.c"') == {"apikey": "eyJa.b.c", "Authorization": "Bearer eyJa.b.c"}
+    assert store.key_kind("sb_publishable_x").startswith("PÚBLICA")
+
+
+def test_upload_retries_with_bearer_and_reports_key_kind(monkeypatch):
+    calls = []
+
+    class R:
+        def __init__(self, code):
+            self.status_code, self.text = code, "headers must have required property 'authorization'"
+
+    def fake_post(url, data, headers, timeout):
+        calls.append(headers)
+        return R(200 if "Authorization" in headers else 400)
+
+    monkeypatch.setenv("SUPABASE_URL", "https://abc.supabase.co")
+    monkeypatch.setenv("SUPABASE_SERVICE_ROLE_KEY", "sb_secret_abc")
+    monkeypatch.setattr(store.requests, "post", fake_post)
+    store.upload_index({"jobs": []})
+    assert [("Authorization" in h) for h in calls] == [False, True]
+
+    monkeypatch.setattr(store.requests, "post", lambda *a, **k: R(403))
+    with pytest.raises(RuntimeError) as e:
+        store.upload_index({"jobs": []})
+    assert "secreta nueva" in str(e.value) and "sb_secret_abc" not in str(e.value)

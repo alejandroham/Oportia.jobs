@@ -61,30 +61,59 @@ def download_index(timeout: float = 8.0) -> Optional[Dict[str, Any]]:
         return None
 
 
-def auth_headers(key: str) -> Dict[str, str]:
-    """
-    Claves antiguas (JWT "eyJ…"): en apikey y Authorization. Claves nuevas ("sb_secret_…"): solo en
-    apikey; Supabase las rechaza en Authorization ("Invalid Compact JWS") y genera el token por su cuenta.
-    """
-    key = key.strip()
+def clean_key(key: str) -> str:
+    """Quita lo que suele colarse al copiar la clave: espacios, comillas o el prefijo "Bearer "."""
+    key = (key or "").strip().strip('"').strip("'").strip()
+    if key.lower().startswith("bearer "):
+        key = key[7:].strip()
+    return key
+
+
+def key_kind(key: str) -> str:
+    """Tipo de clave, para diagnosticar sin mostrarla."""
+    if key.startswith("sb_secret_"):
+        return "secreta nueva (sb_secret_)"
+    if key.startswith("sb_publishable_"):
+        return "PÚBLICA (sb_publishable_): no sirve para escribir"
     if key.startswith("eyJ"):
-        return {"apikey": key, "Authorization": f"Bearer {key}"}
-    return {"apikey": key}
+        return "JWT antigua (eyJ…)"
+    return f"desconocida (empieza con '{key[:3]}…', {len(key)} caracteres)"
+
+
+def auth_headers(key: str, with_bearer: Optional[bool] = None) -> Dict[str, str]:
+    """
+    Claves JWT antiguas ("eyJ…"): en apikey y Authorization. Claves nuevas ("sb_secret_…"): en apikey;
+    si el servidor igual pide Authorization, se reintenta con la clave también ahí.
+    """
+    key = clean_key(key)
+    if with_bearer is None:
+        with_bearer = key.startswith("eyJ")
+    headers = {"apikey": key}
+    if with_bearer:
+        headers["Authorization"] = f"Bearer {key}"
+    return headers
 
 
 def upload_index(index: Dict[str, Any]) -> None:
-    base = (os.environ.get("SUPABASE_URL") or "").rstrip("/")
-    key = (os.environ.get("SUPABASE_SERVICE_ROLE_KEY") or "").strip()
+    base = (os.environ.get("SUPABASE_URL") or "").strip().rstrip("/")
+    key = clean_key(os.environ.get("SUPABASE_SERVICE_ROLE_KEY") or "")
     if not base or not key:
         raise RuntimeError("Faltan SUPABASE_URL o SUPABASE_SERVICE_ROLE_KEY para publicar el índice.")
-    res = requests.post(
-        f"{base}/storage/v1/object/{INDEX_BUCKET}/{INDEX_OBJECT}",
-        data=encode_index(index),
-        headers={**auth_headers(key), "Content-Type": "application/gzip", "Cache-Control": "max-age=1800", "x-upsert": "true"},
-        timeout=60,
-    )
-    if res.status_code >= 300:
-        raise RuntimeError(f"Supabase Storage respondió {res.status_code}: {res.text[:300]}")
+    body = encode_index(index)
+    errors = []
+    first = key.startswith("eyJ")
+    for with_bearer in (first, not first):
+        res = requests.post(
+            f"{base}/storage/v1/object/{INDEX_BUCKET}/{INDEX_OBJECT}",
+            data=body,
+            headers={**auth_headers(key, with_bearer), "Content-Type": "application/gzip",
+                     "Cache-Control": "max-age=1800", "x-upsert": "true"},
+            timeout=60,
+        )
+        if res.status_code < 300:
+            return
+        errors.append(f"{'con' if with_bearer else 'sin'} Authorization → {res.status_code}: {res.text[:200]}")
+    raise RuntimeError(f"Supabase Storage rechazó la subida. Clave {key_kind(key)}. " + " | ".join(errors))
 
 
 class IndexCache:
