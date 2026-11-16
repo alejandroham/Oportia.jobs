@@ -14,6 +14,7 @@ recolección automática.
 import argparse
 import hashlib
 import logging
+import os
 import re
 import sys
 import time
@@ -295,6 +296,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     parser.add_argument("--no-upload", action="store_true", help="No publicar en Supabase Storage.")
     parser.add_argument("--max-queries", type=int, default=0, help="Limitar consultas (para pruebas).")
     parser.add_argument("--per-source", type=int, default=25)
+    parser.add_argument("--preview-email", help="Guardar el HTML del correo diario en este archivo (no lo envía).")
     args = parser.parse_args(argv)
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
 
@@ -309,21 +311,31 @@ def main(argv: Optional[List[str]] = None) -> int:
         f"Índice: {index['count']} ofertas ({index['new_today']} nuevas hoy) de {len(raw)} recolectadas "
         f"en {time.time() - started:.0f}s. Fuentes: {counts}. Áreas: {index['areas']}"
     )
-    import os
     if os.environ.get("GITHUB_ACTIONS"):
         print(f"::notice title=Índice diario::{index['count']} ofertas ({index['new_today']} nuevas hoy). Fuentes: {counts}")
     if args.out:
         with open(args.out, "wb") as f:
             f.write(encode_index(index))
+    if args.preview_email:
+        from app.indexer.notify import build_email
+        built = build_email(index, (os.environ.get("NOTIFY_KEYWORDS") or "").split(","))
+        with open(args.preview_email, "w", encoding="utf-8") as f:
+            f.write(built[1] if built else "<p>Sin ofertas nuevas.</p>")
     if not args.no_upload:
         upload_index(index)
         logger.info("Índice publicado en Supabase Storage.")
+        if index["count"]:
+            from app.indexer.notify import send_daily_email
+            sent = send_daily_email(index)
+            if sent is not None and os.environ.get("GITHUB_ACTIONS"):
+                print(f"::notice title=Correo diario::{'Enviado con ' + str(sent) + ' ofertas nuevas.' if sent else 'Sin ofertas nuevas hoy; no se envió.'}")
     return 0 if index["count"] else 1
 
 
 def _report_error(message: str) -> None:
-    """En GitHub Actions el error queda como anotación, visible sin iniciar sesión."""
-    import os
+    """En GitHub Actions el error queda como anotación, visible sin iniciar sesión (sin correos)."""
+    from app.indexer.notify import redact_emails
+    message = redact_emails(message)
     if os.environ.get("GITHUB_ACTIONS"):
         print(f"::error title=Índice diario::{message}".replace("\n", " "))
     logger.error(message)

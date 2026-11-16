@@ -40,6 +40,33 @@ El índice **solo contiene ofertas públicas**: nunca búsquedas ni datos de per
 
 Sin `SUPABASE_URL`, Oportia sigue funcionando como antes: busca en vivo.
 
+## Correo diario con las ofertas nuevas (Etapa C)
+
+Después de publicar el índice, la tarea envía un correo con **solo las ofertas que aparecieron hoy**:
+- Agrupadas por área, o por tus búsquedas si defines `NOTIFY_KEYWORDS`.
+- Máximo 2 por empresa y 80 en total, cada una con su enlace a la fuente original.
+- Si un día no hay ofertas nuevas, no se envía nada.
+
+**Tu correo nunca queda en el código ni en los registros**: es un secreto de GitHub. Si Resend responde con un error que incluye una dirección, se oculta antes de mostrarlo.
+
+Configuración:
+1. **Crea una cuenta gratuita en [Resend](https://resend.com)** (3.000 correos al mes) con el **mismo correo en que quieres recibir los avisos**.
+2. **Crea una API key** en *API Keys → Create API Key*, con permiso *Sending access*.
+3. **Agrega estos secretos en GitHub** (*Settings → Secrets and variables → Actions*):
+   - `RESEND_API_KEY`: la clave (empieza con `re_`).
+   - `NOTIFY_EMAIL`: tu correo. Para varios, sepáralos con coma.
+   - `NOTIFY_KEYWORDS` (opcional): tus búsquedas, separadas por coma. Por ejemplo: `encargado informática, soporte TI, mesa de ayuda`.
+   - `NOTIFY_FROM` (opcional): solo si verificas un dominio propio en Resend, por ejemplo `Oportia <avisos@tudominio.cl>`.
+4. **Prueba:** en *Actions → Índice diario de ofertas → Run workflow*. La anotación "Correo diario" dice cuántas ofertas se enviaron.
+
+Sin un dominio propio, Resend envía desde `onboarding@resend.dev`, y **solo al correo con que creaste la cuenta de Resend**. Para un aviso personal es suficiente. Revisa la carpeta de spam el primer día.
+
+Para ver cómo queda el correo sin enviarlo:
+
+```bash
+cd backend && ../venv/bin/python -m app.indexer.build --no-upload --max-queries 5 --preview-email /tmp/correo.html
+```
+
 ## Probarlo en tu equipo
 
 ```bash
@@ -56,3 +83,7 @@ cd backend && ../venv/bin/python -m app.indexer.build --no-upload --out /tmp/ind
 | `SUPABASE_SERVICE_ROLE_KEY` | Solo GitHub (secreto) | Publicar el índice |
 | `OPORTIA_INDEX_URL` | Opcional | URL completa del índice, si se aloja en otro lugar |
 | `OPORTIA_INDEX_BUCKET` | Opcional | Otro nombre de bucket (por defecto `oportia-index`) |
+| `RESEND_API_KEY` | Solo GitHub (secreto) | Enviar el correo diario |
+| `NOTIFY_EMAIL` | Solo GitHub (secreto) | A quién se envía |
+| `NOTIFY_KEYWORDS` | Solo GitHub (secreto, opcional) | Filtrar el correo por tus búsquedas |
+| `NOTIFY_FROM` | Solo GitHub (secreto, opcional) | Remitente con dominio propio verificado |

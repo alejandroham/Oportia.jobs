@@ -1,6 +1,7 @@
 name: Índice diario de ofertas
 
-# Todas las mañanas a las 08:00 de Chile arma el índice de ofertas y lo publica en Supabase Storage.
+# Todas las mañanas a las 08:00 de Chile arma el índice de ofertas, lo publica en Supabase Storage
+# y, si están los secretos, envía el correo con las ofertas nuevas del día.
 # GitHub usa UTC: 11:00 UTC en horario de verano (UTC-3) y 12:00 UTC en invierno (UTC-4).
 # Se programan ambas y solo corre la que corresponde a la estación. Puede retrasarse unos minutos.
 on:
@@ -56,4 +57,9 @@ jobs:
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          # Correo diario (Etapa C). Sin estos secretos no se envía nada. El correo nunca se imprime.
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          NOTIFY_EMAIL: ${{ secrets.NOTIFY_EMAIL }}
+          NOTIFY_FROM: ${{ secrets.NOTIFY_FROM }}
+          NOTIFY_KEYWORDS: ${{ secrets.NOTIFY_KEYWORDS }}
         run: python -m app.indexer.build

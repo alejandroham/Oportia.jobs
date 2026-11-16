@@ -7,6 +7,15 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
 
 ## [Sin publicar]
 
+### ✉️ Correo diario con las ofertas nuevas (Etapa C de la versión 1.3)
+- **Después de armar el índice de las 08:00, un correo con solo las ofertas que aparecieron hoy** (enviado con Resend).
+  - Agrupadas por área, o por tus búsquedas (`NOTIFY_KEYWORDS`).
+  - Máximo 2 por empresa y 80 en total, cada una con enlace a la fuente original.
+  - Si no hay ofertas nuevas, no se envía nada.
+- **Correo privado:** la dirección es un secreto de GitHub (`NOTIFY_EMAIL`). Nunca se imprime, y se oculta si un error de Resend la incluye.
+- Vista previa sin enviar: `--preview-email`. Configuración en `docs/INDICE_DIARIO.md`.
+- **El índice se publica con las claves nuevas de Supabase** (`sb_secret_…`) y con las antiguas. Los errores y el resumen quedan visibles en GitHub Actions sin iniciar sesión.
+
 ### ⚡ Índice diario de ofertas (Etapa B de la versión 1.3)
 - **Búsqueda al instante.** Todas las mañanas, a las 08:00 de Chile, una tarea de GitHub Actions junta **más de 1.500 ofertas de Chile de todas las áreas** y publica un índice comprimido de unos 160 KB en Supabase Storage.
   - Fuentes: Empleos Públicos, GetOnBoard, Computrabajo y ChileTrabajos. LinkedIn no se usa.
