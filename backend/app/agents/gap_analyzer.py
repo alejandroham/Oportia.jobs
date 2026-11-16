@@ -62,6 +62,12 @@ REQUIREMENT_TERMS: Dict[str, List[str]] = {
 def _profile_evidence(profile: CandidateProfile) -> List[Tuple[str, str]]:
     """Fuentes de evidencia del CV: (texto, cómo citarlo)."""
     out: List[Tuple[str, str]] = []
+    # La profesión declarada también es evidencia (un TENS no tiene "brecha" de TENS).
+    for p in [profile.primary_profession] + list(profile.secondary_professions or []):
+        if p:
+            out.append((p, f"Profesión: {p}"))
+    if profile.headline and normalize(profile.headline) != "profesional":
+        out.append((profile.headline, f"Titular del CV: {profile.headline}"))
     for s in (profile.technical_skills or []) + (profile.keywords or []) + (profile.soft_skills or []):
         out.append((s, f"Habilidad declarada: {s}"))
     for c in profile.certifications or []:

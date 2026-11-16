@@ -90,3 +90,15 @@ def test_courses_never_return_unrelated_it_courses():
     assert {"SENCE y OTEC (Chile)", "ChileValora", "Coursera", "edX"} <= platforms
     assert all(not r.verified for r in res)
     assert any("coursera.org/search?query=curaciones" in r.url for r in res)
+
+
+def test_profession_and_headline_count_as_evidence():
+    from app.agents.gap_analyzer import analyze_gaps
+    from app.models.schemas import CandidateProfile, JobPosting
+    profile = CandidateProfile(name="P", headline="TENS de Urgencia", primary_profession="TENS", technical_skills=["Curaciones"])
+    job = JobPosting(id="a", title="TENS Urgencia", company="X", location="CL", is_remote=False, source="t",
+                     description="Curaciones, curso IAAS")
+    status = {g.requirement: (g.status, g.evidence) for g in analyze_gaps(profile, [job], use_ai=False).items}
+    assert status["TENS"][0] == "cumple" and status["TENS"][1].startswith("Profesión")
+    assert status["Urgencia"][0] == "cumple"
+    assert status["IAAS"][0] == "brecha"

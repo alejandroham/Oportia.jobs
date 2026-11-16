@@ -9,6 +9,7 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
 
 ### 🎓 Brechas reales y cursos de todas las áreas (Etapa A3 de la versión 1.3)
 - **"Mis brechas" compara de verdad** los requisitos de tus ofertas guardadas o evaluadas (hasta 8) con tu CV: ✅ **cumples** (con la evidencia del CV: habilidad, título, certificación o cargo), 🟡 **en parte o transferible**, ❌ **brecha**, con las ofertas que lo piden. Antes solo listaba tus propias habilidades (`POST /api/coach/gaps`, sin estado).
+  - **Tu profesión y el titular del CV cuentan como evidencia:** un TENS ya no ve "TENS" como brecha.
   - **Con IA:** una sola consulta, que cita evidencia textual del CV y nunca inventa experiencia.
   - **Sin IA, o si la IA está descansando:** reglas con un diccionario de requisitos de todas las áreas (salud, educación, comercio, logística, administración, construcción, informática, sector público…), comparando cada palabra por raíz. Las licencias se comparan por su clase exacta.
 - **Cursos para cualquier área:** el catálogo verificado devolvía sus 4 primeros cursos (Microsoft, AWS…) cuando no encontraba coincidencias, así que a una TENS le aparecía Microsoft Entra ID para "curaciones". Ahora se ofrecen búsquedas reales en **SENCE/OTEC, ChileValora, Coursera y edX**, sin inventar cursos ni precios. La pestaña Cursos parte con tu profesión.
