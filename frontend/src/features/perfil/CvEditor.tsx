@@ -16,6 +16,7 @@ import { getAIStatus } from '../../utils/aiStatus';
 import { Dialog } from '../../components/ui/Dialog';
 import { SharedAICard } from '../../components/settings/SharedAICard';
 import { useNavigate } from 'react-router-dom';
+import { useCareerInsights } from '../../state/useCareerInsights';
 
 interface CvEditorProps {
   profile: CandidateProfile;
@@ -44,6 +45,7 @@ export const CvEditor: React.FC<CvEditorProps> = ({ profile, onProfileUpdated })
   const [analysis, setAnalysis] = useState<{ method?: 'ia' | 'reglas'; note?: string | null } | null>(null);
   const [isReanalyzing, setIsReanalyzing] = useState(false);
   const rawCvText = formData.raw_cv_text || profile.raw_cv_text || '';
+  const careerInsights = useCareerInsights();
 
   const toggleSection = (sec: string) => {
     setOpenSections((prev) => ({ ...prev, [sec]: !prev[sec] }));
@@ -77,6 +79,8 @@ export const CvEditor: React.FC<CvEditorProps> = ({ profile, onProfileUpdated })
     setOpenSections((prev) => ({ ...prev, experience: true, education: true, certifications: true }));
     if (res.method === 'ia') {
       toast.success(`Encontré ${updated.experiences?.length || 0} experiencias, ${updated.education?.length || 0} títulos y ${updated.certifications?.length || 0} cursos. Revísalos y guarda.`, 'CV analizado con IA');
+      // Con la experiencia ya ordenada: cargos afines para «Qué busco» y logros STAR para «Mis logros».
+      void careerInsights.run(updated);
     } else {
       toast.info(res.note || 'Analizamos tu CV sin IA (lectura básica). Revisa tus datos.', 'CV analizado sin IA');
     }

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import type { UserPreferences, LearnedStarStory } from '../../types';
 import { Award, Plus, Trash2, HelpCircle, CheckCircle2, ChevronRight, Sparkles } from 'lucide-react';
 import { useToast } from '../../components/Toast';
+import { useCareerInsights } from '../../state/useCareerInsights';
 
 interface AchievementsTabProps {
   preferences: UserPreferences;
@@ -20,6 +21,7 @@ export const AchievementsTab: React.FC<AchievementsTabProps> = ({
   const [result, setResult] = useState('');
   const [skills, setSkills] = useState('');
   const toast = useToast();
+  const { run, isRunning } = useCareerInsights();
 
   const stories = preferences.learned_star_stories || [];
 
@@ -77,6 +79,16 @@ export const AchievementsTab: React.FC<AchievementsTabProps> = ({
           </p>
         </div>
 
+        <div className="flex flex-wrap gap-2">
+        <button
+          type="button"
+          onClick={() => run(undefined, { addDirect: 0 })}
+          disabled={isRunning}
+          className="inline-flex items-center gap-1.5 px-3.5 py-2 min-h-[44px] rounded-xl border border-brand-300 dark:border-brand-700/60 text-xs font-semibold text-brand-700 dark:text-brand-300 hover:bg-brand-50 dark:hover:bg-brand-950/40 cursor-pointer disabled:opacity-50"
+        >
+          <Sparkles className="w-3.5 h-3.5" />
+          {isRunning ? 'Analizando tu CV…' : 'Extraer logros de mi CV con IA'}
+        </button>
         <button
           type="button"
           onClick={() => setIsAdding(!isAdding)}
@@ -85,6 +97,7 @@ export const AchievementsTab: React.FC<AchievementsTabProps> = ({
           <Plus className="w-3.5 h-3.5" />
           <span>{isAdding ? 'Cancelar' : 'Agregar nuevo logro'}</span>
         </button>
+        </div>
       </div>
 
       {/* Formulario guiado STAR */}
@@ -215,11 +228,10 @@ export const AchievementsTab: React.FC<AchievementsTabProps> = ({
                   <h4 className="text-sm font-bold text-gray-900 dark:text-gray-100">
                     {story.title}
                   </h4>
-                  {story.created_at && (
-                    <span className="text-xs text-gray-400">
-                      Registrada el {new Date(story.created_at).toLocaleDateString('es-CL')}
-                    </span>
-                  )}
+                  <span className="text-xs text-gray-500 dark:text-ink-200">
+                    {story.source === 'cv_ia' ? 'Desde tu CV (IA)' : story.source === 'cv' ? 'Desde tu CV' : story.source === 'opi' ? 'Agregado con Opi' : 'Agregado por ti'}
+                    {story.created_at && ` · ${new Date(story.created_at).toLocaleDateString('es-CL')}`}
+                  </span>
                 </div>
                 <button
                   type="button"

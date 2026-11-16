@@ -21,10 +21,10 @@ import type { UserPreferences, LLMSettings } from '../types';
 import { api, getHumanErrorMessage } from '../api';
 import { useToast } from './Toast';
 import { OpiAvatar } from './ui/OpiAvatar';
-import { useAppStore } from '../state/useAppStore';
+import { useAppStore, DEFAULT_EMPTY_PREFERENCES } from '../state/useAppStore';
 import { SharedAICard } from './settings/SharedAICard';
 import { saveClientStore, getClientStore } from '../utils/storage';
-import { parseProfileCommand, describeChange, applyProfileChanges, type ProfileChange } from '../utils/profileCommands';
+import { parseProfileCommand, describeChange, applyProfileChanges, applyPreferenceChanges, isPreferenceChange, type ProfileChange } from '../utils/profileCommands';
 
 interface ChatMessage {
   id: string;
@@ -169,13 +169,23 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
     const target = messages.find((m) => m.id === msgId);
     if (!target?.profileChanges) return;
     if (accept) {
-      const { profile, setProfile } = useAppStore.getState();
-      if (!profile) {
-        toast.error('Primero sube tu CV en Mi perfil.');
-        return;
+      const { profile, setProfile, preferences, setPreferences } = useAppStore.getState();
+      const prefChanges = target.profileChanges.filter(isPreferenceChange);
+      const profileChanges = target.profileChanges.filter((c) => !isPreferenceChange(c));
+      if (profileChanges.length) {
+        if (!profile) {
+          toast.error('Primero sube tu CV en Mi perfil.');
+          return;
+        }
+        await setProfile(applyProfileChanges(profile, profileChanges));
       }
-      await setProfile(applyProfileChanges(profile, target.profileChanges));
-      toast.success('Perfil actualizado', 'Puedes revisarlo en Mi perfil.');
+      if (prefChanges.length) {
+        await setPreferences(applyPreferenceChanges(preferences || DEFAULT_EMPTY_PREFERENCES, prefChanges));
+      }
+      toast.success(
+        prefChanges.length && !profileChanges.length ? 'Listo, lo guardé' : 'Perfil actualizado',
+        'Puedes revisarlo en Mi perfil (Mi CV, Qué busco o Mis logros).'
+      );
     }
     const next = messages.map((m) => (m.id === msgId ? { ...m, profileChangesStatus: accept ? ('applied' as const) : ('dismissed' as const) } : m));
     setMessages(next);

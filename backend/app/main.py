@@ -43,6 +43,7 @@ from app.agents.outcome_agent import outcome_agent
 from app.agents.llm_provider import llm, LLMProviderError, AINotConnectedError
 from app.agents import shared_ai
 from app.agents.gap_analyzer import analyze_gaps
+from app.agents.career_insights import career_insights
 from app.agents.shared_ai import SharedAIRequest, current_shared_ai_request
 from app.agents.models import DEFAULT_GEMINI_MODEL, DEFAULT_OPENAI_MODEL, DEFAULT_CLAUDE_MODEL, CATALOG
 from app.agents.llm_context import current_llm_credentials, LLMCredentials
@@ -305,6 +306,20 @@ async def import_from_linkedin():
         status_code=400,
         detail="La importación directa desde perfiles de LinkedIn ha sido deshabilitada para evitar distorsiones en la experiencia profesional. Por favor sube tu currículum oficial en formato PDF (.pdf) o Word (.docx, .doc)."
     )
+
+class CareerInsightsRequest(BaseModel):
+    profile: CandidateProfile
+    preferences: Optional[UserPreferences] = None
+    use_ai: bool = True
+
+
+@app.post("/api/profile/career-insights", dependencies=[Depends(ai_rate_limiter)])
+def career_insights_endpoint(req: CareerInsightsRequest):
+    """Cargos afines (con resumen) y logros STAR desde el CV, en una sola consulta a la IA. Sin estado."""
+    if not _has_analyzed_cv(req.profile):
+        raise HTTPException(status_code=400, detail="Para sugerir cargos y logros primero sube tu CV en Mi perfil.")
+    return career_insights(req.profile, req.preferences, use_ai=req.use_ai)
+
 
 @app.api_route("/api/profile/suggest-roles", methods=["GET", "POST"])
 def suggest_roles_endpoint(data: Optional[dict] = None):

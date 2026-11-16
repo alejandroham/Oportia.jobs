@@ -1,4 +1,4 @@
-import type { CandidateProfile, EducationItem, ProfileLink } from '../types';
+import type { CandidateProfile, EducationItem, ProfileLink, UserPreferences } from '../types';
 import { normalizeText } from './searchText';
 import { getProfileLinks } from './profileKeywords';
 
@@ -15,7 +15,13 @@ export type ProfileChange =
   | { kind: 'education'; item: EducationItem }
   | { kind: 'language'; language: string; level: string }
   | { kind: 'link'; link: ProfileLink }
-  | { kind: 'profession'; value: string };
+  | { kind: 'profession'; value: string }
+  // "Qué busco" y "Mis logros" (se guardan en tus preferencias)
+  | { kind: 'target_role'; action: 'add' | 'remove'; value: string }
+  | { kind: 'achievement'; text: string };
+
+const PREF_KINDS = new Set(['target_role', 'achievement']);
+export const isPreferenceChange = (c: ProfileChange) => PREF_KINDS.has(c.kind);
 
 const splitList = (raw: string) =>
   raw
@@ -57,6 +63,32 @@ export function parseProfileCommand(message: string): ProfileChange[] {
     const url = urlMatch[0].startsWith('http') ? urlMatch[0] : `https://${urlMatch[0]}`;
     const label = LINK_SITES.find(([re]) => re.test(normalizeText(url)) || re.test(t))?.[1] || 'Sitio web';
     changes.push({ kind: 'link', link: { label, url: url.replace(/[.)]+$/, '') } });
+    return changes;
+  }
+
+  // Logros: "agrega un logro: entregué la obra antes del plazo", "logré reducir mermas en 10%"
+  const ach = original.match(/^\s*(?:agrega|agregar|añade|anade|anota|registra|guarda)\s+(?:un|este|el|como)?\s*logro\s*[:,\-–]?\s*(.{10,})$/i) ||
+    original.match(/^\s*logr[eé]\s+(.{10,})$/i);
+  if (ach) {
+    changes.push({ kind: 'achievement', text: cap(ach[1].trim().replace(/[.!]+$/, '')) });
+    return changes;
+  }
+
+  // Qué busco: "agrega jefe de obra a lo que busco", "busco trabajo de supervisor de obra", "ya no busco capataz"
+  const roleRemove = t.match(/(?:quita|quitar|elimina|eliminar|saca|sacar|borra|borrar)\s+(.+?)\s+de\s+(?:lo que busco|que busco|mis cargos|los cargos que busco|mis busquedas)/) ||
+    t.match(/ya no (?:busco|quiero)\s+(?:trabajo|empleo|pega)?\s*(?:de|como)?\s*(.+)/);
+  if (roleRemove) {
+    const start = t.indexOf(roleRemove[1]);
+    changes.push({ kind: 'target_role', action: 'remove', value: cap(original.slice(start, start + roleRemove[1].length).trim().replace(/[.!¡¿?]+$/, '')) });
+    return changes;
+  }
+  const roleAdd = t.match(/(?:agrega|agregar|anade|añade|suma|incluye|pon)\s+(.+?)\s+(?:a|en)\s+(?:lo que busco|que busco|mis cargos|los cargos que busco|mis busquedas)/) ||
+    t.match(/^\s*(?:tambien\s+)?(?:busco|quiero)\s+(?:trabajo|empleo|pega|un trabajo)\s+(?:de|como)\s+(.+)/) ||
+    t.match(/^\s*(?:tambien\s+)?me interesa(?:n)?\s+(?:cargos? de|trabajar como|trabajos? de)\s+(.+)/);
+  if (roleAdd) {
+    const start = t.indexOf(roleAdd[1]);
+    const values = splitList(original.slice(start, start + roleAdd[1].length)).map(cap);
+    values.forEach((value) => changes.push({ kind: 'target_role', action: 'add', value }));
     return changes;
   }
 
@@ -132,6 +164,10 @@ export function describeChange(c: ProfileChange): string {
       return `Agregar enlace de ${c.link.label}: ${c.link.url}`;
     case 'profession':
       return `Agregar profesión u oficio: ${c.value}`;
+    case 'target_role':
+      return c.action === 'add' ? `Agregar a lo que buscas: ${c.value}` : `Quitar de lo que buscas: ${c.value}`;
+    case 'achievement':
+      return `Agregar a Mis logros: ${c.text}`;
   }
 }
 
@@ -159,3 +195,30 @@ export function applyProfileChanges(profile: CandidateProfile, changes: ProfileC
   }
   return { ...p, updated_at: new Date().toISOString() };
 }
+
+/** Aplica a tus preferencias los cambios de "Qué busco" y "Mis logros" confirmados en el chat. */
+export function applyPreferenceChanges(prefs: UserPreferences, changes: ProfileChange[]): UserPreferences {
+  let p: UserPreferences = { ...prefs, target_roles: [...(prefs.target_roles || [])] };
+  for (const c of changes) {
+    if (c.kind === 'target_role') {
+      const has = p.target_roles.some((r) => normalizeText(r) === normalizeText(c.value));
+      if (c.action === 'add' && !has) p.target_roles.push(c.value);
+      if (c.action === 'remove') p.target_roles = p.target_roles.filter((r) => normalizeText(r) !== normalizeText(c.value));
+    }
+    if (c.kind === 'achievement') {
+      const story = {
+        id: 'star_' + Date.now() + Math.random().toString(36).slice(2, 6),
+        title: c.text.length > 70 ? c.text.slice(0, 67) + '…' : c.text,
+        situation_and_task: '',
+        action: c.text,
+        result_and_metrics: '',
+        key_skills: [],
+        source: 'opi',
+        created_at: new Date().toISOString()
+      };
+      p = { ...p, learned_star_stories: [story, ...(p.learned_star_stories || [])] };
+    }
+  }
+  return { ...p, updated_at: new Date().toISOString() };
+}
+

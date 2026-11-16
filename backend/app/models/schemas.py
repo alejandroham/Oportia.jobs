@@ -110,6 +110,8 @@ class UserPreferences(BaseModel):
     # Cognitive Agentic Memory
     profile_dna: Optional[ProfileDNA] = Field(default_factory=ProfileDNA)
     learned_star_stories: List[LearnedStarStory] = []
+    # Cargos afines sugeridos por la IA (con su resumen) para "Qué busco"; se guardan en el navegador.
+    suggested_roles: List[Dict[str, Any]] = []
     industry_insights: List[str] = []
     memory_stats: Optional[MemoryStats] = Field(default_factory=MemoryStats)
 

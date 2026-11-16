@@ -1,6 +1,6 @@
 # Manual de usuario — Oportia Jobs IA
 
-> Versión 1.3.5 · Guía paso a paso para encontrar trabajo con Oportia y Opi, tu copiloto.
+> Versión 1.3.6 · Guía paso a paso para encontrar trabajo con Oportia y Opi, tu copiloto.
 >
 > Las capturas muestran a **Paula Rojas**, una persona de demostración **ficticia** (Técnico en Enfermería). Las empresas que aparecen también son ficticias.
 
@@ -109,13 +109,25 @@ Pulsa **Ver mi CV** para abrir la vista previa. Elige la plantilla (Moderna, Min
 
 > 💡 **Para guardar como PDF:** en la ventana de impresión, elige **Destino → Guardar como PDF** (en Chrome) o **PDF → Guardar como PDF** (en Safari/Mac). El archivo se nombra solo, por ejemplo `CV - Paula Rojas.pdf`. El documento siempre se imprime en fondo blanco, aunque uses el modo oscuro.
 
-Las otras pestañas de Mi perfil son **Qué busco**, **Mis logros** (tus logros en formato STAR) y **Lo que Opi sabe de mí** (lo que Opi aprendió de tus conversaciones).
+Las otras pestañas de Mi perfil son **Qué busco**, **Mis logros** y **Lo que Opi sabe de mí** (lo que Opi aprendió de tus conversaciones).
+
+**Mis logros** guarda tus logros en formato STAR (Situación, Tarea, Acción, Resultado), útiles para la entrevista:
+- Cuando la IA analiza tu CV, agrega sola los logros que encuentra en tu experiencia. Solo usa hechos de tu CV y no inventa cifras.
+- **Extraer logros de mi CV con IA** vuelve a buscarlos cuando quieras.
+- Cada logro indica su origen: "Desde tu CV (IA)", "Agregado con Opi" o "Agregado por ti".
 
 ---
 
 ## 5. Qué buscas: tus criterios
 
 En **Mi perfil → Qué busco** defines los cargos objetivo, tu región y comunas, si quieres solo trabajo remoto, la renta mínima y lo que **no aceptarías** (por ejemplo, "turnos de 24 horas"). Oportia usa estos datos para buscar y para calcular tu compatibilidad.
+
+**Cargos sugeridos según tu experiencia.** Cuando la IA analiza tu CV, Opi propone cargos afines, cada uno con un **resumen breve** de por qué calza contigo y los datos de tu CV que lo respaldan:
+- **Tu experiencia directa:** cargos que ya ejerciste o sus equivalentes. Hasta 3 se agregan solos a lo que buscas.
+- **Siguiente paso:** el ascenso natural según tus años y responsabilidades.
+- **Por tus habilidades transferibles:** cargos de otra área donde sirve lo que sabes.
+
+Pulsa **Agregar** en los que te interesen, o **Lo busco** para quitarlos. Con **Actualizar con IA** pides nuevas sugerencias cuando cambies tu CV.
 
 ![Criterios de búsqueda](manual/img/08-criterios-de-busqueda.jpg)
 
@@ -237,7 +249,11 @@ Abre a Opi con el botón **Opi Copiloto** (abajo a la derecha). Puedes pedirle q
 - extraiga logros de tu CV en formato STAR,
 - te explique cómo subir tu compatibilidad con una oferta,
 - te recomiende cursos,
-- registre lo que no aceptarías en un trabajo.
+- registre lo que no aceptarías en un trabajo,
+- actualice **lo que buscas**: "busco trabajo de jefe de obra", "agrega supervisor de obra a lo que busco", "ya no busco trabajo de capataz",
+- agregue un **logro**: "agrega un logro: entregué la obra 2 semanas antes del plazo".
+
+Opi te muestra el cambio y lo guarda solo si pulsas **Sí, guardar en mi perfil**.
 
 Opi recuerda lo que le cuentas y lo usa para orientarte; lo puedes revisar en **Mi perfil → Lo que Opi sabe de mí**.
 

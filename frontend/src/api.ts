@@ -14,7 +14,8 @@ import type {
   LearningPath,
   TutorPracticeChallenge,
   TutorEvaluationResult,
-  GapAnalysis
+  GapAnalysis,
+  CareerInsights
 } from './types';
 import { decryptApiKeyLocally } from './utils/crypto';
 import { getClientId, hasSharedAIConsent, reportSharedAIRemaining } from './utils/sharedAI';
@@ -228,6 +229,16 @@ export const api = {
       body: formData
     });
     return handleResponse<CVAnalysisResult>(res, 'Error al procesar el CV');
+  },
+  /** Cargos afines (con resumen) y logros STAR desde el CV, en una sola consulta a la IA. */
+  careerInsights: async (profile: CandidateProfile, preferences?: UserPreferences | null, useAi = true): Promise<CareerInsights> => {
+    const llmHeaders = await getLLMHeaders();
+    const res = await fetch(`${API_BASE}/profile/career-insights`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...llmHeaders },
+      body: JSON.stringify({ profile, preferences: preferences || undefined, use_ai: useAi })
+    });
+    return handleResponse<CareerInsights>(res, 'Error al sugerir cargos y logros');
   },
   /** Vuelve a analizar con IA el texto del CV ya cargado (no hace falta subir el archivo otra vez). */
   reanalyzeCV: async (text: string): Promise<CVAnalysisResult> => {

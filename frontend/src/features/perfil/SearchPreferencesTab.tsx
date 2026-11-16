@@ -1,8 +1,12 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import type { UserPreferences } from '../../types';
 import { SearchPreferencesForm } from '../shared/SearchPreferencesForm';
 import { Save, Sparkles } from 'lucide-react';
 import { useToast } from '../../components/Toast';
+import { SuggestedRolesPanel } from './SuggestedRolesPanel';
+import { useCareerInsights } from '../../state/useCareerInsights';
+import { useAppStore } from '../../state/useAppStore';
+import { normalizeText } from '../../utils/searchText';
 
 interface SearchPreferencesTabProps {
   preferences: UserPreferences;
@@ -15,6 +19,22 @@ export const SearchPreferencesTab: React.FC<SearchPreferencesTabProps> = ({
 }) => {
   const [formData, setFormData] = useState<UserPreferences>(preferences);
   const toast = useToast();
+  const { run, isRunning } = useCareerInsights();
+  const profile = useAppStore((st) => st.profile);
+  const hasCv = Boolean(profile && profile.name?.trim().toLowerCase() !== 'candidato' && (profile.experiences?.length || profile.headline));
+  // Si Opi o la IA actualizan lo que buscas, refrescar el formulario.
+  useEffect(() => {
+    setFormData(preferences);
+  }, [preferences.updated_at, preferences]);
+
+  const toggleRole = (title: string) => {
+    const has = formData.target_roles.some((r) => normalizeText(r) === normalizeText(title));
+    const target_roles = has ? formData.target_roles.filter((r) => normalizeText(r) !== normalizeText(title)) : [...formData.target_roles, title];
+    const next = { ...formData, target_roles, updated_at: new Date().toISOString() };
+    setFormData(next);
+    onPreferencesUpdated(next);
+    toast.success(has ? `Quitado de lo que buscas: ${title}` : `Agregado a lo que buscas: ${title}`);
+  };
 
   const handleSave = () => {
     onPreferencesUpdated({ ...formData, updated_at: new Date().toISOString() });
@@ -44,6 +64,15 @@ export const SearchPreferencesTab: React.FC<SearchPreferencesTabProps> = ({
           <span>Guardar preferencias</span>
         </button>
       </div>
+
+      <SuggestedRolesPanel
+        roles={formData.suggested_roles || []}
+        targetRoles={formData.target_roles || []}
+        onToggle={toggleRole}
+        onRefresh={() => run(undefined, { addDirect: 0 })}
+        isRefreshing={isRunning}
+        hasCv={hasCv}
+      />
 
       {/* Formulario modular compartido */}
       <div className="p-6 rounded-2xl bg-white dark:bg-ink-surface border border-gray-200/80 dark:border-ink-border shadow-sm">

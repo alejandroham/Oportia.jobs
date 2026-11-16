@@ -5,6 +5,22 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
 
 ---
 
+## [1.3.6] - 2026-11-16 — *Qué busco y Mis logros con IA, también desde Opi*
+
+### 🎯 "Qué busco" y "Mis logros" con IA, también desde Opi
+- **Cargos afines con su resumen:** `POST /api/profile/career-insights` hace **una sola consulta a la IA** que entrega dos cosas.
+  - **Cargos** en tres tipos: experiencia directa, siguiente paso y habilidades transferibles. Cada uno trae un **resumen** de por qué calza y la evidencia del CV, nunca por debajo del nivel de la persona.
+  - **Logros en formato STAR**, solo con hechos del CV y sin inventar cifras.
+- **Después de analizar el CV con IA,** en Mi perfil y en la guía de inicio:
+  - se agregan solos hasta 3 cargos de experiencia directa a "Qué busco";
+  - todas las sugerencias quedan visibles, con su resumen;
+  - los logros se agregan a "Mis logros", sin duplicar.
+- **"Qué busco":** nuevo panel "Cargos sugeridos según tu experiencia", con Agregar o quitar ("Lo busco") y "Actualizar con IA".
+- **"Mis logros":** botón "Extraer logros de mi CV con IA". Cada logro muestra su origen: CV, Opi o manual.
+- **Opi actualiza "Qué busco" y "Mis logros"** desde el chat, siempre con confirmación: "busco trabajo de…", "agrega … a lo que busco", "ya no busco…" y "agrega un logro: …".
+- **Sin IA:** las sugerencias parten de los cargos que ya ejerciste ("Ejerciste este cargo en…") y los logros, de las viñetas de tu experiencia.
+- **Pruebas:** `test_career_insights.py`, `careerInsights.test.ts` y el e2e `career-insights.spec.ts`. **Manual** actualizado (secciones 4, 5 y 9).
+
 ## [1.3.5] - 2026-11-16 — *Análisis del CV con IA, experiencia editable y la IA antes del CV*
 
 ### 📄 Análisis del CV corregido (feedback: experiencia, títulos y cursos mal clasificados)

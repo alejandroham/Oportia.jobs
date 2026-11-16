@@ -10,6 +10,7 @@ import type { CandidateProfile, LLMSettings } from '../../types';
 import { OnboardingStep1CV } from './OnboardingStep1CV';
 import { OnboardingStep2Preferences } from './OnboardingStep2Preferences';
 import { OnboardingStep3AI } from './OnboardingStep3AI';
+import { useCareerInsights } from '../../state/useCareerInsights';
 
 export interface OnboardingWizardProps {
   isOpen: boolean;
@@ -35,6 +36,7 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
   } = useAppStore();
 
   const [step, setStep] = useState<1 | 2 | 3>(1);
+  const careerInsights = useCareerInsights();
   const [isUploading, setIsUploading] = useState(false);
 
   // Step 1: Editable summary state
@@ -80,8 +82,14 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
       if (detectedTitle && targetRoles.length === 0) {
         setTargetRoles([detectedTitle]);
       }
-      if (res.method === 'ia') toast.success('La IA ordenó tu experiencia, tus títulos y tus cursos.', 'CV analizado');
-      else toast.info(res.note || 'Analizamos tu CV sin IA (lectura básica).', 'CV analizado sin IA');
+      if (res.method === 'ia') {
+        toast.success('La IA ordenó tu experiencia, tus títulos y tus cursos.', 'CV analizado');
+        // Cargos afines → paso 3 ("Qué buscas") ya los trae; logros → Mis logros.
+        const insights = await careerInsights.run(res.profile, { addDirect: 3 });
+        const direct = (insights?.roles || []).filter((r) => r.category === 'directo').map((r) => r.title);
+        if (direct.length) setTargetRoles((prev) => Array.from(new Set([...prev, ...direct.slice(0, 3)])));
+      }
+      if (res.method !== 'ia') toast.info(res.note || 'Analizamos tu CV sin IA (lectura básica).', 'CV analizado sin IA');
     } catch (err: any) {
       toast.error('Error al procesar CV: ' + (err?.message || err));
     } finally {

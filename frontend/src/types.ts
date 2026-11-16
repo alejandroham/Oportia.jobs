@@ -145,6 +145,22 @@ export interface MemoryStats {
   last_consolidated_at?: string;
 }
 
+export interface SuggestedRole {
+  title: string;
+  category: 'directo' | 'ascenso' | 'transferible' | string;
+  category_label: string;
+  summary: string;
+  evidence: string[];
+  level?: string;
+}
+
+export interface CareerInsights {
+  roles: SuggestedRole[];
+  achievements: LearnedStarStory[];
+  method: 'ia' | 'reglas';
+  note?: string | null;
+}
+
 export interface UserPreferences {
   target_roles: string[];
   preferred_locations: string[];
@@ -159,6 +175,8 @@ export interface UserPreferences {
   auto_learned_insights: string[];
   profile_dna?: ProfileDNA;
   learned_star_stories?: LearnedStarStory[];
+  /** Cargos afines sugeridos por la IA según tu experiencia, con su resumen. */
+  suggested_roles?: SuggestedRole[];
   industry_insights?: string[];
   memory_stats?: MemoryStats;
   updated_at?: string;
