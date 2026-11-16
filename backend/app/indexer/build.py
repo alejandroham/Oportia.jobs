@@ -37,7 +37,8 @@ logger = logging.getLogger("oportia.indexer")
 
 INDEX_VERSION = 1
 COMPANY_BOARD_SOURCES = set(_COMPANY_FETCHERS)
-MAX_AGE_DAYS = 30
+MAX_AGE_DAYS = 30   # con fecha de publicación y sin fecha de cierre
+NO_DATE_DAYS = 45   # sin ninguna fecha: desde que Oportia la vio por primera vez
 DESCRIPTION_CHARS = 500
 
 # Por área: consultas para recolectar y palabras para clasificar (el cargo pesa el doble).
@@ -185,21 +186,34 @@ def _parse_date(value: Optional[str]) -> Optional[datetime]:
         return None
 
 
-def is_current(job: JobPosting, now: datetime) -> bool:
+def compute_expiry(job: JobPosting, first_seen: str, now: datetime) -> Tuple[str, bool]:
+    """
+    Fecha de vencimiento (AAAA-MM-DD) y si es estimada:
+    1. Fecha de cierre de la oferta (real).
+    2. Publicación + 30 días (estimada).
+    3. Sin fechas: primera vez que Oportia la vio + 45 días (estimada).
+    Portales de empresas: la oferta sigue abierta mientras esté publicada, así que el plazo de 45 días
+    se renueva (mínimo una semana desde hoy).
+    """
     deadline = _parse_date(job.deadline)
     if deadline:
-        # Con fecha de cierre manda el cierre (una convocatoria abierta hace 40 días sigue vigente).
-        return deadline.date() >= now.date()
-    # En los portales de empresas, una oferta publicada está abierta, aunque sea antigua.
+        return deadline.strftime("%Y-%m-%d"), False
+    seen = _parse_date(first_seen) or now
     if job.source in COMPANY_BOARD_SOURCES:
-        return True
+        return max(seen + timedelta(days=NO_DATE_DAYS), now + timedelta(days=7)).strftime("%Y-%m-%d"), True
     posted = _parse_date(job.posted_at)
-    if posted and posted < now - timedelta(days=MAX_AGE_DAYS):
-        return False
-    return True
+    if posted:
+        return (posted + timedelta(days=MAX_AGE_DAYS)).strftime("%Y-%m-%d"), True
+    return (seen + timedelta(days=NO_DATE_DAYS)).strftime("%Y-%m-%d"), True
 
 
-def compact(job: JobPosting, first_seen: str) -> Dict[str, object]:
+def is_current(job: JobPosting, now: datetime, first_seen: Optional[str] = None) -> bool:
+    expires, _ = compute_expiry(job, first_seen or now.strftime("%Y-%m-%d"), now)
+    return expires >= now.strftime("%Y-%m-%d")
+
+
+def compact(job: JobPosting, first_seen: str, now: Optional[datetime] = None) -> Dict[str, object]:
+    expires_at, estimated = compute_expiry(job, first_seen, now or datetime.now(timezone.utc))
     record = {
         "id": stable_id(job),
         "title": job.title.strip(),
@@ -219,8 +233,10 @@ def compact(job: JobPosting, first_seen: str) -> Dict[str, object]:
         "description": re.sub(r"\s+", " ", job.description or "").strip()[:DESCRIPTION_CHARS],
         "profession_category": job.profession_category or classify_area(job.title, f"{' '.join(job.tags or [])} {job.description or ''}"),
         "discovered_at": first_seen,
+        "expires_at": expires_at,
+        "expires_estimated": estimated,
     }
-    return {k: v for k, v in record.items() if v not in (None, "", [])}
+    return {k: v for k, v in record.items() if v is not None and v != "" and v != []}
 
 
 def merge_jobs(raw: Iterable[JobPosting], previous: Optional[Dict] = None, now: Optional[datetime] = None) -> List[Dict[str, object]]:
@@ -230,15 +246,16 @@ def merge_jobs(raw: Iterable[JobPosting], previous: Optional[Dict] = None, now: 
     today = now.strftime("%Y-%m-%d")
     seen_ids, seen_keys, out = set(), set(), []
     for job in raw:
-        if not job.title or not is_current(job, now):
+        if not job.title:
             continue
         jid, key = stable_id(job), _dedupe_key(job)
-        if jid in seen_ids or key in seen_keys:
+        first_seen = first_seen_by_id.get(jid) or today
+        if jid in seen_ids or key in seen_keys or not is_current(job, now, first_seen):
             continue
         seen_ids.add(jid)
         seen_keys.add(key)
         ChilePortalsScraper._annotate_location([job])
-        out.append(compact(job, first_seen_by_id.get(jid) or today))
+        out.append(compact(job, first_seen, now))
     return out
 
 

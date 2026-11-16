@@ -2,6 +2,8 @@ import React from 'react';
 import type { JobPosting } from '../../types';
 import { FitScoreBadge } from '../shared/FitScoreBadge';
 import { getSourceLabel, safeExternalUrl } from '../../utils/jobSource';
+import { ExpiryBadge } from '../../components/ui/ExpiryBadge';
+import { parseDay } from '../../utils/jobExpiry';
 import { Bookmark, BookmarkCheck, ExternalLink, X, MapPin, Building2, DollarSign } from 'lucide-react';
 
 interface JobCardProps {
@@ -29,8 +31,9 @@ export const JobCard: React.FC<JobCardProps> = ({
   const formatRelativeDate = (dateStr?: string) => {
     if (!dateStr) return '';
     try {
-      const diffMs = Date.now() - new Date(dateStr).getTime();
-      const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+      const day = parseDay(dateStr);
+      if (!day) return '';
+      const diffDays = Math.floor((Date.now() - day.getTime()) / (1000 * 60 * 60 * 24));
       if (diffDays <= 0) return 'Hoy';
       if (diffDays === 1) return 'Ayer';
       if (diffDays < 7) return `Hace ${diffDays} d`;
@@ -126,6 +129,8 @@ export const JobCard: React.FC<JobCardProps> = ({
             </>
           )}
         </div>
+
+        <ExpiryBadge job={job} className="self-start" />
 
         {profileMatches.length > 0 && (
           <p className="text-xs text-emerald-800 dark:text-emerald-200">

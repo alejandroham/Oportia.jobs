@@ -211,6 +211,9 @@ export interface JobPosting {
   posted_at?: string;
   deadline?: string;
   discovered_at: string;
+  /** Vencimiento AAAA-MM-DD calculado por el índice diario (real o estimado). */
+  expires_at?: string | null;
+  expires_estimated?: boolean;
   tracked_at?: string;
   applied_date?: string;
   reminder_date?: string;

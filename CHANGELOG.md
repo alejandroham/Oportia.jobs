@@ -5,6 +5,30 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
 
 ---
 
+## [1.3.1] - 2026-11-17 — *Fecha de vencimiento de las ofertas y manual actualizado*
+
+### 📅 Vencimiento de las ofertas
+- **Cada oferta tiene fecha de vencimiento.** Se muestra en la tarjeta de Buscar empleo y en Mis postulaciones, tanto en la lista como en el detalle:
+  - **Fecha de cierre publicada:** "Cierra el 25 nov 2026".
+  - **Solo fecha de publicación:** publicación + 30 días, "Vence aprox. el … (estimado)".
+  - **Sin ninguna fecha** (por ejemplo, ChileTrabajos): **45 días desde que Oportia la indexó**, "(estimado)".
+  - **Portales de empresas:** el plazo se renueva mientras la empresa siga publicando la oferta.
+  - La etiqueta se pone ámbar cuando quedan 3 días o menos.
+- **Las ofertas vencidas salen del índice diario, del correo y de Buscar empleo.** Las que guardaste siguen en Mis postulaciones con "Vencida el …".
+- El índice diario incluye `expires_at` y `expires_estimated` en cada oferta.
+
+### 🐞 Correcciones
+- "Hace NaN sem" en la fecha de publicación de Empleos Públicos: su hora venía como "T0:00:00", que el navegador no reconoce. Ahora se normaliza en el servidor y se lee bien en la app.
+
+### 📘 Manual de usuario 1.3.1
+- Nuevas secciones y capturas:
+  - Índice de hoy, "Buscar también en vivo" y "Para ti".
+  - "Calza con tu perfil" y vencimiento de las ofertas.
+  - Brechas con evidencia y cursos de todas las áreas.
+  - Palabras clave, enlaces e idiomas en Mi perfil, y cambios al perfil desde el chat con Opi.
+  - Índice diario y correo, para quien mantiene Oportia.
+- Preguntas frecuentes nuevas: ofertas que desaparecen, qué significa "(estimado)" y por qué no aparecen Computrabajo ni Laborum.
+
 ## [1.3.0] - 2026-11-17 — *Índice diario de ofertas, correo de avisos y perfil completo*
 
 ### 🏢 Ofertas directas de empresas y fuentes que lo permiten (Etapa E de la versión 1.3)

@@ -180,3 +180,24 @@ def test_profile_keywords_search_index_for_you():
     assert "Psicólogo" not in titles
     assert titles[0] == "Encargado de Redes y Soporte TI"  # calza con más términos
     assert "Analista de Mesa de Ayuda" in titles
+
+
+def test_expiry_rules_real_estimated_and_45_days_without_dates():
+    from app.indexer.build import compute_expiry
+    # 1) Fecha de cierre real.
+    assert compute_expiry(mk("A", deadline="2026-11-20T12:00:00"), "2026-11-01", NOW) == ("2026-11-20", False)
+    # 2) Solo publicación: +30 días, estimada.
+    assert compute_expiry(mk("B", posted_at="2026-11-01"), "2026-11-05", NOW) == ("2026-12-01", True)
+    # 3) Sin fechas: primera vez vista + 45 días, estimada.
+    assert compute_expiry(mk("C"), "2026-11-10", NOW) == ("2026-12-25", True)
+    # Portal de empresa: se renueva mientras siga publicada (mínimo una semana).
+    assert compute_expiry(mk("D", source="lever", posted_at="2024-09-03"), "2026-09-01", NOW) == ("2026-11-23", True)
+
+
+def test_offers_without_dates_leave_the_index_after_45_days():
+    job = mk("Maestro de obras", url="https://ct.cl/9")
+    old = {"jobs": [{"id": stable_id(job), "discovered_at": "2026-09-30"}]}   # 47 días antes
+    recent = {"jobs": [{"id": stable_id(job), "discovered_at": "2026-10-10"}]}
+    assert merge_jobs([job], old, NOW) == []
+    kept = merge_jobs([job], recent, NOW)
+    assert kept[0]["expires_at"] == "2026-11-24" and kept[0]["expires_estimated"] is True

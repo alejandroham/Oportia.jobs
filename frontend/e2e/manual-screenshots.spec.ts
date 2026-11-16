@@ -14,6 +14,8 @@ import { fileURLToPath } from 'node:url';
 
 const OUT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../docs/manual/img');
 const now = new Date().toISOString();
+/** Fecha AAAA-MM-DD a `n` días de hoy (para que las etiquetas de vencimiento se vean siempre igual). */
+const inDays = (n: number) => new Date(Date.now() + n * 86_400_000).toISOString().slice(0, 10);
 
 const profile = {
   name: 'Paula Rojas',
@@ -63,6 +65,7 @@ const profile = {
     { institution: 'Instituto Profesional Ejemplo', degree: 'Técnico de Nivel Superior', field_of_study: 'Enfermería', graduation_year: '2017' }
   ],
   certifications: ['Curso IAAS (Infecciones Asociadas a la Atención de Salud)', 'Soporte Vital Básico'],
+  keywords: ['TENS', 'Urgencia', 'Signos vitales', 'Curaciones', 'Registro clínico'],
   updated_at: now
 };
 
@@ -85,7 +88,7 @@ const job = (id: string, title: string, company: string, location: string, extra
   modality: 'Presencial',
   region: 'Región de Valparaíso',
   description: `${title} en ${company}. Turnos rotativos, atención de pacientes y registro clínico. Requisito: título de TENS y registro en la Superintendencia de Salud.`,
-  source: 'demo',
+  source: 'empleospublicos',
   tags: ['salud'],
   discovered_at: now,
   status: 'discovered',
@@ -93,17 +96,19 @@ const job = (id: string, title: string, company: string, location: string, extra
 });
 
 const searchResults = [
-  job('d1', 'Técnico en Enfermería (TENS) — Urgencia', 'Clínica Costa Azul (ficticia)', 'Viña del Mar, Región de Valparaíso', { salary_range: '$750.000 - $850.000 CLP', fit_score: 88 }),
-  job('d2', 'TENS para Hospitalización Adultos', 'Hospital Base Los Aromos (ficticio)', 'Quilpué, Región de Valparaíso', { fit_score: 81 }),
-  job('d3', 'Técnico Paramédico — CESFAM', 'CESFAM Cerro Alegre (ficticio)', 'Valparaíso, Región de Valparaíso'),
-  job('d4', 'Asistente de Enfermería — Turno noche', 'Residencia Mar y Sol (ficticia)', 'Concón, Región de Valparaíso', { fit_score: 64 }),
-  job('d5', 'Registered Nurse Assistant (Remote triage)', 'Telesalud Ejemplo (ficticia)', 'Remoto', { is_remote: true, modality: 'Remoto' }),
-  job('d6', 'TENS Pabellón', 'Clínica Costa Azul (ficticia)', 'Viña del Mar, Región de Valparaíso')
+  job('d1', 'Técnico en Enfermería (TENS) — Urgencia', 'Clínica Costa Azul (ficticia)', 'Viña del Mar, Región de Valparaíso', { salary_range: '$750.000 - $850.000 CLP', fit_score: 88, posted_at: inDays(-3), deadline: inDays(12) }),
+  job('d2', 'TENS para Hospitalización Adultos', 'Hospital Base Los Aromos (ficticio)', 'Quilpué, Región de Valparaíso', { fit_score: 81, posted_at: inDays(-5), deadline: inDays(2) }),
+  job('d3', 'Técnico Paramédico — CESFAM', 'CESFAM Cerro Alegre (ficticio)', 'Valparaíso, Región de Valparaíso', { source: 'chiletrabajos', discovered_at: inDays(-4), expires_at: inDays(41), expires_estimated: true }),
+  job('d4', 'Asistente de Enfermería — Turno noche', 'Residencia Mar y Sol (ficticia)', 'Concón, Región de Valparaíso', { fit_score: 64, source: 'getonbrd', posted_at: inDays(-8) }),
+  job('d5', 'Registered Nurse Assistant (Remote triage)', 'Telesalud Ejemplo (ficticia)', 'Remoto', { is_remote: true, modality: 'Remoto', source: 'lever', posted_at: inDays(-20), expires_at: inDays(25), expires_estimated: true }),
+  job('d6', 'TENS Pabellón', 'Clínica Costa Azul (ficticia)', 'Viña del Mar, Región de Valparaíso', { posted_at: inDays(-1), deadline: inDays(20) })
 ];
 
 const tracked = job('t1', 'TENS de Urgencia — Reemplazo', 'Clínica Bahía Serena (ficticia)', 'Valparaíso, Región de Valparaíso', {
   status: 'ready_to_send',
   tracked_at: now,
+  posted_at: inDays(-2),
+  deadline: inDays(9),
   fit_score: 86,
   tailored_cv_markdown:
     '# Paula Rojas\n**Técnico en Enfermería (TENS)** | Viña del Mar | paula.rojas@ejemplo.cl\n\n## Perfil profesional\nTENS con 6 años en urgencia, acostumbrada a la alta demanda y al registro clínico riguroso.\n\n## Competencias clave\n- Categorización y apoyo en urgencia\n- Toma de signos vitales y curaciones\n- Registro clínico\n\n## Experiencia laboral\n### TENS de Urgencia — Clínica Costa Azul\n*2021 – Actual · Viña del Mar*\n- Apoyo en la atención de más de 40 pacientes por turno.\n- Capacitación de 5 técnicos nuevos en protocolos de categorización.\n\n## Educación\n- **Técnico de Nivel Superior en Enfermería**, Instituto Profesional Ejemplo (2017)',
@@ -121,6 +126,18 @@ const application = {
   ats_score: 86,
   ats_feedback: ['Palabras clave de urgencia bien representadas'],
   created_at: now
+};
+
+const gapsResponse = {
+  method: 'reglas',
+  jobs_analyzed: 3,
+  items: [
+    { requirement: 'Licencia de conducir clase B', status: 'brecha', evidence: null, job_titles: ['TENS de Urgencia — Reemplazo', 'TENS para Hospitalización Adultos'], area: 'General', course_query: 'Licencia de conducir clase B' },
+    { requirement: 'Toma de muestras', status: 'brecha', evidence: null, job_titles: ['TENS para Hospitalización Adultos'], area: 'Salud', course_query: 'Toma de muestras' },
+    { requirement: 'RCP', status: 'parcial', evidence: 'Certificación: Soporte Vital Básico', job_titles: ['TENS de Urgencia — Reemplazo'], area: 'Salud', course_query: 'RCP' },
+    { requirement: 'IAAS', status: 'cumple', evidence: 'Certificación: Curso IAAS (Infecciones Asociadas a la Atención de Salud)', job_titles: ['TENS de Urgencia — Reemplazo', 'TENS Pabellón'], area: 'Salud', course_query: 'IAAS' },
+    { requirement: 'Urgencia', status: 'cumple', evidence: 'Experiencia: TENS de Urgencia en Clínica Costa Azul (ficticia)', job_titles: ['TENS de Urgencia — Reemplazo'], area: 'Salud', course_query: 'Urgencia' }
+  ]
 };
 
 const settingsResponse = {
@@ -149,8 +166,18 @@ async function mockApi(page: Page) {
     route.fulfill({
       status: 200,
       contentType: 'application/json',
-      body: JSON.stringify({ jobs: searchResults, sources_failed: [], total: searchResults.length })
+      body: JSON.stringify({
+        jobs: searchResults,
+        sources_failed: [],
+        total: searchResults.length,
+        from_index: true,
+        index_generated_at: now,
+        index_count: 742
+      })
     })
+  );
+  await page.route('**/api/coach/gaps', (route) =>
+    route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(gapsResponse) })
   );
 }
 

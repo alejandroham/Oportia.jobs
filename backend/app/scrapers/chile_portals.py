@@ -429,6 +429,9 @@ class EmpleosPublicosScraper(BaseScraper):
             if len(d_parts) == 3:
                 day, month, year = d_parts
                 time_part = parts[1] if len(parts) > 1 else "00:00:00"
+                # "0:00:00" -> "00:00:00": los navegadores no entienden la hora de un dígito.
+                hms = (time_part.split(":") + ["00", "00"])[:3]
+                time_part = ":".join(x.zfill(2) for x in hms)
                 return f"{year}-{month.zfill(2)}-{day.zfill(2)}T{time_part}"
         except Exception:
             pass

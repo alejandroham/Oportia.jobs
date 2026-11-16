@@ -1,6 +1,6 @@
 # Manual de usuario — Oportia Jobs IA
 
-> Versión 1.2.0 · Guía paso a paso para encontrar trabajo con Oportia y Opi, tu copiloto.
+> Versión 1.3.1 · Guía paso a paso para encontrar trabajo con Oportia y Opi, tu copiloto.
 >
 > Las capturas muestran a **Paula Rojas**, una persona de demostración **ficticia** (Técnico en Enfermería). Las empresas que aparecen también son ficticias.
 
@@ -19,7 +19,8 @@
 9. [Opi, tu copiloto](#9-opi-tu-copiloto)
 10. [IA gratuita o tu propia clave](#10-ia-gratuita-o-tu-propia-clave)
 11. [Privacidad y respaldo de tus datos](#11-privacidad-y-respaldo-de-tus-datos)
-12. [Preguntas frecuentes](#12-preguntas-frecuentes)
+12. [Para quien mantiene Oportia: índice diario y correo](#12-para-quien-mantiene-oportia-índice-diario-y-correo)
+13. [Preguntas frecuentes](#13-preguntas-frecuentes)
 
 ---
 
@@ -27,7 +28,8 @@
 
 Oportia te ayuda a buscar trabajo **en cualquier área**: salud, educación, comercio, construcción, logística, administración, tecnología, sector público y oficios.
 
-- **Busca** ofertas a la vez en LinkedIn Chile, Computrabajo, ChileTrabajos, Laborum, Empleos Públicos y GetOnBoard, además de ofertas remotas.
+- **Busca al instante** en un **índice de ofertas de Chile que se actualiza cada mañana**. Viene de Empleos Públicos, GetOnBoard, los portales de empleo de las propias empresas y ChileTrabajos. Si quieres, también buscas **en vivo** en esos portales, en LinkedIn Chile y en sitios de trabajo remoto.
+- **Te muestra cuándo vence cada oferta** y oculta las que ya cerraron.
 - **Adapta** tu CV y tu carta de presentación a cada oferta y te deja **descargarlos en PDF**.
 - **Te prepara** para la entrevista y te muestra qué habilidades te conviene reforzar.
 - **No necesitas crear una cuenta**: tus datos se guardan en tu navegador.
@@ -84,8 +86,15 @@ Oportia tiene **modo claro y modo oscuro**. Cámbialo en **Ajustes → Aparienci
 En **Mi perfil → Mi CV** puedes:
 
 1. **Subir CV (PDF/Word)** para cargarlo o reemplazarlo.
-2. **Editar** tus datos de contacto, titular, resumen, experiencia, habilidades y educación.
+2. **Editar** tus datos por secciones: contacto y **enlaces** (LinkedIn, portafolio, GitHub u otros), profesión y titular, experiencia, **varios títulos**, habilidades, **idiomas con nivel** y **Tecnologías y palabras clave**.
 3. Pulsar **Guardar cambios**.
+
+**Tecnologías y palabras clave.** Son los términos con los que te buscaría una empresa, por ejemplo "TENS", "Curaciones" o "Soporte TI".
+- Al subir tu CV, Oportia agrega solas las palabras de tu área que **aparecen en tu CV**. Debajo te sugiere otras para que elijas.
+- Oportia las usa para mostrarte ofertas **"Para ti"** y para marcar en cada oferta lo que **calza con tu perfil**.
+- Con **Copiar para el aviso por correo** las copias para el correo diario de ofertas (ver la [sección 12](#12-para-quien-mantiene-oportia-índice-diario-y-correo)).
+
+**También puedes actualizar tu perfil conversando con Opi.** Por ejemplo: "agrega Excel a mis habilidades", "tengo un diplomado en Gestión en Salud" o "mi LinkedIn es …". Opi te muestra el cambio y lo guarda solo si pulsas **Sí, guardar en mi perfil**.
 
 ![Mi perfil](manual/img/06-mi-perfil.jpg)
 
@@ -112,10 +121,32 @@ En **Mi perfil → Qué busco** defines los cargos objetivo, tu región y comuna
 ## 6. Buscar empleo
 
 1. Escribe el cargo **como lo dirías tú**: "enfermera", "vendedor", "jefe de bodega", "educadora de párvulos".
-2. Pulsa **Buscar**. Opi consulta los portales al mismo tiempo; demora unos segundos.
+   - **Si no escribes nada**, Oportia busca ofertas **"Para ti"**, con tus palabras clave, tu profesión y tus habilidades.
+2. Pulsa **Buscar**. Las ofertas llegan **al instante desde el índice de hoy**: verás el aviso **"Resultados del índice de hoy"**.
+   - Para ver también lo que se publicó después, pulsa **Buscar también en vivo**. Opi consulta los portales al mismo tiempo; demora unos segundos.
+   - Si el índice tiene pocas ofertas para tu búsqueda, Oportia busca en vivo por su cuenta.
 3. Filtra por modalidad (presencial, remoto), región ("Todo Chile" o "Solo mi región") u ordena por compatibilidad.
+   - En **Más filtros → Fuente** puedes ver solo las ofertas de **Portales de empresas**, **Empleos Públicos**, GetOnBoard, ChileTrabajos o LinkedIn.
 
 Oportia reconoce **sinónimos y equivalentes en inglés**: si buscas "enfermera" también encuentra "Técnico en Enfermería", "TENS" o "Registered Nurse". La etiqueta **Tu región** marca las ofertas cercanas a ti.
+
+Cada tarjeta muestra:
+- **Cuándo vence la oferta** (lo explicamos abajo).
+- **Calza con tu perfil:** las palabras de tu perfil que aparecen en la oferta. "Mayor compatibilidad" usa esta afinidad cuando la oferta aún no tiene evaluación con IA.
+- **Fuente:** dónde se publicó la oferta, con el enlace **Ver oferta original**.
+
+### ¿Cuándo vence una oferta?
+
+| Lo que trae la oferta | Fecha que muestra Oportia | Ejemplo |
+|---|---|---|
+| Fecha de cierre (por ejemplo, Empleos Públicos) | Esa fecha | **Cierra el 25 nov 2026** |
+| Solo fecha de publicación | **Publicación + 30 días** | **Vence aprox. el 16 dic 2026 (estimado)** |
+| Ninguna fecha | **45 días desde que Oportia la encontró** | **Vence aprox. el 31 dic 2026 (estimado)** |
+
+- Si la oferta es del portal de una empresa, el plazo se renueva mientras la empresa la siga publicando.
+- La etiqueta se pone **ámbar** cuando quedan 3 días o menos.
+- Cuando una oferta vence, **desaparece de Buscar empleo** y del índice diario. Si la habías **guardado**, sigue en Mis postulaciones con la etiqueta **"Vencida el …"**, para que no pierdas tu historial.
+- "(estimado)" significa que la oferta no publicó fecha de cierre. **Revisa siempre la fecha en el aviso original antes de postular.**
 
 ![Buscar empleo](manual/img/09-buscar-empleo.jpg)
 
@@ -136,6 +167,10 @@ El menú **⋮** junto a "Buscar" tiene más opciones: **Importar oferta por URL
 ## 7. Mis postulaciones: CV, carta y entrevista
 
 Aquí sigues cada proceso. Filtra por estado (Guardadas, Postuladas, En entrevista, Oferta, Cerradas) y cambia el **Estado** de cada postulación a medida que avanza.
+
+Cada postulación muestra **cuándo vence la oferta**, en la lista y en el detalle, con las mismas reglas de la [sección 6](#cuándo-vence-una-oferta): "Cierra el …", "Vence aprox. el … (estimado)" o **"Vencida el …"**.
+
+**Postular con CV adaptado.** En el detalle de una oferta, **Postular con CV adaptado** la guarda aquí y prepara tu CV y tu carta para esa oferta. Después solo revisas y postulas en el enlace oficial.
 
 Cada postulación tiene tres pestañas:
 
@@ -168,8 +203,12 @@ Revisa la línea de tiempo del proceso (evaluaciones, documentos, postulación) 
 
 **Aprender** te ayuda a cerrar brechas para las ofertas que te interesan:
 
-- **Mis brechas**: habilidades que piden las ofertas y que aún no aparecen en tu CV.
-- **Cursos**: cursos recomendados (busca por tema, por ejemplo "Excel" o "Prevención de riesgos").
+- **Mis brechas**: Oportia compara los requisitos de las ofertas que **guardaste o evaluaste** (hasta 8) con tu CV:
+  - ✅ **Cumples**, citando la evidencia de tu CV, por ejemplo "Certificación: Curso IAAS".
+  - 🟡 **En parte o transferible**: tienes algo parecido.
+  - ❌ **Brecha**: no aparece en tu CV.
+  - Con IA, la comparación es más fina. Sin IA, se usan reglas para todas las áreas.
+- **Cursos**: en cada brecha, **Ver cursos y capacitaciones** abre búsquedas en SENCE y OTEC, ChileValora, Coursera y edX. Cuando termines un curso, pulsa **Ya lo terminé** y Oportia lo suma a tus certificaciones.
 - **Mi ruta**: un plan de estudio hacia el cargo que quieres.
 - **Practicar**: desafíos prácticos evaluados con IA.
 
@@ -231,13 +270,34 @@ Más detalles en la [Política de Privacidad](../PRIVACY.md) (Ley N° 21.719).
 
 ---
 
-## 12. Preguntas frecuentes
+## 12. Para quien mantiene Oportia: índice diario y correo
+
+Cada mañana, a las 08:00 de Chile, una tarea automática arma el **índice de ofertas** y, si está configurado, envía un **correo con las ofertas nuevas del día**.
+- El correo trae solo ofertas que no habías recibido, máximo 2 por empresa, con enlace a la fuente original.
+- La dirección de correo se guarda como secreto de GitHub y nunca aparece en el código.
+
+Cómo configurarlo: [docs/INDICE_DIARIO.md](INDICE_DIARIO.md).
+
+> ℹ️ Oportia **solo usa fuentes que permiten este uso**. Computrabajo y Laborum no están incluidos porque sus condiciones de uso prohíben el acceso automatizado y la reproducción de sus avisos. LinkedIn se usa solo en la búsqueda en vivo.
+
+---
+
+## 13. Preguntas frecuentes
 
 **¿Cómo guardo mi CV o mi carta en PDF?**
 Pulsa **Imprimir / Guardar PDF** y, en la ventana que se abre, elige **Guardar como PDF** como destino.
 
 **Busco y no aparecen ofertas. ¿Qué hago?**
-Prueba con un término más general ("enfermería" en vez de "enfermera de pabellón pediátrico"), revisa que el filtro de región no sea demasiado estricto y vuelve a intentar si Oportia te avisó que algún portal no respondió.
+Prueba con un término más general ("enfermería" en vez de "enfermera de pabellón pediátrico"), revisa que el filtro de región no sea demasiado estricto, pulsa **Buscar también en vivo** y vuelve a intentar si Oportia te avisó que algún portal no respondió.
+
+**Una oferta que vi ayer ya no aparece.**
+Probablemente venció: Oportia oculta las ofertas cerradas o que superaron su plazo estimado (30 días desde su publicación, o 45 desde que Oportia la encontró). Si la habías guardado, sigue en **Mis postulaciones**.
+
+**¿Qué significa "(estimado)" en la fecha?**
+Que la oferta no publicó fecha de cierre y Oportia calculó una. Confirma la fecha en el aviso original antes de postular.
+
+**¿Por qué no veo ofertas de Computrabajo o Laborum?**
+Porque sus condiciones de uso no permiten que otros sitios lean y reproduzcan sus avisos de forma automática. Puedes buscar ahí directamente e importar una oferta a Oportia con **⋮ → Importar oferta por URL**.
 
 **Me sale "El servicio de IA está descansando un momento".**
 Se acabó el cupo de la IA gratuita por hoy o Google está con alta demanda. Intenta más tarde o conecta tu propia clave en Ajustes.

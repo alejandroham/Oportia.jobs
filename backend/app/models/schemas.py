@@ -148,6 +148,8 @@ class JobPosting(BaseModel):
     posted_at: Optional[str] = None          # Fecha de publicación
     deadline: Optional[str] = None           # Fecha de término / vencimiento
     discovered_at: str = Field(default_factory=lambda: datetime.utcnow().isoformat())
+    expires_at: Optional[str] = None         # Vencimiento (AAAA-MM-DD): cierre real o estimado por Oportia
+    expires_estimated: bool = False          # True si Oportia lo estimó (sin fecha de cierre)
     tracked_at: Optional[str] = None         # Fecha de incorporación al Seguimiento
     applied_date: Optional[str] = None       # Fecha en que se envió la postulación (confirmada)
     reminder_date: Optional[str] = None      # Fecha de recordatorio / seguimiento

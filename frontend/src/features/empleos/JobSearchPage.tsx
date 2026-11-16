@@ -17,6 +17,7 @@ import { CompanyPortalsModal } from './CompanyPortalsModal';
 import { HelpCircle } from 'lucide-react';
 import { matchesQuery, normalizeText } from '../../utils/searchText';
 import { isCompanyBoardSource } from '../../utils/jobSource';
+import { getJobExpiry, parseDay } from '../../utils/jobExpiry';
 
 interface JobSearchPageProps {
   jobs: JobPosting[];
@@ -229,6 +230,8 @@ export const JobSearchPage: React.FC<JobSearchPageProps> = ({
   const filteredJobs = useMemo(() => {
     return jobs.filter((j) => {
       if (j.in_radar === false) return false;
+      // Ofertas vencidas: se ocultan si no las guardaste (las guardadas siguen en Mis postulaciones con "Vencida").
+      if ((!j.status || j.status === 'discovered') && getJobExpiry(j)?.expired) return false;
       const term = searchTerm.trim();
       const fromLastSearch = lastSearch.ids.has(j.id) && lastSearch.term === normalizeText(term);
       if (term && !fromLastSearch) {
@@ -246,7 +249,7 @@ export const JobSearchPage: React.FC<JobSearchPageProps> = ({
     }).sort((a, b) => {
       // Sin evaluación con IA se usa la afinidad con las palabras clave del perfil.
       if (sortBy === 'fit_desc') return (b.fit_score ?? matchOf(b).score) - (a.fit_score ?? matchOf(a).score);
-      if (sortBy === 'recent') return new Date(b.posted_at || b.discovered_at).getTime() - new Date(a.posted_at || a.discovered_at).getTime();
+      if (sortBy === 'recent') return (parseDay(b.posted_at || b.discovered_at)?.getTime() ?? 0) - (parseDay(a.posted_at || a.discovered_at)?.getTime() ?? 0);
       return 0;
     });
   }, [jobs, searchTerm, lastSearch, modalityFilter, regionFilter, selectedRegion, selectedSource, sortBy, userRegion, matchOf]);
