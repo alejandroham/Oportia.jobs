@@ -16,7 +16,7 @@ from typing import Optional
 import requests
 from pydantic import BaseModel, Field, field_validator, model_validator
 
-CONSENT_VERSION = "2026-11-17"
+CONSENT_VERSION = "2026-11-16"
 EMAIL_RE = re.compile(r"^[^@\s]{1,64}@[^@\s]+\.[^@\s]{2,}$")
 PHONE_RE = re.compile(r"^\+?[\d\s()-]{8,20}$")
 

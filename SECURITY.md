@@ -1,6 +1,6 @@
 # Política de Seguridad — Oportia Jobs IA
 
-**Última actualización:** 17 de noviembre de 2026
+**Última actualización:** 16 de noviembre de 2026
 **Versión de política:** 1.3.3
 
 La seguridad de la información y la protección de quienes usan **Oportia Jobs IA** son principios del diseño. Este documento indica qué versiones reciben correcciones, cómo reportar una vulnerabilidad de forma responsable y qué controles tiene la plataforma.

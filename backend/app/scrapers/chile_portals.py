@@ -9,7 +9,7 @@ Portales integrados con sus estrategias específicas:
 4. EmpleosPúblicos → API REST oficial de convocatorias del Estado (empleospublicos.cl)
 
 Computrabajo y Laborum NO se usan: sus condiciones de uso prohíben el acceso automatizado
-y la reproducción de sus avisos (revisado el 2026-11-17).
+y la reproducción de sus avisos (revisado el 2026-11-16).
 
 Principios de diseño:
 - Preferir APIs públicas oficiales sobre HTML scraping cuando estén disponibles.

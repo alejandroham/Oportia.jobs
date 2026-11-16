@@ -9,7 +9,7 @@ Todas las mañanas, a las **08:00 de Chile**, GitHub Actions junta ofertas de Ch
    - **GetOnBoard:** API oficial, con unas 90 consultas por área.
    - **Portales de empleo de empresas:** API públicas de Greenhouse, Lever, Ashby y SmartRecruiters. Solo ofertas en Chile o remotas para Latinoamérica. La lista de empresas está en `backend/app/scrapers/company_boards.py`.
    - **ChileTrabajos:** lectura moderada, una ronda al día con pausas. Sus condiciones no prohíben robots.
-   - **No se usan LinkedIn, Computrabajo ni Laborum.** Sus condiciones de uso prohíben el acceso automatizado o la reproducción de sus avisos (revisado el 17-11-2026).
+   - **No se usan LinkedIn, Computrabajo ni Laborum.** Sus condiciones de uso prohíben el acceso automatizado o la reproducción de sus avisos (revisado el 16-11-2026).
 2. **Limpia**:
    - Quita duplicados por URL y por cargo + empresa + ciudad.
    - Descarta las ofertas vencidas y las de más de 30 días sin fecha de cierre.

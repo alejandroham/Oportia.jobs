@@ -5,7 +5,7 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
 
 ---
 
-## [1.3.4] - 2026-11-17 — *Ofertas de construcción, ChileTrabajos reparado y borrado completo de datos*
+## [1.3.4] - 2026-11-16 — *Ofertas de construcción, ChileTrabajos reparado y borrado completo de datos*
 
 ### 🏗️ Construcción: ofertas para técnicos y supervisión (feedback de un técnico en construcción)
 - **ChileTrabajos volvió a funcionar.** El portal cambió su búsqueda a `/encuentra-un-empleo` y Oportia leía 0 ofertas.
@@ -26,7 +26,7 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
 - **El borrado ahora es completo.** Antes quedaban en el navegador la guía completada, la aceptación de la IA gratuita, los modelos de IA, el tiempo de uso y la invitación a opinar. Solo se conserva el tema claro u oscuro.
 - Nuevo test de extremo a extremo: `frontend/e2e/purge-data.spec.ts`.
 
-## [1.3.3] - 2026-11-17 — *Corrección de seguridad (SSRF) y protección contra spam*
+## [1.3.3] - 2026-11-16 — *Corrección de seguridad (SSRF) y protección contra spam*
 
 ### 🔒 Seguridad
 - **Corrección de SSRF en "Importar oferta por URL".** El servidor descargaba cualquier dirección, incluidas `localhost`, redes internas y los metadatos de la nube; la protección que describía `SECURITY.md` no existía en el código.
@@ -44,7 +44,7 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
   - nueva sección de configuración recomendada del repositorio.
 - **`.github/dependabot.yml`:** actualizaciones mensuales agrupadas de npm, pip (backend y raíz) y GitHub Actions.
 
-## [1.3.2] - 2026-11-17 — *Compatibilidad automática, portada renovada y opiniones*
+## [1.3.2] - 2026-11-16 — *Compatibilidad automática, portada renovada y opiniones*
 
 ### 🎯 Compatibilidad con IA automática y aviso cuando cambia tu perfil
 - **El porcentaje de compatibilidad se calcula solo.** Con la IA activa, Buscar empleo calcula el porcentaje de las ofertas visibles apenas aparecen (una consulta cada 15 ofertas) y las ordena por compatibilidad, sin pulsar "Ordenar ofertas con IA".
@@ -82,7 +82,7 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
 - **Privacidad 1.3.2:** nueva sección 9 sobre opiniones y contacto voluntario (Ley N° 21.719, transferencia internacional a Supabase en EE. UU.).
 - Nueva variable de Vercel: `SUPABASE_PUBLISHABLE_KEY`.
 
-## [1.3.1] - 2026-11-17 — *Fecha de vencimiento de las ofertas y manual actualizado*
+## [1.3.1] - 2026-11-16 — *Fecha de vencimiento de las ofertas y manual actualizado*
 
 ### 📅 Vencimiento de las ofertas
 - **Cada oferta tiene fecha de vencimiento.** Se muestra en la tarjeta de Buscar empleo y en Mis postulaciones, tanto en la lista como en el detalle:
@@ -106,7 +106,7 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
   - Índice diario y correo, para quien mantiene Oportia.
 - Preguntas frecuentes nuevas: ofertas que desaparecen, qué significa "(estimado)" y por qué no aparecen Computrabajo ni Laborum.
 
-## [1.3.0] - 2026-11-17 — *Índice diario de ofertas, correo de avisos y perfil completo*
+## [1.3.0] - 2026-11-16 — *Índice diario de ofertas, correo de avisos y perfil completo*
 
 ### 🏢 Ofertas directas de empresas y fuentes que lo permiten (Etapa E de la versión 1.3)
 - **Portales de empleo de empresas:** el índice diario suma las ofertas en Chile, o remotas para Latinoamérica, que las empresas publican en Greenhouse, Lever, Ashby y SmartRecruiters.
