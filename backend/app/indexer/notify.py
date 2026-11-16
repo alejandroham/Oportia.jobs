@@ -134,7 +134,12 @@ def send_daily_email(index: Dict) -> Optional[int]:
     api_key = (os.environ.get("RESEND_API_KEY") or "").strip()
     to = (os.environ.get("NOTIFY_EMAIL") or "").strip()
     if not api_key or not to:
-        logger.info("Aviso por correo desactivado (faltan RESEND_API_KEY o NOTIFY_EMAIL).")
+        missing = [name for name, v in (("RESEND_API_KEY", api_key), ("NOTIFY_EMAIL", to)) if not v]
+        message = f"Correo diario desactivado: falta el secreto {' y '.join(missing)} en GitHub Actions."
+        if os.environ.get("GITHUB_ACTIONS"):
+            # Se avisa con el nombre del secreto, nunca con su valor.
+            print(f"::warning title=Correo diario::{message}")
+        logger.info(message)
         return None
     keywords = (os.environ.get("NOTIFY_KEYWORDS") or "").split(",")
     built = build_email(index, keywords)
