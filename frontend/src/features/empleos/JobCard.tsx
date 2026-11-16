@@ -14,6 +14,10 @@ interface JobCardProps {
   onDiscard: (jobId: string) => void;
   /** Palabras de tu perfil que aparecen en la oferta (afinidad sin IA). */
   profileMatches?: string[];
+  /** El porcentaje se calculó con un perfil anterior. */
+  fitStale?: boolean;
+  /** La IA está calculando porcentajes en este momento. */
+  isRanking?: boolean;
 }
 
 export const JobCard: React.FC<JobCardProps> = ({
@@ -22,7 +26,9 @@ export const JobCard: React.FC<JobCardProps> = ({
   onViewDetail,
   onToggleTrack,
   onDiscard,
-  profileMatches = []
+  profileMatches = [],
+  fitStale = false,
+  isRanking = false
 }) => {
   const isTracked = job.status && job.status !== 'discovered';
   const isRegional = job.is_user_region || (userRegion && job.location?.toLowerCase().includes(userRegion.toLowerCase()));
@@ -86,7 +92,20 @@ export const JobCard: React.FC<JobCardProps> = ({
             )}
           </div>
 
-          <FitScoreBadge score={job.fit_score} size="sm" />
+          <div className="flex flex-col items-end gap-1">
+            {isRanking && (job.fit_score === undefined || job.fit_score === null) ? (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[12px] font-medium bg-brand-50 dark:bg-brand-950/40 text-brand-800 dark:text-brand-200 border border-brand-200 dark:border-brand-700/50 animate-pulse">
+                Calculando…
+              </span>
+            ) : (
+              <FitScoreBadge score={job.fit_score} size="sm" />
+            )}
+            {fitStale && (
+              <span title="Se calculó con tu perfil anterior. Usa «Actualizar porcentajes»." className="text-[11px] font-semibold text-amber-800 dark:text-amber-200">
+                Desactualizado
+              </span>
+            )}
+          </div>
         </div>
 
         {/* Título de la vacante */}

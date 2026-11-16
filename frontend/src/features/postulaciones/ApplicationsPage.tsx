@@ -8,6 +8,8 @@ import { Briefcase, Plus, Send } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { api, isAINotConnectedError, getHumanErrorMessage } from '../../api';
 import { useToast } from '../../components/Toast';
+import { useFitRanking } from '../../state/useFitRanking';
+import { StaleFitBanner } from '../../components/ui/StaleFitBanner';
 
 interface ApplicationsPageProps {
   jobs: JobPosting[];
@@ -37,6 +39,22 @@ export const ApplicationsPage: React.FC<ApplicationsPageProps> = ({
   const trackedJobs = useMemo(() => {
     return jobs.filter((j) => j.status && j.status !== 'discovered');
   }, [jobs]);
+
+  // Porcentajes de compatibilidad calculados con un perfil anterior (cambió tu experiencia o lo que Opi sabe de ti).
+  const { staleJobs, rank, aiReady, usesSharedQuota } = useFitRanking();
+  const staleTracked = useMemo(() => staleJobs.filter((j) => j.status && j.status !== 'discovered'), [staleJobs]);
+  const [isRefreshingFit, setIsRefreshingFit] = useState(false);
+  const handleRefreshFit = async () => {
+    setIsRefreshingFit(true);
+    try {
+      const n = await rank(staleTracked, usesSharedQuota ? 1 : 3);
+      toast.success(`${n} porcentajes actualizados con tu perfil actual`);
+    } catch (e) {
+      toast.error('No se pudieron actualizar: ' + getHumanErrorMessage(e));
+    } finally {
+      setIsRefreshingFit(false);
+    }
+  };
 
   // Filtrado por estado
   const filteredJobs = useMemo(() => {
@@ -240,6 +258,14 @@ export const ApplicationsPage: React.FC<ApplicationsPageProps> = ({
           </button>
         </div>
       </div>
+
+      <StaleFitBanner
+        count={staleTracked.length}
+        isUpdating={isRefreshingFit}
+        aiReady={aiReady}
+        onUpdate={handleRefreshFit}
+        onOpenSettings={() => navigate('/ajustes')}
+      />
 
       {/* Disposición Master-Detail (2 columnas en desktop, vista alterna en móvil) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">

@@ -220,6 +220,9 @@ export interface JobPosting {
 
   // Pipeline & Status (6 Etapas Estructuradas)
   fit_score?: number;
+  /** Huella del perfil con que se calculó fit_score (si cambia, el porcentaje quedó desactualizado). */
+  fit_profile_key?: string;
+  fit_scored_at?: string;
   status:
     | 'discovered'
     // Etapa 2: Evaluación

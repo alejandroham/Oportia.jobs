@@ -63,3 +63,12 @@ jobs:
           NOTIFY_FROM: ${{ secrets.NOTIFY_FROM }}
           NOTIFY_KEYWORDS: ${{ secrets.NOTIFY_KEYWORDS }}
         run: python -m app.indexer.build
+
+      - name: Borrar opiniones con más de 12 meses
+        if: steps.gate.outputs.run == 'true'
+        working-directory: ./backend
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: python -m app.feedback
+

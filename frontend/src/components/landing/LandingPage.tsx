@@ -1,7 +1,9 @@
 import React from 'react';
-import { ArrowRight, Search, ShieldCheck, Sparkles, FileText, KeyRound, Smartphone } from 'lucide-react';
+import { ArrowRight, Search, Sparkles, FileText, KeyRound, Smartphone, Lock, Briefcase, CheckCircle2, MessageSquareHeart, Heart } from 'lucide-react';
 import { OpiAvatar, type OpiExpression } from '../ui/OpiAvatar';
 import { InstallAppButton } from '../InstallApp';
+import { useFeedbackStore } from '../../state/useFeedbackStore';
+import { SPONSOR_URL } from '../feedback/FeedbackDialog';
 
 /**
  * Portada de Oportia: lo primero que ve quien llega por primera vez.
@@ -18,12 +20,12 @@ const STEPS: Array<{ expression: OpiExpression; title: string; text: string }> =
   {
     expression: 'curioso',
     title: 'Sube tu CV',
-    text: 'Opi lee tu experiencia y tus habilidades. No inventa datos: solo ordena lo que ya hiciste.'
+    text: 'Opi lee tu experiencia y tus habilidades, y todo queda guardado en tu navegador. No inventa datos: solo ordena lo que ya hiciste.'
   },
   {
     expression: 'pensando',
-    title: 'Encuentra ofertas en todo Chile',
-    text: 'Buscamos a la vez en los principales portales de empleo y te mostramos qué tan compatible eres con cada oferta.'
+    title: 'Recibe ofertas de todo Chile',
+    text: 'Cada mañana reunimos ofertas de todas las áreas, te mostramos tu compatibilidad con cada una y cuándo vencen.'
   },
   {
     expression: 'celebrando',
@@ -45,9 +47,24 @@ const AREAS = [
   'Oficios y servicios'
 ];
 
-const SOURCES = ['LinkedIn Chile', 'Computrabajo', 'ChileTrabajos', 'Laborum', 'Empleos Públicos', 'GetOnBoard'];
+const SOURCES = ['Empleos Públicos', 'GetOnBoard', 'portales de empleo de empresas', 'ChileTrabajos'];
+
+const YOU_CONTROL = [
+  'Tu CV, tu perfil y tus postulaciones se guardan en tu navegador, no en nuestros servidores.',
+  'No creas cuenta ni contraseña.',
+  'Descargas un respaldo o borras todo cuando quieras.',
+  'Tú decides qué envías a la IA y cuándo postulas.'
+];
+
+const WE_PROVIDE = [
+  'Un índice de ofertas de Chile que se actualiza cada mañana, de fuentes que permiten este uso.',
+  'Tu compatibilidad con cada oferta, calculada con IA.',
+  'La fecha de cierre de cada oferta, o una estimación si no la publica.',
+  'CV y carta adaptados a cada vacante, y preparación para la entrevista.'
+];
 
 export const LandingPage: React.FC<LandingPageProps> = ({ onStart, onExplore }) => {
+  const openFeedback = useFeedbackStore((s) => s.open);
   return (
     <div className="max-w-5xl mx-auto pb-16 space-y-16 sm:space-y-20 animate-fade-in">
       {/* Portada */}
@@ -58,11 +75,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart, onExplore }) 
             Tu talento. Tus decisiones. Tus oportunidades.
           </span>
           <h1 id="landing-title" className="text-3xl sm:text-5xl font-extrabold tracking-tight text-ink dark:text-white leading-tight">
-            Encuentra trabajo en lo tuyo, con un copiloto que te acompaña.
+            Tú manejas tu información. Nosotros te traemos las ofertas.
           </h1>
           <p className="text-base sm:text-lg text-ink-muted dark:text-ink-200 leading-relaxed max-w-2xl mx-auto md:mx-0">
-            Oportia busca ofertas en los principales portales de Chile, adapta tu CV y tu carta a cada vacante y te
-            prepara para la entrevista. Para cualquier profesión u oficio.
+            Tu CV y tus datos se quedan contigo, en tu navegador. Oportia reúne cada mañana ofertas de empleo de todo
+            Chile, te muestra qué tan compatible eres con cada una y te ayuda a postular con un CV y una carta a la medida.
+            Para cualquier profesión u oficio.
           </p>
           <div className="flex flex-col sm:flex-row items-center gap-3 justify-center md:justify-start">
             <button
@@ -83,7 +101,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart, onExplore }) 
             </button>
           </div>
           <p className="text-xs text-ink-muted dark:text-ink-300">
-            Gratis · Sin crear cuenta · Tus datos se quedan en tu navegador
+            Gratis · Sin crear cuenta · Tus datos son tuyos
           </p>
           <InstallAppButton variant="link" label="Instalar Oportia en tu celular" className="text-brand-700 dark:text-brand-300" />
         </div>
@@ -96,6 +114,43 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart, onExplore }) 
             <OpiAvatar expression="saludando" size={150} className="relative drop-shadow-xl md:hidden" />
             <OpiAvatar expression="saludando" size={240} className="relative drop-shadow-xl hidden md:block" />
           </div>
+        </div>
+      </section>
+
+      {/* Fortaleza principal: tú controlas tus datos, Oportia aporta las ofertas */}
+      <section aria-labelledby="landing-split" className="space-y-6">
+        <h2 id="landing-split" className="text-xl sm:text-2xl font-bold text-ink dark:text-white text-center">
+          Un trato claro
+        </h2>
+        <div className="grid gap-4 md:grid-cols-2">
+          <article className="p-6 rounded-3xl bg-white dark:bg-ink-surface border border-gray-200/80 dark:border-ink-border space-y-4">
+            <h3 className="flex items-center gap-2 text-base font-bold text-ink dark:text-white">
+              <Lock className="w-5 h-5 text-brand-700 dark:text-brand-300" aria-hidden="true" />
+              Tú controlas tu información
+            </h3>
+            <ul className="space-y-2.5">
+              {YOU_CONTROL.map((t) => (
+                <li key={t} className="flex items-start gap-2 text-sm text-ink-muted dark:text-ink-200">
+                  <CheckCircle2 className="w-4 h-4 mt-0.5 shrink-0 text-brand-700 dark:text-brand-300" aria-hidden="true" />
+                  {t}
+                </li>
+              ))}
+            </ul>
+          </article>
+          <article className="p-6 rounded-3xl bg-brand-50 dark:bg-brand-950/60 border border-brand-200 dark:border-brand-700/50 space-y-4">
+            <h3 className="flex items-center gap-2 text-base font-bold text-ink dark:text-white">
+              <Briefcase className="w-5 h-5 text-brand-700 dark:text-brand-300" aria-hidden="true" />
+              Oportia te trae las ofertas
+            </h3>
+            <ul className="space-y-2.5">
+              {WE_PROVIDE.map((t) => (
+                <li key={t} className="flex items-start gap-2 text-sm text-ink dark:text-gray-100">
+                  <CheckCircle2 className="w-4 h-4 mt-0.5 shrink-0 text-brand-700 dark:text-brand-300" aria-hidden="true" />
+                  {t}
+                </li>
+              ))}
+            </ul>
+          </article>
         </div>
       </section>
 
@@ -146,9 +201,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart, onExplore }) 
       <section aria-label="Características" className="grid gap-4 md:grid-cols-3">
         <article className="p-6 rounded-3xl bg-white dark:bg-ink-surface border border-gray-200/80 dark:border-ink-border space-y-3">
           <Search className="w-6 h-6 text-brand-700 dark:text-brand-300" aria-hidden="true" />
-          <h3 className="text-base font-bold text-ink dark:text-white">Un solo buscador</h3>
+          <h3 className="text-base font-bold text-ink dark:text-white">Ofertas al instante</h3>
           <p className="text-sm text-ink-muted dark:text-ink-200 leading-relaxed">
-            Consulta en paralelo {SOURCES.join(', ')}, y también ofertas remotas.
+            Cada mañana reunimos ofertas de {SOURCES.join(', ')}. Si quieres, también buscas en vivo en esos portales y en
+            LinkedIn Chile, y encuentras ofertas remotas.
           </p>
         </article>
         <article className="p-6 rounded-3xl bg-white dark:bg-ink-surface border border-gray-200/80 dark:border-ink-border space-y-3">
@@ -159,11 +215,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart, onExplore }) 
           </p>
         </article>
         <article className="p-6 rounded-3xl bg-white dark:bg-ink-surface border border-gray-200/80 dark:border-ink-border space-y-3">
-          <ShieldCheck className="w-6 h-6 text-brand-700 dark:text-brand-300" aria-hidden="true" />
-          <h3 className="text-base font-bold text-ink dark:text-white">Tus datos son tuyos</h3>
+          <Sparkles className="w-6 h-6 text-brand-700 dark:text-brand-300" aria-hidden="true" />
+          <h3 className="text-base font-bold text-ink dark:text-white">Compatibilidad automática</h3>
           <p className="text-sm text-ink-muted dark:text-ink-200 leading-relaxed">
-            Tu CV y tu perfil se guardan en tu navegador, no en nuestros servidores. Puedes exportarlos o borrarlos cuando
-            quieras.
+            Con la IA activa, cada oferta muestra tu porcentaje de compatibilidad sin que lo pidas. Si actualizas tu
+            experiencia, Oportia te avisa para recalcularlo.
           </p>
         </article>
       </section>
@@ -202,6 +258,38 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart, onExplore }) 
           </p>
         </div>
         <InstallAppButton variant="primary" label="Instalar en tu celular" className="w-full sm:w-auto" />
+      </section>
+
+      {/* Opinión y donación */}
+      <section
+        aria-labelledby="landing-feedback"
+        className="flex flex-col sm:flex-row items-center gap-5 p-6 sm:p-8 rounded-3xl bg-white dark:bg-ink-surface border border-gray-200/80 dark:border-ink-border"
+      >
+        <OpiAvatar expression="curioso" size={96} decorative />
+        <div className="space-y-2 text-center sm:text-left flex-1">
+          <h2 id="landing-feedback" className="text-lg font-bold text-ink dark:text-white">¿Qué te parece Oportia?</h2>
+          <p className="text-sm text-ink-muted dark:text-ink-200 leading-relaxed">
+            Cuéntanos qué te sirve y qué mejorarías. Si quieres, déjanos tu correo o teléfono para invitarte a una
+            entrevista, solo con tu autorización. Y si Oportia te ayuda, puedes apoyar su desarrollo.
+          </p>
+        </div>
+        <div className="flex flex-col gap-2 w-full sm:w-auto">
+          <button
+            type="button"
+            onClick={() => openFeedback('manual')}
+            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 min-h-[44px] rounded-2xl bg-brand-600 hover:bg-brand-700 text-white font-semibold text-sm cursor-pointer"
+          >
+            <MessageSquareHeart className="w-4 h-4" aria-hidden="true" /> Darnos tu opinión
+          </button>
+          <a
+            href={SPONSOR_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 min-h-[44px] rounded-2xl border border-rose-300 dark:border-rose-400/40 text-rose-700 dark:text-rose-200 font-semibold text-sm hover:bg-rose-50 dark:hover:bg-rose-500/10"
+          >
+            <Heart className="w-4 h-4" aria-hidden="true" /> Apoyar con una donación
+          </a>
+        </div>
       </section>
 
       {/* Llamado final */}

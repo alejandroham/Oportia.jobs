@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import type { JobPosting } from '../../types';
 import { Search, Building2, MapPin, ChevronRight, Bookmark } from 'lucide-react';
 import { ExpiryBadge } from '../../components/ui/ExpiryBadge';
+import { FitScoreBadge } from '../shared/FitScoreBadge';
 
 interface ApplicationListProps {
   jobs: JobPosting[];
@@ -95,7 +96,10 @@ export const ApplicationList: React.FC<ApplicationListProps> = ({
                   </span>
                 </div>
 
-                <ExpiryBadge job={job} className="mt-2" />
+                <div className="flex flex-wrap items-center gap-1.5 mt-2">
+                  <ExpiryBadge job={job} />
+                  {job.fit_score !== undefined && job.fit_score !== null && <FitScoreBadge score={job.fit_score} size="sm" />}
+                </div>
                 <div className="flex items-center justify-between text-xs text-ink-muted pt-2 mt-1 border-t border-gray-100 dark:border-ink-border/80">
                   <span className="truncate">{job.location || 'Chile'}</span>
                   <ChevronRight className="w-3.5 h-3.5 text-ink-muted" />

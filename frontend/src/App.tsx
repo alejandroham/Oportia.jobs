@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { Navbar } from './components/Navbar';
 import { JobSearchPage } from './features/empleos/JobSearchPage';
@@ -9,6 +9,9 @@ import { SettingsView } from './components/SettingsView';
 import { WelcomeHub } from './components/WelcomeHub';
 import { LandingPage } from './components/landing/LandingPage';
 import { OnboardingWizard } from './components/onboarding/OnboardingWizard';
+import { FeedbackDialog } from './components/feedback/FeedbackDialog';
+import { useFeedbackStore } from './state/useFeedbackStore';
+import { addUsageMinute, markPrompted, shouldPrompt } from './utils/feedbackPrompt';
 import { Footer } from './components/Footer';
 import { MemoryChat } from './components/MemoryChat';
 import { OpiAvatar } from './components/ui/OpiAvatar';
@@ -83,6 +86,23 @@ export function App() {
     !isLoading && (location.pathname === '/conoce-oportia' || (location.pathname === '/' && !hasCompletedOnboarding));
   const [isOnboardingOpen, setIsOnboardingOpen] = useState<boolean>(false);
   const toast = useToast();
+
+  // Invitación a opinar: tras 30-60 minutos de uso real (pestaña visible), sin interrumpir la guía,
+  // la portada ni el chat. Ver utils/feedbackPrompt.ts.
+  const isFeedbackOpen = useFeedbackStore((st) => st.isOpen);
+  const promptBlocked = useRef(false);
+  promptBlocked.current = isLandingVisible || isOnboardingOpen || isOpiChatOpen || isFeedbackOpen;
+  useEffect(() => {
+    const id = window.setInterval(() => {
+      if (document.visibilityState !== 'visible') return;
+      const minutes = addUsageMinute();
+      if (!promptBlocked.current && shouldPrompt(minutes)) {
+        markPrompted(minutes);
+        useFeedbackStore.getState().open('auto');
+      }
+    }, 60_000);
+    return () => window.clearInterval(id);
+  }, []);
 
   // Cupo de la IA gratuita: el servidor lo informa en cada respuesta que usa IA.
   useEffect(() => onSharedAIRemaining((n) => useAppStore.getState().updateSharedAIRemaining(n)), []);
@@ -329,6 +349,9 @@ export function App() {
             </div>
           </div>
         )}
+
+        {/* "¿Qué te parece Oportia?": opinión, contacto voluntario y donación */}
+        <FeedbackDialog />
 
         {/* 3-Step Guided Onboarding Wizard */}
         <OnboardingWizard

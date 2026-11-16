@@ -50,6 +50,10 @@ Esta opción publica tanto la interfaz visual (React) como el backend (FastAPI e
    - Agrega tu clave de IA (opcional, también puedes ingresarla desde la app):
      - `GEMINI_API_KEY`: Tu clave de Google Gemini.
      - `DEFAULT_PROVIDER`: `gemini`
+   - Índice diario y opiniones (opcional):
+     - `SUPABASE_URL`: la dirección del proyecto de Supabase. Sirve para leer el índice diario de ofertas (ver `docs/INDICE_DIARIO.md`).
+     - `SUPABASE_PUBLISHABLE_KEY`: la **clave publicable** del proyecto (`sb_publishable_…`, en *Project Settings → API Keys*). Permite **guardar** las opiniones de "¿Qué te parece Oportia?" en la tabla `feedback`, que solo admite agregar filas. Sin esta variable, el formulario avisa que no está disponible.
+     - **Nunca** pongas la clave secreta (`service_role` o `sb_secret_…`) en Vercel: solo va en los secretos de GitHub.
 5. **Hacer clic en "Deploy":**
    - Vercel compilará el frontend y desplegará la función serverless de Python.
    - En aproximadamente 1-2 minutos obtendrás tu URL pública oficial (ej: `https://oportia-jobs.vercel.app`).

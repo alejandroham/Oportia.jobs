@@ -5,6 +5,44 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
 
 ---
 
+## [1.3.2] - 2026-11-17 — *Compatibilidad automática, portada renovada y opiniones*
+
+### 🎯 Compatibilidad con IA automática y aviso cuando cambia tu perfil
+- **El porcentaje de compatibilidad se calcula solo.** Con la IA activa, Buscar empleo calcula el porcentaje de las ofertas visibles apenas aparecen (una consulta cada 15 ofertas) y las ordena por compatibilidad, sin pulsar "Ordenar ofertas con IA".
+  - **Con la IA gratuita** (cupo diario), solo la primera página de cada búsqueda; el resto, desde el menú.
+  - **Con clave propia**, cada página que se ve.
+  - Mientras calcula, la tarjeta muestra "Calculando…".
+- **Aviso "Tu perfil cambió".** Cada porcentaje guarda una huella de lo que se usó para calcularlo: experiencia, estudios, habilidades, palabras clave, lo que buscas y lo que Opi aprendió de ti.
+  - Si algo de eso cambia, Buscar empleo y Mis postulaciones muestran el aviso con **Actualizar porcentajes**, y las tarjetas dicen "Desactualizado".
+  - Cambiar el correo, el teléfono o los enlaces no genera el aviso.
+- **Mis postulaciones** muestra el porcentaje de compatibilidad en la lista y en el detalle.
+- **La IA ahora considera lo que Opi aprendió de ti** (`auto_learned_insights`) al calcular la compatibilidad.
+- Nuevo test de extremo a extremo: `frontend/e2e/fit-auto-rank.spec.ts`.
+
+### 🏠 Portada: "Tú manejas tu información. Nosotros te traemos las ofertas."
+- **Nuevo mensaje principal** y sección **"Un trato claro"**:
+  - **Tú controlas tu información:** el CV queda en tu navegador, sin cuenta, con respaldo y borrado cuando quieras.
+  - **Oportia te trae las ofertas:** índice diario, compatibilidad con IA, vencimiento, CV y carta a la medida.
+- **Fuentes actualizadas:** ya no menciona Computrabajo ni Laborum. Nueva tarjeta de "Compatibilidad automática".
+
+### 💬 "¿Qué te parece Oportia?": opiniones, contacto voluntario y donación
+- **Formulario** con calificación de 1 a 5, "qué te sirvió" y "qué mejorarías". Correo y teléfono **opcionales**:
+  - solo se envían si se marca la autorización de contacto para mejoras o entrevistas;
+  - el servidor y la base de datos también lo exigen.
+- **Al enviar**, Oportia muestra un código para pedir el borrado y el enlace para **apoyar con una donación** (GitHub Sponsors).
+- **Invitación automática** tras 30 a 60 minutos de uso real, con la pestaña visible:
+  - "Ahora no" vuelve a preguntar 60 minutos después, máximo 3 veces;
+  - si la persona ya respondió, no vuelve a preguntar;
+  - no interrumpe la guía, la portada ni el chat.
+- **Accesos:** "Danos tu opinión" en el pie de página y una sección en la portada.
+- **`POST /api/opinion`:** guarda en la tabla `feedback` de Supabase con la clave publicable.
+  - La tabla solo admite agregar filas; leerlas exige la clave secreta.
+  - No se guarda la IP.
+  - Límite de 5 envíos por minuto.
+- **Borrado a los 12 meses:** la tarea diaria elimina las opiniones con más de 12 meses.
+- **Privacidad 1.3.2:** nueva sección 9 sobre opiniones y contacto voluntario (Ley N° 21.719, transferencia internacional a Supabase en EE. UU.).
+- Nueva variable de Vercel: `SUPABASE_PUBLISHABLE_KEY`.
+
 ## [1.3.1] - 2026-11-17 — *Fecha de vencimiento de las ofertas y manual actualizado*
 
 ### 📅 Vencimiento de las ofertas

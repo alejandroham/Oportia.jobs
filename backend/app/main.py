@@ -47,7 +47,8 @@ from app.agents.llm_context import current_llm_credentials, LLMCredentials
 from app.utils.cache import job_search_cache
 from app.indexer.store import index_cache
 from app.indexer.search import search_index, search_index_for_profile
-from app.utils.rate_limiter import ai_rate_limiter, search_rate_limiter
+from app.utils.rate_limiter import ai_rate_limiter, search_rate_limiter, feedback_rate_limiter
+from app.feedback import FeedbackRequest, FeedbackUnavailable, save_feedback
 from app.scrapers.remote_boards import RemoteBoardsScraper
 from app.scrapers.linkedin_guest import LinkedInGuestScraper
 from app.scrapers.url_parser import extract_job_from_url
@@ -548,6 +549,16 @@ def _annotate_search_results(jobs: List[JobPosting], req: JobSearchRequest) -> N
         j.is_user_region = (geo_cat == "user_region")
         if not j.modality:
             j.modality = "Remoto" if j.is_remote else "Presencial"
+
+
+@app.post("/api/opinion", dependencies=[Depends(feedback_rate_limiter)])
+def submit_feedback(req: FeedbackRequest):
+    """Opinión sobre la app. Contacto solo con autorización. No se guarda nada en el servidor."""
+    try:
+        feedback_id = save_feedback(req, settings.VERSION)
+    except FeedbackUnavailable as e:
+        raise HTTPException(status_code=503, detail=str(e))
+    return {"ok": True, "id": feedback_id}
 
 
 @app.get("/api/jobs/index/status")

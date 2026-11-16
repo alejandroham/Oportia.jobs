@@ -166,7 +166,32 @@ export async function handleResponse<T = any>(res: Response, defaultError = 'Err
   return parsed as T;
 }
 
+export interface OpinionPayload {
+  rating: number;
+  liked?: string;
+  improve?: string;
+  contact_email?: string;
+  contact_phone?: string;
+  contact_consent: boolean;
+  trigger: 'manual' | 'auto';
+}
+
 export const api = {
+  /** "¿Qué te parece Oportia?": opinión con contacto voluntario (solo con autorización). */
+  sendOpinion: async (payload: OpinionPayload): Promise<{ ok: boolean; id: string }> => {
+    const res = await fetch(`${API_BASE}/opinion`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (res.status === 422) {
+      const data = await res.json().catch(() => ({}));
+      const msg = Array.isArray(data?.detail) ? String(data.detail[0]?.msg || '').replace(/^Value error, /, '') : '';
+      throw new ApiError(msg || 'Revisa los datos del formulario.', 'invalid', 422);
+    }
+    return handleResponse(res, 'No se pudo enviar tu opinión');
+  },
+
   // Profile
   getProfile: async (): Promise<CandidateProfile> => {
     return safeFetchJson<CandidateProfile>(`${API_BASE}/profile`, undefined, null as any);

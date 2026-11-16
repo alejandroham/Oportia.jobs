@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import type { JobPosting, CandidateProfile, FitEvaluation } from '../../types';
 import { useAppStore } from '../../state/useAppStore';
 import { api, isAINotConnectedError, getHumanErrorMessage } from '../../api';
@@ -18,6 +18,9 @@ import { HelpCircle } from 'lucide-react';
 import { matchesQuery, normalizeText } from '../../utils/searchText';
 import { isCompanyBoardSource } from '../../utils/jobSource';
 import { getJobExpiry, parseDay } from '../../utils/jobExpiry';
+import { useFitRanking, RANK_BATCH } from '../../state/useFitRanking';
+import { isFitStale, withFreshFit } from '../../utils/fitFreshness';
+import { StaleFitBanner } from '../../components/ui/StaleFitBanner';
 
 interface JobSearchPageProps {
   jobs: JobPosting[];
@@ -56,6 +59,11 @@ export const JobSearchPage: React.FC<JobSearchPageProps> = ({
   // porque el servidor ya las eligió (sinónimos, inglés, otras redacciones).
   const [lastSearch, setLastSearch] = useState<{ term: string; ids: Set<string> }>({ term: '', ids: new Set() });
   const [isBatchRanking, setIsBatchRanking] = useState(false);
+  const { fingerprint, staleJobs, rank, aiReady, hasCv, usesSharedQuota } = useFitRanking();
+  // Orden automático con IA: ofertas ya intentadas (no se repiten si fallan) y consultas por búsqueda.
+  const autoTried = useRef<Set<string>>(new Set());
+  const autoCallsThisSearch = useRef(0);
+  const autoPaused = useRef(false);
   const [sourcesFailed, setSourcesFailed] = useState<string[]>([]);
   // Si la última búsqueda vino del índice diario: fecha del índice (para ofrecer "buscar también en vivo").
   const [indexInfo, setIndexInfo] = useState<{ generatedAt: string | null; count: number } | null>(null);
@@ -74,6 +82,7 @@ export const JobSearchPage: React.FC<JobSearchPageProps> = ({
 
   // Scan / Search jobs
   const runSearch = async (live: boolean) => {
+    autoCallsThisSearch.current = 0;
     setIsScanning(true);
     try {
       const searchKw = searchTerm.trim() || (profile?.primary_profession || profile?.headline || '');
@@ -145,7 +154,7 @@ export const JobSearchPage: React.FC<JobSearchPageProps> = ({
     try {
       const evaluation = await api.evaluateJob(job, profile, preferences ?? undefined);
       setSelectedEvaluation(evaluation);
-      const updatedJob: JobPosting = { ...job, fit_score: evaluation.overall_score };
+      const updatedJob: JobPosting = withFreshFit(job, evaluation.overall_score, fingerprint);
       await addOrUpdateJob(updatedJob);
       setSelectedJobForDetail(updatedJob);
       toast.success(`Compatibilidad evaluada: ${evaluation.overall_score}%`);
@@ -161,8 +170,7 @@ export const JobSearchPage: React.FC<JobSearchPageProps> = ({
     }
   };
 
-  // "Ordenar ofertas con IA": una sola consulta para las ofertas visibles aún sin puntaje.
-  const hasCv = Boolean(profile && profile.name?.trim().toLowerCase() !== 'candidato' && (profile.experiences?.length || profile.technical_skills?.length || profile.headline));
+  // "Ordenar ofertas con IA" (menú ⋮): una consulta para las siguientes 15 ofertas sin porcentaje.
   const handleBatchRank = async () => {
     if (!hasCv || !profile) {
       toast.info('Para ordenar ofertas con IA, primero sube tu CV en Mi perfil.');
@@ -173,20 +181,17 @@ export const JobSearchPage: React.FC<JobSearchPageProps> = ({
       onOpenSettings?.();
       return;
     }
-    const pending = filteredJobs.filter((j) => j.fit_score === undefined || j.fit_score === null);
-    const batch = (pending.length ? pending : filteredJobs).slice(0, 15);
+    const pending = filteredJobs.filter((j) => j.fit_score === undefined || j.fit_score === null || isFitStale(j, fingerprint));
+    const batch = (pending.length ? pending : filteredJobs).slice(0, RANK_BATCH);
     if (batch.length === 0) {
       toast.info('Primero busca ofertas para poder ordenarlas.');
       return;
     }
     setIsBatchRanking(true);
     try {
-      const { results } = await api.rankJobs(batch, profile, preferences);
-      const scores = new Map(results.map((r) => [r.job_id, r.fit_score]));
-      const current = useAppStore.getState().jobs;
-      await setJobs(current.map((j) => (scores.has(j.id) ? { ...j, fit_score: scores.get(j.id) } : j)));
+      const n = await rank(batch);
       setSortBy('fit_desc');
-      toast.success(`${results.length} ofertas ordenadas por compatibilidad`, pending.length > 15 ? 'Vuelve a pulsar para ordenar las siguientes.' : undefined);
+      toast.success(`${n} ofertas ordenadas por compatibilidad`, pending.length > RANK_BATCH ? 'Vuelve a pulsar para ordenar las siguientes.' : undefined);
     } catch (e: any) {
       if (isAINotConnectedError(e)) {
         toast.info('Para ordenar con IA, activa la IA gratuita o conecta tu clave en Ajustes.');
@@ -194,6 +199,24 @@ export const JobSearchPage: React.FC<JobSearchPageProps> = ({
       } else {
         toast.error('Error al ordenar: ' + getHumanErrorMessage(e));
       }
+    } finally {
+      setIsBatchRanking(false);
+    }
+  };
+
+  // "Actualizar porcentajes" tras un cambio de perfil: primero las visibles y las guardadas.
+  const handleRefreshStale = async () => {
+    const visible = new Set(paginatedJobs.map((j) => j.id));
+    const ordered = [...staleJobs].sort(
+      (a, b) => Number(visible.has(b.id)) - Number(visible.has(a.id)) || Number(b.status !== 'discovered') - Number(a.status !== 'discovered')
+    );
+    setIsBatchRanking(true);
+    try {
+      const n = await rank(ordered, usesSharedQuota ? 1 : 3);
+      const left = ordered.length - n;
+      toast.success(`${n} porcentajes actualizados con tu perfil actual`, left > 0 ? `Quedan ${left}; vuelve a pulsar para seguir.` : undefined);
+    } catch (e: any) {
+      toast.error('No se pudieron actualizar: ' + getHumanErrorMessage(e));
     } finally {
       setIsBatchRanking(false);
     }
@@ -257,6 +280,27 @@ export const JobSearchPage: React.FC<JobSearchPageProps> = ({
   const totalPages = Math.ceil(filteredJobs.length / pageSize) || 1;
   const paginatedJobs = filteredJobs.slice((page - 1) * pageSize, page * pageSize);
 
+  // Orden automático con IA: al ver una página con ofertas sin porcentaje, se calculan (1 consulta).
+  // Con la IA gratuita (cupo diario) solo la primera página de cada búsqueda; el resto, con "Ordenar ofertas con IA".
+  useEffect(() => {
+    if (!aiReady || !hasCv || isScanning || isBatchRanking || autoPaused.current) return;
+    if (usesSharedQuota && autoCallsThisSearch.current >= 1) return;
+    const pending = paginatedJobs.filter((j) => (j.fit_score === undefined || j.fit_score === null) && !autoTried.current.has(j.id));
+    if (!pending.length) return;
+    const batch = pending.slice(0, RANK_BATCH);
+    batch.forEach((j) => autoTried.current.add(j.id));
+    autoCallsThisSearch.current += 1;
+    setIsBatchRanking(true);
+    rank(batch)
+      .catch((e) => {
+        // Sin cupo o IA no disponible: se pausa el orden automático hasta recargar la página.
+        autoPaused.current = true;
+        toast.info('No se pudo calcular la compatibilidad automáticamente: ' + getHumanErrorMessage(e));
+      })
+      .finally(() => setIsBatchRanking(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [paginatedJobs, aiReady, hasCv, isScanning, isBatchRanking, usesSharedQuota]);
+
   return (
     <div className="space-y-6">
       {/* Cabecera y Tooltip informativo */}
@@ -269,7 +313,7 @@ export const JobSearchPage: React.FC<JobSearchPageProps> = ({
             <div className="group relative">
               <HelpCircle className="w-4 h-4 text-gray-400 hover:text-[#20A88A] cursor-pointer" />
               <div className="absolute left-0 bottom-full mb-2 hidden group-hover:block w-72 p-3 bg-gray-900 text-white text-xs rounded-xl shadow-xl z-30 leading-relaxed">
-                El radar rastrea vacantes reales en Chile (Get on Board, CompuTrabajo, etc.) y calcula la afinidad con tu CV respetando tu privacidad.
+                El radar busca vacantes reales en Chile (índice diario de Empleos Públicos, GetOnBoard, portales de empresas y ChileTrabajos) y calcula con IA tu compatibilidad con cada oferta, sin que tengas que pedirlo.
               </div>
             </div>
           </div>
@@ -320,6 +364,15 @@ export const JobSearchPage: React.FC<JobSearchPageProps> = ({
         <IndexResultsBanner generatedAt={indexInfo.generatedAt} indexCount={indexInfo.count} onSearchLive={handleScanLive} />
       )}
 
+      {/* Tu perfil cambió: porcentajes calculados con el perfil anterior */}
+      <StaleFitBanner
+        count={staleJobs.length}
+        isUpdating={isBatchRanking}
+        aiReady={aiReady}
+        onUpdate={handleRefreshStale}
+        onOpenSettings={onOpenSettings}
+      />
+
       {/* Alerta de fuentes no disponibles */}
       <FailedSourcesBanner
         sourcesFailed={sourcesFailed}
@@ -341,6 +394,8 @@ export const JobSearchPage: React.FC<JobSearchPageProps> = ({
         onPageChange={setPage}
         onScan={handleScan}
         getProfileMatches={(job) => matchOf(job).matched}
+        isFitStale={(job) => isFitStale(job, fingerprint)}
+        isRankingWithAI={isBatchRanking}
       />
 
       {/* Modales de Detalle, Evaluación y Portales */}

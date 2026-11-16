@@ -1,7 +1,7 @@
 # Política de Privacidad y Soberanía Digital — Oportia Jobs IA
 
 **Última actualización:** 17 de noviembre de 2026  
-**Versión de política:** 1.3.0  
+**Versión de política:** 1.3.2  
 **Marco normativo:** Ley N° 21.719 de Protección de Datos Personales (Chile) y principios de *Privacy by Design*.
 
 ---
@@ -109,3 +109,34 @@ Si tienes preguntas sobre la implementación de privacidad o la arquitectura de 
 - **Perfil de GitHub:** [https://github.com/alejandroham](https://github.com/alejandroham)
 - **Instagram Oficial:** [https://www.instagram.com/not.kano/](https://www.instagram.com/not.kano/)
 - **Repositorio de Código Abierto:** [https://github.com/alejandroham/Oportia.jobs](https://github.com/alejandroham/Oportia.jobs)
+
+---
+
+## 9. Opiniones y contacto voluntario
+
+El recuadro **"¿Qué te parece Oportia?"** está en el pie de página y en la portada. También aparece una sola vez después de 30 a 60 minutos de uso; si respondes "Ahora no", vuelve a aparecer como máximo dos veces más.
+
+**Qué se guarda**
+- Tu calificación (1 a 5) y tus comentarios.
+- **Solo si tú lo escribes y marcas la autorización:** tu correo o tu teléfono.
+- La versión de la app, si la opinión fue espontánea o respondía a la invitación, y la fecha.
+- **No se guardan** tu CV, tu perfil, tus búsquedas ni tu dirección IP.
+
+**Para qué se usa**
+- Las opiniones sirven para mejorar Oportia.
+- El contacto se usa **solo** para conversar contigo sobre mejoras o invitarte a una entrevista de usuario.
+- **No se usa para publicidad ni se comparte con terceros.**
+- Base legal: tu **consentimiento** expreso (Ley N° 21.719). Sin la casilla marcada no se guarda ningún dato de contacto; la base de datos también lo exige.
+
+**Dónde y cuánto tiempo se guarda**
+- En una base de datos de **Supabase** ubicada en Estados Unidos (región us-east-1). Esto es una transferencia internacional de datos.
+- La aplicación solo puede **agregar** opiniones. Leerlas exige una clave que solo tiene quien mantiene Oportia.
+- Se conservan hasta **12 meses** y luego se eliminan.
+
+**Tus derechos**
+- Puedes pedir acceso, corrección o eliminación de tu opinión y tu contacto en cualquier momento.
+- Escríbenos por los canales de la sección 8 con el **código** que te muestra Oportia al enviar tu opinión.
+
+**Cuándo aparece la invitación**
+- El tiempo de uso se cuenta **solo en tu navegador** (`localStorage`) y nunca se envía a ningún servidor.
+

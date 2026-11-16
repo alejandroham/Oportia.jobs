@@ -5,6 +5,7 @@ import { ApplicationInterviewTab } from './ApplicationInterviewTab';
 import { ApplicationTimelineTab } from './ApplicationTimelineTab';
 import { ArrowLeft, ExternalLink, Trash2, Building2, MapPin, Sparkles, CheckCircle2 } from 'lucide-react';
 import { ExpiryBadge } from '../../components/ui/ExpiryBadge';
+import { FitScoreBadge } from '../shared/FitScoreBadge';
 import { useAppStore } from '../../state/useAppStore';
 import { api } from '../../api';
 import { safeExternalUrl } from '../../utils/jobSource';
@@ -151,7 +152,10 @@ export const ApplicationDetail: React.FC<ApplicationDetailProps> = ({
             <h2 className="text-lg sm:text-xl font-bold text-ink dark:text-gray-100 leading-snug">
               {job.title}
             </h2>
-            <ExpiryBadge job={job} />
+            <div className="flex flex-wrap items-center gap-2">
+              <ExpiryBadge job={job} />
+              {job.fit_score !== undefined && job.fit_score !== null && <FitScoreBadge score={job.fit_score} size="sm" />}
+            </div>
           </div>
 
           <div className="flex items-center gap-2">

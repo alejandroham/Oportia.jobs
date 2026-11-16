@@ -401,6 +401,8 @@ Genera la deliberación completa del Comité en formato JSON estricto con la sig
             "cargos_objetivo": preferences.target_roles[:5],
             "solo_remoto": preferences.remote_only,
             "no_acepta": preferences.deal_breakers[:5],
+            # Lo que Opi aprendió de la persona en el chat (también cambia la compatibilidad).
+            "lo_que_opi_sabe": (preferences.auto_learned_insights or [])[:8],
         }
         offers = [
             {

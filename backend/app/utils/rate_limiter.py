@@ -41,3 +41,4 @@ class IPRateLimiter:
 
 ai_rate_limiter = IPRateLimiter(requests_per_minute=40, description="llamadas a IA")
 search_rate_limiter = IPRateLimiter(requests_per_minute=15, description="búsquedas de empleo")
+feedback_rate_limiter = IPRateLimiter(requests_per_minute=5, description="opiniones")

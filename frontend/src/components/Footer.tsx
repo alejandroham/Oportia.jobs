@@ -1,7 +1,8 @@
 import React from 'react';
 import { InstallAppButton } from './InstallApp';
+import { useFeedbackStore } from '../state/useFeedbackStore';
 import { Link } from 'react-router-dom';
-import { Heart, Instagram, ExternalLink, ShieldCheck, GraduationCap, Settings as SettingsIcon } from 'lucide-react';
+import { Heart, Instagram, ExternalLink, ShieldCheck, GraduationCap, Settings as SettingsIcon, MessageSquareHeart } from 'lucide-react';
 
 interface FooterProps {
   onNavigateToTab?: (tab: string) => void;
@@ -26,7 +27,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigateToTab }) => {
                   Oportia Jobs IA
                 </span>
                 <span className="text-xs font-mono font-bold px-2 py-0.5 rounded-full bg-[#20A88A]/10 dark:bg-[#20A88A]/20 text-brand-700 dark:text-[#8AD9C4] border border-[#20A88A]/30">
-                  v1.3.1
+                  v1.3.2
                 </span>
               </div>
               <p className="text-xs text-gray-500 dark:text-ink-200">
@@ -105,6 +106,14 @@ export const Footer: React.FC<FooterProps> = ({ onNavigateToTab }) => {
           >
             Mi perfil
           </Link>
+          <button
+            type="button"
+            onClick={() => useFeedbackStore.getState().open('manual')}
+            className="hover:text-brand-700 dark:hover:text-brand-300 transition flex items-center space-x-1 cursor-pointer"
+          >
+            <MessageSquareHeart className="w-3 h-3" aria-hidden="true" />
+            <span>Danos tu opinión</span>
+          </button>
           <Link
             to="/ajustes"
             className="hover:text-brand-700 dark:hover:text-brand-300 transition flex items-center space-x-1"

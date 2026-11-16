@@ -18,6 +18,8 @@ interface JobResultsFeedProps {
   isScanning?: boolean;
   /** Palabras del perfil que calzan con cada oferta. */
   getProfileMatches?: (job: JobPosting) => string[];
+  isFitStale?: (job: JobPosting) => boolean;
+  isRankingWithAI?: boolean;
 }
 
 export const JobResultsFeed: React.FC<JobResultsFeedProps> = ({
@@ -31,7 +33,9 @@ export const JobResultsFeed: React.FC<JobResultsFeedProps> = ({
   onPageChange,
   onScan,
   isScanning = false,
-  getProfileMatches
+  getProfileMatches,
+  isFitStale,
+  isRankingWithAI = false
 }) => {
   const searchingBanner = isScanning ? (
     <div
@@ -77,6 +81,8 @@ export const JobResultsFeed: React.FC<JobResultsFeedProps> = ({
             onToggleTrack={onToggleTrack}
             onDiscard={onDiscard}
             profileMatches={getProfileMatches?.(job)}
+            fitStale={isFitStale?.(job)}
+            isRanking={isRankingWithAI}
           />
         ))}
       </div>

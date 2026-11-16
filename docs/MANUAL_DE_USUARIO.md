@@ -1,6 +1,6 @@
 # Manual de usuario — Oportia Jobs IA
 
-> Versión 1.3.1 · Guía paso a paso para encontrar trabajo con Oportia y Opi, tu copiloto.
+> Versión 1.3.2 · Guía paso a paso para encontrar trabajo con Oportia y Opi, tu copiloto.
 >
 > Las capturas muestran a **Paula Rojas**, una persona de demostración **ficticia** (Técnico en Enfermería). Las empresas que aparecen también son ficticias.
 
@@ -19,8 +19,9 @@
 9. [Opi, tu copiloto](#9-opi-tu-copiloto)
 10. [IA gratuita o tu propia clave](#10-ia-gratuita-o-tu-propia-clave)
 11. [Privacidad y respaldo de tus datos](#11-privacidad-y-respaldo-de-tus-datos)
-12. [Para quien mantiene Oportia: índice diario y correo](#12-para-quien-mantiene-oportia-índice-diario-y-correo)
-13. [Preguntas frecuentes](#13-preguntas-frecuentes)
+12. [Danos tu opinión](#12-danos-tu-opinión)
+13. [Para quien mantiene Oportia: índice diario y correo](#13-para-quien-mantiene-oportia-índice-diario-y-correo)
+14. [Preguntas frecuentes](#14-preguntas-frecuentes)
 
 ---
 
@@ -32,7 +33,7 @@ Oportia te ayuda a buscar trabajo **en cualquier área**: salud, educación, com
 - **Te muestra cuándo vence cada oferta** y oculta las que ya cerraron.
 - **Adapta** tu CV y tu carta de presentación a cada oferta y te deja **descargarlos en PDF**.
 - **Te prepara** para la entrevista y te muestra qué habilidades te conviene reforzar.
-- **No necesitas crear una cuenta**: tus datos se guardan en tu navegador.
+- **Tú manejas tu información; nosotros te traemos las ofertas.** No necesitas crear una cuenta: tu CV y tus datos se guardan en tu navegador.
 
 Al entrar por primera vez verás la portada. Pulsa **Comenzar** para abrir la guía de inicio o **Ver ofertas primero** si quieres explorar antes.
 
@@ -92,7 +93,7 @@ En **Mi perfil → Mi CV** puedes:
 **Tecnologías y palabras clave.** Son los términos con los que te buscaría una empresa, por ejemplo "TENS", "Curaciones" o "Soporte TI".
 - Al subir tu CV, Oportia agrega solas las palabras de tu área que **aparecen en tu CV**. Debajo te sugiere otras para que elijas.
 - Oportia las usa para mostrarte ofertas **"Para ti"** y para marcar en cada oferta lo que **calza con tu perfil**.
-- Con **Copiar para el aviso por correo** las copias para el correo diario de ofertas (ver la [sección 12](#12-para-quien-mantiene-oportia-índice-diario-y-correo)).
+- Con **Copiar para el aviso por correo** las copias para el correo diario de ofertas (ver la [sección 13](#13-para-quien-mantiene-oportia-índice-diario-y-correo)).
 
 **También puedes actualizar tu perfil conversando con Opi.** Por ejemplo: "agrega Excel a mis habilidades", "tengo un diplomado en Gestión en Salud" o "mi LinkedIn es …". Opi te muestra el cambio y lo guarda solo si pulsas **Sí, guardar en mi perfil**.
 
@@ -129,6 +130,15 @@ En **Mi perfil → Qué busco** defines los cargos objetivo, tu región y comuna
    - En **Más filtros → Fuente** puedes ver solo las ofertas de **Portales de empresas**, **Empleos Públicos**, GetOnBoard, ChileTrabajos o LinkedIn.
 
 Oportia reconoce **sinónimos y equivalentes en inglés**: si buscas "enfermera" también encuentra "Técnico en Enfermería", "TENS" o "Registered Nurse". La etiqueta **Tu región** marca las ofertas cercanas a ti.
+
+**Tu porcentaje de compatibilidad se calcula solo.** Si tienes la IA activa, Oportia calcula el porcentaje de las ofertas que estás viendo apenas aparecen y las ordena de mayor a menor. No tienes que pulsar nada.
+- Con la **IA gratuita**, que tiene cupo diario, se calcula la primera página de cada búsqueda. Para seguir con las demás, usa **⋮ → Ordenar ofertas con IA**.
+- Con **tu propia clave**, se calcula cada página que ves.
+
+**Si cambias tu perfil, Oportia te avisa.** Si actualizas tu experiencia, tus estudios, tus habilidades, lo que buscas o algo que Opi aprendió de ti en el chat, verás el aviso **"Tu perfil cambió"**:
+- Cada porcentaje calculado con el perfil anterior muestra **"Desactualizado"**.
+- Pulsa **Actualizar porcentajes** para recalcularlos con tu perfil actual.
+- Cambiar tu correo, tu teléfono o tus enlaces no afecta la compatibilidad, así que no genera el aviso.
 
 Cada tarjeta muestra:
 - **Cuándo vence la oferta** (lo explicamos abajo).
@@ -168,7 +178,9 @@ El menú **⋮** junto a "Buscar" tiene más opciones: **Importar oferta por URL
 
 Aquí sigues cada proceso. Filtra por estado (Guardadas, Postuladas, En entrevista, Oferta, Cerradas) y cambia el **Estado** de cada postulación a medida que avanza.
 
-Cada postulación muestra **cuándo vence la oferta**, en la lista y en el detalle, con las mismas reglas de la [sección 6](#cuándo-vence-una-oferta): "Cierra el …", "Vence aprox. el … (estimado)" o **"Vencida el …"**.
+Cada postulación muestra tu **porcentaje de compatibilidad** y **cuándo vence la oferta**. Si cambiaste tu perfil, aquí también aparece el aviso para **Actualizar porcentajes** de tus postulaciones.
+
+Las fechas de vencimiento se ven en la lista y en el detalle, con las mismas reglas de la [sección 6](#cuándo-vence-una-oferta): "Cierra el …", "Vence aprox. el … (estimado)" o **"Vencida el …"**.
 
 **Postular con CV adaptado.** En el detalle de una oferta, **Postular con CV adaptado** la guarda aquí y prepara tu CV y tu carta para esa oferta. Después solo revisas y postulas en el enlace oficial.
 
@@ -270,7 +282,19 @@ Más detalles en la [Política de Privacidad](../PRIVACY.md) (Ley N° 21.719).
 
 ---
 
-## 12. Para quien mantiene Oportia: índice diario y correo
+## 12. Danos tu opinión
+
+En el pie de página (**Danos tu opinión**) y en la portada (**¿Qué te parece Oportia?**) puedes contarnos qué te parece la app:
+- Una **calificación de 1 a 5**, qué te sirvió y qué mejorarías.
+- **Si quieres**, tu correo o teléfono para que te contactemos sobre mejoras o te invitemos a una entrevista. Solo se guardan si marcas la autorización; sin ella, el botón **Enviar opinión** no se activa.
+- Al enviar, Oportia te muestra un **código**. Con él puedes pedir que borremos tu opinión o tu contacto.
+- También encontrarás el enlace para **apoyar a Oportia con una donación**.
+
+Después de **30 a 60 minutos de uso**, Oportia te invita una vez a responder. Si pulsas **Ahora no**, vuelve a preguntar más adelante, como máximo dos veces más. Si ya respondiste, no vuelve a preguntar. Ese tiempo se cuenta solo en tu navegador.
+
+---
+
+## 13. Para quien mantiene Oportia: índice diario y correo
 
 Cada mañana, a las 08:00 de Chile, una tarea automática arma el **índice de ofertas** y, si está configurado, envía un **correo con las ofertas nuevas del día**.
 - El correo trae solo ofertas que no habías recibido, máximo 2 por empresa, con enlace a la fuente original.
@@ -282,7 +306,7 @@ Cómo configurarlo: [docs/INDICE_DIARIO.md](INDICE_DIARIO.md).
 
 ---
 
-## 13. Preguntas frecuentes
+## 14. Preguntas frecuentes
 
 **¿Cómo guardo mi CV o mi carta en PDF?**
 Pulsa **Imprimir / Guardar PDF** y, en la ventana que se abre, elige **Guardar como PDF** como destino.
