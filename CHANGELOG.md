@@ -5,6 +5,28 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
 
 ---
 
+## [1.4.0] - 2026-11-16 — *Portal interno de administración y medición anónima*
+
+### 🛡️ Portal interno de administración (primera versión)
+- **App separada (`admin/`):** sin enlaces desde Oportia y con `noindex`. Se despliega como otro proyecto de Vercel. Secciones:
+  - **Uso:** usuarios activos por día, promedio de 7 días, búsquedas y funciones usadas.
+  - **Opiniones:** promedio, filtro por contacto autorizado y código para pedir el borrado.
+  - **Seguridad:** eventos por tipo, orígenes más activos con huella diaria y sin IP.
+  - **Ofertas:** vigentes por fuente y área, historial diario, y ofertas sacadas por vencimiento o porque la fuente las quitó.
+  - **Estado:** versión en producción, índice, IA gratuita y GitHub Actions.
+- **Doble verificación:**
+  - contraseña de Supabase Auth más un código TOTP de una app de autenticación;
+  - la base de datos solo entrega datos a sesiones `aal2` de usuarios en `admin_users` (`private.is_admin()`, fuera de la API pública);
+  - la sesión dura solo mientras la pestaña está abierta y se cierra tras 30 minutos sin actividad.
+- **Registro anónimo de uso y seguridad** (`app/telemetry.py`, tabla `app_events`):
+  - se registra el tipo de acción, nunca el contenido;
+  - la huella diaria del navegador y de la red (IP recortada) no permite seguir a nadie entre días;
+  - tope de 20.000 eventos al día y borrado a los 90 días.
+- **Índice diario:** ahora publica `index-history.json` (resumen de cada día) y `jobs-removed.json.gz` (ofertas sacadas en los últimos 30 días, con su motivo).
+- **Privacidad 1.4.0:** nueva sección 10, "Medición anónima de uso y seguridad".
+- **CI:** nuevo trabajo para el portal (pruebas, tipos y compilación).
+- **Configuración:** en `admin/README.md`.
+
 ## [1.3.8] - 2026-11-16 — *Pegar ofertas de otros portales y "Buscar también en"*
 
 ### 📋 Ofertas de otros portales: pegar el texto y "Buscar también en"

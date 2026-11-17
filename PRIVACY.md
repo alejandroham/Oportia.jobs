@@ -1,7 +1,7 @@
 # Política de Privacidad y Soberanía Digital — Oportia Jobs IA
 
 **Última actualización:** 16 de noviembre de 2026  
-**Versión de política:** 1.3.2  
+**Versión de política:** 1.4.0  
 **Marco normativo:** Ley N° 21.719 de Protección de Datos Personales (Chile) y principios de *Privacy by Design*.
 
 ---
@@ -139,4 +139,28 @@ El recuadro **"¿Qué te parece Oportia?"** está en el pie de página y en la p
 
 **Cuándo aparece la invitación**
 - El tiempo de uso se cuenta **solo en tu navegador** (`localStorage`) y nunca se envía a ningún servidor.
+
+---
+
+## 10. Medición anónima de uso y seguridad
+
+Para saber si Oportia funciona bien, qué funciones se usan y detectar abusos o ataques, el servidor registra **eventos anónimos** en una tabla de Supabase (EE. UU.). Solo quien mantiene Oportia puede verlos, en un portal interno protegido con contraseña y verificación en dos pasos.
+
+**Qué se registra**
+- **El tipo de acción:** visita, búsqueda, CV analizado, consulta a la IA, oferta importada u opinión enviada.
+- **Datos de contexto:** si la acción usó IA propia o gratuita, si funcionó y la versión de la app.
+- **Eventos de seguridad:** exceso de peticiones, intentos de que el servidor descargue direcciones internas, textos con instrucciones para manipular la IA, bots y errores del servidor.
+
+**Qué no se registra**
+- Tu CV, tu perfil, lo que escribes en la búsqueda, tus postulaciones ni tus conversaciones con Opi.
+- Tu IP ni el identificador de tu navegador.
+
+**Cómo se cuentan los usuarios sin identificarte**
+- Para contar usuarios activos se guarda una **huella que cambia cada día**: se calcula a partir del identificador anónimo de tu navegador y de una clave diaria.
+- Sirve para saber cuántos navegadores distintos usaron Oportia **ese día**, pero **no permite reconocerte de un día para otro** ni saber quién eres.
+- En los eventos de seguridad, la IP se recorta a su red (por ejemplo, 190.20.30.0) antes de calcular la huella diaria. La IP completa nunca se guarda.
+
+**Cuánto tiempo se guarda**
+- Los eventos se borran automáticamente a los **90 días**.
+- Base legal: interés legítimo en la seguridad y el buen funcionamiento del servicio, con datos que no permiten identificar a nadie.
 

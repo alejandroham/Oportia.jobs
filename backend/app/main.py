@@ -16,6 +16,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 
 from app.config import settings
+from app import telemetry
 from pydantic import BaseModel, Field
 from app.models.schemas import (
     CandidateProfile, UserPreferences, JobPosting, 
@@ -110,10 +111,45 @@ async def extract_llm_credentials_middleware(request: Request, call_next):
         response = await call_next(request)
         if shared_req.remaining is not None:
             response.headers["X-Shared-AI-Remaining"] = str(shared_req.remaining)
+        _record_request(request, response.status_code, shared_req, bool(api_key))
         return response
     finally:
         current_llm_credentials.reset(token)
         current_shared_ai_request.reset(shared_token)
+
+
+# Rutas que se cuentan en el portal de administración (solo el tipo de acción, nunca el contenido).
+_TRACKED_ROUTES = {
+    "/api/settings": "visita",
+    "/api/jobs/search": "busqueda",
+    "/api/profile/upload": "cv_subido",
+    "/api/profile/reanalyze": "cv_reanalizado",
+    "/api/profile/career-insights": "cargos_y_logros",
+    "/api/jobs/rank": "compatibilidad_lote",
+    "/api/jobs/evaluate": "compatibilidad_detalle",
+    "/api/coach/gaps": "brechas",
+    "/api/jobs/from-text": "oferta_pegada",
+    "/api/jobs/import-url": "oferta_por_enlace",
+    "/api/chat/opi": "chat_opi",
+    "/api/opinion": "opinion",
+}
+
+
+def _record_request(request: Request, status: int, shared_req: "SharedAIRequest", own_key: bool) -> None:
+    path = request.url.path
+    ip = _client_ip(request)
+    version = settings.VERSION
+    if status == 429:
+        telemetry.record("limite_peticiones", "seguridad", {"ruta": path}, shared_req.client_id, ip, version)
+        return
+    if status >= 500:
+        telemetry.record("error_servidor", "error", {"ruta": path, "estado": status}, shared_req.client_id, ip, version)
+        return
+    kind = _TRACKED_ROUTES.get(path)
+    if not kind or request.method == "OPTIONS":
+        return
+    ai = "propia" if own_key else ("gratuita" if shared_req.remaining is not None else "ninguna")
+    telemetry.record(kind, "uso", {"ia": ai, "ok": status < 400}, shared_req.client_id, "", version)
 
 
 def _client_ip(request: Request) -> str:
@@ -587,6 +623,7 @@ def submit_feedback(req: FeedbackRequest):
     """Opinión sobre la app. Contacto solo con autorización. No se guarda nada en el servidor."""
     if req.website:
         # Bot (llenó el campo trampa): se responde igual, sin guardar nada.
+        telemetry.record("bot_opiniones", "seguridad", {}, app_version=settings.VERSION)
         return {"ok": True, "id": str(uuid.uuid4())}
     try:
         feedback_id = save_feedback(req, settings.VERSION)
@@ -824,6 +861,7 @@ def import_job_from_url(data: dict):
         raise HTTPException(status_code=400, detail="URL es requerida")
     portal = restricted_portal(url)
     if portal:
+        telemetry.record("portal_restringido", "seguridad", {"portal": portal}, app_version=settings.VERSION)
         # Sus condiciones prohíben que otras apps lean o reproduzcan sus avisos: el servidor no descarga la página.
         raise HTTPException(
             status_code=400,

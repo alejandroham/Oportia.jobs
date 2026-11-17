@@ -40,6 +40,9 @@ def sanitize_job_text(raw_text: str) -> Tuple[str, bool]:
 
     # Normalize excessive spaces
     cleaned = re.sub(r'\s+', ' ', cleaned).strip()
+    if is_suspicious:
+        from app import telemetry
+        telemetry.record("prompt_injection", "seguridad", {"origen": "texto de oferta"})
     return cleaned, is_suspicious
 
 MAX_REDIRECTS = 5
@@ -138,6 +141,8 @@ def extract_job_from_url(url: str) -> Dict[str, Any]:
                 "is_suspicious": suspicious
             }
     except UnsafeURLError as e:
+        from app import telemetry
+        telemetry.record("ssrf_bloqueado", "seguridad", {"motivo": str(e)[:80]})
         return {"error": str(e)}
     except Exception as e:
         logger.error(f"Error parsing job URL {url}: {e}")

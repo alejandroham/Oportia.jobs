@@ -21,7 +21,46 @@ logger = logging.getLogger(__name__)
 
 INDEX_BUCKET = os.environ.get("OPORTIA_INDEX_BUCKET", "oportia-index")
 INDEX_OBJECT = "jobs-index.json.gz"
+HISTORY_OBJECT = "index-history.json"       # resumen diario (para el portal de administración)
+REMOVED_OBJECT = "jobs-removed.json.gz"     # ofertas sacadas del índice en los últimos 30 días
 INDEX_CACHE_SECONDS = 30 * 60
+
+
+def public_url(name: str) -> Optional[str]:
+    explicit = os.environ.get("OPORTIA_INDEX_URL")
+    if explicit:
+        return explicit.rsplit("/", 1)[0] + "/" + name
+    base = (os.environ.get("SUPABASE_URL") or "").rstrip("/")
+    return f"{base}/storage/v1/object/public/{INDEX_BUCKET}/{name}" if base else None
+
+
+def download_object(name: str, timeout: float = 15.0) -> Optional[Any]:
+    """Descarga un JSON (o JSON comprimido) público del bucket. None si no existe."""
+    url = public_url(name)
+    if not url:
+        return None
+    try:
+        res = requests.get(url, timeout=timeout)
+        return decode_index(res.content) if res.status_code == 200 else None
+    except Exception:  # noqa: BLE001
+        return None
+
+
+def upload_object(name: str, data: bytes, content_type: str) -> None:
+    base = (os.environ.get("SUPABASE_URL") or "").strip().rstrip("/")
+    key = clean_key(os.environ.get("SUPABASE_SERVICE_ROLE_KEY") or "")
+    if not base or not key:
+        raise RuntimeError("Faltan SUPABASE_URL o SUPABASE_SERVICE_ROLE_KEY para publicar.")
+    errors = []
+    first = key.startswith("eyJ")
+    for with_bearer in (first, not first):
+        res = requests.post(f"{base}/storage/v1/object/{INDEX_BUCKET}/{name}", data=data,
+                            headers={**auth_headers(key, with_bearer), "Content-Type": content_type,
+                                     "Cache-Control": "max-age=1800", "x-upsert": "true"}, timeout=60)
+        if res.status_code < 300:
+            return
+        errors.append(f"{res.status_code}: {res.text[:200]}")
+    raise RuntimeError(f"Supabase Storage rechazó {name}. Clave {key_kind(key)}. " + " | ".join(errors))
 
 
 def index_public_url() -> Optional[str]:

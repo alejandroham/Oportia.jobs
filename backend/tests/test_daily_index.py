@@ -240,3 +240,19 @@ def test_construction_synonyms_find_supervision_roles():
     for title in ["Capataz de obra gruesa", "Jefe de Terreno", "Inspector Técnico de Obra (ITO)", "Supervisor de obra"]:
         assert relevance_score(title, "", "técnico en construcción") > 0, title
     assert relevance_score("Modelador BIM / Revit", "", "BIM") > 0
+
+
+def test_removed_offers_tell_expired_from_unlisted():
+    from app.indexer.build import history_entry, removed_offers
+    previous = {"jobs": [
+        {"id": "a", "title": "Sigue", "expires_at": "2026-12-01"},
+        {"id": "b", "title": "Vencida", "expires_at": "2026-11-10", "source": "chiletrabajos"},
+        {"id": "c", "title": "La quitó la fuente", "expires_at": "2026-12-20"},
+    ]}
+    current = {"jobs": [{"id": "a"}], "generated_at": "2026-11-17T11:00:00+00:00", "count": 1, "new_today": 0, "sources": {}, "areas": {}}
+    removed = removed_offers(previous, current, NOW)
+    assert {r["title"]: r["reason"] for r in removed} == {"Vencida": "vencida", "La quitó la fuente": "ya no publicada"}
+    assert all(r["removed_at"] == "2026-11-16" or r["removed_at"] == NOW.strftime("%Y-%m-%d") for r in removed)
+    h = history_entry(current, removed)
+    assert h["date"] == "2026-11-17" and h["removed_expired"] == 1 and h["removed_unlisted"] == 1
+    assert removed_offers(None, current, NOW) == []

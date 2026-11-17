@@ -64,7 +64,7 @@ jobs:
           NOTIFY_KEYWORDS: ${{ secrets.NOTIFY_KEYWORDS }}
         run: python -m app.indexer.build
 
-      - name: Borrar opiniones con más de 12 meses
+      - name: Borrar opiniones (12 meses) y eventos de uso (90 días) antiguos
         if: steps.gate.outputs.run == 'true'
         working-directory: ./backend
         env:

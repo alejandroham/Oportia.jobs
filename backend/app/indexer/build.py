@@ -13,6 +13,7 @@ automática o la reproducción de sus avisos.
 """
 
 import argparse
+import json
 import hashlib
 import logging
 import os
@@ -319,6 +320,51 @@ def build_index(raw: List[JobPosting], source_counts: Dict[str, int], previous: 
     }
 
 
+REMOVED_KEEP_DAYS = 30
+HISTORY_KEEP = 180
+
+
+def removed_offers(previous: Optional[Dict], current: Dict[str, object], now: datetime) -> List[Dict[str, object]]:
+    """Ofertas que estaban ayer y hoy ya no: 'vencida' (pasó su fecha) o 'ya no publicada' (la fuente la quitó)."""
+    if not previous:
+        return []
+    today = now.strftime("%Y-%m-%d")
+    current_ids = {j.get("id") for j in current.get("jobs", [])}
+    out = []
+    for j in previous.get("jobs", []):
+        if j.get("id") in current_ids:
+            continue
+        expired = bool(j.get("expires_at")) and str(j["expires_at"]) < today
+        out.append({k: j.get(k) for k in ("id", "title", "company", "source", "url", "region", "profession_category",
+                                         "discovered_at", "expires_at") if j.get(k)}
+                   | {"removed_at": today, "reason": "vencida" if expired else "ya no publicada"})
+    return out
+
+
+def history_entry(index: Dict[str, object], removed_today: List[Dict[str, object]]) -> Dict[str, object]:
+    return {
+        "date": str(index["generated_at"])[:10], "generated_at": index["generated_at"], "count": index["count"],
+        "new_today": index["new_today"], "sources": index["sources"], "areas": index["areas"],
+        "removed_expired": sum(1 for r in removed_today if r["reason"] == "vencida"),
+        "removed_unlisted": sum(1 for r in removed_today if r["reason"] != "vencida"),
+    }
+
+
+def publish_history(index: Dict[str, object], previous: Optional[Dict], now: datetime) -> None:
+    """Guarda el resumen del día y las ofertas sacadas (30 días) para el portal de administración."""
+    import gzip as _gzip
+    from app.indexer.store import HISTORY_OBJECT, REMOVED_OBJECT, download_object, upload_object
+    removed_today = removed_offers(previous, index, now)
+    cutoff = (now - timedelta(days=REMOVED_KEEP_DAYS)).strftime("%Y-%m-%d")
+    removed = [r for r in (download_object(REMOVED_OBJECT) or []) if str(r.get("removed_at", "")) >= cutoff]
+    removed = removed_today + [r for r in removed if r.get("removed_at") != now.strftime("%Y-%m-%d")]
+    history = [h for h in (download_object(HISTORY_OBJECT) or []) if h.get("date") != str(index["generated_at"])[:10]]
+    history = (history + [history_entry(index, removed_today)])[-HISTORY_KEEP:]
+    upload_object(HISTORY_OBJECT, json.dumps(history, ensure_ascii=False).encode("utf-8"), "application/json")
+    upload_object(REMOVED_OBJECT, _gzip.compress(json.dumps(removed, ensure_ascii=False).encode("utf-8")), "application/gzip")
+    logger.info(f"Historial publicado: {len(removed_today)} ofertas sacadas hoy.")
+
+
 def main(argv: Optional[List[str]] = None) -> int:
     from app.indexer.store import download_index, encode_index, upload_index
 
@@ -355,6 +401,10 @@ def main(argv: Optional[List[str]] = None) -> int:
     if not args.no_upload:
         upload_index(index)
         logger.info("Índice publicado en Supabase Storage.")
+        try:
+            publish_history(index, previous, datetime.now(timezone.utc))
+        except Exception as e:  # noqa: BLE001 - el historial no debe impedir el índice ni el correo
+            logger.warning(f"No se pudo publicar el historial: {e}")
         if index["count"]:
             from app.indexer.notify import send_daily_email
             sent = send_daily_email(index)

@@ -104,3 +104,15 @@ def test_database_cap_returns_429(monkeypatch):
     monkeypatch.setattr(fb.requests, "post", lambda *a, **k: R())
     res = TestClient(app).post("/api/opinion", json={"rating": 5})
     assert res.status_code == 429 and "minutos" in res.json()["detail"]
+
+
+def test_purge_events_older_than_90_days(monkeypatch):
+    calls = []
+
+    class R:
+        status_code = 204
+
+    monkeypatch.setenv("SUPABASE_SERVICE_ROLE_KEY", "sb_secret_x")
+    monkeypatch.setattr(fb.requests, "delete", lambda url, params, headers, timeout: calls.append((url, params)) or R())
+    fb.purge_old_events()
+    assert calls[0][0].endswith("/rest/v1/app_events") and calls[0][1]["created_at"].startswith("lt.")

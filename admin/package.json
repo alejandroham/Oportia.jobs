@@ -1,0 +1,28 @@
+{
+  "name": "oportia-admin",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Portal interno de administración de Oportia (no enlazado desde la app principal).",
+  "type": "module",
+  "license": "Apache-2.0",
+  "scripts": {
+    "dev": "vite --port 3100",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview --port 3100",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.119.0",
+    "lucide-react": "^0.577.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.11",
+    "vitest": "^4.1.12"
+  }
+}

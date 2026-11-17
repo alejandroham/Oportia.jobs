@@ -131,6 +131,30 @@ def purge_old_feedback() -> None:
     raise RuntimeError(f"No se pudieron borrar las opiniones antiguas ({res.status_code}).")
 
 
+EVENTS_RETENTION_DAYS = 90
+
+
+def purge_old_events() -> None:
+    """Borra los eventos de uso y seguridad con más de 90 días (política de privacidad, sección 10)."""
+    from datetime import datetime, timedelta, timezone
+    from app.indexer.store import auth_headers, clean_key
+
+    base = (os.environ.get("SUPABASE_URL") or "").strip().rstrip("/")
+    key = clean_key(os.environ.get("SUPABASE_SERVICE_ROLE_KEY") or "")
+    if not base or not key:
+        print("Limpieza de eventos omitida: faltan SUPABASE_URL o SUPABASE_SERVICE_ROLE_KEY.")
+        return
+    cutoff = (datetime.now(timezone.utc) - timedelta(days=EVENTS_RETENTION_DAYS)).isoformat(timespec="seconds")
+    for with_bearer in (key.startswith("eyJ"), not key.startswith("eyJ")):
+        res = requests.delete(f"{base}/rest/v1/app_events", params={"created_at": f"lt.{cutoff}"},
+                              headers={**auth_headers(key, with_bearer), "Prefer": "return=minimal"}, timeout=30)
+        if res.status_code < 300:
+            print(f"Eventos anteriores a {cutoff[:10]} eliminados.")
+            return
+    raise RuntimeError(f"No se pudieron borrar los eventos antiguos ({res.status_code}).")
+
+
 if __name__ == "__main__":
     purge_old_feedback()
+    purge_old_events()
 
