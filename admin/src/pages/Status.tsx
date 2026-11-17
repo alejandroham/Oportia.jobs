@@ -1,20 +1,19 @@
 import { useEffect, useState } from 'react';
-import { appSettings, appVersion, indexStatus, workflowRuns } from '../data';
+import { serviceStatus, workflowRuns, type ServiceStatus } from '../data';
 import { Kpi } from '../components/Bars';
 
 type Run = { name: string; status: string; conclusion: string | null; created_at: string; url: string; event: string };
 
 export function StatusPage() {
-  const [version, setVersion] = useState<string | null>(null);
+  const [status, setStatus] = useState<ServiceStatus | null | undefined>(undefined);
   const [runs, setRuns] = useState<Run[]>([]);
-  const [idx, setIdx] = useState<Awaited<ReturnType<typeof indexStatus>>>(null);
-  const [settings, setSettings] = useState<Awaited<ReturnType<typeof appSettings>>>(null);
   useEffect(() => {
-    appVersion().then(setVersion);
+    serviceStatus().then(setStatus);
     workflowRuns().then(setRuns);
-    indexStatus().then(setIdx);
-    appSettings().then(setSettings);
   }, []);
+  const idx = status?.index;
+  const version = status === undefined ? null : status?.version || 'sin respuesta';
+  const settings = status ? { shared_ai: status.shared_ai } : null;
   const ageH = idx?.generated_at ? Math.round((Date.now() - new Date(idx.generated_at).getTime()) / 3_600_000) : null;
   return (
     <section>

@@ -5,6 +5,19 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
 
 ---
 
+## [1.4.1] - 2026-11-16 — *Portal de administración: ofertas en tabla y estado corregido*
+
+### 🛡️ Portal de administración: ofertas en tabla
+- **Corrección:** las secciones Ofertas y Estado del portal quedaban vacías. El portal pedía los datos a la API de Oportia desde otro dominio y la API lo bloqueaba (CORS).
+  - **Ofertas:** ahora el índice se lee directo desde Supabase Storage.
+  - **Estado:** usa el nuevo resumen público `GET /api/status` (versión, índice e IA gratuita, sin datos personales), que se puede leer desde cualquier origen.
+- **Ofertas vigentes en una tabla:**
+  - búsqueda por cargo, empresa o lugar;
+  - filtros por fuente (con conteo), área, región, modalidad y vencimiento (nuevas hoy, vencen hoy, en 7 días, fecha real o estimada);
+  - orden por columna y páginas de 50;
+  - **descarga en CSV** de lo filtrado.
+- **Pestaña "Sacadas del índice":** ofertas vencidas o que ya no publica su fuente.
+
 ## [1.4.0] - 2026-11-16 — *Portal interno de administración y medición anónima*
 
 ### 🛡️ Portal interno de administración (primera versión)

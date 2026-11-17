@@ -60,15 +60,18 @@ async function getJson<T>(url: string): Promise<T | null> {
 
 export const indexHistory = () => getJson<HistoryEntry[]>(publicFile('index-history.json')).then((d) => d || []);
 export const removedOffers = () => getJson<RemovedOffer[]>(publicFile('jobs-removed.json.gz')).then((d) => d || []);
-export const indexStatus = () => getJson<{ available: boolean; generated_at?: string; count?: number; new_today?: number; sources?: Record<string, number>; areas?: Record<string, number> }>(`${APP_URL}/api/jobs/index/status`);
-export const appSettings = () => getJson<{ shared_ai?: { available: boolean; daily_limit: number } }>(`${APP_URL}/api/settings`);
-export const appVersion = async () => {
-  const html = await fetch(APP_URL, { cache: 'no-store' }).then((r) => r.text()).catch(() => '');
-  const js = html.match(/assets\/index-[^"]+\.js/)?.[0];
-  if (!js) return null;
-  const code = await fetch(`${APP_URL}/${js}`).then((r) => r.text()).catch(() => '');
-  return code.match(/v\d+\.\d+\.\d+/)?.[0] || null;
-};
+export interface IndexJob {
+  id: string; title: string; company?: string; location?: string; region?: string; commune?: string; modality?: string;
+  is_remote?: boolean; salary_range?: string; contract_type?: string; url?: string; source?: string; posted_at?: string;
+  deadline?: string; discovered_at?: string; expires_at?: string; expires_estimated?: boolean; profession_category?: string;
+}
+export interface IndexFile { generated_at: string; count: number; new_today: number; sources: Record<string, number>; areas: Record<string, number>; jobs: IndexJob[] }
+export interface ServiceStatus { version: string; index: Omit<IndexFile, 'jobs'> & { available: boolean }; shared_ai: { available: boolean; daily_limit: number } }
+
+/** Índice completo (ofertas vigentes), directo desde Supabase Storage (público y con CORS). */
+export const currentIndex = () => getJson<IndexFile>(publicFile('jobs-index.json.gz'));
+/** Resumen público de la app (versión, índice, IA gratuita): /api/status admite CORS. */
+export const serviceStatus = () => getJson<ServiceStatus>(`${APP_URL}/api/status`).catch(() => null);
 export const workflowRuns = async () => {
   const res = await fetch('https://api.github.com/repos/alejandroham/Oportia.jobs/actions/runs?per_page=10');
   if (!res.ok) return [];

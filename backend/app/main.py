@@ -634,6 +634,28 @@ def submit_feedback(req: FeedbackRequest):
     return {"ok": True, "id": feedback_id}
 
 
+@app.get("/api/status")
+def public_status():
+    """
+    Resumen PÚBLICO del servicio (sin datos personales) para el portal de administración y monitoreo:
+    versión, índice diario e IA gratuita. Se puede leer desde cualquier origen (CORS *, sin credenciales).
+    """
+    index = index_cache.get()
+    body = {
+        "version": settings.VERSION,
+        "index": {
+            "available": bool(index),
+            "generated_at": (index or {}).get("generated_at"),
+            "count": (index or {}).get("count", 0),
+            "new_today": (index or {}).get("new_today", 0),
+            "sources": (index or {}).get("sources", {}),
+            "areas": (index or {}).get("areas", {}),
+        },
+        "shared_ai": {"available": shared_ai.is_enabled(), "daily_limit": shared_ai.per_user_limit()},
+    }
+    return JSONResponse(body, headers={"Access-Control-Allow-Origin": "*", "Cache-Control": "no-store"})
+
+
 @app.get("/api/jobs/index/status")
 def job_index_status():
     """Estado del índice diario (sin ofertas): fecha, total, nuevas de hoy, áreas y fuentes."""

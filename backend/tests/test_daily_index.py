@@ -256,3 +256,12 @@ def test_removed_offers_tell_expired_from_unlisted():
     h = history_entry(current, removed)
     assert h["date"] == "2026-11-17" and h["removed_expired"] == 1 and h["removed_unlisted"] == 1
     assert removed_offers(None, current, NOW) == []
+
+
+def test_public_status_is_readable_from_any_origin():
+    index_cache.set(_index_with(3))
+    res = TestClient(app).get("/api/status", headers={"Origin": "https://otro-sitio.example"})
+    assert res.status_code == 200 and res.headers["access-control-allow-origin"] == "*"
+    data = res.json()
+    assert data["version"] and data["index"]["count"] == 3 and "jobs" not in data["index"]
+    assert "available" in data["shared_ai"]

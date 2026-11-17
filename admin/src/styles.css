@@ -23,3 +23,7 @@ th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--lin
 .list { list-style: none; padding: 0; display: grid; gap: 10px; } .row { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
 .contact { background: var(--bg); padding: 8px; border-radius: 8px; } .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
 code { font-size: 12px; word-break: break-all; } a { color: var(--brand); }
+.filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 12px 0; } .filters input[type=search] { flex: 1 1 220px; }
+.table-wrap { overflow-x: auto; } .sort { background: none; border: 0; color: inherit; font-weight: 700; padding: 0; } .warn { color: #b54708; }
+.pager { display: flex; gap: 12px; align-items: center; justify-content: center; margin: 12px 0 20px; } .tabs-inline { display: flex; gap: 4px; margin: 4px 0 8px; }
+button.link:disabled { opacity: .4; cursor: default; }
