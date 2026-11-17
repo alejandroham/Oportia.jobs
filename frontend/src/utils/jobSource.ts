@@ -11,6 +11,7 @@ const SOURCE_LABELS: Record<string, string> = {
   remotive: 'Remotive',
   remoteok: 'RemoteOK',
   url_import: 'Enlace importado',
+  pegada: 'Pegada por ti',
   ats: 'Portal de la empresa',
   greenhouse: 'Portal de la empresa',
   lever: 'Portal de la empresa',

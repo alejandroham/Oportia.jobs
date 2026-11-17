@@ -112,7 +112,7 @@ export const JobSearchBar: React.FC<JobSearchBarProps> = ({
                 className="w-full px-3.5 py-2 text-left hover:bg-gray-50 dark:hover:bg-ink-raised text-gray-700 dark:text-gray-200 flex items-center gap-2.5"
               >
                 <Link2 className="w-4 h-4 text-gray-400" />
-                <span>Importar oferta por URL</span>
+                <span>Importar oferta (pegar texto o enlace)</span>
               </button>
 
               <button

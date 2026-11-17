@@ -5,6 +5,18 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
 
 ---
 
+## [1.3.8] - 2026-11-16 — *Pegar ofertas de otros portales y "Buscar también en"*
+
+### 📋 Ofertas de otros portales: pegar el texto y "Buscar también en"
+- **Importar una oferta pegando su texto** (uso personal): `POST /api/jobs/from-text`, sin estado.
+  - La IA ordena cargo, empresa, ubicación, modalidad, renta, tipo de contrato, fecha de cierre y requisitos, sin inventar. Sin IA, usa reglas.
+  - El texto pasa por el filtro anti-*prompt injection*.
+- **Las ofertas importadas ahora se guardan en Mis postulaciones.** Antes "Importar oferta por URL" las procesaba, pero la app no las guardaba en ningún lado. Las pegadas llevan la fuente "Pegada por ti" y su enlace original.
+- **"Buscar también en":** después de buscar, botones que abren la misma búsqueda **en el sitio de** Indeed, Computrabajo, Laborum, LinkedIn y la Bolsa Nacional de Empleo. Oportia no lee ni copia esos sitios.
+- **Importar por enlace no lee Indeed, Computrabajo ni Laborum,** porque sus condiciones lo prohíben. Se pide pegar el texto, y el enlace se guarda igual.
+- **Ventana "Importar una oferta"** con dos pestañas: Pegar texto y Enlace.
+- **Pruebas:** `test_job_from_text.py` y el e2e `import-offer.spec.ts`. **Manual:** nueva sección "Ofertas de otros portales".
+
 ## [1.3.7] - 2026-11-16 — *README y manual al día, memoria interna fuera del repositorio*
 
 ### 📘 Documentación

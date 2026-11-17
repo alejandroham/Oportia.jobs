@@ -1,6 +1,6 @@
 # Manual de usuario — Oportia Jobs IA
 
-> Versión 1.3.7 · Guía paso a paso para encontrar trabajo con Oportia y Opi, tu copiloto.
+> Versión 1.3.8 · Guía paso a paso para encontrar trabajo con Oportia y Opi, tu copiloto.
 >
 > Las capturas muestran a **Paula Rojas**, una persona de demostración **ficticia** (Técnico en Enfermería). Las empresas que aparecen también son ficticias.
 
@@ -194,7 +194,18 @@ En cada oferta puedes:
 
 ![Detalle de una oferta](manual/img/10-detalle-de-oferta.jpg)
 
-El menú **⋮** junto a "Buscar" tiene más opciones: **Importar oferta por URL** (pegas el enlace de una oferta que encontraste en otro sitio), **Ordenar ofertas con IA**, **Explorar portales de empresas** y **Vaciar ofertas del radar**.
+El menú **⋮** junto a "Buscar" tiene más opciones: **Importar oferta (pegar texto o enlace)**, **Ordenar ofertas con IA**, **Explorar portales de empresas** y **Vaciar ofertas del radar**.
+
+### Ofertas de otros portales (Indeed, Computrabajo, Laborum, LinkedIn)
+
+Algunos portales no permiten que otras apps lean o copien sus avisos, así que Oportia no los trae solo. Igual puedes usarlos:
+
+1. Después de buscar, aparece **"Buscar también «tu cargo» en:"** con botones para Indeed, Computrabajo, Laborum, LinkedIn y la Bolsa Nacional de Empleo. Se abren **en el sitio de cada portal**, con tu misma búsqueda.
+2. Si te gusta una oferta, **copia todo su texto**.
+3. En Oportia, abre **⋮ → Importar oferta → Pegar texto**, pega el texto y, si quieres, su enlace. Pulsa **Ordenar y guardar**.
+4. Oportia ordena el cargo, la empresa, la ubicación, la renta, la fecha de cierre y los requisitos, y la deja **guardada en Mis postulaciones**, solo para ti. Desde ahí evalúas tu compatibilidad, adaptas tu CV y postulas en el enlace original.
+
+La pestaña **Enlace** sirve para sitios que sí permiten leer la oferta, como el sitio de una empresa o GetOnBoard. Con enlaces de Indeed, Computrabajo o Laborum, Oportia te pide pegar el texto.
 
 > ℹ️ Si un portal no responde a tiempo, Oportia te avisa cuál fue y muestra lo que sí llegó. Puedes volver a intentar en unos minutos.
 
@@ -351,7 +362,7 @@ Probablemente venció: Oportia oculta las ofertas cerradas o que superaron su pl
 Que la oferta no publicó fecha de cierre y Oportia calculó una. Confirma la fecha en el aviso original antes de postular.
 
 **¿Por qué no veo ofertas de Computrabajo o Laborum?**
-Porque sus condiciones de uso no permiten que otros sitios lean y reproduzcan sus avisos de forma automática. Puedes buscar ahí directamente e importar una oferta a Oportia con **⋮ → Importar oferta por URL**.
+Porque sus condiciones de uso no permiten que otros sitios lean y reproduzcan sus avisos de forma automática. Usa los botones **"Buscar también en"** para buscar en su sitio y, si te gusta una oferta, copia su texto y pégalo en **⋮ → Importar oferta → Pegar texto** (ver la [sección 6](#ofertas-de-otros-portales-indeed-computrabajo-laborum-linkedin)).
 
 **Me sale "El servicio de IA está descansando un momento".**
 Se acabó el cupo de la IA gratuita por hoy o Google está con alta demanda. Intenta más tarde o conecta tu propia clave en Ajustes.

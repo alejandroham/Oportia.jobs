@@ -13,6 +13,7 @@ import { FailedSourcesBanner } from './FailedSourcesBanner';
 import { JobDetailModal } from './JobDetailModal';
 import { FitEvaluationModal } from './FitEvaluationModal';
 import { ImportUrlModal } from './ImportUrlModal';
+import { ExternalSearchLinks } from './ExternalSearchLinks';
 import { CompanyPortalsModal } from './CompanyPortalsModal';
 import { HelpCircle } from 'lucide-react';
 import { matchesQuery, normalizeText } from '../../utils/searchText';
@@ -364,6 +365,11 @@ export const JobSearchPage: React.FC<JobSearchPageProps> = ({
         <IndexResultsBanner generatedAt={indexInfo.generatedAt} indexCount={indexInfo.count} onSearchLive={handleScanLive} />
       )}
 
+      {/* Buscar también en otros portales (se abren en su sitio; Oportia no los lee) */}
+      {lastSearch.term && !isScanning && (
+        <ExternalSearchLinks term={searchTerm.trim() || lastSearch.term} region={selectedRegion || undefined} onPasteOffer={() => setIsImportUrlOpen(true)} />
+      )}
+
       {/* Tu perfil cambió: porcentajes calculados con el perfil anterior */}
       <StaleFitBanner
         count={staleJobs.length}
@@ -418,7 +424,14 @@ export const JobSearchPage: React.FC<JobSearchPageProps> = ({
         job={selectedJobForDetail}
         onConnectAI={onOpenSettings}
       />
-      <ImportUrlModal isOpen={isImportUrlOpen} onClose={() => setIsImportUrlOpen(false)} onImportSuccess={async () => {}} />
+      <ImportUrlModal
+        isOpen={isImportUrlOpen}
+        onClose={() => setIsImportUrlOpen(false)}
+        onImportSuccess={async (job) => {
+          // La oferta importada queda guardada en Mis postulaciones (antes no se guardaba en ningún lado).
+          await addOrUpdateJob({ ...job, status: 'applied_no_response', tracked_at: new Date().toISOString(), in_radar: true });
+        }}
+      />
       <CompanyPortalsModal isOpen={isCompanyPortalsOpen} onClose={() => setIsCompanyPortalsOpen(false)} profile={profile} />
     </div>
   );

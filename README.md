@@ -3,7 +3,7 @@
 <div align="center">
 
 [![CI — Integración Continua](https://github.com/alejandroham/Oportia.jobs/actions/workflows/ci.yml/badge.svg)](https://github.com/alejandroham/Oportia.jobs/actions/workflows/ci.yml)
-[![Version](https://img.shields.io/badge/Versi%C3%B3n-1.3.7-blue.svg?style=for-the-badge)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/Versi%C3%B3n-1.3.8-blue.svg?style=for-the-badge)](CHANGELOG.md)
 [![Privacy: Ley 21.719](https://img.shields.io/badge/Privacidad-Ley%2021.719%20Chile-emerald.svg?style=for-the-badge)](PRIVACY.md)
 [![Security Policy](https://img.shields.io/badge/Seguridad-Security%20Policy-blueviolet.svg?style=for-the-badge)](SECURITY.md)
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Falejandroham%2FOportia.jobs)
@@ -46,6 +46,7 @@
   - "Calza con tu perfil" muestra, sin IA, qué palabras tuyas aparecen en la oferta.
 - **Postulas con documentos a la medida:** CV y carta adaptados a cada oferta, en PDF, más preparación de entrevista y brechas con cursos de cualquier área (SENCE, ChileValora, Coursera y edX). Tú postulas en el enlace oficial: Oportia no envía postulaciones automáticas.
 - **IA gratuita o tu propia clave:** la IA gratuita de Oportia tiene cupo diario y un aviso de privacidad; con tu clave de Gemini, OpenAI o Claude la usas sin límite. Buscar ofertas y armar tu CV funciona también sin IA.
+- **Ofertas de otros portales:** botones "Buscar también en" abren tu búsqueda en Indeed, Computrabajo, Laborum, LinkedIn y la Bolsa Nacional de Empleo; si te gusta una oferta, pegas su texto y Oportia la ordena y la guarda en tus postulaciones (solo para ti).
 - **Tu opinión cuenta:** "¿Qué te parece Oportia?" recoge opiniones y, solo con tu autorización, un contacto para entrevistas de usuario.
 
 <p align="center"><img src="docs/manual/img/01-portada.jpg" alt="Portada de Oportia Jobs IA" width="820"></p>
@@ -180,7 +181,7 @@ El lanzador valida dependencias, compila el frontend y levanta la aplicación en
 El proyecto cuenta con una suite integral de pruebas con **100% de ejecución offline** y cero dependencias de red externa:
 
 ```bash
-# 1. Pruebas de Backend (Pytest — 167 pruebas unitarias y de integración offline)
+# 1. Pruebas de Backend (Pytest — 172 pruebas unitarias y de integración offline)
 pytest backend/tests -v
 
 # 2. Pruebas de Frontend (Vitest — 92 pruebas unitarias en entorno happy-dom)

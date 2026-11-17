@@ -1,4 +1,5 @@
 import os
+import re
 import uuid
 import json
 import tempfile
@@ -44,6 +45,7 @@ from app.agents.llm_provider import llm, LLMProviderError, AINotConnectedError
 from app.agents import shared_ai
 from app.agents.gap_analyzer import analyze_gaps
 from app.agents.career_insights import career_insights
+from app.agents.job_text_parser import parse_job_text, restricted_portal
 from app.agents.shared_ai import SharedAIRequest, current_shared_ai_request
 from app.agents.models import DEFAULT_GEMINI_MODEL, DEFAULT_OPENAI_MODEL, DEFAULT_CLAUDE_MODEL, CATALOG
 from app.agents.llm_context import current_llm_credentials, LLMCredentials
@@ -799,11 +801,34 @@ def trigger_scrape(keywords: Optional[str] = None, remote_only: bool = False, sc
         "sources": list({j.source for j in jobs})
     }
 
+class JobFromTextRequest(BaseModel):
+    text: str = Field(min_length=60, max_length=30_000)
+    url: Optional[str] = Field(default=None, max_length=2000)
+    use_ai: bool = True
+
+
+@app.post("/api/jobs/from-text", dependencies=[Depends(ai_rate_limiter)])
+def job_from_text(req: JobFromTextRequest):
+    """'Pegar el texto de una oferta' (uso personal). Sin estado: la oferta vuelve al navegador."""
+    url = (req.url or "").strip() or None
+    if url and not re.match(r"^https?://", url):
+        url = None
+    job, method, note = parse_job_text(req.text, url, use_ai=req.use_ai)
+    return {"job": job, "method": method, "note": note}
+
+
 @app.post("/api/jobs/import-url")
 def import_job_from_url(data: dict):
     url = data.get("url")
     if not url:
         raise HTTPException(status_code=400, detail="URL es requerida")
+    portal = restricted_portal(url)
+    if portal:
+        # Sus condiciones prohíben que otras apps lean o reproduzcan sus avisos: el servidor no descarga la página.
+        raise HTTPException(
+            status_code=400,
+            detail=f"{portal} no permite que otras apps lean sus avisos. Abre la oferta, copia su texto y usa «Pegar texto» en esta misma ventana.",
+        )
 
     parsed = extract_job_from_url(url)
     if "error" in parsed:

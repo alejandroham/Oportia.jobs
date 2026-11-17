@@ -488,6 +488,16 @@ export const api = {
   scrapeJobs: async (keywords?: string, remote_only: boolean = false, scope: string = 'chile') => {
     return api.searchJobs({ keywords, remote_only, search_scope: scope });
   },
+  /** "Pegar el texto de una oferta" (uso personal): Oportia la ordena; el servidor no la guarda. */
+  jobFromText: async (text: string, url?: string): Promise<{ job: JobPosting; method: 'ia' | 'reglas'; note?: string | null }> => {
+    const llmHeaders = await getLLMHeaders();
+    const res = await fetch(`${API_BASE}/jobs/from-text`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...llmHeaders },
+      body: JSON.stringify({ text, url: url || undefined })
+    });
+    return handleResponse(res, 'No se pudo leer la oferta');
+  },
   importJobUrl: async (url: string): Promise<{ message: string; job: JobPosting }> => {
     const res = await fetch(`${API_BASE}/jobs/import-url`, {
       method: 'POST',
