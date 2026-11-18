@@ -3,7 +3,7 @@ import { supabase, publicFile, APP_URL } from './supabase';
 export interface DailyStat { day: string; kind: string; category: string; events: number; clients: number }
 export interface Feedback {
   id: string; created_at: string; rating: number; liked: string | null; improve: string | null;
-  contact_email: string | null; contact_phone: string | null; contact_consent: boolean; trigger: string | null; app_version: string | null;
+  contact_email: string | null; contact_phone: string | null; contact_consent: boolean; trigger: string | null; moment?: string | null; app_version: string | null;
 }
 export interface AppEvent { id: number; created_at: string; kind: string; category: string; detail: Record<string, unknown>; ip_hash: string | null; app_version: string | null }
 export interface HistoryEntry { date: string; count: number; new_today: number; removed_expired: number; removed_unlisted: number; sources: Record<string, number>; areas: Record<string, number> }
@@ -12,7 +12,7 @@ export interface RemovedOffer { id: string; title: string; company?: string; sou
 export const KIND_LABELS: Record<string, string> = {
   visita: 'Visitas', busqueda: 'Búsquedas', cv_subido: 'CV subidos', cv_reanalizado: 'CV reanalizados', cargos_y_logros: 'Cargos y logros',
   compatibilidad_lote: 'Compatibilidad (lotes)', compatibilidad_detalle: 'Evaluaciones detalladas', brechas: 'Brechas', oferta_pegada: 'Ofertas pegadas',
-  oferta_por_enlace: 'Ofertas por enlace', chat_opi: 'Chat con Opi', opinion: 'Opiniones',
+  oferta_por_enlace: 'Ofertas por enlace', chat_opi: 'Chat con Opi', opinion: 'Opiniones', ia_ocupada: 'IA con alta demanda',
   limite_peticiones: 'Exceso de peticiones', error_servidor: 'Errores del servidor', ssrf_bloqueado: 'SSRF bloqueado',
   prompt_injection: 'Intento de manipular la IA', portal_restringido: 'Portal restringido', bot_opiniones: 'Bot en opiniones'
 };
@@ -101,4 +101,31 @@ export function summarize(stats: DailyStat[], today = new Date()) {
     ? Math.round(Object.values(activeWeekByDay).reduce((a, b) => a + b, 0) / Object.values(activeWeekByDay).length)
     : 0;
   return { totals, byDay, days, activeToday, avgActiveWeek };
+}
+
+export const MOMENT_LABELS: Record<string, string> = {
+  busqueda: 'Al buscar ofertas', compatibilidad: 'Compatibilidad', cv_adaptado: 'CV adaptado',
+  tarjeta: 'Tarjeta de la esquina', menu: 'Botón Opinión del menú', pie: 'Pie de página', portada: 'Portada',
+};
+
+export interface MomentSummary { moment: string; up: number; down: number; total: number }
+
+/** 👍/👎 por momento (votos rápidos: 4-5 cuenta como 👍, 1-2 como 👎). */
+export function summarizeMoments(rows: Feedback[]): MomentSummary[] {
+  const by = new Map<string, MomentSummary>();
+  for (const r of rows) {
+    const m = r.moment || (r.trigger === 'auto' ? 'tarjeta' : 'sin_momento');
+    const cur = by.get(m) || { moment: m, up: 0, down: 0, total: 0 };
+    cur.total += 1;
+    if (r.rating >= 4) cur.up += 1;
+    else if (r.rating <= 2) cur.down += 1;
+    by.set(m, cur);
+  }
+  return [...by.values()].sort((a, b) => b.total - a.total);
+}
+
+/** Personas que opinaron / personas activas (aprox.: cada opinión cuenta como una persona). */
+export function responseRate(opinions: number, activeUsers: number): string {
+  if (!activeUsers) return '—';
+  return `${Math.min(100, Math.round((opinions / activeUsers) * 100))} %`;
 }

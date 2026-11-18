@@ -923,6 +923,9 @@ def evaluate_job_stateless(req: StatelessJobEvaluationRequest):
     return fit_evaluator.evaluate(req.job, req.profile, req.preferences, persist=False)
 
 
+AI_BUSY_MESSAGE = ("La IA está con mucha demanda en este momento. Tus porcentajes no se perdieron: "
+                   "Oportia lo intentará de nuevo en unos minutos.")
+
 # Máximo de ofertas por consulta de "Ordenar ofertas con IA" (una sola llamada a la IA).
 RANK_MAX_JOBS = 15
 
@@ -942,7 +945,15 @@ def rank_jobs_stateless(req: StatelessJobRankRequest):
     jobs = req.jobs[:RANK_MAX_JOBS]
     if not jobs:
         return {"results": []}
-    return {"results": fit_evaluator.quick_rank(jobs, req.profile, req.preferences)}
+    try:
+        return {"results": fit_evaluator.quick_rank(jobs, req.profile, req.preferences)}
+    except LLMProviderError as e:
+        # Google con alta demanda (503) o lento: no es un error de Oportia ni de la persona.
+        # Se responde 200 con "busy" para que la app muestre un aviso tranquilo y reintente más tarde.
+        if e.code not in ("service_unavailable", "timeout"):
+            raise
+        telemetry.record("ia_ocupada", "error", {"ruta": "/api/jobs/rank", "codigo": e.code}, "", "", settings.VERSION)
+        return {"results": [], "busy": True, "message": AI_BUSY_MESSAGE}
 
 @app.post("/api/jobs/{job_id}/evaluate", response_model=FitEvaluation)
 def evaluate_job(job_id: str):
@@ -1088,7 +1099,8 @@ def draft_application_stateless(req: StatelessApplicationDraftRequest):
     Pure stateless application generator (Option A).
     Zero server database read/write.
     """
-    return drafter_reviewer.generate_application(req.job, req.profile, preferences=req.preferences, persist=False)
+    return drafter_reviewer.generate_application(req.job, req.profile, preferences=req.preferences, persist=False,
+                                                 cv_options=req.cv_options)
 
 @app.post("/api/jobs/{job_id}/apply", response_model=ApplicationDraft)
 def apply_to_job(job_id: str):

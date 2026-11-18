@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react';
 import type { JobPosting } from '../types';
-import { api } from '../api';
+import { api, ApiError } from '../api';
 import { useAppStore } from './useAppStore';
 import { getAIStatus } from '../utils/aiStatus';
 import { isFitStale, profileFingerprint, withFreshFit } from '../utils/fitFreshness';
@@ -40,7 +40,9 @@ export function useFitRanking() {
       let done = 0;
       for (let i = 0; i < Math.min(maxBatches, Math.ceil(toRank.length / RANK_BATCH)); i++) {
         const batch = toRank.slice(i * RANK_BATCH, (i + 1) * RANK_BATCH);
-        const { results } = await api.rankJobs(batch, p, prefs);
+        const { results, busy, message } = await api.rankJobs(batch, p, prefs);
+        // Google con mucha demanda: aviso tranquilo (no es un error de Oportia ni de la persona).
+        if (busy) throw new ApiError(message || 'La IA está con mucha demanda. Intenta en unos minutos.', 'ai_busy', 200);
         const scores = new Map(results.map((r) => [r.job_id, r.fit_score]));
         const fp = profileFingerprint(p, prefs);
         const current = useAppStore.getState().jobs;

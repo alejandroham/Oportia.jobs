@@ -132,9 +132,9 @@
   word-break: normal !important;
 }
 
-/* Bullets in formal documents must always remain left-aligned */
-.printable-cv ul,
-.printable-cv li {
+/* Viñetas a la izquierda, salvo en el CV justificado al ancho de la hoja (v1.4.2) */
+.printable-cv ul:not(.formal-justify),
+.printable-cv ul:not(.formal-justify) li {
   text-align: left !important;
   text-align-last: left !important;
 }
@@ -254,3 +254,15 @@
     margin-bottom: 8pt !important;
   }
 }
+
+/* --- CV: plantillas y alineación (v1.4.2). Se aplican igual en la vista previa y en el PDF. --- */
+.cv-doc ul.formal-justify li { text-align: justify !important; text-align-last: left !important; hyphens: auto; -webkit-hyphens: auto; }
+.cv-tpl-minimalist .cv-h2 { color: #374151 !important; border-color: transparent !important; letter-spacing: 0.12em; }
+.cv-tpl-minimalist .cv-h1 { font-weight: 600 !important; }
+.cv-tpl-executive .cv-h1,
+.cv-tpl-executive .cv-h2,
+.cv-tpl-executive .cv-h3 { font-family: Georgia, 'Times New Roman', serif !important; }
+.cv-tpl-executive .cv-h2 { color: #111827 !important; border-bottom: 2px solid #111827 !important; }
+.cv-align-center .cv-h1,
+.cv-align-center .cv-header-line { text-align: center !important; }
+.cv-align-center ul.cv-header-line { list-style: none; padding-left: 0; }

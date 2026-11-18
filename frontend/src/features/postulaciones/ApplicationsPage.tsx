@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
-import type { JobPosting, ApplicationDraft, CandidateProfile } from '../../types';
+import type { JobPosting, ApplicationDraft, CandidateProfile, CvOptions } from '../../types';
+import { defaultCvLength } from './CvOptionsPanel';
 import { useAppStore } from '../../state/useAppStore';
 import { ApplicationList } from './ApplicationList';
 import { ApplicationDetail } from './ApplicationDetail';
@@ -99,7 +100,7 @@ export const ApplicationsPage: React.FC<ApplicationsPageProps> = ({
   }, [activeJob, applications]);
 
   // Adaptar CV con IA para una postulación (por defecto, la activa)
-  const handleAdaptCv = async (target?: JobPosting) => {
+  const handleAdaptCv = async (target?: JobPosting, cvOptions?: CvOptions) => {
     const job = target ?? activeJob;
     if (!job) return;
     if (!profile) {
@@ -108,7 +109,7 @@ export const ApplicationsPage: React.FC<ApplicationsPageProps> = ({
     }
     setIsAdapting(true);
     try {
-      const draft = await api.applyJob(job, profile, preferences);
+      const draft = await api.applyJob(job, profile, preferences, cvOptions);
       await addOrUpdateApplication(draft);
       const latest = useAppStore.getState().jobs.find((j) => j.id === job.id) ?? job;
       const updatedJob: JobPosting = {
@@ -146,7 +147,7 @@ export const ApplicationsPage: React.FC<ApplicationsPageProps> = ({
     const hasDocs = applications.some((a) => a.job_id === ofertaId) || Boolean(job.tailored_cv_markdown);
     if (wantsAdapt && !hasDocs && autoAdaptDone.current !== ofertaId) {
       autoAdaptDone.current = ofertaId;
-      void handleAdaptCv(job);
+      void handleAdaptCv(job, { length: defaultCvLength(profile?.experiences?.length ?? 0), experience_ids: null });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams, trackedJobs]);
@@ -288,7 +289,7 @@ export const ApplicationsPage: React.FC<ApplicationsPageProps> = ({
               onBackToList={() => setSelectedJobId(null)}
               onUpdateJob={handleUpdateJob}
               onDeleteJob={handleDeleteJob}
-              onAdaptCv={() => handleAdaptCv()}
+              onAdaptCv={(options) => handleAdaptCv(undefined, options)}
               isAdapting={isAdapting}
             />
           ) : (

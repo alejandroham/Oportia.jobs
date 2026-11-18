@@ -59,6 +59,30 @@ const profile = {
       description: 'Cuidados básicos y control de signos vitales en medicina interna.',
       technologies: [],
       bullet_achievements: ['Registro clínico sin observaciones en dos auditorías internas.']
+    },
+    {
+      id: 'exp-3',
+      company: 'Farmacia del Puerto (ficticia)',
+      role: 'Auxiliar de farmacia',
+      start_date: '2016',
+      end_date: '2018',
+      location: 'Valparaíso',
+      is_remote: false,
+      description: 'Atención de público, despacho de recetas y control de inventario.',
+      technologies: [],
+      bullet_achievements: ['Ordené el inventario de medicamentos controlados sin diferencias en dos cierres anuales.']
+    },
+    {
+      id: 'exp-4',
+      company: 'Tienda Costa (ficticia)',
+      role: 'Vendedora',
+      start_date: '2014',
+      end_date: '2016',
+      location: 'Viña del Mar',
+      is_remote: false,
+      description: 'Venta y atención de clientes en tienda de retail.',
+      technologies: [],
+      bullet_achievements: []
     }
   ],
   education: [
@@ -111,7 +135,7 @@ const tracked = job('t1', 'TENS de Urgencia — Reemplazo', 'Clínica Bahía Ser
   deadline: inDays(9),
   fit_score: 86,
   tailored_cv_markdown:
-    '# Paula Rojas\n**Técnico en Enfermería (TENS)** | Viña del Mar | paula.rojas@ejemplo.cl\n\n## Perfil profesional\nTENS con 6 años en urgencia, acostumbrada a la alta demanda y al registro clínico riguroso.\n\n## Competencias clave\n- Categorización y apoyo en urgencia\n- Toma de signos vitales y curaciones\n- Registro clínico\n\n## Experiencia laboral\n### TENS de Urgencia — Clínica Costa Azul\n*2021 – Actual · Viña del Mar*\n- Apoyo en la atención de más de 40 pacientes por turno.\n- Capacitación de 5 técnicos nuevos en protocolos de categorización.\n\n## Educación\n- **Técnico de Nivel Superior en Enfermería**, Instituto Profesional Ejemplo (2017)',
+    '# Paula Rojas\n**Técnico en Enfermería (TENS)** | Viña del Mar | paula.rojas@ejemplo.cl\n\n## Perfil profesional\nTENS con 6 años en urgencia, acostumbrada a la alta demanda y al registro clínico riguroso.\n\n## Competencias clave\n- Categorización y apoyo en urgencia\n- Toma de signos vitales y curaciones\n- Registro clínico\n\n## Experiencia laboral\n### TENS de Urgencia — Clínica Costa Azul\n*2021 – Actual · Viña del Mar*\n- Apoyo en la atención de más de 40 pacientes por turno.\n- Capacitación de 5 técnicos nuevos en protocolos de categorización.\n\n### TENS de Hospitalización — Hospital Base Los Aromos\n*2018 – 2021 · Quilpué*\n- Control de signos vitales y cuidados básicos en medicina interna, con registro clínico sin observaciones en dos auditorías internas.\n\n## Experiencia anterior\n- **Auxiliar de farmacia** · Farmacia del Puerto (ficticia) (2016 – 2018)\n- **Vendedora** · Tienda Costa (ficticia) (2014 – 2016)\n\n## Educación\n- **Técnico de Nivel Superior en Enfermería**, Instituto Profesional Ejemplo (2017)',
   tailored_cover_letter:
     'Estimado equipo de selección de Clínica Bahía Serena:\n\nPostulo al reemplazo de TENS de Urgencia. En los últimos cuatro años he trabajado en un servicio de urgencia con más de 40 pacientes por turno, donde aprendí a mantener la calma y el registro clínico al día.\n\nAdemás, capacité a cinco técnicos nuevos en los protocolos de categorización, lo que me permitió apoyar al equipo en los turnos de mayor demanda.\n\nQuedo atenta para conversar sobre cómo puedo aportar a su servicio.\n\nAtentamente,\nPaula Rojas'
 });
@@ -125,7 +149,14 @@ const application = {
   cover_letter: tracked.tailored_cover_letter,
   ats_score: 86,
   ats_feedback: ['Palabras clave de urgencia bien representadas'],
-  created_at: now
+  created_at: now,
+  cv_length: '1',
+  selection_method: 'ia',
+  selected_experience_ids: ['exp-1', 'exp-2'],
+  selection_reasons: {
+    'exp-1': 'Mismo servicio que la oferta: urgencia con alta demanda.',
+    'exp-2': 'Aporta control de signos vitales y registro clínico.'
+  }
 };
 
 const gapsResponse = {

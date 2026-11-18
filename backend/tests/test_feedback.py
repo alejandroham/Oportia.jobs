@@ -116,3 +116,16 @@ def test_purge_events_older_than_90_days(monkeypatch):
     monkeypatch.setattr(fb.requests, "delete", lambda url, params, headers, timeout: calls.append((url, params)) or R())
     fb.purge_old_events()
     assert calls[0][0].endswith("/rest/v1/app_events") and calls[0][1]["created_at"].startswith("lt.")
+
+
+def test_quick_thumbs_feedback_records_moment_only(env):
+    res = TestClient(app).post("/api/opinion", json={"rating": 1, "trigger": "rapida", "moment": "cv_adaptado"})
+    assert res.status_code == 200, res.text
+    row = env["row"]
+    assert row["trigger"] == "rapida" and row["moment"] == "cv_adaptado" and row["rating"] == 1
+    assert row["contact_email"] is None and row["liked"] is None
+
+
+def test_unknown_moment_and_trigger_are_normalized(env):
+    TestClient(app).post("/api/opinion", json={"rating": 4, "trigger": "hack", "moment": "<script>"})
+    assert env["row"]["trigger"] == "manual" and env["row"]["moment"] is None

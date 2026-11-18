@@ -20,7 +20,7 @@ const inputCls =
  * Incluye el enlace para apoyar el proyecto con una donación.
  */
 export const FeedbackDialog: React.FC = () => {
-  const { isOpen, trigger, close } = useFeedbackStore();
+  const { isOpen, trigger, moment, initialRating, close } = useFeedbackStore();
   const [rating, setRating] = useState(0);
   const [liked, setLiked] = useState('');
   const [improve, setImprove] = useState('');
@@ -36,8 +36,9 @@ export const FeedbackDialog: React.FC = () => {
     if (isOpen) {
       setError('');
       setSentId('');
+      if (initialRating) setRating(initialRating);
     }
-  }, [isOpen]);
+  }, [isOpen, initialRating]);
 
   const hasContact = Boolean(email.trim() || phone.trim());
   const emailOk = !email.trim() || EMAIL_RE.test(email.trim());
@@ -58,7 +59,8 @@ export const FeedbackDialog: React.FC = () => {
         contact_phone: consent ? phone.trim() || undefined : undefined,
         contact_consent: consent && hasContact,
         website: website || undefined,
-        trigger
+        trigger,
+        moment
       });
       markFeedbackDone();
       setSentId(res.id);

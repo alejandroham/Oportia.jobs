@@ -1,6 +1,6 @@
 # Manual de usuario — Oportia Jobs IA
 
-> Versión 1.4.1 · Guía paso a paso para encontrar trabajo con Oportia y Opi, tu copiloto.
+> Versión 1.4.2 · Guía paso a paso para encontrar trabajo con Oportia y Opi, tu copiloto.
 >
 > Las capturas muestran a **Paula Rojas**, una persona de demostración **ficticia** (Técnico en Enfermería). Las empresas que aparecen también son ficticias.
 
@@ -225,7 +225,16 @@ Cada postulación tiene tres pestañas:
 
 ### 1. Documentos (CV y Carta)
 
-- **Generar CV y carta adaptados** (o **Volver a adaptar con IA**): Opi reordena tu experiencia **real** según lo que pide la oferta. No inventa cargos, títulos ni empresas.
+- **Largo y experiencias del CV** (nuevo en 1.4.2). Antes de generar, elige:
+  - **El largo:** **1 hoja**, **2 hojas** o **Completo**. Si tienes más de 5 experiencias, Oportia sugiere 1 hoja.
+  - **Que Opi elija:** Opi desarrolla las experiencias más relevantes para esa oferta y te muestra en una línea **por qué** eligió cada una.
+  - **Elegir yo:** marca o desmarca tus experiencias. Se parte de lo que eligió Opi.
+  - Las experiencias que no se desarrollan **no se ocultan**: van en **Experiencia anterior**, una línea por cargo (cargo, empresa y años). Esa sección la escribe Oportia con tus datos, no la IA, para que nada se invente.
+- **Generar CV y carta adaptados** (o **Volver a adaptar con IA**): Opi reordena tu experiencia **real** según lo que pide la oferta y respeta el largo elegido. No inventa cargos, títulos ni empresas.
+- El texto va **justificado** al ancho de la hoja, con división de palabras.
+- **Medidor de hojas:** sobre la vista previa verás **Cabe en 1 hoja** o, por ejemplo, **2 hojas al imprimir**. Si se pasa del largo que pediste, aparece en amarillo.
+- **Ajustar a la hoja:** reduce un poco la letra y los espacios (hasta un mínimo legible) para que el CV quepa en las hojas elegidas. **Tamaño normal** lo deja como estaba. Si ni así cabe, Oportia te sugiere quitar una experiencia o elegir un CV más largo.
+- La **plantilla** (Moderna, Minimalista o Ejecutiva) y la **alineación** del encabezado ahora también se aplican al CV adaptado.
 - Alterna entre **CV Base** y **CV Adaptado**, y descárgalo con **Imprimir / Guardar PDF**.
 
 ![CV adaptado a una oferta](manual/img/11-postulacion-cv-adaptado.jpg)
@@ -325,13 +334,16 @@ Más detalles en la [Política de Privacidad](../PRIVACY.md) (Ley N° 21.719).
 
 ## 12. Danos tu opinión
 
-En el pie de página (**Danos tu opinión**) y en la portada (**¿Qué te parece Oportia?**) puedes contarnos qué te parece la app:
+Opinar toma un segundo y nunca tapa lo que estás haciendo:
+- **👍/👎 de un toque:** después de buscar ofertas o de generar un CV adaptado verás, por ejemplo, **¿Te sirvió el CV adaptado? Sí · No**. Se pregunta una sola vez en cada lugar; la **×** lo cierra para siempre. Después del toque puedes **Escribir (opcional)**.
+- **Tarjeta de la esquina:** tras unos minutos de uso aparece una tarjeta pequeña abajo a la izquierda, **¿Cómo va tu experiencia con Oportia?**, con cinco caras. Un toque basta. Si la cierras, vuelve a aparecer como máximo una vez más.
+- **Botón Opinión** en el menú superior, además del pie de página (**Danos tu opinión**) y la portada (**¿Qué te parece Oportia?**), para escribir con calma:
 - Una **calificación de 1 a 5**, qué te sirvió y qué mejorarías.
 - **Si quieres**, tu correo o teléfono para que te contactemos sobre mejoras o te invitemos a una entrevista. Solo se guardan si marcas la autorización; sin ella, el botón **Enviar opinión** no se activa.
 - Al enviar, Oportia te muestra un **código**. Con él puedes pedir que borremos tu opinión o tu contacto.
 - También encontrarás el enlace para **apoyar a Oportia con una donación**.
 
-Después de **30 a 60 minutos de uso**, Oportia te invita una vez a responder. Si pulsas **Ahora no**, vuelve a preguntar más adelante, como máximo dos veces más. Si ya respondiste, no vuelve a preguntar. Ese tiempo se cuenta solo en tu navegador.
+Si ya opinaste, la tarjeta no vuelve a aparecer. El tiempo de uso y las preguntas ya respondidas se guardan solo en tu navegador.
 
 ---
 

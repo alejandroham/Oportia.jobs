@@ -1,5 +1,6 @@
 from typing import Optional, Tuple
-from app.models.schemas import CandidateProfile, JobPosting, ApplicationDraft, UserPreferences
+from app.models.schemas import CandidateProfile, JobPosting, ApplicationDraft, UserPreferences, CvOptions
+from app.agents import cv_selection
 from app.agents.llm_provider import llm, LLMProviderError, AINotConnectedError, USER_FACING_LLM_ERRORS
 from app.storage.db import db
 import logging
@@ -28,6 +29,7 @@ class DrafterReviewerPipeline:
         profile: CandidateProfile,
         preferences: Optional[UserPreferences] = None,
         persist: bool = True,
+        cv_options: Optional[CvOptions] = None,
     ) -> ApplicationDraft:
         """
         Genera CV adaptado + carta de presentación y los audita.
@@ -37,8 +39,15 @@ class DrafterReviewerPipeline:
         """
         prefs = preferences if preferences is not None else (db.get_preferences() if persist else None)
 
-        # Paso 1: el redactor genera CV y carta
-        cv_markdown, cover_letter = self._draft_materials(job, profile, prefs)
+        # Paso 0: qué experiencias se desarrollan y qué tan largo es el CV.
+        options = cv_options or CvOptions()
+        length = cv_selection.normalize_length(options.length)
+        selected_ids, reasons, method = cv_selection.choose_experiences(profile, job, length, options.experience_ids)
+        focused, others = cv_selection.split_profile(profile, selected_ids, length)
+
+        # Paso 1: el redactor genera CV y carta con las experiencias elegidas.
+        cv_markdown, cover_letter = self._draft_materials(job, focused, prefs, length)
+        cv_markdown = cv_selection.insert_previous_experience(cv_markdown, others)
 
         # Paso 2: el revisor audita (no bloqueante: si falla, igual se entregan los documentos)
         ats_score, ats_feedback, reviewer_critique = self._review_materials(job, profile, cv_markdown, cover_letter)
@@ -54,7 +63,11 @@ class DrafterReviewerPipeline:
             cover_letter=cover_letter,
             ats_score=ats_score,
             ats_feedback=ats_feedback,
-            reviewer_critique=reviewer_critique
+            reviewer_critique=reviewer_critique,
+            cv_length=length,
+            selected_experience_ids=selected_ids,
+            selection_reasons=reasons,
+            selection_method=method,
         )
 
         if persist:
@@ -95,9 +108,11 @@ class DrafterReviewerPipeline:
             cleaned = cleaned[:-3]
         return cleaned.strip()
 
-    def _draft_materials(self, job: JobPosting, profile: CandidateProfile, prefs: Optional[UserPreferences]) -> Tuple[str, str]:
+    def _draft_materials(self, job: JobPosting, profile: CandidateProfile, prefs: Optional[UserPreferences],
+                         length: str = "2") -> Tuple[str, str]:
         memory_context = self._memory_context(prefs)
         profile_json = json.dumps(profile.model_dump(), ensure_ascii=False, indent=2)
+        length_rule = cv_selection.LENGTH_PROMPTS.get(length, "")
 
         prompt = f"""
 VACANTE OBJETIVO:
@@ -113,6 +128,8 @@ INSTRUCCIONES DE REDACCIÓN:
    - Competencias y habilidades relevantes para la vacante primero
    - Experiencia laboral con viñetas de logros orientadas al impacto (resultados, métricas, responsabilidades clave, herramientas o técnicas usadas). REGLAS ESTRICTAS DE FORMATO: Usa SIEMPRE guiones '- ' para las viñetas, NUNCA asteriscos '* '. NO insertes separadores '---' entre secciones.
    - Educación, cursos y certificaciones
+   - Incluye SOLO las experiencias del perfil entregado. NO agregues una sección "Experiencia anterior": Oportia la agrega aparte.
+   - {length_rule}
 2. Redacta una Carta de Presentación moderna (3 a 4 párrafos concisos):
    - Prohibido usar clichés vacíos como "Me dirijo a ustedes para expresar mi entusiasmo...".
    - Apertura directa: por qué tu experiencia concreta responde a lo que busca la vacante.
@@ -141,13 +158,13 @@ RESPONDE ÚNICAMENTE CON UN JSON:
             logger.warning(f"Drafter JSON combinado falló ({e.code}); generando documentos por separado.")
 
         if not cv_md:
-            cv_md = self._draft_cv_text(job, profile_json, memory_context) or self._fallback_cv(profile, job)
+            cv_md = self._draft_cv_text(job, profile_json, memory_context, length_rule) or self._fallback_cv(profile, job)
         if not cl:
             cl = self._draft_cover_letter_text(job, profile, profile_json, memory_context) or self._fallback_cover_letter(profile, job)
 
         return cv_md.strip(), cl.strip()
 
-    def _draft_cv_text(self, job: JobPosting, profile_json: str, memory_context: str) -> Optional[str]:
+    def _draft_cv_text(self, job: JobPosting, profile_json: str, memory_context: str, length_rule: str = "") -> Optional[str]:
         prompt = f"""
 VACANTE OBJETIVO:
 {self._job_block(job)}
@@ -156,6 +173,8 @@ PERFIL REAL Y VERIFICADO DEL CANDIDATO:
 {profile_json}
 {memory_context}
 Escribe el CURRÍCULUM ADAPTADO a esta vacante en Markdown limpio (# Nombre, ## secciones, viñetas con '- ').
+Incluye SOLO las experiencias del perfil entregado; no agregues una sección "Experiencia anterior".
+{length_rule}
 Responde SOLO con el Markdown del CV, sin explicaciones ni bloques de código.
 """
         try:

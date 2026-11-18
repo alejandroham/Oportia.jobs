@@ -405,6 +405,21 @@ export interface ApplicationDraft {
   ats_feedback: string[];
   reviewer_critique?: string;
   created_at: string;
+  /** Largo pedido: "1" (una hoja), "2" (dos hojas) o "full" (completo). */
+  cv_length?: CvLength;
+  /** Experiencias desarrolladas en el CV; las demás van en "Experiencia anterior". */
+  selected_experience_ids?: string[];
+  /** Por qué Opi eligió cada experiencia (id -> frase). */
+  selection_reasons?: Record<string, string>;
+  selection_method?: 'manual' | 'todas' | 'ia' | 'reglas';
+}
+
+export type CvLength = '1' | '2' | 'full';
+
+export interface CvOptions {
+  length: CvLength;
+  /** null/undefined: Opi elige. Lista: las que elegiste tú. */
+  experience_ids?: string[] | null;
 }
 
 export interface ModelOption {

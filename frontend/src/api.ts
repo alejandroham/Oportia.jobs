@@ -15,7 +15,8 @@ import type {
   TutorPracticeChallenge,
   TutorEvaluationResult,
   GapAnalysis,
-  CareerInsights
+  CareerInsights,
+  CvOptions
 } from './types';
 import { decryptApiKeyLocally } from './utils/crypto';
 import { getClientId, hasSharedAIConsent, reportSharedAIRemaining } from './utils/sharedAI';
@@ -184,8 +185,13 @@ export interface OpinionPayload {
   contact_consent: boolean;
   /** Campo trampa (bots). */
   website?: string;
-  trigger: 'manual' | 'auto';
+  trigger: FeedbackTrigger;
+  /** Dónde se dio la opinión (sin contenido). */
+  moment?: FeedbackMoment;
 }
+
+export type FeedbackTrigger = 'manual' | 'auto' | 'rapida' | 'tarjeta';
+export type FeedbackMoment = 'busqueda' | 'compatibilidad' | 'cv_adaptado' | 'tarjeta' | 'menu' | 'pie' | 'portada';
 
 export const api = {
   /** "¿Qué te parece Oportia?": opinión con contacto voluntario (solo con autorización). */
@@ -544,7 +550,7 @@ export const api = {
     jobs: JobPosting[],
     profile: CandidateProfile,
     preferences?: UserPreferences | null
-  ): Promise<{ results: Array<{ job_id: string; fit_score: number; reason: string }> }> => {
+  ): Promise<{ results: Array<{ job_id: string; fit_score: number; reason: string }>; busy?: boolean; message?: string }> => {
     const llmHeaders = await getLLMHeaders();
     const res = await fetch(`${API_BASE}/jobs/rank`, {
       method: 'POST',
@@ -590,12 +596,17 @@ export const api = {
   // Applications
   // Opción A (sin estado): siempre se envían la oferta y el perfil completos desde el navegador.
   // No usar /jobs/{id}/apply: ese endpoint busca la oferta en el disco del servidor.
-  applyJob: async (job: JobPosting, profile: CandidateProfile, preferences?: UserPreferences | null): Promise<ApplicationDraft> => {
+  applyJob: async (
+    job: JobPosting,
+    profile: CandidateProfile,
+    preferences?: UserPreferences | null,
+    cvOptions?: CvOptions | null
+  ): Promise<ApplicationDraft> => {
     const llmHeaders = await getLLMHeaders();
     const res = await fetch(`${API_BASE}/applications/draft`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...llmHeaders },
-      body: JSON.stringify({ job, profile, preferences: preferences ?? null })
+      body: JSON.stringify({ job, profile, preferences: preferences ?? null, cv_options: cvOptions ?? null })
     });
     return handleResponse<ApplicationDraft>(res, 'Error al generar postulación');
   },

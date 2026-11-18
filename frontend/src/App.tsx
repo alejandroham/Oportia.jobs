@@ -10,6 +10,7 @@ import { WelcomeHub } from './components/WelcomeHub';
 import { LandingPage } from './components/landing/LandingPage';
 import { OnboardingWizard } from './components/onboarding/OnboardingWizard';
 import { FeedbackDialog } from './components/feedback/FeedbackDialog';
+import { FeedbackCard } from './components/feedback/FeedbackCard';
 import { PURGED_FLAG } from './components/settings/SettingsPrivacyPanel';
 import { useFeedbackStore } from './state/useFeedbackStore';
 import { addUsageMinute, markPrompted, shouldPrompt } from './utils/feedbackPrompt';
@@ -88,10 +89,11 @@ export function App() {
   const [isOnboardingOpen, setIsOnboardingOpen] = useState<boolean>(false);
   const toast = useToast();
 
-  // Invitación a opinar: tras 30-60 minutos de uso real (pestaña visible), sin interrumpir la guía,
-  // la portada ni el chat. Ver utils/feedbackPrompt.ts.
+  // Invitación a opinar: tarjeta pequeña en una esquina tras 4-8 minutos de uso real (pestaña visible),
+  // nunca encima de la guía, la portada ni el chat. Ver utils/feedbackPrompt.ts.
   const isFeedbackOpen = useFeedbackStore((st) => st.isOpen);
   const promptBlocked = useRef(false);
+  const [showFeedbackCard, setShowFeedbackCard] = useState(false);
   promptBlocked.current = isLandingVisible || isOnboardingOpen || isOpiChatOpen || isFeedbackOpen;
   useEffect(() => {
     const id = window.setInterval(() => {
@@ -99,7 +101,7 @@ export function App() {
       const minutes = addUsageMinute();
       if (!promptBlocked.current && shouldPrompt(minutes)) {
         markPrompted(minutes);
-        useFeedbackStore.getState().open('auto');
+        setShowFeedbackCard(true);
       }
     }, 60_000);
     return () => window.clearInterval(id);
@@ -362,6 +364,9 @@ export function App() {
 
         {/* "¿Qué te parece Oportia?": opinión, contacto voluntario y donación */}
         <FeedbackDialog />
+        {showFeedbackCard && !isLandingVisible && !isOnboardingOpen && !isFeedbackOpen && (
+          <FeedbackCard onClose={() => setShowFeedbackCard(false)} />
+        )}
 
         {/* 3-Step Guided Onboarding Wizard */}
         <OnboardingWizard

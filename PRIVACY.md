@@ -1,7 +1,7 @@
 # Política de Privacidad y Soberanía Digital — Oportia Jobs IA
 
-**Última actualización:** 16 de noviembre de 2026  
-**Versión de política:** 1.4.0  
+**Última actualización:** 17 de noviembre de 2026  
+**Versión de política:** 1.4.2  
 **Marco normativo:** Ley N° 21.719 de Protección de Datos Personales (Chile) y principios de *Privacy by Design*.
 
 ---
@@ -114,12 +114,15 @@ Si tienes preguntas sobre la implementación de privacidad o la arquitectura de 
 
 ## 9. Opiniones y contacto voluntario
 
-El recuadro **"¿Qué te parece Oportia?"** está en el pie de página y en la portada. También aparece una sola vez después de 30 a 60 minutos de uso; si respondes "Ahora no", vuelve a aparecer como máximo dos veces más.
+Puedes opinar de tres formas, todas voluntarias:
+- **Un toque (👍/👎)** dentro de la página, por ejemplo después de buscar o de generar un CV adaptado. Es anónimo y se pregunta una sola vez en cada lugar.
+- **Una tarjeta pequeña** en una esquina, con cinco caras, que aparece una vez tras unos minutos de uso. Se cierra con × y vuelve a aparecer como máximo una vez más.
+- **El formulario "¿Qué te parece Oportia?"**, en el botón **Opinión** del menú, en el pie de página y en la portada.
 
 **Qué se guarda**
 - Tu calificación (1 a 5) y tus comentarios.
 - **Solo si tú lo escribes y marcas la autorización:** tu correo o tu teléfono.
-- La versión de la app, si la opinión fue espontánea o respondía a la invitación, y la fecha.
+- La versión de la app, la forma en que opinaste (un toque, tarjeta o formulario), **dónde** lo hiciste (por ejemplo, "CV adaptado"; nunca el contenido de tu CV o de tu búsqueda) y la fecha.
 - **No se guardan** tu CV, tu perfil, tus búsquedas ni tu dirección IP.
 
 **Para qué se usa**

@@ -65,3 +65,17 @@ def test_rank_jobs_caps_batch_size(monkeypatch):
     jobs = [{**JOB, "id": f"j{i}"} for i in range(40)]
     assert client().post("/api/jobs/rank", json={"jobs": jobs, "profile": PROFILE}).status_code == 200
     assert seen["n"] == 15
+
+
+def test_rank_jobs_busy_ai_answers_calmly_instead_of_503(monkeypatch):
+    from app.agents.llm_provider import LLMProviderError
+
+    def busy(prompt, system_instruction=None):
+        raise LLMProviderError(code="service_unavailable", message="503 UNAVAILABLE high demand", provider="gemini")
+
+    monkeypatch.setattr(llm, "generate_json", busy)
+    r = client().post("/api/jobs/rank", json={"jobs": [JOB], "profile": PROFILE})
+    assert r.status_code == 200, r.text
+    body = r.json()
+    assert body["busy"] is True and body["results"] == []
+    assert "mucha demanda" in body["message"] and "503" not in body["message"]

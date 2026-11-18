@@ -1,10 +1,11 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import type { CandidateProfile } from '../../types';
-import { Printer, Layout, Palette, AlignLeft, AlignCenter } from 'lucide-react';
+import { Printer, Layout, Palette, AlignLeft, AlignCenter, Minimize2, FileCheck2, FileWarning } from 'lucide-react';
 import { MarkdownDocument } from './MarkdownDocument';
 import { getProfileLinks } from '../../utils/profileKeywords';
 import { safeExternalUrl } from '../../utils/jobSource';
 import { printElement, buildDocumentTitle } from '../../utils/printDocument';
+import { describePages, findFitScale, measurePrintHeight, pagesFor } from '../../utils/cvPages';
 
 export const formatExperiencePeriod = (startDate?: string, endDate?: string): string => {
   const start = (startDate || '').trim();
@@ -27,6 +28,8 @@ interface CvPreviewProps {
   className?: string;
   /** Empresa / cargo de la postulación, se usa para el nombre del PDF. */
   documentLabel?: string;
+  /** Hojas que debería ocupar (según el largo elegido): se avisa si se pasa. */
+  targetPages?: number;
 }
 
 export const CvPreview: React.FC<CvPreviewProps> = ({
@@ -34,13 +37,47 @@ export const CvPreview: React.FC<CvPreviewProps> = ({
   tailoredMarkdown,
   showControls = true,
   className = '',
-  documentLabel
+  documentLabel,
+  targetPages
 }) => {
   const printableRef = useRef<HTMLDivElement>(null);
   const [template, setTemplate] = useState<'modern' | 'minimalist' | 'executive'>('modern');
   const [paperTheme, setPaperTheme] = useState<'white' | 'warm' | 'cream'>('white');
   const [align, setAlign] = useState<'left' | 'center'>('left');
   const [viewSource, setViewSource] = useState<'profile' | 'tailored'>(tailoredMarkdown ? 'tailored' : 'profile');
+  // Escala de "Ajustar a la hoja" (1 = tamaño normal) y hojas que ocupa al imprimir.
+  const [scale, setScale] = useState(1);
+  const [pages, setPages] = useState<number | null>(null);
+  const [fitNote, setFitNote] = useState('');
+
+  const measure = useCallback((s: number) => (printableRef.current ? measurePrintHeight(printableRef.current, s) : 0), []);
+
+  // Cada vez que cambia el contenido, la plantilla o la escala, se vuelve a medir (en el próximo cuadro).
+  useEffect(() => {
+    const id = requestAnimationFrame(() => {
+      const h = measure(scale);
+      setPages(h > 0 ? pagesFor(h) : null);
+    });
+    return () => cancelAnimationFrame(id);
+  }, [measure, scale, template, viewSource, tailoredMarkdown, profile]);
+
+  // Contenido nuevo: vuelve al tamaño normal.
+  useEffect(() => {
+    setScale(1);
+    setFitNote('');
+  }, [tailoredMarkdown, viewSource]);
+
+  const handleFit = () => {
+    const target = targetPages ?? Math.max(1, Math.ceil((pages ?? 1) - 0.25));
+    const best = findFitScale(measure, target);
+    if (best === null) {
+      setFitNote(`No cabe en ${target === 1 ? '1 hoja' : `${target} hojas`} ni con la letra mínima legible. Quita una experiencia o elige un CV más largo.`);
+      return;
+    }
+    setScale(best);
+    setFitNote(best === 1 ? 'Ya cabe sin achicar la letra.' : `Letra y espacios al ${Math.round(best * 100)} % para que quepa.`);
+  };
+  const overTarget = targetPages !== undefined && pages !== null && pages > targetPages + 0.01;
 
   // Cuando la IA termina de adaptar el CV, mostrar (e imprimir) la versión adaptada.
   useEffect(() => {
@@ -155,19 +192,51 @@ export const CvPreview: React.FC<CvPreviewProps> = ({
         </div>
       )}
 
+      {/* Medidor de hojas y "Ajustar a la hoja" */}
+      {showControls && pages !== null && (
+        <div className="flex flex-wrap items-center gap-2 text-xs" aria-live="polite">
+          <span
+            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg font-semibold border ${
+              overTarget
+                ? 'bg-amber-50 text-amber-900 border-amber-200 dark:bg-amber-500/10 dark:text-amber-100 dark:border-amber-400/30'
+                : 'bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-200 dark:border-emerald-400/30'
+            }`}
+          >
+            {overTarget ? <FileWarning className="w-3.5 h-3.5" aria-hidden="true" /> : <FileCheck2 className="w-3.5 h-3.5" aria-hidden="true" />}
+            {describePages(pages)}
+            {overTarget && ` (pediste ${targetPages === 1 ? '1 hoja' : `${targetPages} hojas`})`}
+          </span>
+          <button
+            type="button"
+            onClick={handleFit}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 min-h-[36px] rounded-lg border border-gray-200 dark:border-ink-line bg-white dark:bg-ink-surface font-semibold text-ink dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-ink-raised cursor-pointer"
+          >
+            <Minimize2 className="w-3.5 h-3.5" aria-hidden="true" /> Ajustar a la hoja
+          </button>
+          {scale < 1 && (
+            <button type="button" onClick={() => { setScale(1); setFitNote(''); }} className="underline text-ink-muted hover:text-ink dark:hover:text-white cursor-pointer">
+              Tamaño normal
+            </button>
+          )}
+          {fitNote && <span className="text-ink-muted dark:text-ink-200">{fitNote}</span>}
+        </div>
+      )}
+
       {/* Contenedor Hoja A4 */}
       <div
         id="cv-printable-area"
         ref={printableRef}
-        className={`printable-cv mx-auto max-w-[800px] shadow-lg rounded-2xl border border-gray-200/80 p-8 sm:p-12 transition-all ${paperBg} print:shadow-none print:border-none print:p-0 print:m-0`}
+        lang="es"
+        className={`printable-cv cv-doc cv-tpl-${template} ${align === 'center' ? 'cv-align-center' : ''} mx-auto max-w-[800px] shadow-lg rounded-2xl border border-gray-200/80 p-8 sm:p-12 transition-all ${paperBg} print:shadow-none print:border-none print:p-0 print:m-0`}
       >
+        <div data-cv-scale style={scale < 1 ? ({ zoom: scale } as React.CSSProperties) : undefined}>
         {viewSource === 'tailored' && tailoredMarkdown ? (
-          <MarkdownDocument markdown={tailoredMarkdown} />
+          <MarkdownDocument markdown={tailoredMarkdown} justify />
         ) : (
           <div className="space-y-6">
             {/* Cabecera */}
             <div className={`space-y-2 border-b border-gray-200/80 pb-6 ${align === 'center' ? 'text-center' : 'text-left'}`}>
-              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-950">
+              <h1 className="cv-h1 text-2xl sm:text-3xl font-bold tracking-tight text-gray-950">
                 {profile.name || 'Tu Nombre'}
               </h1>
               <p className="text-sm sm:text-base font-semibold text-brand-700">
@@ -199,10 +268,10 @@ export const CvPreview: React.FC<CvPreviewProps> = ({
             {/* Resumen */}
             {profile.summary && (
               <div className="space-y-2">
-                <h2 className="text-xs font-bold uppercase tracking-wider text-gray-500 border-b border-gray-100 pb-1">
+                <h2 className="cv-h2 text-xs font-bold uppercase tracking-wider text-gray-500 border-b border-gray-100 pb-1">
                   Resumen Profesional
                 </h2>
-                <p className="text-xs sm:text-sm text-gray-700 leading-relaxed">
+                <p className="formal-justify text-xs sm:text-sm text-gray-700 leading-relaxed">
                   {profile.summary}
                 </p>
               </div>
@@ -211,7 +280,7 @@ export const CvPreview: React.FC<CvPreviewProps> = ({
             {/* Habilidades Técnicas y Blandas */}
             {((profile.technical_skills && profile.technical_skills.length > 0) || (profile.soft_skills && profile.soft_skills.length > 0)) && (
               <div className="space-y-2">
-                <h2 className="text-xs font-bold uppercase tracking-wider text-gray-500 border-b border-gray-100 pb-1">
+                <h2 className="cv-h2 text-xs font-bold uppercase tracking-wider text-gray-500 border-b border-gray-100 pb-1">
                   Habilidades y Competencias
                 </h2>
                 <div className="flex flex-wrap gap-1.5 pt-1">
@@ -232,7 +301,7 @@ export const CvPreview: React.FC<CvPreviewProps> = ({
             {/* Experiencia Laboral */}
             {profile.experiences && profile.experiences.length > 0 && (
               <div className="space-y-4">
-                <h2 className="text-xs font-bold uppercase tracking-wider text-gray-500 border-b border-gray-100 pb-1">
+                <h2 className="cv-h2 text-xs font-bold uppercase tracking-wider text-gray-500 border-b border-gray-100 pb-1">
                   Experiencia Laboral
                 </h2>
                 <div className="space-y-4">
@@ -247,12 +316,12 @@ export const CvPreview: React.FC<CvPreviewProps> = ({
                         </span>
                       </div>
                       {exp.description && (
-                        <p className="text-xs text-gray-700 leading-relaxed">
+                        <p className="formal-justify text-xs text-gray-700 leading-relaxed">
                           {exp.description}
                         </p>
                       )}
                       {exp.bullet_achievements && exp.bullet_achievements.length > 0 && (
-                        <ul className="list-disc list-inside text-xs text-gray-700 space-y-1 pl-1">
+                        <ul className="formal-justify list-disc pl-5 text-xs text-gray-700 space-y-1">
                           {exp.bullet_achievements.map((bullet, i) => (
                             <li key={i}>{bullet.replace(/^[*\-●•+]\s*/, '')}</li>
                           ))}
@@ -267,7 +336,7 @@ export const CvPreview: React.FC<CvPreviewProps> = ({
             {/* Educación */}
             {profile.education && profile.education.length > 0 && (
               <div className="space-y-3">
-                <h2 className="text-xs font-bold uppercase tracking-wider text-gray-500 border-b border-gray-100 pb-1">
+                <h2 className="cv-h2 text-xs font-bold uppercase tracking-wider text-gray-500 border-b border-gray-100 pb-1">
                   Educación
                 </h2>
                 <div className="space-y-2">
@@ -287,7 +356,7 @@ export const CvPreview: React.FC<CvPreviewProps> = ({
             {/* Certificaciones y cursos */}
             {profile.certifications && profile.certifications.length > 0 && (
               <div className="space-y-1.5">
-                <h2 className="text-xs font-bold uppercase tracking-wider text-gray-500 border-b border-gray-100 pb-1">
+                <h2 className="cv-h2 text-xs font-bold uppercase tracking-wider text-gray-500 border-b border-gray-100 pb-1">
                   Certificaciones y cursos
                 </h2>
                 <ul className="list-disc pl-5 text-xs text-gray-700 space-y-0.5">
@@ -301,7 +370,7 @@ export const CvPreview: React.FC<CvPreviewProps> = ({
             {/* Idiomas */}
             {profile.languages && Object.keys(profile.languages).length > 0 && (
               <div className="space-y-1.5">
-                <h2 className="text-xs font-bold uppercase tracking-wider text-gray-500 border-b border-gray-100 pb-1">
+                <h2 className="cv-h2 text-xs font-bold uppercase tracking-wider text-gray-500 border-b border-gray-100 pb-1">
                   Idiomas
                 </h2>
                 <div className="flex flex-wrap gap-3 text-xs text-gray-700">
@@ -315,6 +384,7 @@ export const CvPreview: React.FC<CvPreviewProps> = ({
             )}
           </div>
         )}
+        </div>
       </div>
     </div>
   );

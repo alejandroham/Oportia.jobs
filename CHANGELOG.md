@@ -5,6 +5,32 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
 
 ---
 
+## [1.4.2] - 2026-11-17 — *CV a la medida de la hoja y opiniones de un toque*
+
+### 📄 CV adaptado más corto y justificado
+- **Largo y experiencias del CV** en Mis postulaciones → Documentos:
+  - largo **1 hoja**, **2 hojas** o **Completo** (con más de 5 experiencias se sugiere 1 hoja);
+  - **Que Opi elija:** la IA elige las experiencias más relevantes para la oferta y explica en una frase por qué (sin IA, por coincidencia de palabras y experiencia reciente);
+  - **Elegir yo:** casillas por experiencia; la elección se guarda en cada postulación.
+- **Experiencia anterior:** las experiencias no desarrolladas quedan en una línea por cargo (cargo · empresa · años). La escribe el servidor con los datos del perfil, no la IA; si la IA escribe su propia versión, se reemplaza.
+- La IA recibe solo las experiencias elegidas, con viñetas recortadas según el largo, y reglas de extensión por hoja (`app/agents/cv_selection.py`).
+- **Texto justificado** al ancho de la hoja, con división de palabras (CV base, CV adaptado y carta).
+- **Medidor de hojas A4** sobre la vista previa ("Cabe en 1 hoja", "2 hojas al imprimir"), medido con los mismos márgenes del PDF.
+- **Ajustar a la hoja:** reduce letra y espacios hasta un mínimo legible (82 %) para que el CV quepa; avisa si ni así cabe.
+- **Corrección:** las plantillas Minimalista y Ejecutiva y el encabezado centrado no se aplicaban; ahora funcionan también en el CV adaptado y en el PDF.
+
+### 💬 Opiniones sin interrumpir
+- Antes la invitación era una ventana a los 30–60 minutos de uso y casi nadie llegaba a verla: en las últimas 24 horas antes de este cambio hubo 59 navegadores distintos y 0 opiniones.
+- **👍/👎 de un toque** dentro de la página: al buscar ofertas, en la compatibilidad y tras generar un CV adaptado. Anónimo, una sola vez por lugar, con "Escribir (opcional)".
+- **Tarjeta pequeña en la esquina** tras 4–8 minutos de uso, con cinco caras; se cierra con × y aparece como máximo dos veces. Reemplaza a la ventana.
+- **Botón "Opinión"** fijo en el menú superior.
+- Supabase: columna `moment` en `feedback` (dónde se opinó, sin contenido) y nuevos tipos `rapida` y `tarjeta`.
+- **Portal de administración:** tabla 👍/👎 por momento, tasa de respuesta de los últimos 7 días y filtro "Solo con comentarios".
+- **Privacidad 1.4.2:** la sección 9 describe las tres formas de opinar y el dato "dónde".
+
+### 🛠️ Correcciones
+- **Compatibilidad con IA:** cuando Google respondía "alta demanda" (503), la app mostraba un error. Ahora el servidor responde con un aviso tranquilo, la app reintenta sola a los 3 minutos y el portal lo registra como "IA con alta demanda" en vez de "error del servidor".
+
 ## [1.4.1] - 2026-11-16 — *Portal de administración: ofertas en tabla y estado corregido*
 
 ### 🛡️ Portal de administración: ofertas en tabla

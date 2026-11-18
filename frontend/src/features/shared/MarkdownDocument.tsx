@@ -83,8 +83,16 @@ export const parseMarkdownBlocks = (markdown: string): Block[] => {
   return blocks;
 };
 
-export const MarkdownDocument: React.FC<{ markdown: string; className?: string }> = ({ markdown, className = '' }) => {
+export const MarkdownDocument: React.FC<{ markdown: string; className?: string; justify?: boolean }> = ({
+  markdown,
+  className = '',
+  justify = false
+}) => {
   const blocks = parseMarkdownBlocks(markdown);
+  // Las líneas entre el nombre (#) y la primera sección (##) son la cabecera: no se justifican.
+  const firstSection = blocks.findIndex((b) => b.type === 'h2');
+  const isHeader = (i: number) => blocks[0]?.type === 'h1' && (firstSection === -1 ? i <= 2 : i < firstSection);
+  const just = justify ? ' formal-justify' : '';
   return (
     <div className={`space-y-2.5 text-gray-800 ${className}`}>
       {blocks.map((block, i) => {
@@ -92,7 +100,7 @@ export const MarkdownDocument: React.FC<{ markdown: string; className?: string }
         switch (block.type) {
           case 'h1':
             return (
-              <h1 key={key} className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-950 pb-1">
+              <h1 key={key} className="cv-h1 text-2xl sm:text-3xl font-bold tracking-tight text-gray-950 pb-1">
                 {renderInline(block.text, key)}
               </h1>
             );
@@ -100,20 +108,20 @@ export const MarkdownDocument: React.FC<{ markdown: string; className?: string }
             return (
               <h2
                 key={key}
-                className="text-xs font-bold uppercase tracking-wider text-[#173B50] border-b border-gray-200 pb-1 pt-3"
+                className="cv-h2 text-xs font-bold uppercase tracking-wider text-[#173B50] border-b border-gray-200 pb-1 pt-3"
               >
                 {renderInline(block.text, key)}
               </h2>
             );
           case 'h3':
             return (
-              <h3 key={key} className="text-sm font-bold text-gray-900 pt-1">
+              <h3 key={key} className="cv-h3 text-sm font-bold text-gray-900 pt-1">
                 {renderInline(block.text, key)}
               </h3>
             );
           case 'ul':
             return (
-              <ul key={key} className="list-disc pl-5 text-xs sm:text-sm text-gray-700 space-y-1">
+              <ul key={key} className={`list-disc pl-5 text-xs sm:text-sm text-gray-700 space-y-1${isHeader(i) ? ' cv-header-line' : just}`}>
                 {block.items.map((item, j) => (
                   <li key={`${key}-${j}`}>{renderInline(item, `${key}-${j}`)}</li>
                 ))}
@@ -121,7 +129,10 @@ export const MarkdownDocument: React.FC<{ markdown: string; className?: string }
             );
           default:
             return (
-              <p key={key} className="text-xs sm:text-sm text-gray-700 leading-relaxed">
+              <p
+                key={key}
+                className={`text-xs sm:text-sm text-gray-700 leading-relaxed${isHeader(i) ? ' cv-header-line' : just}`}
+              >
                 {renderInline(block.text, key)}
               </p>
             );

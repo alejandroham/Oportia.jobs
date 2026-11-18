@@ -19,6 +19,8 @@ from pydantic import BaseModel, Field, field_validator, model_validator
 CONSENT_VERSION = "2026-11-16"
 EMAIL_RE = re.compile(r"^[^@\s]{1,64}@[^@\s]+\.[^@\s]{2,}$")
 PHONE_RE = re.compile(r"^\+?[\d\s()-]{8,20}$")
+TRIGGERS = ("manual", "auto", "rapida", "tarjeta")
+MOMENTS = ("busqueda", "compatibilidad", "cv_adaptado", "tarjeta", "menu", "pie", "portada")
 
 
 class FeedbackRequest(BaseModel):
@@ -28,7 +30,9 @@ class FeedbackRequest(BaseModel):
     contact_email: Optional[str] = Field(default=None, max_length=200)
     contact_phone: Optional[str] = Field(default=None, max_length=40)
     contact_consent: bool = False
-    trigger: str = "manual"
+    trigger: str = "manual"  # manual | auto | rapida (👍/👎 de un toque) | tarjeta (tarjeta de la esquina)
+    # Dónde se dio la opinión (sin contenido): busqueda, compatibilidad, cv_adaptado, tarjeta, menu, pie, portada.
+    moment: Optional[str] = None
     # Campo trampa: invisible para personas; si viene con texto, es un bot y no se guarda nada.
     website: Optional[str] = Field(default=None, max_length=200)
 
@@ -56,7 +60,12 @@ class FeedbackRequest(BaseModel):
     @field_validator("trigger")
     @classmethod
     def _trigger(cls, v):
-        return v if v in ("manual", "auto") else "manual"
+        return v if v in TRIGGERS else "manual"
+
+    @field_validator("moment")
+    @classmethod
+    def _moment(cls, v):
+        return v if v in MOMENTS else None
 
     @model_validator(mode="after")
     def _consent(self):
@@ -92,6 +101,7 @@ def save_feedback(fb: FeedbackRequest, app_version: str) -> str:
         "contact_consent": fb.contact_consent,
         "consent_version": CONSENT_VERSION if fb.contact_consent else None,
         "trigger": fb.trigger,
+        "moment": fb.moment,
         "app_version": app_version,
     }
     headers = {"apikey": key, "Content-Type": "application/json", "Prefer": "return=minimal"}

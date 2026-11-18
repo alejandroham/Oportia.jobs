@@ -1,6 +1,7 @@
 import React from 'react';
 import { NavLink, Link, useNavigate } from 'react-router-dom';
-import { Radar, Settings as SettingsIcon, Briefcase, User, Info, GraduationCap } from 'lucide-react';
+import { Radar, Settings as SettingsIcon, Briefcase, User, Info, GraduationCap, MessageSquareHeart } from 'lucide-react';
+import { useFeedbackStore } from '../state/useFeedbackStore';
 import type { LLMSettings } from '../types';
 import { getAIStatus } from '../utils/aiStatus';
 
@@ -93,6 +94,18 @@ export const Navbar: React.FC<NavbarProps> = ({ llmSettings }) => {
             >
               <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${dotColor} ${!hasKey ? 'opacity-70' : ''}`} />
               <span className="font-medium truncate">{statusLabel}</span>
+            </button>
+
+            {/* Opinión: siempre a mano, sin interrumpir */}
+            <button
+              type="button"
+              onClick={() => useFeedbackStore.getState().open('manual', 'menu')}
+              className="min-h-[44px] px-3 flex items-center gap-1.5 justify-center rounded-full text-xs font-medium text-ink-muted hover:text-ink dark:hover:text-white hover:bg-gray-100 dark:hover:bg-ink-raised border border-black/5 dark:border-white/5 transition shrink-0 cursor-pointer active:scale-95 focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
+              title="Danos tu opinión"
+              aria-label="Danos tu opinión sobre Oportia"
+            >
+              <MessageSquareHeart className="w-4 h-4" aria-hidden="true" />
+              <span className="hidden sm:inline">Opinión</span>
             </button>
 
             {/* Direct Settings Gear Icon Button */}

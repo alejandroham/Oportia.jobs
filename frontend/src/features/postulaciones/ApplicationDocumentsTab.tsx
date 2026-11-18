@@ -1,16 +1,18 @@
-import React, { useRef, useState } from 'react';
-import type { JobPosting, CandidateProfile, ApplicationDraft } from '../../types';
+import React, { useEffect, useRef, useState } from 'react';
+import type { JobPosting, CandidateProfile, ApplicationDraft, CvOptions } from '../../types';
 import { CvPreview } from '../shared/CvPreview';
 import { Sparkles, FileText, Mail, Copy, Check, Printer, Loader2 } from 'lucide-react';
 import { useToast } from '../../components/Toast';
 import { printElement, buildDocumentTitle } from '../../utils/printDocument';
 import { OpiAvatar } from '../../components/ui/OpiAvatar';
+import { CvOptionsPanel, defaultCvLength } from './CvOptionsPanel';
+import { QuickFeedback } from '../../components/feedback/QuickFeedback';
 
 interface ApplicationDocumentsTabProps {
   job: JobPosting;
   application?: ApplicationDraft | null;
   profile: CandidateProfile | null;
-  onAdaptCv: () => Promise<void>;
+  onAdaptCv: (options?: CvOptions) => Promise<void>;
   isAdapting: boolean;
 }
 
@@ -27,6 +29,24 @@ export const ApplicationDocumentsTab: React.FC<ApplicationDocumentsTabProps> = (
   const toast = useToast();
 
   const tailoredMarkdown = application?.tailored_cv_markdown || job.tailored_cv_markdown;
+  const experiences = profile?.experiences ?? [];
+
+  // Largo y experiencias del CV: parte de lo usado en el último CV de esta postulación.
+  const initialOptions = (): CvOptions => ({
+    length: application?.cv_length ?? defaultCvLength(experiences.length),
+    experience_ids: application?.selection_method === 'manual' ? application.selected_experience_ids ?? [] : null
+  });
+  const [cvOptions, setCvOptions] = useState<CvOptions>(initialOptions);
+  useEffect(() => {
+    setCvOptions(initialOptions());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [job.id, application?.id]);
+  const lastSelection = application?.selected_experience_ids?.length
+    ? { ids: application.selected_experience_ids, reasons: application.selection_reasons ?? {}, method: application.selection_method }
+    : null;
+  const manualEmpty = Array.isArray(cvOptions.experience_ids) && cvOptions.experience_ids.length === 0 && experiences.length > 0;
+  const targetPages = cvOptions.length === 'full' ? undefined : Number(cvOptions.length);
+  const adapt = () => onAdaptCv(cvOptions);
   const coverLetter = application?.cover_letter || job.tailored_cover_letter;
 
   const handleCopyLetter = () => {
@@ -71,8 +91,8 @@ export const ApplicationDocumentsTab: React.FC<ApplicationDocumentsTabProps> = (
         {/* Botón para forzar re-adaptación con IA */}
         <button
           type="button"
-          onClick={onAdaptCv}
-          disabled={isAdapting}
+          onClick={adapt}
+          disabled={isAdapting || manualEmpty}
           className="inline-flex items-center gap-1.5 px-3 py-1.5 min-h-[36px] rounded-xl bg-brand-50 dark:bg-brand-950/40 text-brand-700 dark:text-brand-200 border border-brand-200 dark:border-brand-700/60 font-semibold hover:bg-brand-100 dark:hover:bg-brand-900/60 transition disabled:opacity-50"
         >
           {isAdapting ? (
@@ -89,6 +109,16 @@ export const ApplicationDocumentsTab: React.FC<ApplicationDocumentsTabProps> = (
         </button>
       </div>
 
+      {activeDoc === 'cv' && profile && (
+        <CvOptionsPanel
+          experiences={experiences}
+          options={cvOptions}
+          onChange={setCvOptions}
+          lastSelection={lastSelection}
+          disabled={isAdapting}
+        />
+      )}
+
       {isAdapting && (
         <div
           role="status"
@@ -98,10 +128,12 @@ export const ApplicationDocumentsTab: React.FC<ApplicationDocumentsTabProps> = (
           <OpiAvatar expression="pensando" size={64} decorative className="animate-pulse" />
           <div>
             <p className="text-sm font-bold text-ink dark:text-white">Opi está adaptando tu CV y tu carta…</p>
-            <p className="text-xs text-ink-muted dark:text-ink-200">Reordena tu experiencia real según lo que pide esta oferta. Puede tardar hasta un minuto.</p>
+            <p className="text-xs text-ink-muted dark:text-ink-200">Elige tus experiencias más relevantes y las ajusta al largo que pediste, sin inventar nada. Puede tardar hasta un minuto.</p>
           </div>
         </div>
       )}
+
+      {tailoredMarkdown && !isAdapting && <QuickFeedback moment="cv_adaptado" question="¿Te sirvió el CV adaptado?" />}
 
       {/* Contenido según pestaña */}
       {activeDoc === 'cv' ? (
@@ -111,6 +143,7 @@ export const ApplicationDocumentsTab: React.FC<ApplicationDocumentsTabProps> = (
             tailoredMarkdown={tailoredMarkdown}
             showControls={true}
             documentLabel={job.company}
+            targetPages={tailoredMarkdown ? targetPages : undefined}
           />
         ) : (
           <div className="p-8 text-center text-xs text-gray-500">
@@ -168,7 +201,7 @@ export const ApplicationDocumentsTab: React.FC<ApplicationDocumentsTabProps> = (
               </p>
               <button
                 type="button"
-                onClick={onAdaptCv}
+                onClick={adapt}
                 disabled={isAdapting}
                 className="px-4 py-2 min-h-[44px] rounded-xl bg-brand-600 text-white text-xs font-semibold shadow-xs hover:bg-brand-700 transition disabled:opacity-50 cursor-pointer"
               >

@@ -14,6 +14,8 @@ import { JobDetailModal } from './JobDetailModal';
 import { FitEvaluationModal } from './FitEvaluationModal';
 import { ImportUrlModal } from './ImportUrlModal';
 import { ExternalSearchLinks } from './ExternalSearchLinks';
+import { QuickFeedback } from '../../components/feedback/QuickFeedback';
+import { quickFeedbackDone } from '../../utils/feedbackPrompt';
 import { CompanyPortalsModal } from './CompanyPortalsModal';
 import { HelpCircle } from 'lucide-react';
 import { matchesQuery, normalizeText } from '../../utils/searchText';
@@ -65,6 +67,13 @@ export const JobSearchPage: React.FC<JobSearchPageProps> = ({
   const autoTried = useRef<Set<string>>(new Set());
   const autoCallsThisSearch = useRef(0);
   const autoPaused = useRef(false);
+  const [retryTick, setRetryTick] = useState(0);
+  // Qué 👍/👎 mostrar en esta búsqueda (se decide una vez por búsqueda para no cambiarlo al responder).
+  const feedbackMoment = useMemo<'busqueda' | 'compatibilidad'>(
+    () => (quickFeedbackDone('busqueda') ? 'compatibilidad' : 'busqueda'),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [lastSearch.term]
+  );
   const [sourcesFailed, setSourcesFailed] = useState<string[]>([]);
   // Si la última búsqueda vino del índice diario: fecha del índice (para ofrecer "buscar también en vivo").
   const [indexInfo, setIndexInfo] = useState<{ generatedAt: string | null; count: number } | null>(null);
@@ -294,13 +303,24 @@ export const JobSearchPage: React.FC<JobSearchPageProps> = ({
     setIsBatchRanking(true);
     rank(batch)
       .catch((e) => {
-        // Sin cupo o IA no disponible: se pausa el orden automático hasta recargar la página.
         autoPaused.current = true;
+        if (e?.code === 'ai_busy') {
+          // Google con mucha demanda: se reintenta solo en 3 minutos (sin gastar cupo extra).
+          toast.info(getHumanErrorMessage(e));
+          window.setTimeout(() => {
+            batch.forEach((j) => autoTried.current.delete(j.id));
+            autoCallsThisSearch.current = Math.max(0, autoCallsThisSearch.current - 1);
+            autoPaused.current = false;
+            setRetryTick((t) => t + 1);
+          }, 180_000);
+          return;
+        }
+        // Sin cupo o IA no disponible: se pausa el orden automático hasta recargar la página.
         toast.info('No se pudo calcular la compatibilidad automáticamente: ' + getHumanErrorMessage(e));
       })
       .finally(() => setIsBatchRanking(false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [paginatedJobs, aiReady, hasCv, isScanning, isBatchRanking, usesSharedQuota]);
+  }, [paginatedJobs, aiReady, hasCv, isScanning, isBatchRanking, usesSharedQuota, retryTick]);
 
   return (
     <div className="space-y-6">
@@ -368,6 +388,15 @@ export const JobSearchPage: React.FC<JobSearchPageProps> = ({
       {/* Buscar también en otros portales (se abren en su sitio; Oportia no los lee) */}
       {lastSearch.term && !isScanning && (
         <ExternalSearchLinks term={searchTerm.trim() || lastSearch.term} region={selectedRegion || undefined} onPasteOffer={() => setIsImportUrlOpen(true)} />
+      )}
+
+      {/* ¿Te sirvió? 👍/👎 (un toque, una vez): primero sobre la búsqueda, en otra visita sobre la compatibilidad */}
+      {lastSearch.term && !isScanning && paginatedJobs.length > 0 && (feedbackMoment === 'busqueda' || paginatedJobs.some((j) => typeof j.fit_score === 'number')) && (
+        <QuickFeedback
+          key={feedbackMoment}
+          moment={feedbackMoment}
+          question={feedbackMoment === 'busqueda' ? '¿Encontraste ofertas que te sirven?' : '¿Te parecen acertados los porcentajes de compatibilidad?'}
+        />
       )}
 
       {/* Tu perfil cambió: porcentajes calculados con el perfil anterior */}

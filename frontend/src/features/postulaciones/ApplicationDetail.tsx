@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import type { JobPosting, CandidateProfile, ApplicationDraft, TrackingHistoryEvent } from '../../types';
+import type { JobPosting, CandidateProfile, ApplicationDraft, TrackingHistoryEvent, CvOptions } from '../../types';
 import { ApplicationDocumentsTab } from './ApplicationDocumentsTab';
 import { ApplicationInterviewTab } from './ApplicationInterviewTab';
 import { ApplicationTimelineTab } from './ApplicationTimelineTab';
@@ -20,7 +20,7 @@ interface ApplicationDetailProps {
   onBackToList?: () => void;
   onUpdateJob: (updated: JobPosting) => Promise<void>;
   onDeleteJob: (jobId: string) => Promise<void>;
-  onAdaptCv: () => Promise<void>;
+  onAdaptCv: (options?: CvOptions) => Promise<void>;
   isAdapting: boolean;
 }
 

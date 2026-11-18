@@ -321,6 +321,11 @@ class ApplicationDraft(BaseModel):
     ats_feedback: List[str] = []
     reviewer_critique: Optional[str] = None
     created_at: str = Field(default_factory=lambda: datetime.utcnow().isoformat())
+    # Qué experiencias se desarrollaron en el CV y por qué (las demás van en "Experiencia anterior").
+    cv_length: Optional[str] = None  # "1" | "2" | "full"
+    selected_experience_ids: List[str] = []
+    selection_reasons: Dict[str, str] = {}
+    selection_method: Optional[str] = None  # manual | todas | ia | reglas
 
 class FeedbackAction(BaseModel):
     job_id: str
@@ -424,10 +429,16 @@ class StatelessJobRankRequest(BaseModel):
     profile: CandidateProfile
     preferences: Optional[UserPreferences] = None
 
+class CvOptions(BaseModel):
+    length: str = "2"  # "1" (una hoja), "2" (dos hojas) o "full" (completo)
+    # None: Opi elige las experiencias más relevantes. Lista: las que eligió la persona.
+    experience_ids: Optional[List[str]] = None
+
 class StatelessApplicationDraftRequest(BaseModel):
     job: JobPosting
     profile: CandidateProfile
     preferences: Optional[UserPreferences] = None
+    cv_options: Optional[CvOptions] = None
 
 class StatelessInterviewPrepRequest(BaseModel):
     job: JobPosting
