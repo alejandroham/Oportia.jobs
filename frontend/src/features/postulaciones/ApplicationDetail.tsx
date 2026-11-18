@@ -3,6 +3,7 @@ import type { JobPosting, CandidateProfile, ApplicationDraft, TrackingHistoryEve
 import { ApplicationDocumentsTab } from './ApplicationDocumentsTab';
 import { ApplicationInterviewTab } from './ApplicationInterviewTab';
 import { ApplicationTimelineTab } from './ApplicationTimelineTab';
+import { OfferSummary } from './OfferSummary';
 import { ArrowLeft, ExternalLink, Trash2, Building2, MapPin, Sparkles, CheckCircle2 } from 'lucide-react';
 import { ExpiryBadge } from '../../components/ui/ExpiryBadge';
 import { FitScoreBadge } from '../shared/FitScoreBadge';
@@ -222,6 +223,9 @@ export const ApplicationDetail: React.FC<ApplicationDetailProps> = ({
           )}
         </div>
       </div>
+
+      {/* Resumen de la oferta: empresa, datos clave y cómo postular (plegable) */}
+      <OfferSummary key={job.id} job={job} />
 
       {/* Navegación por 3 pestañas */}
       <div className="flex border-b border-gray-200 dark:border-ink-border gap-4 text-xs font-semibold">

@@ -111,6 +111,7 @@ export const ApplicationDocumentsTab: React.FC<ApplicationDocumentsTabProps> = (
 
       {activeDoc === 'cv' && profile && (
         <CvOptionsPanel
+          key={job.id}
           experiences={experiences}
           options={cvOptions}
           onChange={setCvOptions}

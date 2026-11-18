@@ -1,6 +1,6 @@
 # Manual de usuario — Oportia Jobs IA
 
-> Versión 1.4.4 · Guía paso a paso para encontrar trabajo con Oportia y Opi, tu copiloto.
+> Versión 1.4.5 · Guía paso a paso para encontrar trabajo con Oportia y Opi, tu copiloto.
 >
 > Las capturas muestran a **Paula Rojas**, una persona de demostración **ficticia** (Técnico en Enfermería). Las empresas que aparecen también son ficticias.
 
@@ -225,11 +225,19 @@ Las fechas de vencimiento se ven en la lista y en el detalle, con las mismas reg
 
 **Postular con CV adaptado.** En el detalle de una oferta, **Postular con CV adaptado** la guarda aquí y prepara tu CV y tu carta para esa oferta. Después solo revisas y postulas en el enlace oficial.
 
+**Resumen de la oferta** (nuevo en 1.4.5). Al abrir una postulación, arriba de las pestañas verás:
+- la **empresa** y dónde está publicada la oferta;
+- los datos clave: lugar y modalidad, renta, tipo de contrato y fecha de cierre (si la oferta los indica);
+- un **resumen** de la descripción, con **Ver descripción completa**;
+- **Contacto y postulación:** el **correo** que publica la oferta (al pulsarlo se abre tu correo con el asunto listo) y el botón **Postular en…** con el enlace oficial. Si la oferta no publica correo, se postula desde el enlace.
+
+Pulsa el título **Resumen de la oferta** para plegarlo y ahorrar espacio.
+
 Cada postulación tiene tres pestañas:
 
 ### 1. Documentos (CV y Carta)
 
-- **Largo y experiencias del CV** (nuevo en 1.4.2). Antes de generar, elige:
+- **Largo y experiencias del CV** (nuevo en 1.4.2). Antes de generar, elige (cuando ya generaste un CV, este panel aparece plegado con un resumen, por ejemplo *1 hoja · Opi eligió: 3 de 6 experiencias*; púlsalo para abrirlo):
   - **El largo:** **1 hoja**, **2 hojas** o **Completo**. Si tienes más de 5 experiencias, Oportia sugiere 1 hoja.
   - **Que Opi elija:** Opi desarrolla las experiencias más relevantes para esa oferta y te muestra en una línea **por qué** eligió cada una.
   - **Elegir yo:** marca o desmarca tus experiencias. Se parte de lo que eligió Opi.

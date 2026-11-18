@@ -11,7 +11,7 @@ const profile = { name: 'Rosa Pérez', headline: 'Supervisora de obra', primary_
     exp(3, 'Jefa de terreno', 'Inmobiliaria Mar', '2017', '2020'), exp(4, 'Cajera', 'Supermercado Uno', '2015', '2017'),
     exp(5, 'Ayudante de obra', 'Constructora Norte', '2012', '2015'), exp(6, 'Bodeguera', 'Ferretería Sol', '2010', '2012')] };
 const job = { id: 'j1', title: 'Supervisor de obra', company: 'Constructora X', location: 'Santiago', is_remote: false, modality: 'Presencial',
-  description: 'Supervisión de cuadrillas', source: 'empleospublicos', tags: [], discovered_at: now, status: 'saved' };
+  description: 'Supervisión de cuadrillas en obra. Envía tu CV a seleccion@constructorax.cl indicando pretensiones.', url: 'https://www.empleospublicos.cl/oferta/1', salary_range: '$1.400.000', source: 'empleospublicos', tags: [], discovered_at: now, status: 'saved' };
 const longBullets = Array.from({ length: 40 }, (_, i) => `- Logro medible número ${i + 1} con resultados concretos en obra, plazos y seguridad del equipo de trabajo.`).join('\n');
 
 test('elige experiencias y largo, mide las hojas y ajusta a la hoja', async ({ page }) => {
@@ -39,6 +39,12 @@ test('elige experiencias y largo, mide las hojas y ajusta a la hoja', async ({ p
   }, { p: profile, j: job });
   await page.goto('/postulaciones');
   await page.getByText('Supervisor de obra').first().click();
+
+  // Resumen de la oferta: empresa, renta y cómo postular (correo publicado y enlace oficial).
+  await expect(page.getByRole('button', { name: 'Resumen de la oferta' })).toHaveAttribute('aria-expanded', 'true');
+  await expect(page.getByRole('link', { name: 'seleccion@constructorax.cl' })).toHaveAttribute('href', /^mailto:seleccion@constructorax\.cl\?subject=/);
+  await expect(page.getByRole('link', { name: /Postular en Empleos Públicos/ })).toHaveAttribute('href', 'https://www.empleospublicos.cl/oferta/1');
+  await expect(page.getByText('$1.400.000')).toBeVisible();
 
   // Con 6 experiencias se sugiere 1 hoja y que Opi elija.
   await expect(page.getByRole('radio', { name: '1 hoja' })).toHaveAttribute('aria-checked', 'true');
@@ -70,4 +76,10 @@ test('elige experiencias y largo, mide las hojas y ajusta a la hoja', async ({ p
   await page.reload();
   await page.getByText('Supervisor de obra').first().click();
   await expect(page.getByRole('button', { name: 'Sí, me sirvió' })).toHaveCount(0);
+  // Con un CV ya generado, el panel de largo y experiencias aparece plegado con su resumen.
+  const collapsed = page.getByRole('button', { name: /Largo y experiencias del CV.*Elegidas por ti: 2 de 6 experiencias/ });
+  await expect(collapsed).toHaveAttribute('aria-expanded', 'false');
+  await expect(page.getByRole('checkbox', { name: 'Vendedora en Tienda Sur' })).toHaveCount(0);
+  await collapsed.click();
+  await expect(page.getByRole('checkbox', { name: 'Vendedora en Tienda Sur' })).toBeVisible();
 });

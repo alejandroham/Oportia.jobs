@@ -1,5 +1,5 @@
-import React from 'react';
-import { Sparkles, ListChecks } from 'lucide-react';
+import React, { useState } from 'react';
+import { Sparkles, ListChecks, ChevronDown, ChevronUp } from 'lucide-react';
 import type { CvLength, CvOptions, WorkExperience } from '../../types';
 import { formatExperiencePeriod } from '../shared/CvPreview';
 
@@ -28,6 +28,8 @@ interface CvOptionsPanelProps {
  */
 export const CvOptionsPanel: React.FC<CvOptionsPanelProps> = ({ experiences, options, onChange, lastSelection, disabled }) => {
   const manual = Array.isArray(options.experience_ids);
+  // Plegado si ya hay un CV generado (para ahorrar scroll); abierto la primera vez.
+  const [open, setOpen] = useState(!lastSelection?.ids?.length);
   const selected = new Set(manual ? options.experience_ids! : lastSelection?.ids ?? []);
   const reasons = lastSelection?.reasons ?? {};
 
@@ -50,12 +52,48 @@ export const CvOptionsPanel: React.FC<CvOptionsPanelProps> = ({ experiences, opt
       active ? 'bg-brand-600 text-white shadow-xs' : 'text-ink-muted hover:text-ink dark:hover:text-white'
     }`;
 
+  const lengthLabel = LENGTHS.find((l) => l.key === options.length)?.label ?? '';
+  const count = manual ? options.experience_ids!.length : lastSelection?.ids?.length;
+  const collapsedSummary = [
+    lengthLabel,
+    experiences.length
+      ? count !== undefined
+        ? `${manual ? 'Elegidas por ti' : 'Opi eligió'}: ${count} de ${experiences.length} experiencias`
+        : 'Opi elegirá las experiencias'
+      : null
+  ].filter(Boolean).join(' · ');
+
+  if (!open) {
+    return (
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        aria-expanded={false}
+        className="w-full flex items-center justify-between gap-2 p-3 rounded-2xl border border-gray-200/80 dark:border-ink-line/60 bg-white dark:bg-ink-surface text-xs text-left cursor-pointer hover:bg-gray-50 dark:hover:bg-ink-raised focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
+      >
+        <span>
+          <span className="block text-sm font-bold text-ink dark:text-white">Largo y experiencias del CV</span>
+          <span className="block text-ink-muted dark:text-ink-200">{collapsedSummary}</span>
+        </span>
+        <ChevronDown className="w-4 h-4 text-ink-muted shrink-0" aria-hidden="true" />
+      </button>
+    );
+  }
+
   return (
     <section aria-labelledby="cv-options-title" className="p-4 rounded-2xl border border-gray-200/80 dark:border-ink-line/60 bg-white dark:bg-ink-surface space-y-3 text-xs">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h3 id="cv-options-title" className="text-sm font-bold text-ink dark:text-white">
-          Largo y experiencias del CV
-        </h3>
+        <button
+          type="button"
+          onClick={() => setOpen(false)}
+          aria-expanded={true}
+          className="inline-flex items-center gap-1.5 text-left cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none rounded-md"
+        >
+          <h3 id="cv-options-title" className="text-sm font-bold text-ink dark:text-white">
+            Largo y experiencias del CV
+          </h3>
+          <ChevronUp className="w-4 h-4 text-ink-muted" aria-hidden="true" />
+        </button>
         <div role="radiogroup" aria-label="Largo del CV" className="flex gap-1 p-1 rounded-xl bg-gray-100 dark:bg-ink-raised">
           {LENGTHS.map((l) => (
             <button

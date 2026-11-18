@@ -5,6 +5,16 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
 
 ---
 
+## [1.4.5] - 2026-11-17 — *Resumen de la oferta y panel del CV plegable*
+
+### 🗂️ Mis postulaciones
+- **Resumen de la oferta** al abrir una postulación (plegable):
+  - empresa y fuente;
+  - lugar y modalidad, renta, contrato y cierre;
+  - primeras frases de la descripción, con "Ver descripción completa";
+  - **Contacto y postulación:** los correos que publica la oferta (`mailto:` con el asunto "Postulación: cargo") y el enlace oficial "Postular en…". Se descartan correos de sistema (`noreply`…). Sin IA y sin inventar (`utils/jobContact.ts`).
+- **Largo y experiencias del CV plegable:** con un CV ya generado aparece cerrado y muestra un resumen ("1 hoja · Opi eligió: 3 de 6 experiencias"), para ahorrar scroll.
+
 ## [1.4.4] - 2026-11-17 — *El PDF del CV se ve igual que la vista previa*
 
 ### 🛠️ Corrección
