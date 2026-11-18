@@ -157,7 +157,7 @@
 @media print {
   @page {
     size: A4;
-    margin: 12mm 15mm;
+    margin: 14mm 16mm; /* igual que utils/printDocument.ts y utils/cvPages.ts */
   }
 
   html, body {
@@ -209,42 +209,10 @@
     border-radius: 0 !important;
   }
 
-  /* Typography tuned for PDF output */
-  .printable-cv h1 {
-    color: #0f172a !important;
-    font-size: 20pt !important;
-    font-weight: 700 !important;
-    margin-bottom: 2pt !important;
-  }
-
-  .printable-cv h2 {
-    color: #0071e3 !important;
-    font-size: 11pt !important;
-    font-weight: 700 !important;
-    text-transform: uppercase !important;
-    letter-spacing: 0.05em !important;
-    border-bottom: 1.5pt solid #0071e3 !important;
-    padding-bottom: 2pt !important;
-    margin-top: 12pt !important;
-    margin-bottom: 5pt !important;
+  /* La tipografía del PDF es la misma de la vista previa (plantilla elegida): no se sobrescribe aquí. */
+  .printable-cv h1, .printable-cv h2, .printable-cv h3 {
     break-after: avoid !important;
     page-break-after: avoid !important;
-  }
-
-  .printable-cv h3 {
-    color: #1e293b !important;
-    font-size: 10.5pt !important;
-    font-weight: 600 !important;
-    break-after: avoid !important;
-    page-break-after: avoid !important;
-  }
-
-  .printable-cv p,
-  .printable-cv li,
-  .printable-cv span {
-    color: #334155 !important;
-    font-size: 9.5pt !important;
-    line-height: 1.4 !important;
   }
 
   /* Prevent splitting entries across page breaks */

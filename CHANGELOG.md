@@ -5,6 +5,15 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
 
 ---
 
+## [1.4.4] - 2026-11-17 — *El PDF del CV se ve igual que la vista previa*
+
+### 🛠️ Corrección
+- **Al exportar el CV a PDF cambiaban el formato y las fuentes.** Unos estilos de impresión antiguos de `index.css` reemplazaban la tipografía de la plantilla: títulos azules más grandes con una línea gruesa y tamaños de letra fijos. También fijaban márgenes distintos (12 × 15 mm) a los que usa el medidor de hojas (14 × 16 mm).
+  - Se quitaron esas reglas: el PDF conserva la plantilla, las fuentes, los colores y los tamaños de la vista previa.
+  - Un solo margen de página (14 × 16 mm), el mismo que mide "Cabe en 1 hoja".
+- Prueba nueva (`e2e/print-pdf.spec.ts`): compara la tipografía del documento impreso con la de la vista previa.
+- **Dependencias:** Vite 6.4.6 en la app y en el portal, y correcciones de seguridad de herramientas de desarrollo.
+
 ## [1.4.3] - 2026-11-17 — *CV en orden cronológico*
 
 ### 📅 Experiencia y educación ordenadas por fecha
