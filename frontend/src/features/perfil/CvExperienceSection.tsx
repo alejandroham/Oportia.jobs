@@ -6,6 +6,8 @@ import { TagInput } from '../../components/ui/TagInput';
 interface CvExperienceSectionProps {
   experiences: WorkExperience[];
   onChange: (experiences: WorkExperience[]) => void;
+  /** Mover con las flechas: deja el CV en orden manual. */
+  onReorder?: (experiences: WorkExperience[]) => void;
 }
 
 const inputCls =
@@ -17,7 +19,7 @@ const isCurrent = (end?: string) => /^(actual|presente|a la fecha|hoy|current|pr
  * Experiencia laboral editable: cargo, empresa, fechas, ubicación, modalidad, funciones,
  * logros y herramientas. Cada experiencia se abre y se cierra; se pueden reordenar.
  */
-export const CvExperienceSection: React.FC<CvExperienceSectionProps> = ({ experiences, onChange }) => {
+export const CvExperienceSection: React.FC<CvExperienceSectionProps> = ({ experiences, onChange, onReorder }) => {
   const items = experiences || [];
   const [openId, setOpenId] = useState<string | null>(null);
 
@@ -45,7 +47,7 @@ export const CvExperienceSection: React.FC<CvExperienceSectionProps> = ({ experi
     if (j < 0 || j >= items.length) return;
     const next = [...items];
     [next[i], next[j]] = [next[j], next[i]];
-    onChange(next);
+    (onReorder ?? onChange)(next);
   };
 
   return (

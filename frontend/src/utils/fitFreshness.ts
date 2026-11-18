@@ -1,4 +1,5 @@
 import type { CandidateProfile, JobPosting, UserPreferences } from '../types';
+import { sortEducation, sortExperiences } from './cvOrder';
 
 /**
  * "Huella" de lo que la IA usa para calcular el porcentaje de compatibilidad:
@@ -19,8 +20,9 @@ export function profileFingerprint(profile: CandidateProfile | null | undefined,
     k: profile.keywords || [],
     c: profile.certifications || [],
     l: profile.languages || {},
-    e: (profile.experiences || []).map((x) => [x.role, x.company, x.start_date, x.end_date, x.description, x.bullet_achievements, x.technologies]),
-    ed: (profile.education || []).map((x) => [x.degree, x.field_of_study, x.institution]),
+    // Orden canónico por fecha: mover una experiencia con las flechas no cambia la compatibilidad.
+    e: sortExperiences(profile.experiences || []).map((x) => [x.role, x.company, x.start_date, x.end_date, x.description, x.bullet_achievements, x.technologies]),
+    ed: sortEducation(profile.education || []).map((x) => [x.degree, x.field_of_study, x.institution]),
     tr: prefs?.target_roles || [],
     db: prefs?.deal_breakers || [],
     r: Boolean(prefs?.remote_only),

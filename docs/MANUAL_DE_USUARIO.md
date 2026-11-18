@@ -1,6 +1,6 @@
 # Manual de usuario — Oportia Jobs IA
 
-> Versión 1.4.2 · Guía paso a paso para encontrar trabajo con Oportia y Opi, tu copiloto.
+> Versión 1.4.3 · Guía paso a paso para encontrar trabajo con Oportia y Opi, tu copiloto.
 >
 > Las capturas muestran a **Paula Rojas**, una persona de demostración **ficticia** (Técnico en Enfermería). Las empresas que aparecen también son ficticias.
 
@@ -101,8 +101,12 @@ En **Mi perfil → Mi CV** puedes:
 1. **Subir CV (PDF/Word)** para cargarlo o reemplazarlo. Si la IA no está activa, Oportia te pide activarla primero; también puedes seguir **sin IA** (lectura básica).
    - Al terminar, un aviso indica si el CV se analizó **con IA** o **sin IA**. Revisa cada sección y pulsa **Guardar cambios**.
    - **Reanalizar con IA** vuelve a leer el CV que ya cargaste, sin subirlo otra vez. Úsalo si se analizó sin IA o si algo quedó mal clasificado. Conserva tus palabras clave y tus enlaces.
-2. **Editar** tus datos por secciones. En **Experiencia laboral**, pulsa cada trabajo para editar cargo, empresa, fechas ("Trabajo aquí actualmente"), ubicación, funciones, logros y herramientas; puedes reordenarlos con las flechas. **Educación y títulos** guarda carreras, títulos y diplomados; **Certificaciones y cursos**, los cursos, capacitaciones y licencias. Las secciones son: contacto y **enlaces** (LinkedIn, portafolio, GitHub u otros), profesión y titular, experiencia, **varios títulos**, habilidades, **idiomas con nivel** y **Tecnologías y palabras clave**.
-3. Pulsar **Guardar cambios**.
+2. **Editar** tus datos por secciones. En **Experiencia laboral**, pulsa cada trabajo para editar cargo, empresa, fechas ("Trabajo aquí actualmente"), ubicación, funciones, logros y herramientas. **Educación y títulos** guarda carreras, títulos y diplomados; **Certificaciones y cursos**, los cursos, capacitaciones y licencias. Las secciones son: contacto y **enlaces** (LinkedIn, portafolio, GitHub u otros), profesión y titular, experiencia, **varios títulos**, habilidades, **idiomas con nivel** y **Tecnologías y palabras clave**.
+3. **Orden de tu CV** (nuevo en 1.4.3). La experiencia y la educación se ordenan **por fecha, de lo más reciente a lo más antiguo**: primero tu trabajo actual y los estudios en curso. Oportia entiende fechas como "2021", "03/2021", "Marzo 2021" o "Actual".
+   - Si una fecha queda fuera de orden mientras editas, verás un aviso; **al guardar** se ordena sola, o puedes pulsar **Ordenar por fecha** de inmediato.
+   - **¿Prefieres otro orden?** Usa las flechas **↑ ↓** en cada experiencia o título. Desde ese momento tu CV queda en **orden manual** y Oportia no lo reordena. Para volver al orden automático, pulsa **Ordenar por fecha**.
+   - El CV adaptado de cada postulación respeta este mismo orden.
+4. Pulsar **Guardar cambios**.
 
 **Tecnologías y palabras clave.** Son los términos con los que te buscaría una empresa, por ejemplo "TENS", "Curaciones" o "Soporte TI".
 - Al subir tu CV, Oportia agrega solas las palabras de tu área que **aparecen en tu CV**. Debajo te sugiere otras para que elijas.

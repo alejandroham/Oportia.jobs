@@ -83,6 +83,8 @@ export interface CandidateProfile {
   versions?: ResumeVersion[];
   raw_cv_text?: string;
   updated_at?: string;
+  /** Orden de experiencia y educación en el CV: por fecha (automático) o el que eligió la persona. */
+  cv_order?: 'fecha' | 'manual';
 }
 
 export interface CompanyDirectoryItem {

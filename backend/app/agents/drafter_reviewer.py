@@ -129,6 +129,7 @@ INSTRUCCIONES DE REDACCIÓN:
    - Experiencia laboral con viñetas de logros orientadas al impacto (resultados, métricas, responsabilidades clave, herramientas o técnicas usadas). REGLAS ESTRICTAS DE FORMATO: Usa SIEMPRE guiones '- ' para las viñetas, NUNCA asteriscos '* '. NO insertes separadores '---' entre secciones.
    - Educación, cursos y certificaciones
    - Incluye SOLO las experiencias del perfil entregado. NO agregues una sección "Experiencia anterior": Oportia la agrega aparte.
+   - ORDEN: presenta la experiencia y la educación EXACTAMENTE en el orden en que vienen en el perfil (ya están ordenadas por fecha o como la persona eligió). No las reordenes por relevancia: la relevancia se muestra con el contenido, no con el orden.
    - {length_rule}
 2. Redacta una Carta de Presentación moderna (3 a 4 párrafos concisos):
    - Prohibido usar clichés vacíos como "Me dirijo a ustedes para expresar mi entusiasmo...".
@@ -174,6 +175,7 @@ PERFIL REAL Y VERIFICADO DEL CANDIDATO:
 {memory_context}
 Escribe el CURRÍCULUM ADAPTADO a esta vacante en Markdown limpio (# Nombre, ## secciones, viñetas con '- ').
 Incluye SOLO las experiencias del perfil entregado; no agregues una sección "Experiencia anterior".
+Presenta la experiencia y la educación en el MISMO orden en que vienen en el perfil (no las reordenes).
 {length_rule}
 Responde SOLO con el Markdown del CV, sin explicaciones ni bloques de código.
 """

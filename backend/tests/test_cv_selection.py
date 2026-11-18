@@ -84,3 +84,23 @@ def test_draft_endpoint_returns_selection_and_respects_length(monkeypatch):
     draft_prompt = next(p for p in prompts if "tailored_cv_markdown" in p)
     assert "UNA hoja A4" in draft_prompt and "Tienda Sur" not in draft_prompt  # solo las elegidas
     assert "## Experiencia anterior" in d["tailored_cv_markdown"] and "Tienda Sur" in d["tailored_cv_markdown"]
+
+
+def test_draft_prompt_asks_to_keep_profile_order(monkeypatch):
+    prompts = []
+
+    def fake_json(prompt, system_instruction=None):
+        prompts.append(prompt)
+        if "tailored_cv_markdown" in prompt:
+            return {"tailored_cv_markdown": "# Rosa\n## Experiencia\n- x", "cover_letter": "Hola"}
+        return {"ats_score": 80, "ats_feedback": [], "reviewer_critique": "ok"}
+
+    monkeypatch.setattr(llm, "generate_json", fake_json)
+    ai_rate_limiter.clear()
+    r = TestClient(app).post("/api/applications/draft", json={
+        "job": JOB.model_dump(), "profile": PROFILE.model_dump(), "cv_options": {"length": "full"}})
+    assert r.status_code == 200, r.text
+    draft_prompt = next(p for p in prompts if "tailored_cv_markdown" in p)
+    assert "EXACTAMENTE en el orden" in draft_prompt
+    # El perfil llega en el orden del navegador (la más reciente primero).
+    assert draft_prompt.index("Constructora Andes") < draft_prompt.index("Constructora Norte")

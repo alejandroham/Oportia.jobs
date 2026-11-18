@@ -53,6 +53,24 @@ test('pide la IA antes de subir el CV, informa el método y permite editar la ex
     const q = indexedDB.open('NexusJob_SovereignDB', 1);
     q.onsuccess = () => { const g = q.result.transaction('client_session').objectStore('client_session').get('profile'); g.onsuccess = () => res(g.result); };
   }));
-  expect(saved.experiences.map((e: any) => e.role)).toEqual(['Capataz de Obra', 'Supervisor de Obra Gruesa', 'Jefe de Terreno']);
-  expect(saved.experiences[0].company).toBe('Constructora Lomas');
+  // Al guardar se ordena por fecha: la actual primero y la de 2015 al final.
+  expect(saved.experiences.map((e: any) => e.role)).toEqual(['Supervisor de Obra Gruesa', 'Jefe de Terreno', 'Capataz de Obra']);
+  expect(saved.experiences[2].company).toBe('Constructora Lomas');
+  await expect(page.getByText('Ordenado por fecha, de lo más reciente a lo más antiguo.')).toBeVisible();
+
+  // Orden manual con las flechas: se respeta al guardar.
+  await page.getByRole('button', { name: 'Subir Capataz de Obra en Constructora Lomas' }).click();
+  await expect(page.getByText('Orden manual: queda como lo dejaste con las flechas.').first()).toBeVisible();
+  await page.getByRole('button', { name: 'Guardar cambios' }).click();
+  const readProfile = () => page.evaluate(async () => new Promise<any>((res) => {
+    const q = indexedDB.open('NexusJob_SovereignDB', 1);
+    q.onsuccess = () => { const g = q.result.transaction('client_session').objectStore('client_session').get('profile'); g.onsuccess = () => res(g.result); };
+  }));
+  await expect.poll(async () => (await readProfile()).experiences.map((e: any) => e.role)).toEqual(['Supervisor de Obra Gruesa', 'Capataz de Obra', 'Jefe de Terreno']);
+  expect((await readProfile()).cv_order).toBe('manual');
+
+  // Volver al orden por fecha.
+  await page.getByRole('button', { name: 'Ordenar por fecha' }).first().click();
+  await page.getByRole('button', { name: 'Guardar cambios' }).click();
+  await expect.poll(async () => (await readProfile()).experiences.map((e: any) => e.role)).toEqual(['Supervisor de Obra Gruesa', 'Jefe de Terreno', 'Capataz de Obra']);
 });

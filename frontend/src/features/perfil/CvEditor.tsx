@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import type { CandidateProfile } from '../../types';
 import { CvExperienceSection } from './CvExperienceSection';
+import { CvOrderBar } from './CvOrderBar';
+import { isOutOfOrder, sortEducation, sortExperiences, withChronologicalOrder } from '../../utils/cvOrder';
 import { CvSkillsSection } from './CvSkillsSection';
 import { CvPreviewModal } from './CvPreviewModal';
 import { CvEducationSection } from './CvEducationSection';
@@ -49,6 +51,13 @@ export const CvEditor: React.FC<CvEditorProps> = ({ profile, onProfileUpdated })
 
   const toggleSection = (sec: string) => {
     setOpenSections((prev) => ({ ...prev, [sec]: !prev[sec] }));
+  };
+
+  // Volver al orden automático: experiencia y educación de lo más reciente a lo más antiguo.
+  const sortByDate = () => {
+    const sorted = withChronologicalOrder({ ...formData, cv_order: 'fecha' });
+    setFormData(sorted);
+    if (isOutOfOrder(formData) || formData.cv_order === 'manual') toast.info('Ordené tu experiencia y tus estudios por fecha. Recuerda guardar.');
   };
 
   const handleSave = () => {
@@ -365,10 +374,18 @@ export const CvEditor: React.FC<CvEditorProps> = ({ profile, onProfileUpdated })
 
           {openSections.experience && (
             <div className="p-4 pt-0 border-t border-gray-100 dark:border-ink-border animate-fade-in">
-              <CvExperienceSection
-                experiences={formData.experiences || []}
-                onChange={(experiences) => setFormData({ ...formData, experiences })}
-              />
+              <div className="space-y-3">
+                <CvOrderBar
+                  manual={formData.cv_order === 'manual'}
+                  outOfOrder={sortExperiences(formData.experiences || []).some((e, i) => e !== (formData.experiences || [])[i])}
+                  onSortByDate={sortByDate}
+                />
+                <CvExperienceSection
+                  experiences={formData.experiences || []}
+                  onChange={(experiences) => setFormData({ ...formData, experiences })}
+                  onReorder={(experiences) => setFormData({ ...formData, experiences, cv_order: 'manual' })}
+                />
+              </div>
             </div>
           )}
         </div>
@@ -381,7 +398,20 @@ export const CvEditor: React.FC<CvEditorProps> = ({ profile, onProfileUpdated })
           open={openSections.education}
           onToggle={() => toggleSection('education')}
         >
-          <CvEducationSection education={formData.education || []} onChange={(education) => setFormData({ ...formData, education })} />
+          <div className="space-y-3">
+            {(formData.education?.length ?? 0) > 1 && (
+              <CvOrderBar
+                manual={formData.cv_order === 'manual'}
+                outOfOrder={sortEducation(formData.education || []).some((e, i) => e !== (formData.education || [])[i])}
+                onSortByDate={sortByDate}
+              />
+            )}
+            <CvEducationSection
+              education={formData.education || []}
+              onChange={(education) => setFormData({ ...formData, education })}
+              onReorder={(education) => setFormData({ ...formData, education, cv_order: 'manual' })}
+            />
+          </div>
         </EditorSection>
 
         {/* BLOQUE 5: Certificaciones y cursos */}

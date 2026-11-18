@@ -5,6 +5,17 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
 
 ---
 
+## [1.4.3] - 2026-11-17 — *CV en orden cronológico*
+
+### 📅 Experiencia y educación ordenadas por fecha
+- **Orden automático:** de lo más reciente a lo más antiguo. Primero el trabajo actual y los estudios en curso; luego por fecha de término y de inicio. Entiende "2021", "03/2021", "2021-03", "Marzo de 2021", rangos ("2019 – 2021") y "Actual" (`utils/cvOrder.ts`).
+  - Se aplica al analizar el CV, al guardar, al importar un respaldo y al abrir la app: los perfiles guardados en desorden aparecen ordenados.
+  - Las fechas que no se entienden quedan al final, en su orden original.
+- **Orden manual:** flechas ↑ ↓ en Experiencia (ya existían) y ahora también en Educación. Al usarlas, el perfil queda en `cv_order: 'manual'` y no se reordena solo. **Ordenar por fecha** vuelve al orden automático.
+- Aviso en el editor cuando hay fechas fuera de orden.
+- **CV adaptado:** la IA debe presentar la experiencia y la educación en el mismo orden del perfil, sin reordenarlas por relevancia.
+- Mover experiencias no marca los porcentajes de compatibilidad como desactualizados (la huella del perfil usa un orden canónico por fecha).
+
 ## [1.4.2] - 2026-11-17 — *CV a la medida de la hoja y opiniones de un toque*
 
 ### 📄 CV adaptado más corto y justificado

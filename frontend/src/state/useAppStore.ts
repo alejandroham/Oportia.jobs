@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { withChronologicalOrder } from '../utils/cvOrder';
 import type {
   CandidateProfile,
   UserPreferences,
@@ -199,7 +200,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       });
 
       set({
-        profile: savedProfile || null,
+        profile: savedProfile ? withChronologicalOrder(savedProfile) : null,
         preferences: savedPref || null,
         jobs: Array.isArray(savedJobs) ? savedJobs : [],
         applications: Array.isArray(savedApps) ? savedApps : [],
@@ -224,7 +225,9 @@ export const useAppStore = create<AppState>((set, get) => ({
     set({ hasCompletedOnboarding: completed });
   },
 
-  setProfile: async (profile) => {
+  setProfile: async (rawProfile) => {
+    // Experiencia y educación por fecha (lo más reciente primero), salvo orden manual.
+    const profile = rawProfile ? withChronologicalOrder(rawProfile) : rawProfile;
     set({ profile });
     if (profile) {
       await saveClientStore('profile', profile);
@@ -378,7 +381,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
 
   importBackupBundle: async (payload) => {
-    const profile = payload.profile || null;
+    const profile = payload.profile ? withChronologicalOrder(payload.profile) : null;
     const preferences = payload.preferences || null;
     const jobs = Array.isArray(payload.jobs) ? payload.jobs : [];
     const applications = Array.isArray(payload.applications) ? payload.applications : [];
