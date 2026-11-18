@@ -5,6 +5,17 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
 
 ---
 
+## [1.4.6] - 2026-11-17 — *Secciones que se activan con tu CV y "Recupera tus datos"*
+
+### 🔒 Secciones que se activan con tu CV
+- Sin CV, **Mis postulaciones** y **Aprender** muestran un candado en el menú (escritorio y celular). Al entrar se ve una pantalla con **Subir mi CV**, **Recuperar mis datos** y "busca ofertas sin CV".
+- **Mi perfil** y **Buscar empleo** nunca se bloquean. Si ya hay ofertas guardadas o postulaciones (por ejemplo, de antes de subir el CV), Mis postulaciones queda abierta.
+
+### 🔄 Recupera tus datos desde la portada
+- Enlace "¿Ya usabas Oportia en otro equipo? **Recupera tus datos**" en la portada. Abre un recuadro que explica cómo traer el respaldo (.oportia) desde el otro equipo y lo restaura, con contraseña si la tiene. Al terminar, se va a Inicio.
+- La restauración ahora es un componente compartido (`RestoreBackup`) entre Ajustes y la portada.
+- Manual: la sección 2 explica las secciones bloqueadas y cómo recuperar los datos.
+
 ## [1.4.5] - 2026-11-17 — *Resumen de la oferta y panel del CV plegable*
 
 ### 🗂️ Mis postulaciones

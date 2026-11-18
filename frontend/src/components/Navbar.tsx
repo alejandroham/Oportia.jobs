@@ -2,6 +2,9 @@ import React from 'react';
 import { NavLink, Link, useNavigate } from 'react-router-dom';
 import { Radar, Settings as SettingsIcon, Briefcase, User, Info, GraduationCap, MessageSquareHeart } from 'lucide-react';
 import { useFeedbackStore } from '../state/useFeedbackStore';
+import { useAppStore } from '../state/useAppStore';
+import { hasCvLoaded } from '../utils/profileState';
+import { Lock } from 'lucide-react';
 import type { LLMSettings } from '../types';
 import { getAIStatus } from '../utils/aiStatus';
 
@@ -18,6 +21,11 @@ export interface NavbarProps {
 
 export const Navbar: React.FC<NavbarProps> = ({ llmSettings }) => {
   const navigate = useNavigate();
+
+  // Mis postulaciones y Aprender se activan al cargar el CV (o si ya hay postulaciones guardadas).
+  const hasCv = useAppStore((s) => hasCvLoaded(s.profile));
+  const hasTracked = useAppStore((s) => s.applications.length > 0 || s.jobs.some((j) => j.status && j.status !== 'discovered'));
+  const lockedPaths = new Set(hasCv ? [] : hasTracked ? ['/aprender'] : ['/postulaciones', '/aprender']);
 
   // 5 semantic task-oriented tabs
   const tabs = [
@@ -75,8 +83,12 @@ export const Navbar: React.FC<NavbarProps> = ({ llmSettings }) => {
                       : 'text-gray-600 dark:text-ink-200 hover:text-gray-900 dark:hover:text-white'
                   }`
                 }
+                title={lockedPaths.has(tab.path) ? 'Se activa al subir tu CV' : undefined}
               >
-                {tab.label}
+                <span className="inline-flex items-center gap-1">
+                  {lockedPaths.has(tab.path) && <Lock className="w-3 h-3 opacity-70" aria-label="Bloqueado hasta subir tu CV" />}
+                  {tab.label}
+                </span>
               </NavLink>
             ))}
           </nav>
@@ -147,7 +159,10 @@ export const Navbar: React.FC<NavbarProps> = ({ llmSettings }) => {
               {({ isActive }) => (
                 <>
                   <IconComp className={`w-4 h-4 mb-0.5 ${isActive ? 'stroke-[2.5px] scale-110' : 'stroke-2'}`} />
-                  <span className="text-xs font-medium tracking-tight leading-none">{tab.shortLabel}</span>
+                  <span className="text-xs font-medium tracking-tight leading-none inline-flex items-center gap-0.5">
+                    {lockedPaths.has(tab.path) && <Lock className="w-2.5 h-2.5 opacity-70" aria-label="Bloqueado hasta subir tu CV" />}
+                    {tab.shortLabel}
+                  </span>
                 </>
               )}
             </NavLink>

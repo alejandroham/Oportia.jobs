@@ -11,6 +11,9 @@ import { LandingPage } from './components/landing/LandingPage';
 import { OnboardingWizard } from './components/onboarding/OnboardingWizard';
 import { FeedbackDialog } from './components/feedback/FeedbackDialog';
 import { FeedbackCard } from './components/feedback/FeedbackCard';
+import { RestoreDataDialog } from './components/settings/RestoreDataDialog';
+import { CvRequiredGate } from './components/common/CvRequiredGate';
+import { hasCvLoaded } from './utils/profileState';
 import { PURGED_FLAG } from './components/settings/SettingsPrivacyPanel';
 import { useFeedbackStore } from './state/useFeedbackStore';
 import { addUsageMinute, markPrompted, shouldPrompt } from './utils/feedbackPrompt';
@@ -84,6 +87,7 @@ export function App() {
   } = useAppStore();
 
   const [isOpiChatOpen, setIsOpiChatOpen] = useState<boolean>(false);
+  const hasCv = hasCvLoaded(profile);
   const isLandingVisible =
     !isLoading && (location.pathname === '/conoce-oportia' || (location.pathname === '/' && !hasCompletedOnboarding));
   const [isOnboardingOpen, setIsOnboardingOpen] = useState<boolean>(false);
@@ -244,18 +248,31 @@ export function App() {
                   <Route
                     path="/postulaciones"
                     element={
+                      !hasCv && !jobs.some((j) => j.status && j.status !== 'discovered') && applications.length === 0 ? (
+                        <CvRequiredGate
+                          section="Mis postulaciones"
+                          reason="Aquí adaptas tu CV y tu carta a cada oferta y sigues tus procesos. Sube tu CV para empezar, o recupera tus datos si ya usabas Oportia en otro equipo."
+                        />
+                      ) : (
                       <ApplicationsPage
                         jobs={jobs}
                         applications={applications}
                         profile={profile}
                         onApply={handleApplyToJob}
                       />
+                      )
                     }
                   />
 
                   <Route
                     path="/aprender"
                     element={
+                      !hasCv ? (
+                        <CvRequiredGate
+                          section="Aprender"
+                          reason="Aprender compara tu experiencia con lo que piden las ofertas y te sugiere cursos para cerrar brechas. Necesita tu CV para saber desde dónde partes."
+                        />
+                      ) : (
                       <LearnPage
                         profile={profile}
                         jobs={jobs}
@@ -263,6 +280,7 @@ export function App() {
                         onOpenSettings={() => navigate('/ajustes')}
                         onNavigateToTab={handleNavigate}
                       />
+                      )
                     }
                   />
 
@@ -364,6 +382,13 @@ export function App() {
 
         {/* "¿Qué te parece Oportia?": opinión, contacto voluntario y donación */}
         <FeedbackDialog />
+        <RestoreDataDialog
+          onRestored={async () => {
+            setIsOnboardingOpen(false);
+            await setOnboardingCompleted(true);
+            navigate('/');
+          }}
+        />
         {showFeedbackCard && !isLandingVisible && !isOnboardingOpen && !isFeedbackOpen && (
           <FeedbackCard onClose={() => setShowFeedbackCard(false)} />
         )}

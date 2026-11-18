@@ -4,6 +4,7 @@ import { OpiAvatar, type OpiExpression } from '../ui/OpiAvatar';
 import { InstallAppButton } from '../InstallApp';
 import { useFeedbackStore } from '../../state/useFeedbackStore';
 import { SPONSOR_URL } from '../feedback/FeedbackDialog';
+import { useRestoreDialog } from '../settings/RestoreDataDialog';
 
 /**
  * Portada de Oportia: lo primero que ve quien llega por primera vez.
@@ -102,6 +103,16 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart, onExplore }) 
           </div>
           <p className="text-xs text-ink-muted dark:text-ink-300">
             Gratis · Sin crear cuenta · Tus datos son tuyos
+          </p>
+          <p className="text-sm text-ink dark:text-gray-200">
+            ¿Ya usabas Oportia en otro equipo?{' '}
+            <button
+              type="button"
+              onClick={() => useRestoreDialog.getState().open()}
+              className="font-semibold text-brand-700 dark:text-brand-300 underline cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-500/50 focus-visible:outline-none rounded"
+            >
+              Recupera tus datos
+            </button>
           </p>
           <InstallAppButton variant="link" label="Instalar Oportia en tu celular" className="text-brand-700 dark:text-brand-300" />
         </div>

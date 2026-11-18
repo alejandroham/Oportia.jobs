@@ -1,6 +1,6 @@
 # Manual de usuario — Oportia Jobs IA
 
-> Versión 1.4.5 · Guía paso a paso para encontrar trabajo con Oportia y Opi, tu copiloto.
+> Versión 1.4.6 · Guía paso a paso para encontrar trabajo con Oportia y Opi, tu copiloto.
 >
 > Las capturas muestran a **Paula Rojas**, una persona de demostración **ficticia** (Técnico en Enfermería). Las empresas que aparecen también son ficticias.
 
@@ -58,6 +58,10 @@ En el celular, Oportia funciona igual y tiene una barra de navegación abajo.
 ---
 
 ## 2. Primeros pasos: la guía de inicio
+
+> **¿Ya usabas Oportia en otro equipo?** En la portada, pulsa **Recupera tus datos** y elige el archivo de respaldo (.oportia) que descargaste en tu otro equipo desde **Ajustes → Privacidad**. Si tiene contraseña, te la pedirá. Oportia no tiene cuentas: sin ese archivo no hay forma de traer tus datos, porque nunca se guardan en un servidor.
+
+**Secciones que se activan con tu CV.** Mientras no subas tu CV, **Mis postulaciones** y **Aprender** muestran un candado 🔒 en el menú. Al entrar verás **Subir mi CV** y **Recuperar mis datos**. **Buscar empleo** y **Mi perfil** funcionan siempre. Si guardas ofertas antes de subir tu CV, **Mis postulaciones** se abre igual para que las veas.
 
 La guía tiene 3 pasos. Puedes cerrarla en cualquier momento (con la **X** o la tecla **Esc**) y repetirla después desde Inicio con **Repetir guía de inicio**.
 
@@ -337,7 +341,7 @@ Tu clave se guarda **cifrada en tu navegador** y solo viaja al servidor en el mo
 En **Ajustes → Privacidad & Datos** puedes:
 
 - **Descargar archivo (.oportia)**: un respaldo cifrado de todos tus datos.
-- **Restaurar respaldo**: cargarlo en otro navegador o equipo.
+- **Restaurar respaldo**: cargarlo en otro navegador o equipo. También puedes hacerlo desde la portada con **Recupera tus datos**.
 - **Borrar todos mis datos**: elimina todos tus datos de este navegador. Antes te pide dos confirmaciones ("entiendo que no se puede deshacer" y "no quiero descargar un respaldo") o te deja descargar el respaldo ahí mismo. Después vuelves a la portada y la guía de inicio parte de cero.
 
 Más detalles en la [Política de Privacidad](../PRIVACY.md) (Ley N° 21.719).

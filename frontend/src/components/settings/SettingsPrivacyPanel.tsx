@@ -1,9 +1,10 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { Shield, Download, UploadCloud, Trash2 } from 'lucide-react';
 import { useAppStore } from '../../state/useAppStore';
 import { useToast } from '../Toast';
 import { api } from '../../api';
-import { exportSessionBackupFile, parseSessionBackupFile, getClientStore } from '../../utils/storage';
+import { exportSessionBackupFile, getClientStore } from '../../utils/storage';
+import { RestoreBackup } from './RestoreBackup';
 import { PurgeDataDialog } from './PurgeDataDialog';
 
 /** Tras borrar todo se recarga la app en la página principal; este aviso se muestra al volver. */
@@ -11,7 +12,6 @@ export const PURGED_FLAG = 'oportia_purged_notice';
 
 export const SettingsPrivacyPanel: React.FC = () => {
   const toast = useToast();
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const {
     profile,
@@ -19,17 +19,12 @@ export const SettingsPrivacyPanel: React.FC = () => {
     jobs,
     applications,
     coachData,
-    clearAllLocalData,
-    importBackupBundle
+    clearAllLocalData
   } = useAppStore();
 
   const [exportPassword, setExportPassword] = useState('');
   const [exportHint, setExportHint] = useState('');
   const [isExporting, setIsExporting] = useState(false);
-  const [isImporting, setIsImporting] = useState(false);
-  // Respaldo cifrado esperando su contraseña
-  const [pendingEncrypted, setPendingEncrypted] = useState<{ file: File; hint?: string } | null>(null);
-  const [importPassword, setImportPassword] = useState('');
   const [isPurgeOpen, setIsPurgeOpen] = useState(false);
 
   const handleDownloadBackup = async () => {
@@ -50,39 +45,6 @@ export const SettingsPrivacyPanel: React.FC = () => {
       toast.error('Error al exportar respaldo: ' + (err?.message || err));
     } finally {
       setIsExporting(false);
-    }
-  };
-
-  const handleFileImport = async (file: File, passphrase?: string) => {
-    setIsImporting(true);
-    try {
-      const restored = await parseSessionBackupFile(file, passphrase);
-      await importBackupBundle({
-        profile: restored.profile,
-        preferences: restored.preferences,
-        jobs: restored.jobs,
-        applications: restored.applications,
-        coachData: restored.coach_data || undefined,
-        chatHistory: restored.chat_history
-      });
-      setPendingEncrypted(null);
-      setImportPassword('');
-      toast.success(
-        'Datos restaurados correctamente',
-        `Perfil, ${restored.jobs.length} ofertas, ${restored.applications.length} postulaciones${restored.chat_history?.length ? ' y tu conversación con Opi' : ''}.`
-      );
-    } catch (err: any) {
-      if (err?.isEncrypted) {
-        // Respaldo con contraseña: se pide antes de restaurar.
-        setPendingEncrypted({ file, hint: err.hint });
-      } else if (passphrase) {
-        toast.error('Contraseña incorrecta', 'Revisa la contraseña con la que creaste el respaldo.');
-      } else {
-        toast.error('Error al importar archivo: ' + (err?.message || err));
-      }
-    } finally {
-      setIsImporting(false);
-      if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
 
@@ -164,55 +126,7 @@ export const SettingsPrivacyPanel: React.FC = () => {
                 Restaura un archivo previamente descargado (.oportia o .nexusjob) en tu navegador.
               </p>
             </div>
-            <input
-              type="file"
-              ref={fileInputRef}
-              accept=".oportia,.nexusjob,.json"
-              onChange={(e) => {
-                const f = e.target.files?.[0];
-                if (f) handleFileImport(f);
-              }}
-              className="hidden"
-            />
-            {pendingEncrypted && (
-              <form
-                className="space-y-2 p-3 rounded-xl bg-amber-50 dark:bg-amber-500/10 border border-amber-300 dark:border-amber-400/40"
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  if (importPassword) handleFileImport(pendingEncrypted.file, importPassword);
-                }}
-              >
-                <p className="text-xs font-semibold text-amber-900 dark:text-amber-100">
-                  Este respaldo está protegido con contraseña.
-                  {pendingEncrypted.hint ? ` Pista: «${pendingEncrypted.hint}»` : ''}
-                </p>
-                <input
-                  type="password"
-                  autoFocus
-                  aria-label="Contraseña del respaldo"
-                  placeholder="Contraseña del respaldo"
-                  value={importPassword}
-                  onChange={(e) => setImportPassword(e.target.value)}
-                  className="w-full text-xs min-h-[44px] px-3 py-2 rounded-xl bg-white dark:bg-ink-raised border border-black/10 dark:border-white/10 text-ink dark:text-white focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
-                />
-                <div className="flex gap-2">
-                  <button type="submit" disabled={!importPassword || isImporting} className="flex-1 min-h-[40px] rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold disabled:opacity-50 cursor-pointer">
-                    Restaurar
-                  </button>
-                  <button type="button" onClick={() => { setPendingEncrypted(null); setImportPassword(''); }} className="min-h-[40px] px-3 rounded-xl border border-gray-300 dark:border-ink-line text-xs font-semibold text-ink dark:text-white cursor-pointer">
-                    Cancelar
-                  </button>
-                </div>
-              </form>
-            )}
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={isImporting}
-              className="w-full min-h-[44px] py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl shadow-xs transition cursor-pointer active:scale-95 disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-emerald-500/40 focus-visible:outline-none"
-            >
-              {isImporting ? 'Restaurando...' : 'Seleccionar archivo'}
-            </button>
+            <RestoreBackup />
           </div>
         </div>
 
