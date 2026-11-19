@@ -5,7 +5,14 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
 
 ---
 
-## [1.5.0] - Sin publicar (rama `release/1.5.0`) — *Privacidad por diseño y CV sin datos inventados*
+## [1.5.1] - 2026-11-18 — *Número de versión corregido*
+
+### 🛠️ Corrección
+- La 1.5.0 se publicó con la unión de la rama `release/1.5.0` (PR #20) antes de actualizar el número de versión: producción tenía todas las funciones nuevas, pero el pie de página, Ajustes y `/api/status` seguían diciendo 1.4.6. Ahora dicen 1.5.1.
+- La etiqueta `v1.5.0` marca el commit que se publicó (`95aadc1`).
+- **Para las próximas versiones:** el número de versión se sube en la misma rama de la versión, antes de unirla a `main`.
+
+## [1.5.0] - 2026-11-18 — *Privacidad por diseño y CV sin datos inventados*
 
 ### 🔐 La IA no recibe tus datos de contacto
 - Capa en la conexión con la IA: el nombre, correo, teléfono y enlaces de la persona se reemplazan por marcadores en cada consulta y se reponen en la respuesta; el RUT se oculta siempre (`app/privacy/`).

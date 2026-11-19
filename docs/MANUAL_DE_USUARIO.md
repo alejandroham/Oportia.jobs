@@ -1,6 +1,6 @@
 # Manual de usuario — Oportia Jobs IA
 
-> Versión 1.4.6 · Guía paso a paso para encontrar trabajo con Oportia y Opi, tu copiloto.
+> Versión 1.5.1 · Guía paso a paso para encontrar trabajo con Oportia y Opi, tu copiloto.
 >
 > Las capturas muestran a **Paula Rojas**, una persona de demostración **ficticia** (Técnico en Enfermería). Las empresas que aparecen también son ficticias.
 
