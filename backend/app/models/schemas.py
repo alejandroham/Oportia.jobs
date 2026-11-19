@@ -338,6 +338,10 @@ class ApplicationDraft(BaseModel):
     selection_method: Optional[str] = None  # manual | todas | ia | reglas
     # Datos que la IA agregó sin estar en el perfil y que Oportia quitó (para avisarle a la persona).
     fidelity_warnings: List[str] = []
+    # Palabras clave de la oferta: {"score": 0-100, "present": [...], "missing": [...]}
+    keyword_match: Optional[Dict[str, Any]] = None
+    # Observaciones de formato ATS para la persona (por ejemplo, falta la sección Idiomas).
+    ats_notes: List[str] = []
 
 class FeedbackAction(BaseModel):
     job_id: str

@@ -5,8 +5,7 @@ import { formatExperiencePeriod } from '../shared/CvPreview';
 
 const LENGTHS: Array<{ key: CvLength; label: string; hint: string }> = [
   { key: '1', label: '1 hoja', hint: 'Hasta 3 experiencias, 3 logros cada una' },
-  { key: '2', label: '2 hojas', hint: 'Hasta 5 experiencias, 4 logros cada una' },
-  { key: 'full', label: 'Completo', hint: 'Toda tu experiencia' }
+  { key: '2', label: '2 hojas', hint: 'Hasta 5 experiencias, 3 a 5 logros cada una (máximo recomendado para ATS)' }
 ];
 
 /** Largo sugerido: con mucha trayectoria conviene 1 o 2 hojas. */

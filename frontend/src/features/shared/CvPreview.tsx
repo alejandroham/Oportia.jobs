@@ -7,6 +7,7 @@ import { safeExternalUrl } from '../../utils/jobSource';
 import { printElement, buildDocumentTitle } from '../../utils/printDocument';
 import { describePages, findFitScale, measurePrintHeight, pagesFor } from '../../utils/cvPages';
 import { withProfileHeader } from '../../utils/cvHeader';
+import { cleanText, formatEducation, formatPeriod } from '../../utils/cvFormat';
 
 export const formatExperiencePeriod = (startDate?: string, endDate?: string): string => {
   const start = (startDate || '').trim();
@@ -31,6 +32,8 @@ interface CvPreviewProps {
   documentLabel?: string;
   /** Hojas que debería ocupar (según el largo elegido): se avisa si se pasa. */
   targetPages?: number;
+  /** Informa cuántas hojas ocupa al imprimir (para la revisión ATS). */
+  onPagesChange?: (pages: number | null) => void;
 }
 
 export const CvPreview: React.FC<CvPreviewProps> = ({
@@ -39,7 +42,8 @@ export const CvPreview: React.FC<CvPreviewProps> = ({
   showControls = true,
   className = '',
   documentLabel,
-  targetPages
+  targetPages,
+  onPagesChange
 }) => {
   const printableRef = useRef<HTMLDivElement>(null);
   const [template, setTemplate] = useState<'modern' | 'minimalist' | 'executive'>('modern');
@@ -57,7 +61,9 @@ export const CvPreview: React.FC<CvPreviewProps> = ({
   useEffect(() => {
     const id = requestAnimationFrame(() => {
       const h = measure(scale);
-      setPages(h > 0 ? pagesFor(h) : null);
+      const p = h > 0 ? pagesFor(h) : null;
+      setPages(p);
+      onPagesChange?.(viewSource === 'tailored' ? p : null);
     });
     return () => cancelAnimationFrame(id);
   }, [measure, scale, template, viewSource, tailoredMarkdown, profile]);
@@ -270,7 +276,7 @@ export const CvPreview: React.FC<CvPreviewProps> = ({
             {profile.summary && (
               <div className="space-y-2">
                 <h2 className="cv-h2 text-xs font-bold uppercase tracking-wider text-gray-500 border-b border-gray-100 pb-1">
-                  Resumen Profesional
+                  Perfil profesional
                 </h2>
                 <p className="formal-justify text-xs sm:text-sm text-gray-700 leading-relaxed">
                   {profile.summary}
@@ -282,7 +288,7 @@ export const CvPreview: React.FC<CvPreviewProps> = ({
             {((profile.technical_skills && profile.technical_skills.length > 0) || (profile.soft_skills && profile.soft_skills.length > 0)) && (
               <div className="space-y-2">
                 <h2 className="cv-h2 text-xs font-bold uppercase tracking-wider text-gray-500 border-b border-gray-100 pb-1">
-                  Habilidades y Competencias
+                  Competencias
                 </h2>
                 <div className="flex flex-wrap gap-1.5 pt-1">
                   {profile.technical_skills?.map((skill, i) => (
@@ -303,30 +309,34 @@ export const CvPreview: React.FC<CvPreviewProps> = ({
             {profile.experiences && profile.experiences.length > 0 && (
               <div className="space-y-4">
                 <h2 className="cv-h2 text-xs font-bold uppercase tracking-wider text-gray-500 border-b border-gray-100 pb-1">
-                  Experiencia Laboral
+                  Experiencia laboral
                 </h2>
                 <div className="space-y-4">
                   {profile.experiences.map((exp) => (
                     <div key={exp.id || exp.role} className="space-y-1.5">
-                      <div className="flex flex-wrap justify-between items-baseline gap-2">
-                        <div className="font-bold text-sm text-gray-900">
-                          {exp.role} <span className="font-semibold text-gray-600">· {exp.company}</span>
-                        </div>
-                        <span className="text-xs text-gray-500 font-medium">
-                          {formatExperiencePeriod(exp.start_date, exp.end_date)}
-                        </span>
-                      </div>
+                      {/* Formato ATS: cargo — empresa, y en la línea siguiente fecha | ciudad */}
+                      <h3 className="cv-h3 font-bold text-sm text-gray-900">
+                        {exp.role} — {exp.company}
+                      </h3>
+                      {(formatPeriod(exp) || exp.location || exp.is_remote) && (
+                        <p className="text-xs text-gray-600 font-medium">
+                          {[formatPeriod(exp), exp.location || (exp.is_remote ? 'Remoto' : '')].filter(Boolean).join(' | ')}
+                        </p>
+                      )}
                       {exp.description && (
                         <p className="formal-justify text-xs text-gray-700 leading-relaxed">
-                          {exp.description}
+                          {cleanText(exp.description)}
                         </p>
                       )}
                       {exp.bullet_achievements && exp.bullet_achievements.length > 0 && (
                         <ul className="formal-justify list-disc pl-5 text-xs text-gray-700 space-y-1">
                           {exp.bullet_achievements.map((bullet, i) => (
-                            <li key={i}>{bullet.replace(/^[*\-●•+]\s*/, '')}</li>
+                            <li key={i}>{cleanText(bullet.replace(/^[*\-●•+]\s*/, ''))}</li>
                           ))}
                         </ul>
+                      )}
+                      {exp.technologies?.length > 0 && (
+                        <p className="text-xs text-gray-700">Tecnologías: {exp.technologies.slice(0, 10).join(', ')}</p>
                       )}
                     </div>
                   ))}
@@ -342,13 +352,7 @@ export const CvPreview: React.FC<CvPreviewProps> = ({
                 </h2>
                 <div className="space-y-2">
                   {profile.education.map((edu, idx) => (
-                    <div key={idx} className="flex flex-wrap justify-between items-baseline gap-2 text-xs">
-                      <span className="font-semibold text-gray-900">
-                        {[edu.degree, edu.field_of_study].filter(Boolean).join(' en ')}
-                        {edu.institution && <span className="font-normal text-gray-600"> — {edu.institution}</span>}
-                      </span>
-                      {edu.graduation_year && <span className="text-gray-500">{edu.graduation_year}</span>}
-                    </div>
+                    <p key={idx} className="text-xs text-gray-900">{formatEducation(edu)}</p>
                   ))}
                 </div>
               </div>

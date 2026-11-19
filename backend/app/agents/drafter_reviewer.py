@@ -2,6 +2,7 @@ from typing import List, Optional, Tuple
 from app.models.schemas import CandidateProfile, JobPosting, ApplicationDraft, UserPreferences, CvOptions
 from app.agents import cv_selection
 from app.agents.cv_fidelity import verify_cv, verify_letter
+from app.agents import cv_builder
 from app.privacy.redact import NAME_TOKEN, apply_cv_header, profile_json_for_ai, redact_text, restore_tokens
 from app.agents.llm_provider import llm, LLMProviderError, AINotConnectedError, USER_FACING_LLM_ERRORS
 from app.storage.db import db
@@ -47,20 +48,34 @@ class DrafterReviewerPipeline:
         selected_ids, reasons, method = cv_selection.choose_experiences(profile, job, length, options.experience_ids)
         focused, others = cv_selection.split_profile(profile, selected_ids, length)
 
-        # Paso 1: el redactor genera CV y carta con las experiencias elegidas.
+        # Paso 1: la IA propone la REDACCIÓN (perfil, descripciones, logros, competencias, palabras clave de la oferta);
+        # Oportia arma el CV con formato ATS y los hechos del perfil (cargos, empresas, fechas, estudios, idiomas).
         # La IA no recibe nombre, correo, teléfono, comuna ni enlaces: trabaja con marcadores.
-        cv_markdown, cover_letter = self._draft_materials(job, focused, prefs, length)
+        ai = self._draft_structured(job, focused, prefs, length, profile)
+        cv_markdown = cv_builder.build_cv_markdown(focused, ai, job)
+        cover_letter = str(ai.get("cover_letter") or "").strip() or (
+            self._draft_cover_letter_text(job, focused, profile_json_for_ai(focused), redact_text(self._memory_context(prefs))[0])
+            or self._fallback_cover_letter(profile, job))
 
         # Paso 1b: fidelidad. Lo que no esté en el perfil real se detecta; la IA corrige una vez y lo que quede se quita.
         cv_markdown, removed = verify_cv(cv_markdown, profile)
-        if removed:
-            retry = self._redraft_cv(job, focused, prefs, length, removed)
-            if retry:
-                retry_clean, retry_removed = verify_cv(retry, profile)
+        if removed and ai:
+            retry_ai = self._draft_structured(job, focused, prefs, length, profile, removed)
+            if retry_ai:
+                retry_clean, retry_removed = verify_cv(cv_builder.build_cv_markdown(focused, retry_ai, job), profile)
                 if len(retry_removed) < len(removed):
-                    cv_markdown, removed = retry_clean, retry_removed
-        cover_letter, letter_removed = verify_letter(cover_letter, profile)
+                    cv_markdown, removed, ai = retry_clean, retry_removed, {**ai, **retry_ai}
+        cover_letter, letter_removed = verify_letter(cv_builder.clean_text(cover_letter), profile)
         fidelity_warnings = removed + letter_removed
+
+        # Palabras clave de la oferta: % que la persona tiene y las que faltan (solo se usan las que tiene).
+        keywords = [str(k) for k in (ai.get("palabras_clave_oferta") or [])] or cv_builder.rule_keywords(job)
+        keyword_match = cv_builder.keyword_match(keywords, profile)
+        ats_notes = []
+        if cv_builder.is_third_person(str(ai.get("perfil") or "")):
+            ats_notes.append("El perfil profesional quedó en tercera persona: revísalo o vuelve a adaptar.")
+        if not profile.languages:
+            ats_notes.append("Agrega tus idiomas en Mi perfil para que el CV tenga la sección Idiomas.")
         cv_markdown = cv_selection.insert_previous_experience(cv_markdown, others)
 
         # Paso 2: el revisor audita (no bloqueante) sobre los documentos aún sin datos de contacto.
@@ -89,6 +104,8 @@ class DrafterReviewerPipeline:
             selection_reasons=reasons,
             selection_method=method,
             fidelity_warnings=fidelity_warnings,
+            keyword_match=keyword_match,
+            ats_notes=ats_notes,
         )
 
         if persist:
@@ -186,6 +203,58 @@ RESPONDE ÚNICAMENTE CON UN JSON:
             cl = self._draft_cover_letter_text(job, profile, profile_json, memory_context) or self._fallback_cover_letter(profile, job)
 
         return cv_md.strip(), cl.strip()
+
+    def _draft_structured(self, job: JobPosting, focused: CandidateProfile, prefs: Optional[UserPreferences],
+                          length: str, full_profile: CandidateProfile, removed: Optional[List[str]] = None) -> dict:
+        """Una consulta: redacción del CV y la carta como datos (JSON). Sin IA o si falla, devuelve {}."""
+        memory_context, _ = redact_text(self._memory_context(prefs))
+        years = cv_builder.years_of_experience(full_profile)
+        bullets = "3" if length == "1" else "3 a 5"
+        correction = ""
+        if removed:
+            correction = ("\nCORRECCIÓN OBLIGATORIA: en tu versión anterior agregaste datos que NO están en el perfil:\n"
+                          + "\n".join(f"- {r}" for r in removed[:12]) + "\nNo los vuelvas a usar.\n")
+        prompt = f"""
+VACANTE OBJETIVO:
+{self._job_block(job)}
+
+PERFIL REAL Y VERIFICADO DEL CANDIDATO (cada experiencia tiene un "id"):
+{profile_json_for_ai(focused)}
+{memory_context}
+Años de experiencia calculados con sus fechas: {years}.
+{correction}
+Redacta el contenido de un CV compatible con sistemas ATS y una carta para esta vacante. Oportia arma el formato:
+tú solo entregas la redacción. REGLAS:
+- PROHIBIDO INVENTAR O FALSEAR: no agregues cifras, porcentajes, montos, fechas, empresas, cargos, estudios, cursos,
+  tecnologías ni logros que no estén escritos en el perfil. Si un logro no tiene cifra en el perfil, descríbelo sin cifra.
+- Usa las palabras clave de la oferta CON LA MISMA REDACCIÓN de la oferta, pero SOLO si la persona realmente las tiene.
+- Español de Chile, verbos en pasado para los logros, sin tercera persona ("cuenta con", "posee", "el candidato" están prohibidos).
+
+RESPONDE ÚNICAMENTE CON ESTE JSON:
+{{{{
+  "palabras_clave_oferta": ["15 a 20 términos de la oferta (cargo, tecnologías, competencias), con su redacción exacta"],
+  "perfil": "3 a 4 líneas en primera persona implícita: {years} años de experiencia, el cargo objetivo, 2 o 3 logros reales del perfil y sus tecnologías o técnicas principales",
+  "competencias": ["hasta 16 competencias que la persona TIENE, primero las que pide la oferta"],
+  "experiencias": [{{{{"id": "id exacto de la experiencia", "descripcion": "1 a 2 líneas sobre el cargo",
+                    "logros": ["{bullets} viñetas: verbo + qué hizo + resultado (cifra solo si está en el perfil)"],
+                    "tecnologias": ["hasta 10 herramientas o técnicas del perfil, primero las de la oferta"]}}}}],
+  "cover_letter": "Carta de 3 a 4 párrafos sin clichés, con dos ejemplos reales, firmada exactamente como {{{{NOMBRE}}}}"
+}}}}
+"""
+        try:
+            res = llm.generate_json(prompt, system_instruction=DRAFTER_SYSTEM_INSTRUCTION) or {}
+        except USER_FACING_LLM_ERRORS:
+            raise
+        except LLMProviderError as e:
+            logger.warning(f"Redacción estructurada no disponible ({e.code}); se arma el CV con los datos del perfil.")
+            return {}
+        if not isinstance(res, dict):
+            return {}
+        valid = {str(e.id) for e in focused.experiences}
+        res["experiencias"] = [x for x in (res.get("experiencias") or []) if isinstance(x, dict) and str(x.get("id")) in valid]
+        if isinstance(res.get("cover_letter"), (dict, list)):
+            res["cover_letter"] = ""
+        return res
 
     def _redraft_cv(self, job: JobPosting, profile: CandidateProfile, prefs: Optional[UserPreferences],
                     length: str, removed: List[str]) -> Optional[str]:

@@ -1,6 +1,6 @@
 # Manual de usuario — Oportia Jobs IA
 
-> Versión 1.5.1 · Guía paso a paso para encontrar trabajo con Oportia y Opi, tu copiloto.
+> Versión 1.6.0 · Guía paso a paso para encontrar trabajo con Oportia y Opi, tu copiloto.
 >
 > Las capturas muestran a **Paula Rojas**, una persona de demostración **ficticia** (Técnico en Enfermería). Las empresas que aparecen también son ficticias.
 
@@ -248,6 +248,13 @@ Cada postulación tiene tres pestañas:
   - **Elegir yo:** marca o desmarca tus experiencias. Se parte de lo que eligió Opi.
   - Las experiencias que no se desarrollan **no se ocultan**: van en **Experiencia anterior**, una línea por cargo (cargo, empresa y años). Esa sección la escribe Oportia con tus datos, no la IA, para que nada se invente.
 - **Generar CV y carta adaptados** (o **Volver a adaptar con IA**): Opi reordena tu experiencia **real** según lo que pide la oferta y respeta el largo elegido. No inventa cargos, títulos ni empresas.
+- **CV compatible con sistemas ATS** (nuevo en 1.6.0), los programas que usan las empresas para leer CV:
+  - Oportia arma el CV con títulos estándar: *Perfil profesional, Competencias, Experiencia laboral, Experiencia anterior, Educación, Certificaciones y cursos* e *Idiomas*.
+  - Cada cargo va así, una cosa por línea: **Cargo — Empresa**; **Mes Año – Mes Año | Ciudad**; una descripción breve; **3 a 5 logros**; y **Tecnologías:** con un máximo de 10, solo las que están en tu perfil. El cargo y la empresa se copian tal cual de tu perfil.
+  - Máximo **2 hojas**. Los cargos que terminaron hace más de 10 años van en **Experiencia anterior**, una línea cada uno.
+  - El PDF usa la fuente **Arial** (nunca se parten palabras con guion) y se llama *CV – Tu nombre – Cargo de la oferta*.
+  - **Revisión para sistemas ATS:** antes de descargar verás tu **% de coincidencia** con las palabras clave de la oferta, cuáles usaste y **cuáles te faltan** (no se agregan si no están en tu perfil), y una lista de chequeo: fechas en su línea, máximo 2 hojas, logros, tecnologías, sección Idiomas y nada inventado.
+  - **Si un mismo cargo aparece dos veces con fechas o títulos distintos**, Oportia te pregunta cuál es el correcto antes de generar. No elige por ti.
 - **Tus datos de contacto siempre van en el CV adaptado:** el encabezado lo arma Oportia con tu nombre, correo, teléfono, comuna y enlaces de **Mi perfil** (si los corriges, el CV ya generado se actualiza). Si falta alguno, verás un aviso para agregarlo.
 - **Nada inventado:** después de que la IA escribe, Oportia compara el CV y la carta con tu perfil. Si la IA agregó una cifra, una fecha, una empresa, un cargo, un estudio, un curso o una competencia que no está en tu perfil, le pide corregirlo una vez y **quita lo que quede**. El aviso verde **"Oportia quitó… datos que la IA agregó sin estar en tu perfil"** te muestra qué se quitó. Si alguno es real, agrégalo en Mi perfil y vuelve a adaptar.
 - El texto va **justificado** al ancho de la hoja, con división de palabras.

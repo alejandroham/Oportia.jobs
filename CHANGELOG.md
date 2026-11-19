@@ -5,6 +5,32 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
 
 ---
 
+## [1.6.0] - 2026-11-19 — *CV compatible con sistemas ATS*
+
+### 📄 Formato que leen bien los ATS
+- **Oportia arma el CV con reglas** (`app/agents/cv_builder.py`): la IA solo propone la redacción (perfil, descripción breve y logros de cada cargo, competencias y palabras clave de la oferta) en formato de datos; los hechos salen del perfil.
+- **Cada cargo, una cosa por línea:** "Cargo — Empresa" (copiados tal cual del perfil), "Mes Año – Mes Año | Ciudad", descripción de 1–2 líneas, 3–5 viñetas de logros (verbo + acción + resultado, sin cifras inventadas) y "Tecnologías:" con máximo 10, solo respaldadas por el perfil y priorizando las de la oferta.
+- **Fechas uniformes:** mes completo y año, "Actual" para el cargo vigente.
+- **Títulos de sección estándar:** Perfil profesional, Competencias, Experiencia laboral, Experiencia anterior, Educación, Certificaciones y cursos, Idiomas (nueva sección).
+- **Máximo 2 hojas:** se quita la opción "Completo"; los cargos que terminaron hace más de 10 años van en "Experiencia anterior", una línea cada uno.
+- **Educación sin redundancias:** "Título – Institución (año)" (ya no "Ingeniero en Informática en Ingeniería en informática").
+- **Perfil profesional** de 3–4 líneas sin tercera persona, con años de experiencia calculados con las fechas; aviso si quedó en tercera persona.
+- El CV base de Mi perfil usa el mismo formato y los mismos títulos.
+
+### 🔤 PDF
+- **Sin palabras partidas:** `hyphens: none` en el CV y se quitan los guiones blandos (U+00AD) y U+2010 del texto.
+- **Fuente Arial del sistema** (TrueType) en el CV y la carta: las fuentes web variables podían quedar incrustadas como Type 3. Nunca pesos ExtraLight. Verificado con `pypdf`: fuentes ArialMT/Arial-BoldMT CID TrueType, sin Type 3.
+- **Título del PDF:** "CV – Nombre Apellido – Cargo de la oferta".
+
+### 🎯 Adaptación a la oferta
+- La IA extrae 15–20 palabras clave de la oferta y solo usa las que la persona tiene, con la misma redacción.
+- **Revisión para sistemas ATS** en Documentos: % de coincidencia, palabras usadas y faltantes, y lista de chequeo (sin palabras partidas, fuente estándar, fechas en su línea, ≤2 hojas, ≥3 logros en los 3 cargos más recientes, ≤12 tecnologías por cargo, sección Idiomas, nada inventado).
+- **Coherencia:** si un mismo cargo aparece dos veces con fechas o títulos distintos, Oportia pregunta cuál usar antes de generar (o si son cargos distintos) y actualiza el perfil.
+
+### 🛠️ Correcciones
+- Al adaptar se usa siempre el perfil recién guardado.
+- **Control de versiones:** desde esta versión el número se sube en la rama `release/*`, antes de unirla a `main`.
+
 ## [1.5.1] - 2026-11-18 — *Número de versión corregido*
 
 ### 🛠️ Corrección

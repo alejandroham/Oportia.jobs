@@ -1,4 +1,5 @@
 import React from 'react';
+import { cleanText } from '../../utils/cvFormat';
 
 /**
  * Renderiza el Markdown simple que genera la IA (CV adaptado / carta) como documento
@@ -88,7 +89,7 @@ export const MarkdownDocument: React.FC<{ markdown: string; className?: string; 
   className = '',
   justify = false
 }) => {
-  const blocks = parseMarkdownBlocks(markdown);
+  const blocks = parseMarkdownBlocks(cleanText(markdown));
   // Las líneas entre el nombre (#) y la primera sección (##) son la cabecera: no se justifican.
   const firstSection = blocks.findIndex((b) => b.type === 'h2');
   const isHeader = (i: number) => blocks[0]?.type === 'h1' && (firstSection === -1 ? i <= 2 : i < firstSection);

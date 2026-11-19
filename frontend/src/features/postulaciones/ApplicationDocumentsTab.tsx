@@ -7,7 +7,12 @@ import { printElement, buildDocumentTitle } from '../../utils/printDocument';
 import { OpiAvatar } from '../../components/ui/OpiAvatar';
 import { CvOptionsPanel, defaultCvLength } from './CvOptionsPanel';
 import { QuickFeedback } from '../../components/feedback/QuickFeedback';
-import { missingContact } from '../../utils/cvHeader';
+import { missingContact, withProfileHeader } from '../../utils/cvHeader';
+import { atsChecks } from '../../utils/atsCheck';
+import { AtsReview } from './AtsReview';
+import { ConflictDialog } from './ConflictDialog';
+import { findConflicts, ignoreConflict, type ExperienceConflict } from '../../utils/cvConflicts';
+import { useAppStore } from '../../state/useAppStore';
 import { Link } from 'react-router-dom';
 import { ShieldCheck, AlertTriangle } from 'lucide-react';
 
@@ -36,7 +41,7 @@ export const ApplicationDocumentsTab: React.FC<ApplicationDocumentsTabProps> = (
 
   // Largo y experiencias del CV: parte de lo usado en el último CV de esta postulación.
   const initialOptions = (): CvOptions => ({
-    length: application?.cv_length ?? defaultCvLength(experiences.length),
+    length: application?.cv_length === '1' ? '1' : application?.cv_length === '2' ? '2' : defaultCvLength(experiences.length),
     experience_ids: application?.selection_method === 'manual' ? application.selected_experience_ids ?? [] : null
   });
   const [cvOptions, setCvOptions] = useState<CvOptions>(initialOptions);
@@ -48,8 +53,33 @@ export const ApplicationDocumentsTab: React.FC<ApplicationDocumentsTabProps> = (
     ? { ids: application.selected_experience_ids, reasons: application.selection_reasons ?? {}, method: application.selection_method }
     : null;
   const manualEmpty = Array.isArray(cvOptions.experience_ids) && cvOptions.experience_ids.length === 0 && experiences.length > 0;
-  const targetPages = cvOptions.length === 'full' ? undefined : Number(cvOptions.length);
-  const adapt = () => onAdaptCv(cvOptions);
+  const targetPages = cvOptions.length === 'full' ? 2 : Number(cvOptions.length);
+  // Antes de generar: si un mismo cargo tiene fechas o títulos distintos, se pregunta a la persona.
+  const [conflicts, setConflicts] = useState<ExperienceConflict[]>([]);
+  const adapt = () => {
+    const found = findConflicts(profile?.experiences || []);
+    if (found.length) {
+      setConflicts(found);
+      return;
+    }
+    void onAdaptCv(cvOptions);
+  };
+  const resolveNext = (remaining: ExperienceConflict[]) => {
+    setConflicts(remaining);
+    if (!remaining.length) void onAdaptCv(cvOptions);
+  };
+  const keepOne = async (c: ExperienceConflict, keepId: string) => {
+    const dropId = keepId === c.a.id ? c.b.id : c.a.id;
+    const { profile: current, setProfile } = useAppStore.getState();
+    if (current) await setProfile({ ...current, experiences: current.experiences.filter((e) => e.id !== dropId), updated_at: new Date().toISOString() });
+    toast.success('Listo: el CV usará el dato que elegiste. Tu perfil quedó actualizado.');
+    resolveNext(findConflicts(useAppStore.getState().profile?.experiences || []));
+  };
+  const keepBoth = (c: ExperienceConflict) => {
+    ignoreConflict(c.key);
+    resolveNext(conflicts.filter((x) => x.key !== c.key));
+  };
+  const [pages, setPages] = useState<number | null>(null);
   const coverLetter = application?.cover_letter || job.tailored_cover_letter;
 
   const handleCopyLetter = () => {
@@ -112,6 +142,10 @@ export const ApplicationDocumentsTab: React.FC<ApplicationDocumentsTabProps> = (
         </button>
       </div>
 
+      {conflicts.length > 0 && (
+        <ConflictDialog conflicts={conflicts} onKeep={keepOne} onBothReal={keepBoth} onClose={() => setConflicts([])} />
+      )}
+
       {activeDoc === 'cv' && profile && (
         <CvOptionsPanel
           key={job.id}
@@ -160,6 +194,14 @@ export const ApplicationDocumentsTab: React.FC<ApplicationDocumentsTabProps> = (
         </details>
       )}
 
+      {activeDoc === 'cv' && tailoredMarkdown && !isAdapting && profile && (
+        <AtsReview
+          checks={atsChecks(withProfileHeader(tailoredMarkdown, profile), pages, application?.fidelity_warnings?.length ?? 0)}
+          match={application?.keyword_match}
+          notes={application?.ats_notes}
+        />
+      )}
+
       {tailoredMarkdown && !isAdapting && <QuickFeedback moment="cv_adaptado" question="¿Te sirvió el CV adaptado?" />}
 
       {/* Contenido según pestaña */}
@@ -169,8 +211,9 @@ export const ApplicationDocumentsTab: React.FC<ApplicationDocumentsTabProps> = (
             profile={profile}
             tailoredMarkdown={tailoredMarkdown}
             showControls={true}
-            documentLabel={job.company}
+            documentLabel={job.title}
             targetPages={tailoredMarkdown ? targetPages : undefined}
+            onPagesChange={setPages}
           />
         ) : (
           <div className="p-8 text-center text-xs text-gray-500">

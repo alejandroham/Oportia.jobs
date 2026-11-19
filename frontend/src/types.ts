@@ -416,6 +416,9 @@ export interface ApplicationDraft {
   selection_method?: 'manual' | 'todas' | 'ia' | 'reglas';
   /** Lo que la IA agregó sin estar en tu perfil y Oportia quitó. */
   fidelity_warnings?: string[];
+  /** Palabras clave de la oferta que tienes y las que faltan. */
+  keyword_match?: { score: number; present: string[]; missing: string[] } | null;
+  ats_notes?: string[];
 }
 
 export type CvLength = '1' | '2' | 'full';

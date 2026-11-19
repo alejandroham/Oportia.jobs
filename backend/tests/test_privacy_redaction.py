@@ -64,8 +64,8 @@ def test_draft_never_sends_contact_to_ai_and_documents_keep_exact_data(monkeypat
 
     def fake_json(prompt, system_instruction=None):
         sent.append(prompt)
-        if "tailored_cv_markdown" in prompt:
-            return {"tailored_cv_markdown": "# {{NOMBRE}}\n## Perfil\nSupervisora.\n## Educación\n- Técnico",
+        if '"experiencias"' in prompt:
+            return {"perfil": "Supervisora de obra.", "experiencias": [],
                     "cover_letter": "Estimado equipo:\n\nSoy supervisora.\n\nAtentamente,\n{{NOMBRE}}"}
         return {"ats_score": 80, "ats_feedback": ["Bien"], "reviewer_critique": "ok"}
 

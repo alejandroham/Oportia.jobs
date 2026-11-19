@@ -42,7 +42,7 @@ class Settings:
     BASE_DIR: Path = BASE_DIR
     DATA_DIR: Path = DATA_DIR
     PROJECT_NAME: str = "Oportia Jobs IA - Tu talento. Tus decisiones. Tus oportunidades."
-    VERSION: str = "1.5.1"
+    VERSION: str = "1.6.0"
     
     # Storage Paths
     PROFILE_FILE: Path = DATA_DIR / "profile.json"
