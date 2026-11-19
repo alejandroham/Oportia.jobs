@@ -76,6 +76,13 @@ export const sortEducation = (list: EducationItem[]) =>
     return k === null ? null : [k];
   });
 
+/** Cursos y certificaciones: del más reciente al más antiguo (según el año que traigan; sin año, al final). */
+export const sortCertifications = (list: string[]) =>
+  byKeyDesc(list || [], (c) => {
+    const ys = (c || '').match(/(?:19|20)\d{2}/g);
+    return ys ? [Number(ys[ys.length - 1])] : null;
+  });
+
 const sameOrder = <T,>(a: T[], b: T[]) => a.length === b.length && a.every((x, i) => x === b[i]);
 
 /** ¿La experiencia o la educación están fuera del orden por fecha? */
@@ -89,6 +96,12 @@ export function withChronologicalOrder<P extends CandidateProfile>(profile: P): 
   if (profile.cv_order === 'manual') return profile;
   const experiences = sortExperiences(profile.experiences || []);
   const education = sortEducation(profile.education || []);
-  if (sameOrder(experiences, profile.experiences || []) && sameOrder(education, profile.education || [])) return profile;
-  return { ...profile, experiences, education };
+  const certifications = sortCertifications(profile.certifications || []);
+  if (
+    sameOrder(experiences, profile.experiences || []) &&
+    sameOrder(education, profile.education || []) &&
+    sameOrder(certifications, profile.certifications || [])
+  )
+    return profile;
+  return { ...profile, experiences, education, certifications };
 }

@@ -34,6 +34,20 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
   - La guía aceptaba **.txt**, pero el servidor lo rechazaba: ahora se lee.
   - Mensajes claros si un PDF es una imagen escaneada, si un .doc antiguo no se puede leer o si la conexión se corta por tiempo.
   - Sin IA, el nombre ya no sale pegado al correo cuando están en la misma línea.
+- **La lectura del CV mezclaba secciones y dejaba listas como un solo texto:**
+  - **Con IA:** si la IA devolvía habilidades, idiomas o cursos como texto ("Python, React, SQL") en vez de lista, la lectura fallaba en silencio y caía a la lectura sin IA; si venían en un solo elemento, quedaban como una sola habilidad. Ahora se separan siempre, los idiomas se convierten en idioma → nivel y la experiencia trae sus herramientas y logros separados.
+  - **Sin IA:** se reconocen títulos de sección en la misma línea que el contenido ("HABILIDADES: Python…", "EDUCACIÓN Ingeniero…"), con letras espaciadas ("E D U C A C I Ó N"), combinados ("Educación y certificaciones", "Formación y cursos"), en inglés ("Education", "Certifications") y "Contacto".
+  - **Educación línea a línea:** cada título empieza un registro nuevo con su institución y año (antes, sin líneas vacías, toda la sección quedaba como un solo título). Los cursos, certificaciones y bootcamps que estén en Educación pasan a "Certificaciones y cursos".
+  - **Cursos:** uno por línea, sin cortar en comas ("Curso de Python, 40 horas" es uno); la institución o el año en la línea siguiente se une al curso. Ordenados del más reciente al más antiguo (también en la app).
+  - **Habilidades:** se separan por comas, viñetas, "·", "/", "-" y "|".
+  - **Idiomas:** "Inglés intermedio (B1) · Español nativo", "Inglés: B2", listas o diccionarios; si no hay sección, se buscan menciones con nivel.
+  - **Palabras clave:** se completan con las habilidades técnicas y las herramientas de la experiencia.
+  - **CV de dos columnas:** el nombre y el titular se encuentran aunque la barra lateral (Contacto, Habilidades, Idiomas) salga primero en el texto del PDF.
+  - **CV con palabras partidas** (como los que generaba Oportia antes de esta versión): se unen las palabras cortadas con guion al final de línea ("trans-/formación").
+  - **Experiencia:** el cargo y la empresa pueden ocupar dos líneas ("…de la Región del" + "Biobío"); la línea de fecha puede traer "| Ciudad, Región, Chile" y el inicio de la descripción; "Herramientas:" dentro de un cargo ya no se confunde con la sección Habilidades y sus términos quedan en las herramientas del cargo; empresas terminadas en "S.A." o "Ltda.".
+  - **Experiencia anterior** ("Cargo · Empresa (Mes Año – Mes Año)") se lee como experiencia.
+  - **Titular:** se acepta aunque tenga números ("Microsoft 365") y continúe en la línea siguiente, sin arrastrar el correo.
+  - **Educación:** sin el título repetido ("Ingeniero en Informática en Ingeniería en informática" → "Ingeniero en Informática") y con todas las instituciones ("Universidad Tecnológica de Chile, INACAP").
 - Al adaptar se usa siempre el perfil recién guardado.
 - **Control de versiones:** desde esta versión el número se sube en la rama `release/*`, antes de unirla a `main`.
 
