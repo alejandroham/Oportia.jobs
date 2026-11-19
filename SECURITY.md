@@ -1,7 +1,7 @@
 # Política de Seguridad — Oportia Jobs IA
 
-**Última actualización:** 16 de noviembre de 2026
-**Versión de política:** 1.3.3
+**Última actualización:** 19 de noviembre de 2026
+**Versión de política:** 1.6.0
 
 La seguridad de la información y la protección de quienes usan **Oportia Jobs IA** son principios del diseño. Este documento indica qué versiones reciben correcciones, cómo reportar una vulnerabilidad de forma responsable y qué controles tiene la plataforma.
 
@@ -11,9 +11,9 @@ La seguridad de la información y la protección de quienes usan **Oportia Jobs 
 
 | Versión | Soporte |
 | :--- | :--- |
-| **1.3.x** | ✅ Soportada (versión actual) |
-| **1.2.x** | ⚠️ Solo correcciones críticas |
-| **< 1.2.0** | ❌ Sin soporte |
+| **1.6.x** | ✅ Soportada (versión actual) |
+| **1.5.x** | ⚠️ Solo correcciones críticas |
+| **< 1.5.0** | ❌ Sin soporte |
 
 ---
 
@@ -46,9 +46,12 @@ Oportia es un proyecto personal y gratuito: no tiene programa de recompensas.
 
 ## 3. Modelo de amenazas y controles implementados
 
-### 3.1 Datos personales: el CV nunca llega al servidor (local-first)
+### 3.1 Datos personales: el CV no se guarda en el servidor (local-first)
 - **Dónde viven los datos:** el CV, el perfil, las postulaciones y el historial con Opi se guardan en el navegador (IndexedDB).
-- **Servidor sin estado:** en Vercel, el servidor no lee ni escribe datos personales en disco (`settings.STATELESS`). Las pruebas `backend/tests/test_stateless_privacy.py` lo verifican.
+- **Servidor sin estado:** en Vercel, el servidor procesa cada petición y no guarda datos personales en disco (`settings.STATELESS`). El archivo del CV se escribe en un temporal y se borra apenas se lee. Las pruebas `backend/tests/test_stateless_privacy.py` lo verifican.
+- **Minimización ante la IA (desde 1.5.0):** antes de cada consulta a la IA, el nombre, correo, teléfono y enlaces de la persona se reemplazan por marcadores y el RUT se oculta siempre (`backend/app/privacy/`); el encabezado del CV lo arma Oportia con los datos exactos del perfil. Pruebas: `test_privacy_redaction.py`.
+- **Registros sin contenido:** los errores de la IA se registran sin el texto de la respuesta ni el detalle de la excepción.
+- **Fidelidad del CV (desde 1.5.0):** se quitan del CV adaptado las cifras, empresas, estudios y tecnologías que no están en el perfil (`cv_fidelity.py`).
 - **Respaldos:** se pueden cifrar con contraseña (AES-GCM de 256 bits, `frontend/src/utils/crypto.ts`).
 
 ### 3.2 Claves de IA (trae tu propia clave)
@@ -97,6 +100,11 @@ Oportia es un proyecto personal y gratuito: no tiene programa de recompensas.
 
 ### 3.8 CORS
 - `CORSMiddleware` solo permite los orígenes de `ALLOWED_ORIGINS`.
+
+### 3.8.1 Consentimiento de la IA gratuita y eventos anónimos
+- **Doble confirmación** para la IA gratuita (plan gratuito de Gemini) y comprobante descargable con código, fecha y versión del aviso. Sin la cabecera de consentimiento el servidor rechaza el uso.
+- **`POST /api/event`** solo acepta una lista cerrada de tipos y valores (aceptar o retirar el aviso, descargar un PDF): descarta cualquier otro dato. Límite de 20 por minuto por IP.
+- **Presupuesto de tiempo:** cada petición tiene 50 s para la IA (Vercel corta a los 60 s); si no alcanza, se responde sin IA.
 
 ### 3.9 Fuentes de ofertas
 - **El índice diario** solo usa fuentes cuyas condiciones lo permiten: API oficiales, portales de empleo de empresas y ChileTrabajos.
