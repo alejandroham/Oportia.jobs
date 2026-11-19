@@ -53,9 +53,13 @@ class DrafterReviewerPipeline:
         # La IA no recibe nombre, correo, teléfono, comuna ni enlaces: trabaja con marcadores.
         ai = self._draft_structured(job, focused, prefs, length, profile)
         cv_markdown = cv_builder.build_cv_markdown(focused, ai, job)
-        cover_letter = str(ai.get("cover_letter") or "").strip() or (
-            self._draft_cover_letter_text(job, focused, profile_json_for_ai(focused), redact_text(self._memory_context(prefs))[0])
-            or self._fallback_cover_letter(profile, job))
+        cover_letter = str(ai.get("cover_letter") or "").strip()
+        if not cover_letter:
+            try:
+                cover_letter = self._draft_cover_letter_text(job, focused, profile_json_for_ai(focused), redact_text(self._memory_context(prefs))[0]) or ""
+            except USER_FACING_LLM_ERRORS:
+                cover_letter = ""
+            cover_letter = cover_letter or self._fallback_cover_letter(profile, job)
 
         # Paso 1b: fidelidad. Lo que no esté en el perfil real se detecta; la IA corrige una vez y lo que quede se quita.
         cv_markdown, removed = verify_cv(cv_markdown, profile)
@@ -76,7 +80,7 @@ class DrafterReviewerPipeline:
             ats_notes.append("El perfil profesional quedó en tercera persona: revísalo o vuelve a adaptar.")
         if not profile.languages:
             ats_notes.append("Agrega tus idiomas en Mi perfil para que el CV tenga la sección Idiomas.")
-        cv_markdown = cv_selection.insert_previous_experience(cv_markdown, others)
+        cv_markdown = cv_selection.insert_previous_experience(cv_markdown, others if options.include_previous else [])
 
         # Paso 2: el revisor audita (no bloqueante) sobre los documentos aún sin datos de contacto.
         ats_score, ats_feedback, reviewer_critique = self._review_materials(job, profile, cv_markdown, cover_letter)
@@ -106,6 +110,7 @@ class DrafterReviewerPipeline:
             fidelity_warnings=fidelity_warnings,
             keyword_match=keyword_match,
             ats_notes=ats_notes,
+            include_previous=options.include_previous,
         )
 
         if persist:

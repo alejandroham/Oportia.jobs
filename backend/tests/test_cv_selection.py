@@ -109,3 +109,14 @@ def test_draft_prompt_asks_to_keep_profile_order(monkeypatch):
     # El CV lo arma Oportia en el orden del perfil (la más reciente primero).
     md = r.json()["tailored_cv_markdown"]
     assert md.index("Constructora Andes") < md.index("Inmobiliaria Mar") < md.index("Supermercado Uno")
+
+
+def test_previous_experience_can_be_left_out(monkeypatch):
+    monkeypatch.setattr(llm, "generate_json", lambda p, system_instruction=None: {"perfil": "Supervisora.", "experiencias": []} if '"experiencias"' in p else {"ats_score": 80, "ats_feedback": [], "reviewer_critique": "ok"})
+    ai_rate_limiter.clear()
+    body = {"job": JOB.model_dump(), "profile": PROFILE.model_dump(), "cv_options": {"length": "1", "experience_ids": ["e1"], "include_previous": False}}
+    md = TestClient(app).post("/api/applications/draft", json=body).json()["tailored_cv_markdown"]
+    assert "Experiencia anterior" not in md and "Tienda Sur" not in md
+    body["cv_options"]["include_previous"] = True
+    md = TestClient(app).post("/api/applications/draft", json=body).json()["tailored_cv_markdown"]
+    assert "## Experiencia anterior" in md and "Tienda Sur" in md

@@ -342,6 +342,7 @@ class ApplicationDraft(BaseModel):
     keyword_match: Optional[Dict[str, Any]] = None
     # Observaciones de formato ATS para la persona (por ejemplo, falta la sección Idiomas).
     ats_notes: List[str] = []
+    include_previous: bool = True
 
 class FeedbackAction(BaseModel):
     job_id: str
@@ -449,6 +450,8 @@ class CvOptions(BaseModel):
     length: str = "2"  # "1" (una hoja), "2" (dos hojas) o "full" (completo)
     # None: Opi elige las experiencias más relevantes. Lista: las que eligió la persona.
     experience_ids: Optional[List[str]] = None
+    # "Experiencia anterior": los cargos no desarrollados, una línea cada uno (por defecto, sí).
+    include_previous: bool = True
 
 class StatelessApplicationDraftRequest(BaseModel):
     job: JobPosting

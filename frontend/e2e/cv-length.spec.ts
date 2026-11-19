@@ -52,7 +52,7 @@ test('elige experiencias y largo, mide las hojas y ajusta a la hoja', async ({ p
   await expect(page.getByRole('radio', { name: /Que Opi elija/ })).toHaveAttribute('aria-checked', 'true');
   await page.getByRole('button', { name: /Generar CV y carta adaptados/ }).click();
   await expect(page.getByText('Controló avance de obra.')).toBeVisible({ timeout: 8000 });
-  expect(draftBodies[0].cv_options).toEqual({ length: '1', experience_ids: null });
+  expect(draftBodies[0].cv_options).toEqual({ length: '1', experience_ids: null, include_previous: true });
   // Encabezado con los datos exactos del perfil (correo y teléfono siempre), aunque la IA no los escribió.
   const header = page.locator('#cv-printable-area');
   await expect(header).toContainText('rosa@correo.cl · +56 9 8765 4321 · Maipú, Región Metropolitana de Santiago');
@@ -60,10 +60,18 @@ test('elige experiencias y largo, mide las hojas y ajusta a la hoja', async ({ p
   await page.getByText(/Oportia quitó 1 dato que la IA agregó/).click();
   await expect(page.getByText('Cifra que no está en tu perfil (40)', { exact: false })).toBeVisible();
 
-  // Medidor: el CV de prueba es largo, se pasa de 1 hoja; "Ajustar a la hoja" lo intenta.
+  // Ajuste automático: el CV de prueba (40 logros) no cabe en 1 hoja; Oportia lo acorta solo y lo avisa.
+  await expect(page.getByText(/Oportia acortó el CV/)).toBeVisible();
+  await expect(page.getByText('Máximo 3 logros por cargo')).toBeVisible();
+  await expect(page.getByText('Cabe en 1 hoja')).toBeVisible();
+  await expect(page.locator('#cv-printable-area li', { hasText: 'Logro medible número 4 ' })).toHaveCount(0);
+  // Ver el CV completo: vuelve a pasarse y se puede ajustar a mano.
+  await page.getByRole('button', { name: 'Ver el CV completo' }).click();
   await expect(page.getByText(/hojas al imprimir \(pediste 1 hoja\)/)).toBeVisible();
   await page.getByRole('button', { name: 'Ajustar a la hoja' }).click();
   await expect(page.getByText(/Letra y espacios al \d+ %|No cabe en 1 hoja/)).toBeVisible();
+  await page.getByRole('button', { name: /Volver a ajustar a 1 hoja/ }).click();
+  await expect(page.getByText('Cabe en 1 hoja')).toBeVisible();
   // El texto del CV va justificado.
   const align = await page.locator('#cv-printable-area li').first().evaluate((el) => getComputedStyle(el).textAlign);
   expect(align).toBe('justify');
@@ -73,7 +81,7 @@ test('elige experiencias y largo, mide las hojas y ajusta a la hoja', async ({ p
   await page.getByRole('checkbox', { name: 'Ayudante de obra en Constructora Norte' }).uncheck();
   await page.getByRole('button', { name: /Volver a adaptar con IA/ }).click();
   await expect.poll(() => draftBodies.length).toBe(2);
-  expect(draftBodies[1].cv_options).toEqual({ length: '1', experience_ids: ['e1', 'e3'] });
+  expect(draftBodies[1].cv_options).toEqual({ length: '1', experience_ids: ['e1', 'e3'], include_previous: true });
 
   // 👍/👎 de un toque, una sola vez.
   await page.getByRole('button', { name: 'Sí, me sirvió' }).click();

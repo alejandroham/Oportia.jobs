@@ -42,7 +42,8 @@ export const ApplicationDocumentsTab: React.FC<ApplicationDocumentsTabProps> = (
   // Largo y experiencias del CV: parte de lo usado en el último CV de esta postulación.
   const initialOptions = (): CvOptions => ({
     length: application?.cv_length === '1' ? '1' : application?.cv_length === '2' ? '2' : defaultCvLength(experiences.length),
-    experience_ids: application?.selection_method === 'manual' ? application.selected_experience_ids ?? [] : null
+    experience_ids: application?.selection_method === 'manual' ? application.selected_experience_ids ?? [] : null,
+    include_previous: application?.include_previous ?? true
   });
   const [cvOptions, setCvOptions] = useState<CvOptions>(initialOptions);
   useEffect(() => {
@@ -214,6 +215,7 @@ export const ApplicationDocumentsTab: React.FC<ApplicationDocumentsTabProps> = (
             documentLabel={job.title}
             targetPages={tailoredMarkdown ? targetPages : undefined}
             onPagesChange={setPages}
+            autoFit
           />
         ) : (
           <div className="p-8 text-center text-xs text-gray-500">

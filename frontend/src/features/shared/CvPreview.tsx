@@ -8,6 +8,8 @@ import { printElement, buildDocumentTitle } from '../../utils/printDocument';
 import { describePages, findFitScale, measurePrintHeight, pagesFor } from '../../utils/cvPages';
 import { withProfileHeader } from '../../utils/cvHeader';
 import { cleanText, formatEducation, formatPeriod } from '../../utils/cvFormat';
+import { MAX_TRIM_LEVEL, TRIM_NOTES, trimMarkdown } from '../../utils/cvTrim';
+import { MIN_FIT_SCALE } from '../../utils/cvPages';
 
 export const formatExperiencePeriod = (startDate?: string, endDate?: string): string => {
   const start = (startDate || '').trim();
@@ -34,6 +36,8 @@ interface CvPreviewProps {
   targetPages?: number;
   /** Informa cuántas hojas ocupa al imprimir (para la revisión ATS). */
   onPagesChange?: (pages: number | null) => void;
+  /** Ajustar solo el CV adaptado a `targetPages`: achica la letra y, si no basta, recorta lo menos importante. */
+  autoFit?: boolean;
 }
 
 export const CvPreview: React.FC<CvPreviewProps> = ({
@@ -43,7 +47,8 @@ export const CvPreview: React.FC<CvPreviewProps> = ({
   className = '',
   documentLabel,
   targetPages,
-  onPagesChange
+  onPagesChange,
+  autoFit = false
 }) => {
   const printableRef = useRef<HTMLDivElement>(null);
   const [template, setTemplate] = useState<'modern' | 'minimalist' | 'executive'>('modern');
@@ -54,6 +59,11 @@ export const CvPreview: React.FC<CvPreviewProps> = ({
   const [scale, setScale] = useState(1);
   const [pages, setPages] = useState<number | null>(null);
   const [fitNote, setFitNote] = useState('');
+  // Ajuste automático: nivel de recorte (0 = completo) y si la persona pidió ver el CV completo.
+  const [trimLevel, setTrimLevel] = useState(0);
+  const [showFull, setShowFull] = useState(false);
+  const autoActive = autoFit && !showFull && viewSource === 'tailored' && Boolean(tailoredMarkdown) && targetPages !== undefined;
+  const shownMarkdown = tailoredMarkdown ? trimMarkdown(withProfileHeader(tailoredMarkdown, profile), autoActive ? trimLevel : 0) : '';
 
   const measure = useCallback((s: number) => (printableRef.current ? measurePrintHeight(printableRef.current, s) : 0), []);
 
@@ -66,13 +76,34 @@ export const CvPreview: React.FC<CvPreviewProps> = ({
       onPagesChange?.(viewSource === 'tailored' ? p : null);
     });
     return () => cancelAnimationFrame(id);
-  }, [measure, scale, template, viewSource, tailoredMarkdown, profile]);
+  }, [measure, scale, template, viewSource, tailoredMarkdown, profile, trimLevel, showFull]);
 
   // Contenido nuevo: vuelve al tamaño normal.
   useEffect(() => {
     setScale(1);
     setFitNote('');
+    setTrimLevel(0);
+    setShowFull(false);
   }, [tailoredMarkdown, viewSource]);
+
+  // Ajuste automático a las hojas elegidas: primero letra y espacios (hasta 82 %); si no basta, se recorta
+  // de lo menos importante a lo más importante (ver utils/cvTrim.ts) y se vuelve a medir.
+  useEffect(() => {
+    if (!autoActive || !targetPages) return;
+    const id = requestAnimationFrame(() => {
+      const best = findFitScale(measure, targetPages);
+      if (best !== null) {
+        setScale(best);
+        setFitNote(best < 1 ? `Letra y espacios al ${Math.round(best * 100)} % para que quepa.` : '');
+      } else if (trimLevel < MAX_TRIM_LEVEL) {
+        setTrimLevel((l) => l + 1);
+      } else {
+        setScale(MIN_FIT_SCALE);
+        setFitNote(`No cabe en ${targetPages === 1 ? '1 hoja' : `${targetPages} hojas`} ni recortando. Elige menos experiencias en «Largo y experiencias del CV».`);
+      }
+    });
+    return () => cancelAnimationFrame(id);
+  }, [autoActive, targetPages, trimLevel, template, shownMarkdown, measure]);
 
   const handleFit = () => {
     const target = targetPages ?? Math.max(1, Math.ceil((pages ?? 1) - 0.25));
@@ -226,6 +257,24 @@ export const CvPreview: React.FC<CvPreviewProps> = ({
             </button>
           )}
           {fitNote && <span className="text-ink-muted dark:text-ink-200">{fitNote}</span>}
+          {autoActive && trimLevel > 0 && (
+            <div role="status" className="basis-full p-2.5 rounded-lg bg-sky-50 dark:bg-sky-500/10 border border-sky-200 dark:border-sky-400/30 text-sky-900 dark:text-sky-100">
+              <p className="font-semibold">
+                Para que quepa en {targetPages === 1 ? '1 hoja' : `${targetPages} hojas`}, Oportia acortó el CV (sin quitar cargos ni estudios):
+              </p>
+              <ul className="list-disc pl-5 mt-1">
+                {Array.from({ length: trimLevel }, (_, i) => i + 1).map((l) => <li key={l}>{TRIM_NOTES[l]}</li>)}
+              </ul>
+              <button type="button" onClick={() => { setShowFull(true); setScale(1); setFitNote(''); }} className="mt-1 underline font-semibold cursor-pointer">
+                Ver el CV completo
+              </button>
+            </div>
+          )}
+          {autoFit && showFull && viewSource === 'tailored' && (
+            <button type="button" onClick={() => { setShowFull(false); setTrimLevel(0); }} className="underline text-ink-muted hover:text-ink dark:hover:text-white cursor-pointer">
+              Volver a ajustar a {targetPages === 1 ? '1 hoja' : `${targetPages} hojas`}
+            </button>
+          )}
         </div>
       )}
 
@@ -238,7 +287,7 @@ export const CvPreview: React.FC<CvPreviewProps> = ({
       >
         <div data-cv-scale style={scale < 1 ? ({ zoom: scale } as React.CSSProperties) : undefined}>
         {viewSource === 'tailored' && tailoredMarkdown ? (
-          <MarkdownDocument markdown={withProfileHeader(tailoredMarkdown, profile)} justify />
+          <MarkdownDocument markdown={shownMarkdown} justify />
         ) : (
           <div className="space-y-6">
             {/* Cabecera */}

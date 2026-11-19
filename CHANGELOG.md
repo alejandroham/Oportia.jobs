@@ -13,6 +13,8 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
 - **Fechas uniformes:** mes completo y año, "Actual" para el cargo vigente.
 - **Títulos de sección estándar:** Perfil profesional, Competencias, Experiencia laboral, Experiencia anterior, Educación, Certificaciones y cursos, Idiomas (nueva sección).
 - **Máximo 2 hojas:** se quita la opción "Completo"; los cargos que terminaron hace más de 10 años van en "Experiencia anterior", una línea cada uno.
+- **Ajuste automático a 1 o 2 hojas:** si el CV adaptado se pasa, Oportia achica letra y espacios (hasta 82 %) y, si no basta, lo acorta de lo menos a lo más importante: Experiencia anterior a 4 cargos → 3 logros por cargo → 6 tecnologías por cargo → sin Experiencia anterior → sin la descripción de los cargos más antiguos → 10 competencias. Nunca quita cargos, fechas ni estudios. Un aviso muestra qué se acortó, con "Ver el CV completo" y "Volver a ajustar". El PDF sale igual que lo que se ve.
+- **Opción "Incluir Experiencia anterior"** en Largo y experiencias del CV (activada por defecto).
 - **Educación sin redundancias:** "Título – Institución (año)" (ya no "Ingeniero en Informática en Ingeniería en informática").
 - **Perfil profesional** de 3–4 líneas sin tercera persona, con años de experiencia calculados con las fechas; aviso si quedó en tercera persona.
 - El CV base de Mi perfil usa el mismo formato y los mismos títulos.

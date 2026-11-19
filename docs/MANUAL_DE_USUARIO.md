@@ -251,7 +251,8 @@ Cada postulación tiene tres pestañas:
 - **CV compatible con sistemas ATS** (nuevo en 1.6.0), los programas que usan las empresas para leer CV:
   - Oportia arma el CV con títulos estándar: *Perfil profesional, Competencias, Experiencia laboral, Experiencia anterior, Educación, Certificaciones y cursos* e *Idiomas*.
   - Cada cargo va así, una cosa por línea: **Cargo — Empresa**; **Mes Año – Mes Año | Ciudad**; una descripción breve; **3 a 5 logros**; y **Tecnologías:** con un máximo de 10, solo las que están en tu perfil. El cargo y la empresa se copian tal cual de tu perfil.
-  - Máximo **2 hojas**. Los cargos que terminaron hace más de 10 años van en **Experiencia anterior**, una línea cada uno.
+  - Máximo **2 hojas**, y **se ajusta solo**: si el CV se pasa del largo que elegiste, Oportia achica un poco la letra y, si no basta, lo acorta empezando por lo menos importante (Experiencia anterior, logros extra, tecnologías extra…). Nunca quita cargos, fechas ni estudios. Verás qué se acortó y podrás pulsar **Ver el CV completo**.
+  - Los cargos que terminaron hace más de 10 años van en **Experiencia anterior**, una línea cada uno. Puedes quitar esa sección desmarcando **Incluir «Experiencia anterior»**.
   - El PDF usa la fuente **Arial** (nunca se parten palabras con guion) y se llama *CV – Tu nombre – Cargo de la oferta*.
   - **Revisión para sistemas ATS:** antes de descargar verás tu **% de coincidencia** con las palabras clave de la oferta, cuáles usaste y **cuáles te faltan** (no se agregan si no están en tu perfil), y una lista de chequeo: fechas en su línea, máximo 2 hojas, logros, tecnologías, sección Idiomas y nada inventado.
   - **Si un mismo cargo aparece dos veces con fechas o títulos distintos**, Oportia te pregunta cuál es el correcto antes de generar. No elige por ti.

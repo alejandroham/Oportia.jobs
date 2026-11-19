@@ -165,6 +165,23 @@ export const CvOptionsPanel: React.FC<CvOptionsPanelProps> = ({ experiences, opt
             </ul>
           ) : null}
 
+          <label className="flex items-start gap-2 pt-1 cursor-pointer">
+            <input
+              type="checkbox"
+              className="mt-0.5 h-4 w-4 accent-brand-600"
+              checked={options.include_previous !== false}
+              disabled={disabled}
+              onChange={(e) => onChange({ ...options, include_previous: e.target.checked })}
+            />
+            <span>
+              <span className="font-semibold text-ink dark:text-white">Incluir «Experiencia anterior»</span>
+              <span className="block text-ink-muted dark:text-ink-200">
+                Los cargos que no se desarrollan van en una línea cada uno (cargo, empresa y fechas). Muestra tu trayectoria
+                completa sin vacíos; si el CV no cabe, es lo primero que Oportia acorta.
+              </span>
+            </span>
+          </label>
+
           {manual && selected.size === 0 && (
             <p role="alert" className="text-amber-800 dark:text-amber-200">Marca al menos una experiencia para desarrollarla en el CV.</p>
           )}
