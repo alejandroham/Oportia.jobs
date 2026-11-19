@@ -5,6 +5,32 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
 
 ---
 
+## [1.5.0] - Sin publicar (rama `release/1.5.0`) — *Privacidad por diseño y CV sin datos inventados*
+
+### 🔐 La IA no recibe tus datos de contacto
+- Capa en la conexión con la IA: el nombre, correo, teléfono y enlaces de la persona se reemplazan por marcadores en cada consulta y se reponen en la respuesta; el RUT se oculta siempre (`app/privacy/`).
+- CV y carta adaptados y entrevista: la IA recibe el perfil sin contacto ni el texto completo del CV.
+- Lectura del CV: correo, teléfono, RUT y enlaces se ocultan antes de la IA y se rellenan con reglas.
+- Los registros de error ya no guardan contenido de la IA ni detalles que puedan traer datos del CV.
+
+### ✅ IA gratuita con doble confirmación y comprobante
+- Dos casillas obligatorias: que Google procesa lo enviado en su plan gratuito, y que la persona tiene 18 años o más, no incluirá datos sensibles y revisará los resultados.
+- Aviso completo con **exclusión y límites de responsabilidad** (borrador sujeto a revisión jurídica), para leer y descargar antes de aceptar.
+- **Comprobante descargable** con código, fecha, versión y lo aceptado (sin datos personales).
+- Oportia recibe un aviso anónimo de cada aceptación o retiro (`POST /api/event`, lista cerrada de tipos y valores). Versión del aviso `2026-11-18`: se vuelve a pedir a quien aceptó la anterior.
+
+### 📄 CV con datos exactos y nada inventado
+- El encabezado del CV adaptado siempre trae nombre, titular, **correo · teléfono · comuna** y enlaces de Mi perfil, también en CV generados antes (se arma al mostrarlo).
+- **Verificación de fidelidad** (`app/agents/cv_fidelity.py`): se quitan experiencias, cifras, fechas, estudios, cursos y competencias que no están en el perfil; la IA corrige una vez y lo que quede se elimina. En la carta se quitan las frases con cifras no verificables. Aviso con la lista de lo quitado.
+- Instrucciones a la IA más estrictas: prohibido agregar hechos que no estén en el perfil.
+- **Mi perfil:** campos **Región** y **Comuna de residencia**; aviso si el correo o el teléfono no parecen válidos; aviso en Documentos si falta correo, teléfono o comuna.
+
+### 📊 Medición anónima
+- Se cuentan los CV adaptados, las entrevistas preparadas y evaluadas, los consentimientos y los comprobantes descargados.
+
+### 🛠️ Correcciones
+- **Un cambio podía perderse:** cada aviso en pantalla volvía a cargar todos los datos del navegador y podía deshacer un cambio que se estaba guardando (por ejemplo, al agregar dos cargos seguidos). La carga inicial ahora ocurre una sola vez, el sistema de avisos es estable y cada guardado se confirma cuando quedó escrito, en orden.
+
 ## [1.4.6] - 2026-11-17 — *Secciones que se activan con tu CV y "Recupera tus datos"*
 
 ### 🔒 Secciones que se activan con tu CV

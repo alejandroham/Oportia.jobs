@@ -105,12 +105,13 @@ En **Mi perfil → Mi CV** puedes:
 1. **Subir CV (PDF/Word)** para cargarlo o reemplazarlo. Si la IA no está activa, Oportia te pide activarla primero; también puedes seguir **sin IA** (lectura básica).
    - Al terminar, un aviso indica si el CV se analizó **con IA** o **sin IA**. Revisa cada sección y pulsa **Guardar cambios**.
    - **Reanalizar con IA** vuelve a leer el CV que ya cargaste, sin subirlo otra vez. Úsalo si se analizó sin IA o si algo quedó mal clasificado. Conserva tus palabras clave y tus enlaces.
-2. **Editar** tus datos por secciones. En **Experiencia laboral**, pulsa cada trabajo para editar cargo, empresa, fechas ("Trabajo aquí actualmente"), ubicación, funciones, logros y herramientas. **Educación y títulos** guarda carreras, títulos y diplomados; **Certificaciones y cursos**, los cursos, capacitaciones y licencias. Las secciones son: contacto y **enlaces** (LinkedIn, portafolio, GitHub u otros), profesión y titular, experiencia, **varios títulos**, habilidades, **idiomas con nivel** y **Tecnologías y palabras clave**.
-3. **Orden de tu CV** (nuevo en 1.4.3). La experiencia y la educación se ordenan **por fecha, de lo más reciente a lo más antiguo**: primero tu trabajo actual y los estudios en curso. Oportia entiende fechas como "2021", "03/2021", "Marzo 2021" o "Actual".
+2. **Datos personales** (nuevo en 1.5.0): nombre, **correo**, **teléfono**, **región** y **comuna de residencia**. Oportia te avisa si el correo o el teléfono no parecen válidos. Estos datos van **solo en el encabezado de tu CV, tal como los escribes**: la IA nunca los ve ni los puede cambiar.
+3. **Editar** tus datos por secciones. En **Experiencia laboral**, pulsa cada trabajo para editar cargo, empresa, fechas ("Trabajo aquí actualmente"), ubicación, funciones, logros y herramientas. **Educación y títulos** guarda carreras, títulos y diplomados; **Certificaciones y cursos**, los cursos, capacitaciones y licencias. Las secciones son: contacto y **enlaces** (LinkedIn, portafolio, GitHub u otros), profesión y titular, experiencia, **varios títulos**, habilidades, **idiomas con nivel** y **Tecnologías y palabras clave**.
+4. **Orden de tu CV** (nuevo en 1.4.3). La experiencia y la educación se ordenan **por fecha, de lo más reciente a lo más antiguo**: primero tu trabajo actual y los estudios en curso. Oportia entiende fechas como "2021", "03/2021", "Marzo 2021" o "Actual".
    - Si una fecha queda fuera de orden mientras editas, verás un aviso; **al guardar** se ordena sola, o puedes pulsar **Ordenar por fecha** de inmediato.
    - **¿Prefieres otro orden?** Usa las flechas **↑ ↓** en cada experiencia o título. Desde ese momento tu CV queda en **orden manual** y Oportia no lo reordena. Para volver al orden automático, pulsa **Ordenar por fecha**.
    - El CV adaptado de cada postulación respeta este mismo orden.
-4. Pulsar **Guardar cambios**.
+5. Pulsar **Guardar cambios**.
 
 **Tecnologías y palabras clave.** Son los términos con los que te buscaría una empresa, por ejemplo "TENS", "Curaciones" o "Soporte TI".
 - Al subir tu CV, Oportia agrega solas las palabras de tu área que **aparecen en tu CV**. Debajo te sugiere otras para que elijas.
@@ -247,6 +248,8 @@ Cada postulación tiene tres pestañas:
   - **Elegir yo:** marca o desmarca tus experiencias. Se parte de lo que eligió Opi.
   - Las experiencias que no se desarrollan **no se ocultan**: van en **Experiencia anterior**, una línea por cargo (cargo, empresa y años). Esa sección la escribe Oportia con tus datos, no la IA, para que nada se invente.
 - **Generar CV y carta adaptados** (o **Volver a adaptar con IA**): Opi reordena tu experiencia **real** según lo que pide la oferta y respeta el largo elegido. No inventa cargos, títulos ni empresas.
+- **Tus datos de contacto siempre van en el CV adaptado:** el encabezado lo arma Oportia con tu nombre, correo, teléfono, comuna y enlaces de **Mi perfil** (si los corriges, el CV ya generado se actualiza). Si falta alguno, verás un aviso para agregarlo.
+- **Nada inventado:** después de que la IA escribe, Oportia compara el CV y la carta con tu perfil. Si la IA agregó una cifra, una fecha, una empresa, un cargo, un estudio, un curso o una competencia que no está en tu perfil, le pide corregirlo una vez y **quita lo que quede**. El aviso verde **"Oportia quitó… datos que la IA agregó sin estar en tu perfil"** te muestra qué se quitó. Si alguno es real, agrégalo en Mi perfil y vuelve a adaptar.
 - El texto va **justificado** al ancho de la hoja, con división de palabras.
 - **Medidor de hojas:** sobre la vista previa verás **Cabe en 1 hoja** o, por ejemplo, **2 hojas al imprimir**. Si se pasa del largo que pediste, aparece en amarillo.
 - **Ajustar a la hoja:** reduce un poco la letra y los espacios (hasta un mínimo legible) para que el CV quepa en las hojas elegidas. **Tamaño normal** lo deja como estaba. Si ni así cabe, Oportia te sugiere quitar una experiencia o elegir un CV más largo.
@@ -320,6 +323,10 @@ Buscar ofertas y armar tu CV **funciona sin IA**. Para evaluar compatibilidad, a
 ### Opción A: IA gratuita de Oportia
 
 - No tienes que configurar nada. Tienes un **cupo diario de consultas** (Ajustes te muestra cuántas te quedan hoy).
+- **Para activarla confirmas dos cosas** (doble confirmación): que Google procesa lo que envías en su plan gratuito (puede usarlo para mejorar sus productos y personas revisoras pueden leerlo), y que tienes 18 años o más, no incluirás datos sensibles y revisarás lo que genere la IA.
+- Antes de aceptar puedes **leer y descargar el aviso completo**, con la exclusión de responsabilidad (Oportia no garantiza entrevistas ni contrataciones).
+- Al activarla, pulsa **Descargar mi comprobante**: es un documento con un código, la fecha, la versión del aviso y lo que aceptaste. Siempre puedes volver a descargarlo desde Ajustes.
+- Oportia **no envía a la IA tu nombre, correo, teléfono, enlaces ni RUT**: los reemplaza por marcadores y los vuelve a poner en el resultado.
 - Antes de activarla debes leer y aceptar un aviso: usa el **plan gratuito de la API de Google Gemini**, en el que Google puede usar lo que envías para mejorar sus productos y personas revisoras pueden leerlo. **No incluyas datos sensibles** (RUT, dirección, datos de salud o de tu familia).
 - Si se acaba el cupo verás: *"El servicio de IA está descansando un momento, intenta de nuevo en unos minutos."* Vuelve más tarde o al día siguiente, o conecta tu propia clave.
 - Puedes dejar de usarla cuando quieras con **Dejar de usar IA gratuita**.

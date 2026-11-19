@@ -1,6 +1,7 @@
-from typing import Optional, Tuple
+from typing import List, Optional, Tuple
 from app.models.schemas import CandidateProfile, JobPosting, ApplicationDraft, UserPreferences, CvOptions
 from app.agents import cv_selection
+from app.agents.cv_fidelity import verify_cv, verify_letter
 from app.privacy.redact import NAME_TOKEN, apply_cv_header, profile_json_for_ai, redact_text, restore_tokens
 from app.agents.llm_provider import llm, LLMProviderError, AINotConnectedError, USER_FACING_LLM_ERRORS
 from app.storage.db import db
@@ -49,6 +50,17 @@ class DrafterReviewerPipeline:
         # Paso 1: el redactor genera CV y carta con las experiencias elegidas.
         # La IA no recibe nombre, correo, teléfono, comuna ni enlaces: trabaja con marcadores.
         cv_markdown, cover_letter = self._draft_materials(job, focused, prefs, length)
+
+        # Paso 1b: fidelidad. Lo que no esté en el perfil real se detecta; la IA corrige una vez y lo que quede se quita.
+        cv_markdown, removed = verify_cv(cv_markdown, profile)
+        if removed:
+            retry = self._redraft_cv(job, focused, prefs, length, removed)
+            if retry:
+                retry_clean, retry_removed = verify_cv(retry, profile)
+                if len(retry_removed) < len(removed):
+                    cv_markdown, removed = retry_clean, retry_removed
+        cover_letter, letter_removed = verify_letter(cover_letter, profile)
+        fidelity_warnings = removed + letter_removed
         cv_markdown = cv_selection.insert_previous_experience(cv_markdown, others)
 
         # Paso 2: el revisor audita (no bloqueante) sobre los documentos aún sin datos de contacto.
@@ -76,6 +88,7 @@ class DrafterReviewerPipeline:
             selected_experience_ids=selected_ids,
             selection_reasons=reasons,
             selection_method=method,
+            fidelity_warnings=fidelity_warnings,
         )
 
         if persist:
@@ -136,13 +149,14 @@ INSTRUCCIONES DE REDACCIÓN:
    - Competencias y habilidades relevantes para la vacante primero
    - Experiencia laboral con viñetas de logros orientadas al impacto (resultados, métricas, responsabilidades clave, herramientas o técnicas usadas). REGLAS ESTRICTAS DE FORMATO: Usa SIEMPRE guiones '- ' para las viñetas, NUNCA asteriscos '* '. NO insertes separadores '---' entre secciones.
    - Educación, cursos y certificaciones
+   - PROHIBIDO INVENTAR O FALSEAR: no agregues cifras, porcentajes, montos, cantidades, fechas, empresas, cargos, títulos, cursos, herramientas ni logros que no estén escritos en el perfil. Si un logro no trae cifra en el perfil, descríbelo sin cifra. Puedes reformular y destacar, nunca agregar hechos.
    - Incluye SOLO las experiencias del perfil entregado. NO agregues una sección "Experiencia anterior": Oportia la agrega aparte.
    - ORDEN: presenta la experiencia y la educación EXACTAMENTE en el orden en que vienen en el perfil (ya están ordenadas por fecha o como la persona eligió). No las reordenes por relevancia: la relevancia se muestra con el contenido, no con el orden.
    - {length_rule}
 2. Redacta una Carta de Presentación moderna (3 a 4 párrafos concisos):
    - Prohibido usar clichés vacíos como "Me dirijo a ustedes para expresar mi entusiasmo...".
    - Apertura directa: por qué tu experiencia concreta responde a lo que busca la vacante.
-   - Párrafos 2 y 3: dos ejemplos reales de tu trayectoria que lo demuestran.
+   - Párrafos 2 y 3: dos ejemplos reales de tu trayectoria que lo demuestran, sin cifras ni hechos que no estén en el perfil.
    - Cierre propositivo y profesional, firmado exactamente como {{{{NOMBRE}}}} (sin agregar correo ni teléfono).
 
 RESPONDE ÚNICAMENTE CON UN JSON:
@@ -173,6 +187,22 @@ RESPONDE ÚNICAMENTE CON UN JSON:
 
         return cv_md.strip(), cl.strip()
 
+    def _redraft_cv(self, job: JobPosting, profile: CandidateProfile, prefs: Optional[UserPreferences],
+                    length: str, removed: List[str]) -> Optional[str]:
+        """Segundo intento: se le muestra a la IA lo que agregó sin estar en el perfil para que lo quite."""
+        memory_context, _ = redact_text(self._memory_context(prefs))
+        correction = (
+            "CORRECCIÓN OBLIGATORIA: en tu versión anterior agregaste datos que NO están en el perfil:\n"
+            + "\n".join(f"- {r}" for r in removed[:12])
+            + "\nReescribe el CV SIN esos datos. Usa solo cifras, fechas, empresas, cargos, estudios y competencias "
+              "que aparezcan escritos en el perfil."
+        )
+        rule = cv_selection.LENGTH_PROMPTS.get(length, "") + "\n" + correction
+        try:
+            return self._draft_cv_text(job, profile_json_for_ai(profile), memory_context, rule)
+        except USER_FACING_LLM_ERRORS:
+            return None
+
     def _draft_cv_text(self, job: JobPosting, profile_json: str, memory_context: str, length_rule: str = "") -> Optional[str]:
         prompt = f"""
 VACANTE OBJETIVO:
@@ -184,6 +214,7 @@ PERFIL REAL Y VERIFICADO DEL CANDIDATO:
 Escribe el CURRÍCULUM ADAPTADO a esta vacante en Markdown limpio ("# {{{{NOMBRE}}}}", ## secciones, viñetas con '- ').
 NO escribas correo, teléfono, dirección, comuna, RUT ni enlaces: Oportia agrega los datos de contacto aparte.
 Incluye SOLO las experiencias del perfil entregado; no agregues una sección "Experiencia anterior".
+PROHIBIDO INVENTAR: no agregues cifras, porcentajes, fechas, empresas, cargos, estudios, cursos, herramientas ni logros que no estén escritos en el perfil.
 Presenta la experiencia y la educación en el MISMO orden en que vienen en el perfil (no las reordenes).
 {length_rule}
 Responde SOLO con el Markdown del CV, sin explicaciones ni bloques de código.

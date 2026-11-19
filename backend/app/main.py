@@ -54,7 +54,7 @@ from app.agents.llm_context import current_llm_credentials, LLMCredentials
 from app.utils.cache import job_search_cache
 from app.indexer.store import index_cache
 from app.indexer.search import search_index, search_index_for_profile
-from app.utils.rate_limiter import ai_rate_limiter, search_rate_limiter, feedback_rate_limiter
+from app.utils.rate_limiter import ai_rate_limiter, search_rate_limiter, feedback_rate_limiter, event_rate_limiter
 from app.feedback import FeedbackRequest, FeedbackRateLimited, FeedbackUnavailable, save_feedback
 from app.scrapers.remote_boards import RemoteBoardsScraper
 from app.scrapers.linkedin_guest import LinkedInGuestScraper
@@ -135,6 +135,9 @@ _TRACKED_ROUTES = {
     "/api/jobs/import-url": "oferta_por_enlace",
     "/api/chat/opi": "chat_opi",
     "/api/opinion": "opinion",
+    "/api/applications/draft": "cv_adaptado",
+    "/api/coach/interview-prep": "entrevista_preparada",
+    "/api/coach/interview-eval": "entrevista_evaluada",
 }
 
 
@@ -635,6 +638,40 @@ def submit_feedback(req: FeedbackRequest):
     except FeedbackUnavailable as e:
         raise HTTPException(status_code=503, detail=str(e))
     return {"ok": True, "id": feedback_id}
+
+
+# Eventos que ocurren solo en el navegador (aceptar un aviso, descargar un PDF). Lista cerrada de tipos y de
+# valores: nunca contenido, nombres, correos ni el CV. Se guardan con la misma huella diaria anónima.
+CLIENT_EVENTS = {
+    "consentimiento_ia": {"accion": {"acepta", "retira"}, "version": None, "codigo": None},
+    "pdf_cv": {"tipo": {"base", "adaptado"}},
+    "pdf_carta": {},
+    "comprobante_ia": {},
+}
+
+
+class ClientEvent(BaseModel):
+    kind: str
+    detail: Dict[str, str] = {}
+
+
+@app.post("/api/event", dependencies=[Depends(event_rate_limiter)])
+def client_event(ev: ClientEvent, request: Request):
+    spec = CLIENT_EVENTS.get(ev.kind)
+    if spec is None:
+        raise HTTPException(status_code=400, detail="Tipo de evento no permitido.")
+    detail = {}
+    for key, allowed in spec.items():
+        value = str(ev.detail.get(key, ""))[:20]
+        if not value:
+            continue
+        if allowed is None and re.fullmatch(r"[A-Za-z0-9-]{1,20}", value):
+            detail[key] = value  # versión (2026-11-18) o código de comprobante (A1B2C3D4)
+        elif allowed and value in allowed:
+            detail[key] = value
+    client_id = _clean_client_id(request.headers.get("X-Oportia-Client"))
+    telemetry.record(ev.kind, "uso", detail, client_id, "", settings.VERSION)
+    return {"ok": True}
 
 
 @app.get("/api/status")

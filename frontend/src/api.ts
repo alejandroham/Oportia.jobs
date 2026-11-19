@@ -195,6 +195,16 @@ export type FeedbackMoment = 'busqueda' | 'compatibilidad' | 'cv_adaptado' | 'ta
 
 export const api = {
   /** "¿Qué te parece Oportia?": opinión con contacto voluntario (solo con autorización). */
+  /** Evento anónimo del navegador (aceptar un aviso, descargar un PDF). Nunca contenido. Si falla, no importa. */
+  sendEvent: (kind: 'consentimiento_ia' | 'pdf_cv' | 'pdf_carta' | 'comprobante_ia', detail: Record<string, string> = {}): void => {
+    fetch(`${API_BASE}/event`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Oportia-Client': getClientId() },
+      body: JSON.stringify({ kind, detail }),
+      keepalive: true
+    }).catch(() => undefined);
+  },
+
   sendOpinion: async (payload: OpinionPayload): Promise<{ ok: boolean; id: string }> => {
     const res = await fetch(`${API_BASE}/opinion`, {
       method: 'POST',

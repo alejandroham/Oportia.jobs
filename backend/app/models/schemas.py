@@ -336,6 +336,8 @@ class ApplicationDraft(BaseModel):
     selected_experience_ids: List[str] = []
     selection_reasons: Dict[str, str] = {}
     selection_method: Optional[str] = None  # manual | todas | ia | reglas
+    # Datos que la IA agregó sin estar en el perfil y que Oportia quitó (para avisarle a la persona).
+    fidelity_warnings: List[str] = []
 
 class FeedbackAction(BaseModel):
     job_id: str

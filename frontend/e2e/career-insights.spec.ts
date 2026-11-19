@@ -38,6 +38,10 @@ test('sugiere cargos con resumen, permite agregarlos y extrae logros del CV', as
   await page.getByRole('button', { name: 'Agregar Jefe de Obra a lo que busco' }).click();
   await expect(page.getByRole('button', { name: 'Quitar Jefe de Obra de lo que busco' })).toBeVisible();
   if (process.env.SHOT_DIR) await page.screenshot({ path: `${process.env.SHOT_DIR}/que-busco.png`, fullPage: true });
+  // Antes de recargar, esperar a que lo agregado quede escrito en el navegador.
+  const savedRoles = () => page.evaluate(async () => new Promise<string[]>((res) => { const q = indexedDB.open('NexusJob_SovereignDB', 1);
+    q.onsuccess = () => { const g = q.result.transaction('client_session').objectStore('client_session').get('preferences'); g.onsuccess = () => res(g.result?.target_roles || []); }; }));
+  await expect.poll(savedRoles).toEqual(['Jefe de Terreno', 'Supervisor de Obra', 'Jefe de Obra']);
 
   await page.goto('/perfil?tab=logros');
   await expect(page.getByText('Coordinación de 3 cuadrillas')).toBeVisible(); // ya se agregó con la misma consulta

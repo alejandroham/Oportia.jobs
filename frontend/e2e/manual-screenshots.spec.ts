@@ -218,7 +218,7 @@ async function seed(page: Page, theme: 'light' | 'dark', opts: { consent?: boole
     async ({ profile, preferences, jobs, applications, theme, consent }) => {
       localStorage.setItem('oportia_theme', theme);
       localStorage.setItem('nexusjob_onboarding_completed', 'true');
-      if (consent) localStorage.setItem('oportia_shared_ai_consent', '2026-11-14');
+      if (consent) localStorage.setItem('oportia_shared_ai_consent', '2026-11-18');
       await new Promise<void>((resolve, reject) => {
         const req = indexedDB.open('NexusJob_SovereignDB', 1);
         req.onupgradeneeded = () => req.result.createObjectStore('client_session');

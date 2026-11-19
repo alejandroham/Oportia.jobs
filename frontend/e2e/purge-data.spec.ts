@@ -7,7 +7,7 @@ test('borrar todo pide confirmar sin respaldo y vuelve a la portada limpia', asy
   await page.goto('/conoce-oportia');
   await page.evaluate(async () => {
     localStorage.setItem('nexusjob_onboarding_completed', 'true');
-    localStorage.setItem('oportia_shared_ai_consent', '2026-11-14');
+    localStorage.setItem('oportia_shared_ai_consent', '2026-11-18');
     localStorage.setItem('job_search_llm_model_gemini', 'gemini-x');
     localStorage.setItem('oportia_usage_minutes', '42');
     localStorage.setItem('oportia_theme', 'dark');

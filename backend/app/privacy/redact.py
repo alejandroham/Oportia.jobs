@@ -71,12 +71,20 @@ def profile_json_for_ai(profile: CandidateProfile) -> str:
     return json.dumps(profile_for_ai(profile).model_dump(), ensure_ascii=False, indent=2)
 
 
+def _place(profile: CandidateProfile) -> str:
+    place = ", ".join([p for p in [profile.commune, profile.region] if p])
+    return place or (profile.location if profile.location not in (None, "", "Chile") else "")
+
+
+def _links(profile: CandidateProfile) -> List[str]:
+    links = [link.url for link in (profile.links or []) if getattr(link, "url", "")] or [
+        u for u in [profile.linkedin_url, profile.portfolio_url, profile.github_url] if u]
+    return [re.sub(r"^https?://(www\.)?", "", u).rstrip("/") for u in links[:3]]
+
+
 def contact_line(profile: CandidateProfile) -> str:
-    """Línea de contacto exacta del perfil (la escribe Oportia, no la IA)."""
-    place = ", ".join([p for p in [profile.commune, profile.region] if p]) or (profile.location if profile.location not in (None, "", "Chile") else "")
-    links = [link.url for link in (profile.links or []) if getattr(link, "url", "")] or [u for u in [profile.linkedin_url, profile.portfolio_url, profile.github_url] if u]
-    parts = [p for p in [profile.email, profile.phone, place] if p] + [re.sub(r"^https?://(www\.)?", "", u).rstrip("/") for u in links[:3]]
-    return " · ".join(parts)
+    """Correo · teléfono · comuna, exactos del perfil (los escribe Oportia, no la IA)."""
+    return " · ".join([p for p in [profile.email, profile.phone, _place(profile)] if p])
 
 
 def restore_tokens(text: str, profile: CandidateProfile) -> str:
@@ -91,15 +99,19 @@ def restore_tokens(text: str, profile: CandidateProfile) -> str:
 
 
 def apply_cv_header(markdown: str, profile: CandidateProfile) -> str:
-    """Reemplaza el encabezado que escribió la IA (todo antes de la primera sección ##) por el de Oportia."""
+    """
+    Reemplaza el encabezado que escribió la IA (todo antes de la primera sección ##) por el de Oportia:
+    nombre, titular, correo · teléfono · comuna y enlaces, tal como están en el perfil.
+    """
     md = restore_tokens(markdown, profile)
     m = re.search(r"^##\s", md, flags=re.M)
-    body = md[m.start():] if m else md
-    if not m:
-        body = re.sub(r"^#\s.*\n?", "", body, count=1)
+    body = md[m.start():] if m else re.sub(r"^#\s.*\n?", "", md, count=1)
     title = profile.headline or profile.primary_profession or ""
-    header = f"# {(profile.name or '').strip() or 'Tu nombre'}\n"
-    line = " · ".join([p for p in [f"**{title}**" if title else "", contact_line(profile)] if p])
-    if line:
-        header += line + "\n"
-    return (header + "\n" + body.lstrip()).strip()
+    lines = [f"# {(profile.name or '').strip() or 'Tu nombre'}"]
+    if title:
+        lines.append(f"**{title}**")
+    if contact_line(profile):
+        lines.append(contact_line(profile))
+    if _links(profile):
+        lines.append(" · ".join(_links(profile)))
+    return ("\n\n".join(lines) + "\n\n" + body.lstrip()).strip()

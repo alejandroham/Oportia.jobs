@@ -6,6 +6,7 @@ import { getProfileLinks } from '../../utils/profileKeywords';
 import { safeExternalUrl } from '../../utils/jobSource';
 import { printElement, buildDocumentTitle } from '../../utils/printDocument';
 import { describePages, findFitScale, measurePrintHeight, pagesFor } from '../../utils/cvPages';
+import { withProfileHeader } from '../../utils/cvHeader';
 
 export const formatExperiencePeriod = (startDate?: string, endDate?: string): string => {
   const start = (startDate || '').trim();
@@ -231,7 +232,7 @@ export const CvPreview: React.FC<CvPreviewProps> = ({
       >
         <div data-cv-scale style={scale < 1 ? ({ zoom: scale } as React.CSSProperties) : undefined}>
         {viewSource === 'tailored' && tailoredMarkdown ? (
-          <MarkdownDocument markdown={tailoredMarkdown} justify />
+          <MarkdownDocument markdown={withProfileHeader(tailoredMarkdown, profile)} justify />
         ) : (
           <div className="space-y-6">
             {/* Cabecera */}

@@ -11,7 +11,8 @@
 const CLIENT_ID_KEY = 'oportia_client_id';
 const CONSENT_KEY = 'oportia_shared_ai_consent';
 /** Cambiar la versión obliga a pedir el consentimiento de nuevo si cambia el aviso. */
-export const SHARED_AI_NOTICE_VERSION = '2026-11-14';
+export { AI_NOTICE_VERSION as SHARED_AI_NOTICE_VERSION } from '../legal/aiNotice';
+import { AI_NOTICE_VERSION as SHARED_AI_NOTICE_VERSION } from '../legal/aiNotice';
 
 const randomId = (): string => {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') return crypto.randomUUID();
