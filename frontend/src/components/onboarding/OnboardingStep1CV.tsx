@@ -41,7 +41,7 @@ export const OnboardingStep1CV: React.FC<OnboardingStep1CVProps> = ({
         <span className="font-semibold text-ink dark:text-gray-200">
           {isUploading ? 'Analizando CV...' : 'Selecciona o arrastra tu archivo PDF o Word'}
         </span>
-        <span className="text-xs text-ink-muted mt-0.5">PDF, DOCX o TXT (máximo 10 MB)</span>
+        <span className="text-xs text-ink-muted mt-0.5">PDF, Word (.docx) o TXT · máximo 4 MB</span>
         <input
           type="file"
           accept=".pdf,.docx,.doc,.txt"

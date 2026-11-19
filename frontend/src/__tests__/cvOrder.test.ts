@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { CandidateProfile, WorkExperience } from '../types';
-import { experienceKey, isOutOfOrder, sortEducation, sortExperiences, withChronologicalOrder } from '../utils/cvOrder';
+import { experienceKey, isOutOfOrder, sortCertifications, sortEducation, sortExperiences, withChronologicalOrder } from '../utils/cvOrder';
 
 const exp = (id: string, start_date: string, end_date = ''): WorkExperience => ({
   id, start_date, end_date, role: id, company: 'X', is_remote: false, description: '', technologies: [], bullet_achievements: []
@@ -30,5 +30,9 @@ describe('orden cronológico del CV', () => {
     expect(isOutOfOrder(p)).toBe(true);
     expect(withChronologicalOrder(p).experiences.map((e) => e.id)).toEqual(['nuevo', 'viejo']);
     expect(withChronologicalOrder({ ...p, cv_order: 'manual' }).experiences.map((e) => e.id)).toEqual(['viejo', 'nuevo']);
+  });
+
+  it('cursos y certificaciones del más reciente al más antiguo', () => {
+    expect(sortCertifications(['Curso A (2018)', 'Licencia clase B', 'AWS 2022', 'Scrum 2020'])).toEqual(['AWS 2022', 'Scrum 2020', 'Curso A (2018)', 'Licencia clase B']);
   });
 });

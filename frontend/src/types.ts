@@ -416,6 +416,10 @@ export interface ApplicationDraft {
   selection_method?: 'manual' | 'todas' | 'ia' | 'reglas';
   /** Lo que la IA agregó sin estar en tu perfil y Oportia quitó. */
   fidelity_warnings?: string[];
+  /** Palabras clave de la oferta que tienes y las que faltan. */
+  keyword_match?: { score: number; present: string[]; missing: string[] } | null;
+  ats_notes?: string[];
+  include_previous?: boolean;
 }
 
 export type CvLength = '1' | '2' | 'full';
@@ -424,6 +428,8 @@ export interface CvOptions {
   length: CvLength;
   /** null/undefined: Opi elige. Lista: las que elegiste tú. */
   experience_ids?: string[] | null;
+  /** "Experiencia anterior": cargos no desarrollados, una línea cada uno. */
+  include_previous?: boolean;
 }
 
 export interface ModelOption {

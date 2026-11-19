@@ -64,3 +64,37 @@ def test_reanalyze_endpoint_is_stateless_and_returns_method():
     data = res.json()
     assert res.status_code == 200 and data["method"] == "reglas"
     assert len(data["profile"]["experiences"]) == 4
+
+
+def test_upload_accepts_txt_and_rejects_large_files_with_clear_message():
+    from fastapi.testclient import TestClient
+    from app.main import app, MAX_CV_BYTES
+    from app.utils.rate_limiter import ai_rate_limiter
+    ai_rate_limiter.clear()
+    c = TestClient(app)
+    txt = "Rosa Pérez Soto\nrosa@correo.cl | +56 9 8765 4321\nEXPERIENCIA\nSupervisora de obra - Constructora Andes\n2015 - Actual\n"
+    r = c.post("/api/profile/upload", files={"file": ("cv.txt", txt.encode(), "text/plain")})
+    assert r.status_code == 200, r.text
+    assert r.json()["profile"]["name"] == "Rosa Pérez Soto"
+    big = c.post("/api/profile/upload", files={"file": ("cv.pdf", b"0" * (MAX_CV_BYTES + 1), "application/pdf")})
+    assert big.status_code == 413 and "4 MB" in big.json()["detail"]
+
+
+def test_name_is_cut_before_email_when_on_the_same_line():
+    from app.agents.profile_analyzer import deterministic_cv_parser
+    p = deterministic_cv_parser("Rosa Pérez Soto rosa.perez@correo.cl | +56 9 8765 4321 | Maipú\nEXPERIENCIA\nSupervisora - Andes 2015 - Actual")
+    assert p.name == "Rosa Pérez Soto"
+
+
+def test_ai_that_runs_out_of_time_falls_back_to_rules(monkeypatch):
+    """Si la IA no alcanza a responder antes del límite de Vercel, igual se cargan los datos (sin IA)."""
+    from app.agents import profile_analyzer as pa
+    from app.agents.llm_provider import LLMProviderError
+    monkeypatch.setattr(pa, "_ai_available", lambda: True)
+
+    def slow(*a, **k):
+        raise LLMProviderError(code="timeout", message="La IA tardó demasiado", provider="gemini")
+
+    monkeypatch.setattr(pa.llm, "generate_json", slow)
+    profile, method, note = pa.analyze_cv("Rosa Pérez Soto\nrosa@correo.cl\nEXPERIENCIA\nSupervisora de obra - Constructora Andes\n2015 - Actual")
+    assert method == "reglas" and profile.name == "Rosa Pérez Soto" and profile.email == "rosa@correo.cl"

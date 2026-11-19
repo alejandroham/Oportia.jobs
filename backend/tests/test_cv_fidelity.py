@@ -63,17 +63,19 @@ def test_draft_retries_once_and_reports_what_was_removed(monkeypatch):
 
     def fake_json(prompt, system_instruction=None):
         calls["json"] += 1
-        if "tailored_cv_markdown" in prompt:
-            return {"tailored_cv_markdown": AI_CV, "cover_letter": "Estimado equipo:\n\nLogré 99 premios.\n\nAtentamente,\n{{NOMBRE}}"}
+        if '"experiencias"' in prompt:
+            if "CORRECCIÓN OBLIGATORIA" in prompt:
+                calls["text"] += 1
+                assert "40" in prompt
+                return {"perfil": "Supervisora de obra con más de 10 años en edificación.", "competencias": ["Lectura de planos"],
+                        "experiencias": [{"id": "e1", "descripcion": "Supervisión de obra.", "logros": ["Reduje atrasos en 15 %"]}]}
+            return {"perfil": "Supervisora de obra. Aumenté la productividad en 40 %.", "competencias": ["Lectura de planos", "SAP"],
+                    "experiencias": [{"id": "e1", "descripcion": "Supervisión.", "logros": ["Reduje atrasos en 15 %", "Ahorré $50.000.000"],
+                                      "tecnologias": ["AutoCAD", "Revit"]}],
+                    "cover_letter": "Estimado equipo:\n\nLogré 99 premios.\n\nAtentamente,\n{{NOMBRE}}"}
         return {"ats_score": 80, "ats_feedback": [], "reviewer_critique": "ok"}
 
-    def fake_text(prompt, system_instruction=None, provider=None):
-        calls["text"] += 1
-        assert "CORRECCIÓN OBLIGATORIA" in prompt and "Inmobiliaria Inventada" in prompt
-        return "# {{NOMBRE}}\n## Experiencia laboral\n### Supervisora de obra · Constructora Andes\n- Reduje atrasos en 15 %.\n## Educación\n- Técnico en Construcción, Duoc UC (2011)"
-
     monkeypatch.setattr(llm, "generate_json", fake_json)
-    monkeypatch.setattr(llm, "generate_text", fake_text)
     ai_rate_limiter.clear()
     r = TestClient(app).post("/api/applications/draft", json={
         "job": {"id": "j", "title": "Supervisor", "company": "X", "location": "Santiago", "is_remote": False, "description": "x", "source": "t", "tags": []},
@@ -82,7 +84,7 @@ def test_draft_retries_once_and_reports_what_was_removed(monkeypatch):
     d = r.json()
     assert calls["text"] == 1  # un solo reintento
     md = d["tailored_cv_markdown"]
-    assert "Inventada" not in md and "Reduje atrasos en 15 %" in md
+    assert "40 %" not in md and "50.000.000" not in md and "Revit" not in md and "SAP" not in md and "Reduje atrasos en 15 %" in md
     assert "rosa@correo.cl" in md and "+56 9 8765 4321" in md  # correo y teléfono siempre en el CV adaptado
     assert "99 premios" not in d["cover_letter"]
     assert any("99" in w for w in d["fidelity_warnings"])

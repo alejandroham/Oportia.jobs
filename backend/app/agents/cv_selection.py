@@ -10,6 +10,7 @@ Qué experiencias van en un CV adaptado y qué tan largo es.
 
 import logging
 import re
+from datetime import date
 from typing import Dict, List, Optional, Tuple
 
 from app.agents.llm_provider import USER_FACING_LLM_ERRORS, LLMProviderError, llm
@@ -43,7 +44,8 @@ _PREV_HEADING = re.compile(r"^#{2,3}\s*experiencia\s+(anterior|previa|adicional)
 
 
 def normalize_length(value: Optional[str]) -> str:
-    return value if value in LENGTHS else "2"
+    # Máximo 2 hojas (recomendación ATS): "Completo" pasa a ser 2 hojas.
+    return value if value in ("1", "2") else "2"
 
 
 def _period(exp: WorkExperience) -> str:
@@ -145,13 +147,20 @@ def choose_experiences(
         wanted = set(manual_ids)
         return [i for i in all_ids if i in wanted], {}, "manual"
     max_n = LENGTHS[length]["max_experiences"]
-    if max_n is None or len(all_ids) <= max_n:
-        return all_ids, {}, "todas"
+    # Los cargos que terminaron hace más de 10 años van en "Experiencia anterior" (una línea), salvo que no haya otros.
+    from app.agents.cv_builder import end_year
+    limit = date.today().year - 10
+    recent = profile.model_copy(update={"experiences": [e for e in profile.experiences if (end_year(e) or limit) >= limit]})
+    if not recent.experiences:
+        recent = profile
+    recent_ids = [e.id for e in recent.experiences]
+    if max_n is None or len(recent_ids) <= max_n:
+        return recent_ids, {}, "todas" if len(recent_ids) == len(all_ids) else "reglas"
     if use_ai:
-        picked = ai_selection(profile, job, max_n)
+        picked = ai_selection(recent, job, max_n)
         if picked:
             return picked[0], picked[1], "ia"
-    ids, reasons = rule_based_selection(profile, job, max_n)
+    ids, reasons = rule_based_selection(recent, job, max_n)
     return ids, reasons, "reglas"
 
 
@@ -172,8 +181,9 @@ def previous_experience_section(others: List[WorkExperience]) -> str:
     if not others:
         return ""
     lines = []
+    from app.agents.cv_builder import format_period
     for exp in others:
-        period = _period(exp)
+        period = format_period(exp) or _period(exp)
         lines.append(f"- **{exp.role.strip()}** · {exp.company.strip()}" + (f" ({period})" if period else ""))
     return "## Experiencia anterior\n" + "\n".join(lines) + "\n"
 

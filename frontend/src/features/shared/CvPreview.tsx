@@ -7,6 +7,9 @@ import { safeExternalUrl } from '../../utils/jobSource';
 import { printElement, buildDocumentTitle } from '../../utils/printDocument';
 import { describePages, findFitScale, measurePrintHeight, pagesFor } from '../../utils/cvPages';
 import { withProfileHeader } from '../../utils/cvHeader';
+import { cleanText, formatEducation, formatPeriod } from '../../utils/cvFormat';
+import { MAX_TRIM_LEVEL, TRIM_NOTES, trimMarkdown } from '../../utils/cvTrim';
+import { MIN_FIT_SCALE } from '../../utils/cvPages';
 
 export const formatExperiencePeriod = (startDate?: string, endDate?: string): string => {
   const start = (startDate || '').trim();
@@ -31,6 +34,10 @@ interface CvPreviewProps {
   documentLabel?: string;
   /** Hojas que debería ocupar (según el largo elegido): se avisa si se pasa. */
   targetPages?: number;
+  /** Informa cuántas hojas ocupa al imprimir (para la revisión ATS). */
+  onPagesChange?: (pages: number | null) => void;
+  /** Ajustar solo el CV adaptado a `targetPages`: achica la letra y, si no basta, recorta lo menos importante. */
+  autoFit?: boolean;
 }
 
 export const CvPreview: React.FC<CvPreviewProps> = ({
@@ -39,7 +46,9 @@ export const CvPreview: React.FC<CvPreviewProps> = ({
   showControls = true,
   className = '',
   documentLabel,
-  targetPages
+  targetPages,
+  onPagesChange,
+  autoFit = false
 }) => {
   const printableRef = useRef<HTMLDivElement>(null);
   const [template, setTemplate] = useState<'modern' | 'minimalist' | 'executive'>('modern');
@@ -50,6 +59,11 @@ export const CvPreview: React.FC<CvPreviewProps> = ({
   const [scale, setScale] = useState(1);
   const [pages, setPages] = useState<number | null>(null);
   const [fitNote, setFitNote] = useState('');
+  // Ajuste automático: nivel de recorte (0 = completo) y si la persona pidió ver el CV completo.
+  const [trimLevel, setTrimLevel] = useState(0);
+  const [showFull, setShowFull] = useState(false);
+  const autoActive = autoFit && !showFull && viewSource === 'tailored' && Boolean(tailoredMarkdown) && targetPages !== undefined;
+  const shownMarkdown = tailoredMarkdown ? trimMarkdown(withProfileHeader(tailoredMarkdown, profile), autoActive ? trimLevel : 0) : '';
 
   const measure = useCallback((s: number) => (printableRef.current ? measurePrintHeight(printableRef.current, s) : 0), []);
 
@@ -57,16 +71,39 @@ export const CvPreview: React.FC<CvPreviewProps> = ({
   useEffect(() => {
     const id = requestAnimationFrame(() => {
       const h = measure(scale);
-      setPages(h > 0 ? pagesFor(h) : null);
+      const p = h > 0 ? pagesFor(h) : null;
+      setPages(p);
+      onPagesChange?.(viewSource === 'tailored' ? p : null);
     });
     return () => cancelAnimationFrame(id);
-  }, [measure, scale, template, viewSource, tailoredMarkdown, profile]);
+  }, [measure, scale, template, viewSource, tailoredMarkdown, profile, trimLevel, showFull]);
 
   // Contenido nuevo: vuelve al tamaño normal.
   useEffect(() => {
     setScale(1);
     setFitNote('');
+    setTrimLevel(0);
+    setShowFull(false);
   }, [tailoredMarkdown, viewSource]);
+
+  // Ajuste automático a las hojas elegidas: primero letra y espacios (hasta 82 %); si no basta, se recorta
+  // de lo menos importante a lo más importante (ver utils/cvTrim.ts) y se vuelve a medir.
+  useEffect(() => {
+    if (!autoActive || !targetPages) return;
+    const id = requestAnimationFrame(() => {
+      const best = findFitScale(measure, targetPages);
+      if (best !== null) {
+        setScale(best);
+        setFitNote(best < 1 ? `Letra y espacios al ${Math.round(best * 100)} % para que quepa.` : '');
+      } else if (trimLevel < MAX_TRIM_LEVEL) {
+        setTrimLevel((l) => l + 1);
+      } else {
+        setScale(MIN_FIT_SCALE);
+        setFitNote(`No cabe en ${targetPages === 1 ? '1 hoja' : `${targetPages} hojas`} ni recortando. Elige menos experiencias en «Largo y experiencias del CV».`);
+      }
+    });
+    return () => cancelAnimationFrame(id);
+  }, [autoActive, targetPages, trimLevel, template, shownMarkdown, measure]);
 
   const handleFit = () => {
     const target = targetPages ?? Math.max(1, Math.ceil((pages ?? 1) - 0.25));
@@ -220,6 +257,24 @@ export const CvPreview: React.FC<CvPreviewProps> = ({
             </button>
           )}
           {fitNote && <span className="text-ink-muted dark:text-ink-200">{fitNote}</span>}
+          {autoActive && trimLevel > 0 && (
+            <div role="status" className="basis-full p-2.5 rounded-lg bg-sky-50 dark:bg-sky-500/10 border border-sky-200 dark:border-sky-400/30 text-sky-900 dark:text-sky-100">
+              <p className="font-semibold">
+                Para que quepa en {targetPages === 1 ? '1 hoja' : `${targetPages} hojas`}, Oportia acortó el CV (sin quitar cargos ni estudios):
+              </p>
+              <ul className="list-disc pl-5 mt-1">
+                {Array.from({ length: trimLevel }, (_, i) => i + 1).map((l) => <li key={l}>{TRIM_NOTES[l]}</li>)}
+              </ul>
+              <button type="button" onClick={() => { setShowFull(true); setScale(1); setFitNote(''); }} className="mt-1 underline font-semibold cursor-pointer">
+                Ver el CV completo
+              </button>
+            </div>
+          )}
+          {autoFit && showFull && viewSource === 'tailored' && (
+            <button type="button" onClick={() => { setShowFull(false); setTrimLevel(0); }} className="underline text-ink-muted hover:text-ink dark:hover:text-white cursor-pointer">
+              Volver a ajustar a {targetPages === 1 ? '1 hoja' : `${targetPages} hojas`}
+            </button>
+          )}
         </div>
       )}
 
@@ -232,7 +287,7 @@ export const CvPreview: React.FC<CvPreviewProps> = ({
       >
         <div data-cv-scale style={scale < 1 ? ({ zoom: scale } as React.CSSProperties) : undefined}>
         {viewSource === 'tailored' && tailoredMarkdown ? (
-          <MarkdownDocument markdown={withProfileHeader(tailoredMarkdown, profile)} justify />
+          <MarkdownDocument markdown={shownMarkdown} justify />
         ) : (
           <div className="space-y-6">
             {/* Cabecera */}
@@ -270,7 +325,7 @@ export const CvPreview: React.FC<CvPreviewProps> = ({
             {profile.summary && (
               <div className="space-y-2">
                 <h2 className="cv-h2 text-xs font-bold uppercase tracking-wider text-gray-500 border-b border-gray-100 pb-1">
-                  Resumen Profesional
+                  Perfil profesional
                 </h2>
                 <p className="formal-justify text-xs sm:text-sm text-gray-700 leading-relaxed">
                   {profile.summary}
@@ -282,7 +337,7 @@ export const CvPreview: React.FC<CvPreviewProps> = ({
             {((profile.technical_skills && profile.technical_skills.length > 0) || (profile.soft_skills && profile.soft_skills.length > 0)) && (
               <div className="space-y-2">
                 <h2 className="cv-h2 text-xs font-bold uppercase tracking-wider text-gray-500 border-b border-gray-100 pb-1">
-                  Habilidades y Competencias
+                  Competencias
                 </h2>
                 <div className="flex flex-wrap gap-1.5 pt-1">
                   {profile.technical_skills?.map((skill, i) => (
@@ -303,30 +358,34 @@ export const CvPreview: React.FC<CvPreviewProps> = ({
             {profile.experiences && profile.experiences.length > 0 && (
               <div className="space-y-4">
                 <h2 className="cv-h2 text-xs font-bold uppercase tracking-wider text-gray-500 border-b border-gray-100 pb-1">
-                  Experiencia Laboral
+                  Experiencia laboral
                 </h2>
                 <div className="space-y-4">
                   {profile.experiences.map((exp) => (
                     <div key={exp.id || exp.role} className="space-y-1.5">
-                      <div className="flex flex-wrap justify-between items-baseline gap-2">
-                        <div className="font-bold text-sm text-gray-900">
-                          {exp.role} <span className="font-semibold text-gray-600">· {exp.company}</span>
-                        </div>
-                        <span className="text-xs text-gray-500 font-medium">
-                          {formatExperiencePeriod(exp.start_date, exp.end_date)}
-                        </span>
-                      </div>
+                      {/* Formato ATS: cargo — empresa, y en la línea siguiente fecha | ciudad */}
+                      <h3 className="cv-h3 font-bold text-sm text-gray-900">
+                        {exp.role} — {exp.company}
+                      </h3>
+                      {(formatPeriod(exp) || exp.location || exp.is_remote) && (
+                        <p className="text-xs text-gray-600 font-medium">
+                          {[formatPeriod(exp), exp.location || (exp.is_remote ? 'Remoto' : '')].filter(Boolean).join(' | ')}
+                        </p>
+                      )}
                       {exp.description && (
                         <p className="formal-justify text-xs text-gray-700 leading-relaxed">
-                          {exp.description}
+                          {cleanText(exp.description)}
                         </p>
                       )}
                       {exp.bullet_achievements && exp.bullet_achievements.length > 0 && (
                         <ul className="formal-justify list-disc pl-5 text-xs text-gray-700 space-y-1">
                           {exp.bullet_achievements.map((bullet, i) => (
-                            <li key={i}>{bullet.replace(/^[*\-●•+]\s*/, '')}</li>
+                            <li key={i}>{cleanText(bullet.replace(/^[*\-●•+]\s*/, ''))}</li>
                           ))}
                         </ul>
+                      )}
+                      {exp.technologies?.length > 0 && (
+                        <p className="text-xs text-gray-700">Tecnologías: {exp.technologies.slice(0, 10).join(', ')}</p>
                       )}
                     </div>
                   ))}
@@ -342,13 +401,7 @@ export const CvPreview: React.FC<CvPreviewProps> = ({
                 </h2>
                 <div className="space-y-2">
                   {profile.education.map((edu, idx) => (
-                    <div key={idx} className="flex flex-wrap justify-between items-baseline gap-2 text-xs">
-                      <span className="font-semibold text-gray-900">
-                        {[edu.degree, edu.field_of_study].filter(Boolean).join(' en ')}
-                        {edu.institution && <span className="font-normal text-gray-600"> — {edu.institution}</span>}
-                      </span>
-                      {edu.graduation_year && <span className="text-gray-500">{edu.graduation_year}</span>}
-                    </div>
+                    <p key={idx} className="text-xs text-gray-900">{formatEducation(edu)}</p>
                   ))}
                 </div>
               </div>

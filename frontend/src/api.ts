@@ -146,7 +146,13 @@ export async function handleResponse<T = any>(res: Response, defaultError = 'Err
       if (res.status === 404 || res.status === 405) {
         throw new ApiError(`Ruta de backend no encontrada (${res.status}). Verifica que el backend esté activo.`, 'not_found', res.status);
       }
-      if (res.status === 502 || res.status === 503 || res.status === 504) {
+      if (res.status === 413) {
+        throw new ApiError('Tu archivo pesa más de 4 MB. Guarda el PDF con menor tamaño (sin imágenes) o súbelo en Word.', 'too_large', 413);
+      }
+      if (res.status === 504) {
+        throw new ApiError('La IA tardó demasiado en responder y se cortó la conexión. Intenta de nuevo en unos minutos o sube el CV sin IA.', 'timeout', 504);
+      }
+      if (res.status === 502 || res.status === 503) {
         throw new ApiError(`El backend está iniciando o no responde. Espera un instante y reintenta.`, 'service_unavailable', res.status);
       }
       throw new ApiError(`Error del servidor (${res.status}): ${text.slice(0, 150) || res.statusText || defaultError}`, 'server_error', res.status);
@@ -193,6 +199,9 @@ export interface OpinionPayload {
 export type FeedbackTrigger = 'manual' | 'auto' | 'rapida' | 'tarjeta';
 export type FeedbackMoment = 'busqueda' | 'compatibilidad' | 'cv_adaptado' | 'tarjeta' | 'menu' | 'pie' | 'portada';
 
+/** Tamaño máximo del CV (Vercel corta las peticiones de más de ~4,5 MB). */
+export const MAX_CV_BYTES = 4 * 1024 * 1024;
+
 export const api = {
   /** "¿Qué te parece Oportia?": opinión con contacto voluntario (solo con autorización). */
   /** Evento anónimo del navegador (aceptar un aviso, descargar un PDF). Nunca contenido. Si falla, no importa. */
@@ -236,6 +245,10 @@ export const api = {
    * no puede usar IA y el CV se lee de forma básica (method = "reglas", con un aviso en note).
    */
   uploadCV: async (file: File): Promise<CVAnalysisResult> => {
+    // Vercel rechaza archivos de más de ~4,5 MB antes de llegar a Oportia: se avisa antes de enviar.
+    if (file.size > MAX_CV_BYTES) {
+      throw new ApiError('Tu archivo pesa más de 4 MB. Guarda el PDF con menor tamaño (sin imágenes) o súbelo en Word.', 'too_large', 413);
+    }
     const formData = new FormData();
     formData.append('file', file);
     const llmHeaders = await getLLMHeaders();

@@ -40,7 +40,8 @@ def test_manual_selection_and_all_when_few():
     ids, _, method = cs.choose_experiences(PROFILE, JOB, "1", manual_ids=["e4", "e2"], use_ai=False)
     assert ids == ["e2", "e4"] and method == "manual"  # orden del CV, no el del clic
     ids, _, method = cs.choose_experiences(PROFILE, JOB, "full", use_ai=False)
-    assert len(ids) == 5 and method == "todas"
+    # El cargo que terminó hace más de 10 años (2015) va a "Experiencia anterior".
+    assert ids == ["e1", "e2", "e3", "e4"]
 
 
 def test_ai_selection_ignores_invented_ids(monkeypatch):
@@ -68,8 +69,9 @@ def test_draft_endpoint_returns_selection_and_respects_length(monkeypatch):
         prompts.append(prompt)
         if "elegidas" in prompt:
             return {"elegidas": [{"id": "e1", "razon": "Mismo cargo"}, {"id": "e3", "razon": "Obra"}, {"id": "e5", "razon": "Obra"}]}
-        if "tailored_cv_markdown" in prompt:
-            return {"tailored_cv_markdown": "# Rosa Pérez\n## Experiencia\n### Supervisora de obra\n- Lideré cuadrillas\n## Educación\n- Técnico",
+        if '"experiencias"' in prompt:
+            return {"perfil": "Supervisora de obra con experiencia en edificación.", "competencias": ["Lectura de planos"],
+                    "experiencias": [{"id": "e1", "descripcion": "Supervisión de cuadrillas.", "logros": ["Lideré cuadrillas en edificación"]}],
                     "cover_letter": "Estimado equipo..."}
         return {"ats_score": 80, "ats_feedback": [], "reviewer_critique": "ok"}
 
@@ -80,9 +82,12 @@ def test_draft_endpoint_returns_selection_and_respects_length(monkeypatch):
     assert r.status_code == 200, r.text
     d = r.json()
     assert d["cv_length"] == "1" and d["selection_method"] == "ia"
-    assert d["selected_experience_ids"] == ["e1", "e3", "e5"]
-    draft_prompt = next(p for p in prompts if "tailored_cv_markdown" in p)
-    assert "UNA hoja A4" in draft_prompt and "Tienda Sur" not in draft_prompt  # solo las elegidas
+    # e5 terminó en 2015 (más de 10 años): no se desarrolla aunque la IA la elija; va en "Experiencia anterior".
+    assert d["selected_experience_ids"] == ["e1", "e3"]
+    assert "**Ayudante de obra** · Constructora Norte" in d["tailored_cv_markdown"]
+    draft_prompt = next(p for p in prompts if '"experiencias"' in p)
+    assert "Tienda Sur" not in draft_prompt  # solo las elegidas
+    assert "### Supervisora de obra — Constructora Andes" in d["tailored_cv_markdown"]
     assert "## Experiencia anterior" in d["tailored_cv_markdown"] and "Tienda Sur" in d["tailored_cv_markdown"]
 
 
@@ -91,8 +96,8 @@ def test_draft_prompt_asks_to_keep_profile_order(monkeypatch):
 
     def fake_json(prompt, system_instruction=None):
         prompts.append(prompt)
-        if "tailored_cv_markdown" in prompt:
-            return {"tailored_cv_markdown": "# Rosa\n## Experiencia\n- x", "cover_letter": "Hola"}
+        if '"experiencias"' in prompt:
+            return {"perfil": "Supervisora.", "experiencias": [], "cover_letter": "Hola"}
         return {"ats_score": 80, "ats_feedback": [], "reviewer_critique": "ok"}
 
     monkeypatch.setattr(llm, "generate_json", fake_json)
@@ -100,7 +105,18 @@ def test_draft_prompt_asks_to_keep_profile_order(monkeypatch):
     r = TestClient(app).post("/api/applications/draft", json={
         "job": JOB.model_dump(), "profile": PROFILE.model_dump(), "cv_options": {"length": "full"}})
     assert r.status_code == 200, r.text
-    draft_prompt = next(p for p in prompts if "tailored_cv_markdown" in p)
-    assert "EXACTAMENTE en el orden" in draft_prompt
-    # El perfil llega en el orden del navegador (la más reciente primero).
-    assert draft_prompt.index("Constructora Andes") < draft_prompt.index("Constructora Norte")
+    draft_prompt = next(p for p in prompts if '"experiencias"' in p)
+    # El CV lo arma Oportia en el orden del perfil (la más reciente primero).
+    md = r.json()["tailored_cv_markdown"]
+    assert md.index("Constructora Andes") < md.index("Inmobiliaria Mar") < md.index("Supermercado Uno")
+
+
+def test_previous_experience_can_be_left_out(monkeypatch):
+    monkeypatch.setattr(llm, "generate_json", lambda p, system_instruction=None: {"perfil": "Supervisora.", "experiencias": []} if '"experiencias"' in p else {"ats_score": 80, "ats_feedback": [], "reviewer_critique": "ok"})
+    ai_rate_limiter.clear()
+    body = {"job": JOB.model_dump(), "profile": PROFILE.model_dump(), "cv_options": {"length": "1", "experience_ids": ["e1"], "include_previous": False}}
+    md = TestClient(app).post("/api/applications/draft", json=body).json()["tailored_cv_markdown"]
+    assert "Experiencia anterior" not in md and "Tienda Sur" not in md
+    body["cv_options"]["include_previous"] = True
+    md = TestClient(app).post("/api/applications/draft", json=body).json()["tailored_cv_markdown"]
+    assert "## Experiencia anterior" in md and "Tienda Sur" in md

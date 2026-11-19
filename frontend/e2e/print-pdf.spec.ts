@@ -30,6 +30,11 @@ test('el PDF del CV conserva la tipografía de la vista previa', async ({ page, 
   await p2.setViewportSize({ width: 673, height: 1000 });
   expect(await p2.locator('h2').first().evaluate(styleOf())).toEqual(screenH2);
   expect(await p2.locator('li').first().evaluate(styleOf())).toEqual(screenLi);
+  // PDF compatible con ATS: fuente Arial incrustada como TrueType, nunca Type 3; título "CV – Nombre – Cargo".
+  const pdf = (await p2.pdf({ format: 'A4', preferCSSPageSize: true })).toString('latin1');
+  expect(pdf).not.toContain('/Type3');
+  expect(pdf).toMatch(/ArialMT|Arial-BoldMT|Helvetica|LiberationSans/);
+  expect(html).toContain('<title>CV – Rosa Pérez – Supervisor de obra</title>');
   // Un solo margen de página: el que usa el medidor de hojas.
   expect(html).toContain('margin: 14mm 16mm');
 });

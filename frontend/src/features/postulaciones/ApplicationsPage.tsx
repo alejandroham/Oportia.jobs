@@ -103,13 +103,15 @@ export const ApplicationsPage: React.FC<ApplicationsPageProps> = ({
   const handleAdaptCv = async (target?: JobPosting, cvOptions?: CvOptions) => {
     const job = target ?? activeJob;
     if (!job) return;
-    if (!profile) {
+    // Siempre el perfil recién guardado (por ejemplo, justo después de elegir qué fecha es la correcta).
+    const latestProfile = useAppStore.getState().profile ?? profile;
+    if (!latestProfile) {
       toast.error('Primero sube tu CV en Mi perfil para adaptar la postulación.');
       return;
     }
     setIsAdapting(true);
     try {
-      const draft = await api.applyJob(job, profile, preferences, cvOptions);
+      const draft = await api.applyJob(job, latestProfile, preferences, cvOptions);
       await addOrUpdateApplication(draft);
       const latest = useAppStore.getState().jobs.find((j) => j.id === job.id) ?? job;
       const updatedJob: JobPosting = {

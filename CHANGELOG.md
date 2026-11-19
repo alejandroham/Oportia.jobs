@@ -5,6 +5,54 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
 
 ---
 
+## [1.6.0] - 2026-11-19 — *CV compatible con sistemas ATS*
+
+### 📄 Formato que leen bien los ATS
+- **Oportia arma el CV con reglas** (`app/agents/cv_builder.py`): la IA solo propone la redacción (perfil, descripción breve y logros de cada cargo, competencias y palabras clave de la oferta) en formato de datos; los hechos salen del perfil.
+- **Cada cargo, una cosa por línea:** "Cargo — Empresa" (copiados tal cual del perfil), "Mes Año – Mes Año | Ciudad", descripción de 1–2 líneas, 3–5 viñetas de logros (verbo + acción + resultado, sin cifras inventadas) y "Tecnologías:" con máximo 10, solo respaldadas por el perfil y priorizando las de la oferta.
+- **Fechas uniformes:** mes completo y año, "Actual" para el cargo vigente.
+- **Títulos de sección estándar:** Perfil profesional, Competencias, Experiencia laboral, Experiencia anterior, Educación, Certificaciones y cursos, Idiomas (nueva sección).
+- **Máximo 2 hojas:** se quita la opción "Completo"; los cargos que terminaron hace más de 10 años van en "Experiencia anterior", una línea cada uno.
+- **Ajuste automático a 1 o 2 hojas:** si el CV adaptado se pasa, Oportia achica letra y espacios (hasta 82 %) y, si no basta, lo acorta de lo menos a lo más importante: Experiencia anterior a 4 cargos → 3 logros por cargo → 6 tecnologías por cargo → sin Experiencia anterior → sin la descripción de los cargos más antiguos → 10 competencias. Nunca quita cargos, fechas ni estudios. Un aviso muestra qué se acortó, con "Ver el CV completo" y "Volver a ajustar". El PDF sale igual que lo que se ve.
+- **Opción "Incluir Experiencia anterior"** en Largo y experiencias del CV (activada por defecto).
+- **Educación sin redundancias:** "Título – Institución (año)" (ya no "Ingeniero en Informática en Ingeniería en informática").
+- **Perfil profesional** de 3–4 líneas sin tercera persona, con años de experiencia calculados con las fechas; aviso si quedó en tercera persona.
+- El CV base de Mi perfil usa el mismo formato y los mismos títulos.
+
+### 🔤 PDF
+- **Sin palabras partidas:** `hyphens: none` en el CV y se quitan los guiones blandos (U+00AD) y U+2010 del texto.
+- **Fuente Arial del sistema** (TrueType) en el CV y la carta: las fuentes web variables podían quedar incrustadas como Type 3. Nunca pesos ExtraLight. Verificado con `pypdf`: fuentes ArialMT/Arial-BoldMT CID TrueType, sin Type 3.
+- **Título del PDF:** "CV – Nombre Apellido – Cargo de la oferta".
+
+### 🎯 Adaptación a la oferta
+- La IA extrae 15–20 palabras clave de la oferta y solo usa las que la persona tiene, con la misma redacción.
+- **Revisión para sistemas ATS** en Documentos: % de coincidencia, palabras usadas y faltantes, y lista de chequeo (sin palabras partidas, fuente estándar, fechas en su línea, ≤2 hojas, ≥3 logros en los 3 cargos más recientes, ≤12 tecnologías por cargo, sección Idiomas, nada inventado).
+- **Coherencia:** si un mismo cargo aparece dos veces con fechas o títulos distintos, Oportia pregunta cuál usar antes de generar (o si son cargos distintos) y actualiza el perfil.
+
+### 🛠️ Correcciones
+- **Subir el CV podía no cargar ningún dato** (guía de inicio y Mi perfil):
+  - Las consultas a Gemini no tenían tiempo límite y se probaban hasta 4 modelos seguidos; con la IA gratuita saturada se podía pasar el límite de 60 s de Vercel y la petición se cortaba sin respuesta. Ahora cada petición tiene un **presupuesto de 50 s**, cada consulta un tiempo máximo y, si la IA no alcanza, **se usa la lectura sin IA y los datos se cargan igual**. Al CV se le envían como máximo 30.000 caracteres.
+  - La guía decía "máximo 10 MB", pero Vercel rechaza archivos de más de ~4,5 MB: ahora el límite es **4 MB**, se revisa antes de enviar y el mensaje explica qué hacer.
+  - La guía aceptaba **.txt**, pero el servidor lo rechazaba: ahora se lee.
+  - Mensajes claros si un PDF es una imagen escaneada, si un .doc antiguo no se puede leer o si la conexión se corta por tiempo.
+  - Sin IA, el nombre ya no sale pegado al correo cuando están en la misma línea.
+- **La lectura del CV mezclaba secciones y dejaba listas como un solo texto:**
+  - **Con IA:** si la IA devolvía habilidades, idiomas o cursos como texto ("Python, React, SQL") en vez de lista, la lectura fallaba en silencio y caía a la lectura sin IA; si venían en un solo elemento, quedaban como una sola habilidad. Ahora se separan siempre, los idiomas se convierten en idioma → nivel y la experiencia trae sus herramientas y logros separados.
+  - **Sin IA:** se reconocen títulos de sección en la misma línea que el contenido ("HABILIDADES: Python…", "EDUCACIÓN Ingeniero…"), con letras espaciadas ("E D U C A C I Ó N"), combinados ("Educación y certificaciones", "Formación y cursos"), en inglés ("Education", "Certifications") y "Contacto".
+  - **Educación línea a línea:** cada título empieza un registro nuevo con su institución y año (antes, sin líneas vacías, toda la sección quedaba como un solo título). Los cursos, certificaciones y bootcamps que estén en Educación pasan a "Certificaciones y cursos".
+  - **Cursos:** uno por línea, sin cortar en comas ("Curso de Python, 40 horas" es uno); la institución o el año en la línea siguiente se une al curso. Ordenados del más reciente al más antiguo (también en la app).
+  - **Habilidades:** se separan por comas, viñetas, "·", "/", "-" y "|".
+  - **Idiomas:** "Inglés intermedio (B1) · Español nativo", "Inglés: B2", listas o diccionarios; si no hay sección, se buscan menciones con nivel.
+  - **Palabras clave:** se completan con las habilidades técnicas y las herramientas de la experiencia.
+  - **CV de dos columnas:** el nombre y el titular se encuentran aunque la barra lateral (Contacto, Habilidades, Idiomas) salga primero en el texto del PDF.
+  - **CV con palabras partidas** (como los que generaba Oportia antes de esta versión): se unen las palabras cortadas con guion al final de línea ("trans-/formación").
+  - **Experiencia:** el cargo y la empresa pueden ocupar dos líneas ("…de la Región del" + "Biobío"); la línea de fecha puede traer "| Ciudad, Región, Chile" y el inicio de la descripción; "Herramientas:" dentro de un cargo ya no se confunde con la sección Habilidades y sus términos quedan en las herramientas del cargo; empresas terminadas en "S.A." o "Ltda.".
+  - **Experiencia anterior** ("Cargo · Empresa (Mes Año – Mes Año)") se lee como experiencia.
+  - **Titular:** se acepta aunque tenga números ("Microsoft 365") y continúe en la línea siguiente, sin arrastrar el correo.
+  - **Educación:** sin el título repetido ("Ingeniero en Informática en Ingeniería en informática" → "Ingeniero en Informática") y con todas las instituciones ("Universidad Tecnológica de Chile, INACAP").
+- Al adaptar se usa siempre el perfil recién guardado.
+- **Control de versiones:** desde esta versión el número se sube en la rama `release/*`, antes de unirla a `main`.
+
 ## [1.5.1] - 2026-11-18 — *Número de versión corregido*
 
 ### 🛠️ Corrección

@@ -224,13 +224,28 @@
 }
 
 /* --- CV: plantillas y alineación (v1.4.2). Se aplican igual en la vista previa y en el PDF. --- */
-.cv-doc ul.formal-justify li { text-align: justify !important; text-align-last: left !important; hyphens: auto; -webkit-hyphens: auto; }
+.cv-doc ul.formal-justify li { text-align: justify !important; text-align-last: left !important; }
 .cv-tpl-minimalist .cv-h2 { color: #374151 !important; border-color: transparent !important; letter-spacing: 0.12em; }
 .cv-tpl-minimalist .cv-h1 { font-weight: 600 !important; }
-.cv-tpl-executive .cv-h1,
-.cv-tpl-executive .cv-h2,
-.cv-tpl-executive .cv-h3 { font-family: Georgia, 'Times New Roman', serif !important; }
+.cv-tpl-executive .cv-h1 { letter-spacing: 0.01em; }
 .cv-tpl-executive .cv-h2 { color: #111827 !important; border-bottom: 2px solid #111827 !important; }
 .cv-align-center .cv-h1,
 .cv-align-center .cv-header-line { text-align: center !important; }
 .cv-align-center ul.cv-header-line { list-style: none; padding-left: 0; }
+
+/* --- CV compatible con ATS (v1.6.0) ---
+   1) Sin partición de palabras: los ATS leen "trans-formación" como dos palabras.
+   2) Fuente estándar del sistema (Arial/Helvetica, TrueType). Las fuentes web variables (Manrope, Inter)
+      pueden quedar incrustadas como Type 3 al guardar en PDF desde el navegador. */
+.printable-cv, .printable-cv * {
+  hyphens: none !important;
+  -webkit-hyphens: none !important;
+  word-break: normal !important;
+  overflow-wrap: normal !important;
+}
+.printable-cv {
+  font-family: Arial, Helvetica, "Liberation Sans", sans-serif !important;
+  font-weight: 400;
+}
+.printable-cv :where(p, li, span, h1, h2, h3, strong, em) { font-family: inherit; }
+.printable-cv :where(.font-light, .font-extralight, .font-thin) { font-weight: 400 !important; }

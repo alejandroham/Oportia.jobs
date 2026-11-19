@@ -26,6 +26,8 @@ const PRINT_OVERRIDES = `
     color: #111827 !important;
     overflow: visible !important;
   }
+  .printable-cv, .printable-cv * { hyphens: none !important; -webkit-hyphens: none !important; word-break: normal !important; overflow-wrap: normal !important; }
+  .printable-cv { font-family: Arial, Helvetica, "Liberation Sans", sans-serif !important; }
   .printable-cv li, .cv-entry { break-inside: avoid; page-break-inside: avoid; }
   .printable-cv h1, .printable-cv h2, .printable-cv h3 { break-after: avoid; page-break-after: avoid; }
 `;
@@ -38,7 +40,7 @@ export const buildDocumentTitle = (...parts: Array<string | undefined | null>) =
   parts
     .map((p) => (p || '').trim())
     .filter(Boolean)
-    .join(' - ')
+    .join(' – ')
     .replace(/[\\/:*?"<>|]+/g, '')
     .slice(0, 120) || 'Documento Oportia';
 
