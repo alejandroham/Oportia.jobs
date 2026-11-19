@@ -1,8 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { ExternalLink, ShieldAlert } from 'lucide-react';
+import { Download, FileText, ShieldAlert } from 'lucide-react';
 import { useAppStore } from '../../state/useAppStore';
 import { OpiAvatar } from '../ui/OpiAvatar';
 import { useToast } from '../Toast';
+import { api } from '../../api';
+import { AI_CONSENT_STATEMENTS, AI_NOTICE_VERSION, downloadNotice, type ConsentRecord } from '../../legal/aiNotice';
+import { currentAIConsent, recordAIConsent } from '../../utils/consentLog';
+import { AINoticeDialog } from './AINoticeDialog';
 
 /**
  * IA gratuita de Oportia: activación con aviso de privacidad obligatorio y cupo diario visible.
@@ -11,7 +15,11 @@ import { useToast } from '../Toast';
 export const SharedAICard: React.FC = () => {
   const toast = useToast();
   const { settings, setSharedAIConsent, refreshSharedAI } = useAppStore();
-  const [accepted, setAccepted] = useState(false);
+  // Doble confirmación: las dos casillas son obligatorias.
+  const [checks, setChecks] = useState<[boolean, boolean]>([false, false]);
+  const [noticeOpen, setNoticeOpen] = useState(false);
+  const [record, setRecord] = useState<ConsentRecord | null>(() => currentAIConsent());
+  const [justActivated, setJustActivated] = useState(false);
   const shared = settings.shared_ai;
 
   useEffect(() => {
@@ -21,6 +29,28 @@ export const SharedAICard: React.FC = () => {
   if (!shared) return null;
 
   const ownKey = Boolean(settings.has_own_key);
+  const bothChecked = checks[0] && checks[1];
+
+  const activate = () => {
+    const rec = recordAIConsent();
+    setRecord(rec);
+    setSharedAIConsent(true);
+    setJustActivated(true);
+    // Oportia queda informada de forma anónima: versión, acción y código del comprobante (sin datos personales).
+    api.sendEvent('consentimiento_ia', { accion: 'acepta', version: AI_NOTICE_VERSION, codigo: rec.code });
+    toast.success('IA gratuita activada', `Tienes ${shared.remaining} consultas disponibles hoy. Puedes descargar tu comprobante.`);
+  };
+
+  const downloadReceipt = () => {
+    downloadNotice(record);
+    api.sendEvent('comprobante_ia');
+  };
+
+  const noticeLink = (
+    <button type="button" onClick={() => setNoticeOpen(true)} className="inline-flex items-center gap-1 text-xs font-semibold underline cursor-pointer">
+      <FileText className="w-3.5 h-3.5" aria-hidden="true" /> Leer el aviso completo y la exclusión de responsabilidad
+    </button>
+  );
   const consented = Boolean(shared.consented);
 
   return (
@@ -63,71 +93,92 @@ export const SharedAICard: React.FC = () => {
             Te quedan <strong>{shared.remaining}</strong> de {shared.daily_limit} consultas hoy.
             {shared.remaining === 0 && ' Opi está descansando: vuelve mañana o conecta tu propia clave.'}
           </p>
+          <div className="flex flex-wrap gap-2 shrink-0">
+          {record && (
+            <button
+              type="button"
+              onClick={downloadReceipt}
+              className={`inline-flex items-center gap-1.5 min-h-[44px] px-3 py-2 rounded-xl text-xs font-semibold cursor-pointer ${
+                justActivated ? 'bg-brand-600 hover:bg-brand-700 text-white' : 'border border-gray-300 dark:border-ink-line text-ink dark:text-white hover:bg-white dark:hover:bg-ink-hover'
+              }`}
+            >
+              <Download className="w-3.5 h-3.5" aria-hidden="true" /> Descargar mi comprobante
+            </button>
+          )}
           <button
             type="button"
             onClick={() => {
               setSharedAIConsent(false);
+              setJustActivated(false);
+              setChecks([false, false]);
+              api.sendEvent('consentimiento_ia', { accion: 'retira', version: AI_NOTICE_VERSION });
               toast.info('Dejaste de usar la IA gratuita de Oportia.');
             }}
             className="shrink-0 min-h-[44px] px-3 py-2 rounded-xl border border-gray-300 dark:border-ink-line text-xs font-semibold text-ink dark:text-white hover:bg-white dark:hover:bg-ink-hover transition cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
           >
             Dejar de usar IA gratuita
           </button>
+          </div>
         </div>
       ) : (
         <div className="space-y-3">
-          <div className="p-4 rounded-xl bg-amber-50 dark:bg-amber-500/10 border border-amber-300 dark:border-amber-400/40 space-y-2">
+          <div className="p-4 rounded-xl bg-amber-50 dark:bg-amber-500/10 border border-amber-300 dark:border-amber-400/40 space-y-2 text-amber-950 dark:text-amber-100">
             <p className="flex items-center gap-2 text-sm font-bold text-amber-900 dark:text-amber-200">
               <ShieldAlert className="w-4 h-4 shrink-0" aria-hidden="true" />
               Antes de activarla, lee esto
             </p>
-            <ul className="list-disc pl-5 text-xs text-amber-950 dark:text-amber-100 space-y-1 leading-relaxed">
+            <ul className="list-disc pl-5 text-xs space-y-1 leading-relaxed">
               <li>
-                La IA gratuita usa el <strong>plan gratuito de la API de Google Gemini</strong>. En ese plan, Google puede
-                usar lo que envías (por ejemplo, partes de tu CV y de las ofertas) para mejorar sus productos, y personas
-                revisoras de Google pueden leerlo.
+                Funciona con el <strong>plan gratuito de la API de Google Gemini</strong>: Google puede usar lo que envías
+                para mejorar sus productos y personas revisoras de Google pueden leerlo.
               </li>
               <li>
-                <strong>No incluyas datos sensibles</strong> en tu CV o en el chat: RUT, dirección, datos de salud o de
-                tu familia.
+                <strong>Se envía</strong> tu experiencia, estudios, logros, las ofertas y lo que escribas en el chat.{' '}
+                <strong>No se envían</strong> tu nombre, correo, teléfono, enlaces ni RUT: Oportia los reemplaza por marcadores.
               </li>
               <li>
-                Oportia no guarda tu CV en su servidor. Para contar tu cupo diario usa un identificador anónimo de este
-                navegador.
+                <strong>No escribas datos sensibles</strong> en tu CV, en el chat ni en la práctica de entrevista: dirección,
+                salud, situación familiar o datos de otras personas.
               </li>
-              <li>Si prefieres que Google no use tus datos, conecta tu propia clave de un plan de pago en Ajustes → Motor de IA.</li>
+              <li>
+                Oportia <strong>no guarda tu CV</strong> en su servidor y solo cuenta tu cupo con un identificador anónimo
+                de este navegador.
+              </li>
+              <li>
+                La IA puede equivocarse: <strong>revisa todo antes de usarlo</strong>. Oportia no garantiza entrevistas ni
+                contrataciones.
+              </li>
+              <li>¿Prefieres que Google no use tus datos? Conecta tu propia clave de un plan de pago en Ajustes → Motor de IA.</li>
             </ul>
-            <a
-              href="https://ai.google.dev/gemini-api/terms"
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-1 text-xs font-semibold text-amber-900 dark:text-amber-200 underline"
-            >
-              Términos de la API de Gemini <ExternalLink className="w-3 h-3" aria-hidden="true" />
-            </a>
+            <div className="flex flex-wrap gap-x-4 gap-y-1 text-amber-900 dark:text-amber-200">{noticeLink}</div>
           </div>
-          <label className="flex items-start gap-2.5 text-sm text-ink dark:text-gray-100 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={accepted}
-              onChange={(e) => setAccepted(e.target.checked)}
-              className="mt-0.5 w-4 h-4 accent-brand-600"
-            />
-            <span>Entiendo que Google puede usar lo que envíe a la IA gratuita para mejorar sus productos.</span>
-          </label>
+          <fieldset className="space-y-2">
+            <legend className="text-xs font-semibold text-ink dark:text-white mb-1">Para activarla, confirma las dos cosas:</legend>
+            {AI_CONSENT_STATEMENTS.map((text, i) => (
+              <label key={i} className="flex items-start gap-2.5 text-sm text-ink dark:text-gray-100 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={checks[i]}
+                  onChange={(e) => setChecks((prev) => (i === 0 ? [e.target.checked, prev[1]] : [prev[0], e.target.checked]))}
+                  className="mt-0.5 w-4 h-4 accent-brand-600"
+                />
+                <span>{text}</span>
+              </label>
+            ))}
+          </fieldset>
           <button
             type="button"
-            disabled={!accepted}
-            onClick={() => {
-              setSharedAIConsent(true);
-              toast.success('IA gratuita activada', `Tienes ${shared.remaining} consultas disponibles hoy.`);
-            }}
+            disabled={!bothChecked}
+            onClick={activate}
             className="min-h-[44px] px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
           >
             Activar IA gratuita
           </button>
+          {!bothChecked && <p className="text-xs text-ink-muted dark:text-ink-200">Marca las dos casillas para activar.</p>}
         </div>
       )}
+      {consented && !ownKey && <div className="text-xs text-ink-muted dark:text-ink-200">{noticeLink}</div>}
+      <AINoticeDialog isOpen={noticeOpen} onClose={() => setNoticeOpen(false)} record={consented ? record : null} />
     </section>
   );
 };

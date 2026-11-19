@@ -12,7 +12,7 @@ export interface RemovedOffer { id: string; title: string; company?: string; sou
 export const KIND_LABELS: Record<string, string> = {
   visita: 'Visitas', busqueda: 'Búsquedas', cv_subido: 'CV subidos', cv_reanalizado: 'CV reanalizados', cargos_y_logros: 'Cargos y logros',
   compatibilidad_lote: 'Compatibilidad (lotes)', compatibilidad_detalle: 'Evaluaciones detalladas', brechas: 'Brechas', oferta_pegada: 'Ofertas pegadas',
-  oferta_por_enlace: 'Ofertas por enlace', chat_opi: 'Chat con Opi', opinion: 'Opiniones', ia_ocupada: 'IA con alta demanda',
+  oferta_por_enlace: 'Ofertas por enlace', chat_opi: 'Chat con Opi', opinion: 'Opiniones', ia_ocupada: 'IA con alta demanda', cv_adaptado: 'CV adaptados', entrevista_preparada: 'Entrevistas preparadas', entrevista_evaluada: 'Respuestas de entrevista evaluadas', consentimiento_ia: 'Consentimientos de IA gratuita', comprobante_ia: 'Comprobantes descargados', pdf_cv: 'PDF de CV', pdf_carta: 'PDF de carta',
   limite_peticiones: 'Exceso de peticiones', error_servidor: 'Errores del servidor', ssrf_bloqueado: 'SSRF bloqueado',
   prompt_injection: 'Intento de manipular la IA', portal_restringido: 'Portal restringido', bot_opiniones: 'Bot en opiniones'
 };

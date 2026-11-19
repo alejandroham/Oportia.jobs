@@ -1,6 +1,8 @@
-from typing import Optional, Tuple
+from typing import List, Optional, Tuple
 from app.models.schemas import CandidateProfile, JobPosting, ApplicationDraft, UserPreferences, CvOptions
 from app.agents import cv_selection
+from app.agents.cv_fidelity import verify_cv, verify_letter
+from app.privacy.redact import NAME_TOKEN, apply_cv_header, profile_json_for_ai, redact_text, restore_tokens
 from app.agents.llm_provider import llm, LLMProviderError, AINotConnectedError, USER_FACING_LLM_ERRORS
 from app.storage.db import db
 import logging
@@ -46,11 +48,29 @@ class DrafterReviewerPipeline:
         focused, others = cv_selection.split_profile(profile, selected_ids, length)
 
         # Paso 1: el redactor genera CV y carta con las experiencias elegidas.
+        # La IA no recibe nombre, correo, teléfono, comuna ni enlaces: trabaja con marcadores.
         cv_markdown, cover_letter = self._draft_materials(job, focused, prefs, length)
+
+        # Paso 1b: fidelidad. Lo que no esté en el perfil real se detecta; la IA corrige una vez y lo que quede se quita.
+        cv_markdown, removed = verify_cv(cv_markdown, profile)
+        if removed:
+            retry = self._redraft_cv(job, focused, prefs, length, removed)
+            if retry:
+                retry_clean, retry_removed = verify_cv(retry, profile)
+                if len(retry_removed) < len(removed):
+                    cv_markdown, removed = retry_clean, retry_removed
+        cover_letter, letter_removed = verify_letter(cover_letter, profile)
+        fidelity_warnings = removed + letter_removed
         cv_markdown = cv_selection.insert_previous_experience(cv_markdown, others)
 
-        # Paso 2: el revisor audita (no bloqueante: si falla, igual se entregan los documentos)
+        # Paso 2: el revisor audita (no bloqueante) sobre los documentos aún sin datos de contacto.
         ats_score, ats_feedback, reviewer_critique = self._review_materials(job, profile, cv_markdown, cover_letter)
+
+        # Paso 3: Oportia pone los datos reales con reglas: encabezado exacto del perfil y firma de la carta.
+        cv_markdown = apply_cv_header(cv_markdown, profile)
+        cover_letter = restore_tokens(cover_letter, profile)
+        ats_feedback = [restore_tokens(x, profile) for x in ats_feedback]
+        reviewer_critique = restore_tokens(reviewer_critique or "", profile) or reviewer_critique
 
         cv_html = self._markdown_to_apple_html(cv_markdown, profile.name)
 
@@ -68,6 +88,7 @@ class DrafterReviewerPipeline:
             selected_experience_ids=selected_ids,
             selection_reasons=reasons,
             selection_method=method,
+            fidelity_warnings=fidelity_warnings,
         )
 
         if persist:
@@ -110,8 +131,8 @@ class DrafterReviewerPipeline:
 
     def _draft_materials(self, job: JobPosting, profile: CandidateProfile, prefs: Optional[UserPreferences],
                          length: str = "2") -> Tuple[str, str]:
-        memory_context = self._memory_context(prefs)
-        profile_json = json.dumps(profile.model_dump(), ensure_ascii=False, indent=2)
+        memory_context, _ = redact_text(self._memory_context(prefs))
+        profile_json = profile_json_for_ai(profile)
         length_rule = cv_selection.LENGTH_PROMPTS.get(length, "")
 
         prompt = f"""
@@ -123,23 +144,24 @@ PERFIL REAL Y VERIFICADO DEL CANDIDATO:
 {memory_context}
 INSTRUCCIONES DE REDACCIÓN:
 1. Adapta el Currículum en formato Markdown limpio, estructurado con:
-   - Encabezado con datos del candidato
+   - Encabezado: SOLO la línea "# {{{{NOMBRE}}}}". NO escribas correo, teléfono, dirección, comuna, RUT ni enlaces: Oportia agrega los datos de contacto exactos aparte.
    - Perfil profesional enfocado al cargo
    - Competencias y habilidades relevantes para la vacante primero
    - Experiencia laboral con viñetas de logros orientadas al impacto (resultados, métricas, responsabilidades clave, herramientas o técnicas usadas). REGLAS ESTRICTAS DE FORMATO: Usa SIEMPRE guiones '- ' para las viñetas, NUNCA asteriscos '* '. NO insertes separadores '---' entre secciones.
    - Educación, cursos y certificaciones
+   - PROHIBIDO INVENTAR O FALSEAR: no agregues cifras, porcentajes, montos, cantidades, fechas, empresas, cargos, títulos, cursos, herramientas ni logros que no estén escritos en el perfil. Si un logro no trae cifra en el perfil, descríbelo sin cifra. Puedes reformular y destacar, nunca agregar hechos.
    - Incluye SOLO las experiencias del perfil entregado. NO agregues una sección "Experiencia anterior": Oportia la agrega aparte.
    - ORDEN: presenta la experiencia y la educación EXACTAMENTE en el orden en que vienen en el perfil (ya están ordenadas por fecha o como la persona eligió). No las reordenes por relevancia: la relevancia se muestra con el contenido, no con el orden.
    - {length_rule}
 2. Redacta una Carta de Presentación moderna (3 a 4 párrafos concisos):
    - Prohibido usar clichés vacíos como "Me dirijo a ustedes para expresar mi entusiasmo...".
    - Apertura directa: por qué tu experiencia concreta responde a lo que busca la vacante.
-   - Párrafos 2 y 3: dos ejemplos reales de tu trayectoria que lo demuestran.
-   - Cierre propositivo y profesional, firmado con el nombre del candidato.
+   - Párrafos 2 y 3: dos ejemplos reales de tu trayectoria que lo demuestran, sin cifras ni hechos que no estén en el perfil.
+   - Cierre propositivo y profesional, firmado exactamente como {{{{NOMBRE}}}} (sin agregar correo ni teléfono).
 
 RESPONDE ÚNICAMENTE CON UN JSON:
 {{
-  "tailored_cv_markdown": "# Nombre\\n...",
+  "tailored_cv_markdown": "# {{{{NOMBRE}}}}\\n## Perfil profesional\\n...",
   "cover_letter": "Estimado equipo de selección de..."
 }}
 """
@@ -165,6 +187,22 @@ RESPONDE ÚNICAMENTE CON UN JSON:
 
         return cv_md.strip(), cl.strip()
 
+    def _redraft_cv(self, job: JobPosting, profile: CandidateProfile, prefs: Optional[UserPreferences],
+                    length: str, removed: List[str]) -> Optional[str]:
+        """Segundo intento: se le muestra a la IA lo que agregó sin estar en el perfil para que lo quite."""
+        memory_context, _ = redact_text(self._memory_context(prefs))
+        correction = (
+            "CORRECCIÓN OBLIGATORIA: en tu versión anterior agregaste datos que NO están en el perfil:\n"
+            + "\n".join(f"- {r}" for r in removed[:12])
+            + "\nReescribe el CV SIN esos datos. Usa solo cifras, fechas, empresas, cargos, estudios y competencias "
+              "que aparezcan escritos en el perfil."
+        )
+        rule = cv_selection.LENGTH_PROMPTS.get(length, "") + "\n" + correction
+        try:
+            return self._draft_cv_text(job, profile_json_for_ai(profile), memory_context, rule)
+        except USER_FACING_LLM_ERRORS:
+            return None
+
     def _draft_cv_text(self, job: JobPosting, profile_json: str, memory_context: str, length_rule: str = "") -> Optional[str]:
         prompt = f"""
 VACANTE OBJETIVO:
@@ -173,8 +211,10 @@ VACANTE OBJETIVO:
 PERFIL REAL Y VERIFICADO DEL CANDIDATO:
 {profile_json}
 {memory_context}
-Escribe el CURRÍCULUM ADAPTADO a esta vacante en Markdown limpio (# Nombre, ## secciones, viñetas con '- ').
+Escribe el CURRÍCULUM ADAPTADO a esta vacante en Markdown limpio ("# {{{{NOMBRE}}}}", ## secciones, viñetas con '- ').
+NO escribas correo, teléfono, dirección, comuna, RUT ni enlaces: Oportia agrega los datos de contacto aparte.
 Incluye SOLO las experiencias del perfil entregado; no agregues una sección "Experiencia anterior".
+PROHIBIDO INVENTAR: no agregues cifras, porcentajes, fechas, empresas, cargos, estudios, cursos, herramientas ni logros que no estén escritos en el perfil.
 Presenta la experiencia y la educación en el MISMO orden en que vienen en el perfil (no las reordenes).
 {length_rule}
 Responde SOLO con el Markdown del CV, sin explicaciones ni bloques de código.
@@ -196,7 +236,7 @@ PERFIL REAL Y VERIFICADO DEL CANDIDATO:
 {profile_json}
 {memory_context}
 Escribe una CARTA DE PRESENTACIÓN en español para esta vacante (3 a 4 párrafos, sin clichés,
-con dos ejemplos reales de la trayectoria del candidato) y fírmala como {profile.name or 'el candidato'}.
+con dos ejemplos reales de la trayectoria del candidato) y fírmala exactamente como {NAME_TOKEN} (sin correo ni teléfono).
 Responde SOLO con el texto de la carta, sin títulos, explicaciones ni Markdown.
 """
         try:

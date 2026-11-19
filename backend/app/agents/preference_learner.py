@@ -44,7 +44,7 @@ class PreferenceLearner:
             from app.config import settings
             db._write_json(settings.FEEDBACK_FILE, [])
         except Exception as e:
-            logger.warning(f"Could not reset feedback file: {e}")
+            logger.warning(f"Could not reset feedback file: {type(e).__name__}")
 
         db.save_preferences(prefs)
         logger.info("Cognitive AI Memory completely reset to clean state.")
@@ -64,7 +64,7 @@ class PreferenceLearner:
                     self._update_maturity(prefs)
                     db.save_preferences(prefs)
             except Exception as e:
-                logger.error(f"Error extracting learned insights: {e}")
+                logger.error(f"Error extracting learned insights: {type(e).__name__}")
 
         return prefs
 
@@ -149,7 +149,7 @@ RESPONDE ÚNICAMENTE CON UN JSON:
                 db.save_preferences(prefs)
                 return new_story
         except Exception as e:
-            logger.error(f"Error learning from STAR answer: {e}")
+            logger.error(f"Error learning from STAR answer: {type(e).__name__}")
         return None
 
     def consolidate_memory(self) -> UserPreferences:
@@ -294,7 +294,7 @@ RESPONDE ÚNICAMENTE CON UN JSON:
                 db.save_preferences(prefs)
                 logger.info("Cognitive AI Memory successfully consolidated.")
         except Exception as e:
-            logger.error(f"Error during memory consolidation: {e}")
+            logger.error(f"Error during memory consolidation: {type(e).__name__}")
 
         return prefs
 
@@ -669,7 +669,7 @@ FORMATO OBLIGATORIO JSON (ESTRICTAMENTE EN PROSA PROFESIONAL, NUNCA CÓDIGO NI S
             raise
         except Exception as e:
             # Deterministic, context-aware offline fallback
-            logger.warning(f"Opi LLM chat fallback: {e}")
+            logger.warning(f"Opi LLM chat fallback: {type(e).__name__}")
             
             # Detect context from previous messages if available
             last_user_message = ""

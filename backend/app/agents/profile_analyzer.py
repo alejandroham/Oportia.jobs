@@ -30,7 +30,7 @@ def extract_text_from_file(file_path: Path) -> str:
             with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
                 raw_text = f.read()
     except Exception as e:
-        logger.error(f"Error reading file {file_path}: {e}")
+        logger.error(f"Error reading file {file_path}: {type(e).__name__}")
 
     # Normalize fragmented PDFs where words are broken with \n \n
     cleaned = raw_text.replace('\n \n', ' ')
@@ -588,9 +588,16 @@ def analyze_cv(raw_text: str) -> "tuple[CandidateProfile, str, Optional[str]]":
     note = "Analizamos tu CV sin IA (lectura básica por secciones). Activa la IA y usa «Reanalizar con IA» para ordenar mejor tu experiencia, títulos y cursos."
     if _ai_available():
         try:
-            result = llm.generate_json(CV_PROMPT.format(cv=raw_text[:65000]), system_instruction=CV_SYSTEM_PROMPT)
+            # La IA no recibe correo, teléfono, RUT ni enlaces: no los necesita para ordenar el CV.
+            from app.privacy.redact import redact_text
+            safe_text, found = redact_text(raw_text[:65000])
+            result = llm.generate_json(CV_PROMPT.format(cv=safe_text), system_instruction=CV_SYSTEM_PROMPT)
             if isinstance(result, dict) and _name_in_text(result.get("name") or "", raw_text):
-                return _profile_from_ai(result, raw_text), "ia", None
+                profile = _profile_from_ai(result, raw_text)
+                # Los datos de contacto se toman del CV con reglas, tal como están escritos.
+                profile.email = found["emails"][0] if found["emails"] else None
+                profile.phone = found["phones"][0] if found["phones"] else None
+                return profile, "ia", None
             logger.warning("La IA devolvió un CV que no coincide con el texto; se usa el lector por secciones.")
             note = "La IA no pudo leer bien tu CV; usamos la lectura básica por secciones. Revisa tus datos o vuelve a intentarlo."
         except AIRestingError as e:
@@ -600,7 +607,7 @@ def analyze_cv(raw_text: str) -> "tuple[CandidateProfile, str, Optional[str]]":
         except LLMProviderError as e:
             logger.info(f"CV sin IA ({e.code}).")
         except Exception as e:  # noqa: BLE001
-            logger.warning(f"LLM parsing failed, falling back to deterministic parser: {e}")
+            logger.warning(f"LLM parsing failed, falling back to deterministic parser: {type(e).__name__}")
     profile = attach_links_from_text(deterministic_cv_parser(raw_text), raw_text)
     return profile, "reglas", note
 
@@ -637,7 +644,7 @@ def _sync_preferences_from_profile(profile: CandidateProfile):
         db.save_preferences(prefs)
         logger.info(f"Synchronized preferences: roles={prefs.target_roles}, region={prefs.preferred_region}")
     except Exception as err:
-        logger.warning(f"Could not sync preferences from profile: {err}")
+        logger.warning(f"Could not sync preferences from profile: {type(err).__name__}")
 
 
 def assist_profile_content(section: str, action: str, current_text: str, target_role: Optional[str] = None) -> Dict[str, Any]:
@@ -681,7 +688,7 @@ Devuelve el resultado en JSON:
                     "reasoning": result.get("reasoning", "Mejora de redacción y claridad técnica.")
                 }
         except Exception as e:
-            logger.warning(f"LLM assist failed, falling back to heuristic assistant: {e}")
+            logger.warning(f"LLM assist failed, falling back to heuristic assistant: {type(e).__name__}")
 
     # Heuristic fallback if LLM is offline or fails
     suggestion = current_text.strip()
@@ -878,7 +885,7 @@ Genera la optimización en JSON estricto:
                     "match_rationale": result.get("match_rationale", f"Perfil adaptado de forma óptima para '{clean_target}'.")
                 }
         except Exception as e:
-            logger.warning(f"Error en tailor_profile_for_role con LLM: {e}")
+            logger.warning(f"Error en tailor_profile_for_role con LLM: {type(e).__name__}")
 
     # Deterministic Heuristic Fallback
     top_skills = profile.technical_skills[:3]

@@ -17,6 +17,7 @@ from fastapi.responses import FileResponse, JSONResponse
 
 from app.config import settings
 from app import telemetry
+from app.privacy.context import current_person
 from pydantic import BaseModel, Field
 from app.models.schemas import (
     CandidateProfile, UserPreferences, JobPosting, 
@@ -53,7 +54,7 @@ from app.agents.llm_context import current_llm_credentials, LLMCredentials
 from app.utils.cache import job_search_cache
 from app.indexer.store import index_cache
 from app.indexer.search import search_index, search_index_for_profile
-from app.utils.rate_limiter import ai_rate_limiter, search_rate_limiter, feedback_rate_limiter
+from app.utils.rate_limiter import ai_rate_limiter, search_rate_limiter, feedback_rate_limiter, event_rate_limiter
 from app.feedback import FeedbackRequest, FeedbackRateLimited, FeedbackUnavailable, save_feedback
 from app.scrapers.remote_boards import RemoteBoardsScraper
 from app.scrapers.linkedin_guest import LinkedInGuestScraper
@@ -97,6 +98,7 @@ async def extract_llm_credentials_middleware(request: Request, call_next):
         consent=request.headers.get("X-Oportia-Shared-AI-Consent") == "1",
     )
     shared_token = current_shared_ai_request.set(shared_req)
+    person_token = current_person.set(None)  # cada petición parte sin datos de nadie
     if api_key:
         token = current_llm_credentials.set(
             LLMCredentials(
@@ -116,6 +118,7 @@ async def extract_llm_credentials_middleware(request: Request, call_next):
     finally:
         current_llm_credentials.reset(token)
         current_shared_ai_request.reset(shared_token)
+        current_person.reset(person_token)
 
 
 # Rutas que se cuentan en el portal de administración (solo el tipo de acción, nunca el contenido).
@@ -132,6 +135,9 @@ _TRACKED_ROUTES = {
     "/api/jobs/import-url": "oferta_por_enlace",
     "/api/chat/opi": "chat_opi",
     "/api/opinion": "opinion",
+    "/api/applications/draft": "cv_adaptado",
+    "/api/coach/interview-prep": "entrevista_preparada",
+    "/api/coach/interview-eval": "entrevista_evaluada",
 }
 
 
@@ -632,6 +638,40 @@ def submit_feedback(req: FeedbackRequest):
     except FeedbackUnavailable as e:
         raise HTTPException(status_code=503, detail=str(e))
     return {"ok": True, "id": feedback_id}
+
+
+# Eventos que ocurren solo en el navegador (aceptar un aviso, descargar un PDF). Lista cerrada de tipos y de
+# valores: nunca contenido, nombres, correos ni el CV. Se guardan con la misma huella diaria anónima.
+CLIENT_EVENTS = {
+    "consentimiento_ia": {"accion": {"acepta", "retira"}, "version": None, "codigo": None},
+    "pdf_cv": {"tipo": {"base", "adaptado"}},
+    "pdf_carta": {},
+    "comprobante_ia": {},
+}
+
+
+class ClientEvent(BaseModel):
+    kind: str
+    detail: Dict[str, str] = {}
+
+
+@app.post("/api/event", dependencies=[Depends(event_rate_limiter)])
+def client_event(ev: ClientEvent, request: Request):
+    spec = CLIENT_EVENTS.get(ev.kind)
+    if spec is None:
+        raise HTTPException(status_code=400, detail="Tipo de evento no permitido.")
+    detail = {}
+    for key, allowed in spec.items():
+        value = str(ev.detail.get(key, ""))[:20]
+        if not value:
+            continue
+        if allowed is None and re.fullmatch(r"[A-Za-z0-9-]{1,20}", value):
+            detail[key] = value  # versión (2026-11-18) o código de comprobante (A1B2C3D4)
+        elif allowed and value in allowed:
+            detail[key] = value
+    client_id = _clean_client_id(request.headers.get("X-Oportia-Client"))
+    telemetry.record(ev.kind, "uso", detail, client_id, "", settings.VERSION)
+    return {"ok": True}
 
 
 @app.get("/api/status")
@@ -1151,7 +1191,7 @@ def evaluate_interview_answer(data: dict):
     try:
         preference_learner.learn_from_star_answer(question, answer, eval_res, company=company)
     except Exception as e:
-        logger.warning(f"Error auto-learning from interview answer: {e}")
+        logger.warning(f"Error auto-learning from interview answer: {type(e).__name__}")
     return eval_res
 
 # --- Coach IA Endpoints (Desarrollo y Crecimiento Profesional) ---
@@ -1273,7 +1313,7 @@ def get_targeted_interview_prep(data: dict):
             profile = CandidateProfile(**profile_data)
             return career_coach.generate_targeted_interview_prep(job, profile, interviewer_role)
         except Exception as e:
-            logger.warning(f"Error in stateless interview prep: {e}")
+            logger.warning(f"Error in stateless interview prep: {type(e).__name__}")  # sin contenido del perfil
     job_id = data.get("job_id")
     job = db.get_job_by_id(job_id) if job_id else None
     if not job:

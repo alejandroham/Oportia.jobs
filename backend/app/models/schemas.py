@@ -1,5 +1,5 @@
 from typing import List, Optional, Dict, Any
-from pydantic import BaseModel, Field
+from pydantic import model_validator, BaseModel, Field
 import uuid
 from datetime import datetime
 
@@ -62,6 +62,16 @@ class CandidateProfile(BaseModel):
     versions: List[Dict[str, Any]] = []
     raw_cv_text: Optional[str] = None
     updated_at: str = Field(default_factory=lambda: datetime.utcnow().isoformat())
+
+    @model_validator(mode="after")
+    def _remember_for_privacy(self):
+        # Anota (solo en memoria y durante esta petición) quién es la persona, para que la conexión con la IA
+        # pueda ocultar su nombre, correo y teléfono. Ver app/privacy/context.py.
+        from app.privacy.context import remember_person
+        links = [link.url for link in (self.links or []) if getattr(link, "url", "")]
+        remember_person(self.name, self.email, self.phone, links + [u for u in (self.linkedin_url, self.portfolio_url, self.github_url) if u])
+        return self
+
 
 class ProfileDNA(BaseModel):
     summary: str = "Profesional con sólida trayectoria y competencias demostrables."
@@ -326,6 +336,8 @@ class ApplicationDraft(BaseModel):
     selected_experience_ids: List[str] = []
     selection_reasons: Dict[str, str] = {}
     selection_method: Optional[str] = None  # manual | todas | ia | reglas
+    # Datos que la IA agregó sin estar en el perfil y que Oportia quitó (para avisarle a la persona).
+    fidelity_warnings: List[str] = []
 
 class FeedbackAction(BaseModel):
     job_id: str

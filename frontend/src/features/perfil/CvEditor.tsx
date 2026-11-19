@@ -2,6 +2,11 @@ import React, { useEffect, useState } from 'react';
 import type { CandidateProfile } from '../../types';
 import { CvExperienceSection } from './CvExperienceSection';
 import { CvOrderBar } from './CvOrderBar';
+import { CHILE_REGIONS } from '../../utils/chileRegions';
+
+const EMAIL_OK = /^[^@\s]{1,64}@[^@\s]+\.[^@\s]{2,}$/;
+// Chile (+56 9 1234 5678, 9 1234 5678, fijo +56 2 2345 6789) u otro país con +código.
+const PHONE_OK = /^\+?[\d\s().-]{8,20}$/;
 import { isOutOfOrder, sortEducation, sortExperiences, withChronologicalOrder } from '../../utils/cvOrder';
 import { CvSkillsSection } from './CvSkillsSection';
 import { CvPreviewModal } from './CvPreviewModal';
@@ -267,8 +272,12 @@ export const CvEditor: React.FC<CvEditorProps> = ({ profile, onProfileUpdated })
                   type="email"
                   value={formData.email || ''}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  aria-invalid={Boolean(formData.email && !EMAIL_OK.test(formData.email))}
                   className="w-full p-2 rounded-xl border border-gray-200 dark:border-ink-line bg-gray-50 dark:bg-ink-raised text-gray-900 dark:text-gray-100"
                 />
+                {formData.email && !EMAIL_OK.test(formData.email) && (
+                  <p className="mt-1 text-xs text-amber-700 dark:text-amber-300">Revisa el correo: por ejemplo nombre@correo.cl.</p>
+                )}
               </div>
               <div>
                 <label className="block text-gray-600 dark:text-ink-200 font-medium mb-1">Teléfono</label>
@@ -277,8 +286,41 @@ export const CvEditor: React.FC<CvEditorProps> = ({ profile, onProfileUpdated })
                   value={formData.phone || ''}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                   placeholder="+56 9 1234 5678"
+                  aria-invalid={Boolean(formData.phone && !PHONE_OK.test(formData.phone))}
                   className="w-full p-2 rounded-xl border border-gray-200 dark:border-ink-line bg-gray-50 dark:bg-ink-raised text-gray-900 dark:text-gray-100"
                 />
+                {formData.phone && !PHONE_OK.test(formData.phone) && (
+                  <p className="mt-1 text-xs text-amber-700 dark:text-amber-300">Revisa el número: por ejemplo +56 9 1234 5678.</p>
+                )}
+              </div>
+              <div>
+                <label htmlFor="cv-region" className="block text-gray-600 dark:text-ink-200 font-medium mb-1">Región</label>
+                <select
+                  id="cv-region"
+                  value={formData.region || ''}
+                  onChange={(e) => setFormData({ ...formData, region: e.target.value || undefined, commune: undefined })}
+                  className="w-full p-2 rounded-xl border border-gray-200 dark:border-ink-line bg-gray-50 dark:bg-ink-raised text-gray-900 dark:text-gray-100"
+                >
+                  <option value="">Elige tu región</option>
+                  {CHILE_REGIONS.map((r) => (
+                    <option key={r.id} value={r.name}>{r.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label htmlFor="cv-commune" className="block text-gray-600 dark:text-ink-200 font-medium mb-1">Comuna de residencia</label>
+                <select
+                  id="cv-commune"
+                  value={formData.commune || ''}
+                  disabled={!formData.region}
+                  onChange={(e) => setFormData({ ...formData, commune: e.target.value || undefined })}
+                  className="w-full p-2 rounded-xl border border-gray-200 dark:border-ink-line bg-gray-50 dark:bg-ink-raised text-gray-900 dark:text-gray-100 disabled:opacity-60"
+                >
+                  <option value="">{formData.region ? 'Elige tu comuna' : 'Primero elige la región'}</option>
+                  {(CHILE_REGIONS.find((r) => r.name === formData.region)?.communes || []).map((c) => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
               </div>
               <CvLinksSection links={formData.links || []} onChange={(links) => setFormData({ ...formData, links })} />
             </div>

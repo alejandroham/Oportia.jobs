@@ -7,6 +7,9 @@ import { printElement, buildDocumentTitle } from '../../utils/printDocument';
 import { OpiAvatar } from '../../components/ui/OpiAvatar';
 import { CvOptionsPanel, defaultCvLength } from './CvOptionsPanel';
 import { QuickFeedback } from '../../components/feedback/QuickFeedback';
+import { missingContact } from '../../utils/cvHeader';
+import { Link } from 'react-router-dom';
+import { ShieldCheck, AlertTriangle } from 'lucide-react';
 
 interface ApplicationDocumentsTabProps {
   job: JobPosting;
@@ -132,6 +135,29 @@ export const ApplicationDocumentsTab: React.FC<ApplicationDocumentsTabProps> = (
             <p className="text-xs text-ink-muted dark:text-ink-200">Elige tus experiencias más relevantes y las ajusta al largo que pediste, sin inventar nada. Puede tardar hasta un minuto.</p>
           </div>
         </div>
+      )}
+
+      {activeDoc === 'cv' && profile && missingContact(profile).length > 0 && (
+        <p role="alert" className="flex items-start gap-2 p-3 rounded-xl bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-400/30 text-xs text-amber-900 dark:text-amber-100">
+          <AlertTriangle className="w-4 h-4 shrink-0" aria-hidden="true" />
+          <span>
+            Tu CV saldrá sin {missingContact(profile).join(', ')}. Agrégalo en{' '}
+            <Link to="/perfil" className="underline font-semibold">Mi perfil → Datos personales</Link>: aparecerá solo en el encabezado, tal como lo escribas.
+          </span>
+        </p>
+      )}
+
+      {tailoredMarkdown && !isAdapting && (application?.fidelity_warnings?.length ?? 0) > 0 && (
+        <details className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-400/30 text-xs text-emerald-900 dark:text-emerald-100">
+          <summary className="flex items-center gap-2 font-semibold cursor-pointer">
+            <ShieldCheck className="w-4 h-4 shrink-0" aria-hidden="true" />
+            Oportia quitó {application!.fidelity_warnings!.length} {application!.fidelity_warnings!.length === 1 ? 'dato que la IA agregó' : 'datos que la IA agregó'} sin estar en tu perfil
+          </summary>
+          <ul className="list-disc pl-6 mt-2 space-y-0.5">
+            {application!.fidelity_warnings!.map((w, i) => <li key={i}>{w}</li>)}
+          </ul>
+          <p className="mt-2">Tu CV solo usa lo que está en tu perfil. Si alguno de estos datos es real, agrégalo en Mi perfil y vuelve a adaptar.</p>
+        </details>
       )}
 
       {tailoredMarkdown && !isAdapting && <QuickFeedback moment="cv_adaptado" question="¿Te sirvió el CV adaptado?" />}

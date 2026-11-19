@@ -28,9 +28,12 @@ export const SearchPreferencesTab: React.FC<SearchPreferencesTabProps> = ({
   }, [preferences.updated_at, preferences]);
 
   const toggleRole = (title: string) => {
-    const has = formData.target_roles.some((r) => normalizeText(r) === normalizeText(title));
-    const target_roles = has ? formData.target_roles.filter((r) => normalizeText(r) !== normalizeText(title)) : [...formData.target_roles, title];
-    const next = { ...formData, target_roles, updated_at: new Date().toISOString() };
+    // Parte de lo último guardado (no de una copia local que pudo quedar atrás): dos clics seguidos no se pisan.
+    const latest = useAppStore.getState().preferences;
+    const base = latest ? { ...formData, target_roles: latest.target_roles || [], suggested_roles: latest.suggested_roles ?? formData.suggested_roles } : formData;
+    const has = base.target_roles.some((r) => normalizeText(r) === normalizeText(title));
+    const target_roles = has ? base.target_roles.filter((r) => normalizeText(r) !== normalizeText(title)) : [...base.target_roles, title];
+    const next = { ...base, target_roles, updated_at: new Date().toISOString() };
     setFormData(next);
     onPreferencesUpdated(next);
     toast.success(has ? `Quitado de lo que buscas: ${title}` : `Agregado a lo que buscas: ${title}`);

@@ -22,7 +22,7 @@ test('ordena con IA sola y avisa cuando cambia el perfil', async ({ page }) => {
   });
   await page.goto('/conoce-oportia');
   await page.evaluate(async (p) => {
-    localStorage.setItem('nexusjob_onboarding_completed', 'true'); localStorage.setItem('oportia_shared_ai_consent', '2026-11-14');
+    localStorage.setItem('nexusjob_onboarding_completed', 'true'); localStorage.setItem('oportia_shared_ai_consent', '2026-11-18');
     await new Promise<void>((res) => { const q = indexedDB.open('NexusJob_SovereignDB', 1); q.onupgradeneeded = () => q.result.createObjectStore('client_session');
       q.onsuccess = () => { const tx = q.result.transaction('client_session', 'readwrite'); const s = tx.objectStore('client_session'); s.put(p, 'profile'); s.put([], 'jobs'); s.put(true, 'onboarding_completed'); tx.oncomplete = () => res(); }; });
   }, profile);

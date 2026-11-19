@@ -228,7 +228,7 @@ Genera la deliberación completa del Comité en formato JSON estricto con la sig
                 try:
                     committee_evals.append(EvaluatorRoleScore(**item))
                 except Exception as e:
-                    logger.warning(f"Error parsing committee evaluator item: {e}")
+                    logger.warning(f"Error parsing committee evaluator item: {type(e).__name__}")
 
         if len(committee_evals) != 5:
             if not committee_evals:
@@ -314,7 +314,7 @@ Genera la deliberación completa del Comité en formato JSON estricto con la sig
             try:
                 requirements_matrix.append(RequirementEvidenceItem(**rm))
             except Exception as e:
-                logger.warning(f"Error parsing requirement item: {e}")
+                logger.warning(f"Error parsing requirement item: {type(e).__name__}")
 
         # Director Synthesis
         raw_director = res.get("director_synthesis") or {}

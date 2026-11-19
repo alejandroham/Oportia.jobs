@@ -5,7 +5,7 @@ const now = new Date().toISOString();
 const exp = (i: number, role: string, company: string, start: string, end: string) => ({
   id: `e${i}`, role, company, start_date: start, end_date: end, description: `Funciones de ${role.toLowerCase()} en ${company}.`,
   bullet_achievements: ['Logro uno', 'Logro dos'], technologies: [], is_remote: false });
-const profile = { name: 'Rosa Pérez', headline: 'Supervisora de obra', primary_profession: 'Supervisora de obra', technical_skills: ['Lectura de planos'],
+const profile = { name: 'Rosa Pérez', email: 'rosa@correo.cl', phone: '+56 9 8765 4321', commune: 'Maipú', region: 'Región Metropolitana de Santiago', headline: 'Supervisora de obra', primary_profession: 'Supervisora de obra', technical_skills: ['Lectura de planos'],
   soft_skills: [], languages: {}, education: [], certifications: [], keywords: [], updated_at: now,
   experiences: [exp(1, 'Supervisora de obra', 'Constructora Andes', '2022', 'Actual'), exp(2, 'Vendedora', 'Tienda Sur', '2020', '2022'),
     exp(3, 'Jefa de terreno', 'Inmobiliaria Mar', '2017', '2020'), exp(4, 'Cajera', 'Supermercado Uno', '2015', '2017'),
@@ -29,11 +29,12 @@ test('elige experiencias y largo, mide las hojas y ajusta a la hoja', async ({ p
       tailored_cv_markdown: `# Rosa Pérez\nSupervisora de obra · Santiago\n## Experiencia\n### Supervisora de obra · Constructora Andes\n${longBullets}\n## Experiencia anterior\n- **Vendedora** · Tienda Sur (2020 – 2022)\n## Educación\n- Técnico en construcción`,
       cv_length: body.cv_options?.length, selection_method: body.cv_options?.experience_ids ? 'manual' : 'ia',
       selected_experience_ids: body.cv_options?.experience_ids ?? ['e1', 'e3', 'e5'],
+      fidelity_warnings: ['Cifra que no está en tu perfil (40): «Aumenté la productividad en 40 %.»'],
       selection_reasons: { e1: 'Mismo cargo que la oferta.', e3: 'Controló avance de obra.', e5: 'Experiencia en obra gruesa.' } }) });
   });
   await page.goto('/conoce-oportia');
   await page.evaluate(async ({ p, j }) => {
-    localStorage.setItem('nexusjob_onboarding_completed', 'true'); localStorage.setItem('oportia_shared_ai_consent', '2026-11-14');
+    localStorage.setItem('nexusjob_onboarding_completed', 'true'); localStorage.setItem('oportia_shared_ai_consent', '2026-11-18');
     await new Promise<void>((res) => { const q = indexedDB.open('NexusJob_SovereignDB', 1); q.onupgradeneeded = () => q.result.createObjectStore('client_session');
       q.onsuccess = () => { const tx = q.result.transaction('client_session', 'readwrite'); const s = tx.objectStore('client_session'); s.put(p, 'profile'); s.put([j], 'jobs'); s.put(true, 'onboarding_completed'); tx.oncomplete = () => res(); }; });
   }, { p: profile, j: job });
@@ -52,6 +53,12 @@ test('elige experiencias y largo, mide las hojas y ajusta a la hoja', async ({ p
   await page.getByRole('button', { name: /Generar CV y carta adaptados/ }).click();
   await expect(page.getByText('Controló avance de obra.')).toBeVisible({ timeout: 8000 });
   expect(draftBodies[0].cv_options).toEqual({ length: '1', experience_ids: null });
+  // Encabezado con los datos exactos del perfil (correo y teléfono siempre), aunque la IA no los escribió.
+  const header = page.locator('#cv-printable-area');
+  await expect(header).toContainText('rosa@correo.cl · +56 9 8765 4321 · Maipú, Región Metropolitana de Santiago');
+  // Aviso de lo que Oportia quitó por no estar en el perfil.
+  await page.getByText(/Oportia quitó 1 dato que la IA agregó/).click();
+  await expect(page.getByText('Cifra que no está en tu perfil (40)', { exact: false })).toBeVisible();
 
   // Medidor: el CV de prueba es largo, se pasa de 1 hoja; "Ajustar a la hoja" lo intenta.
   await expect(page.getByText(/hojas al imprimir \(pediste 1 hoja\)/)).toBeVisible();

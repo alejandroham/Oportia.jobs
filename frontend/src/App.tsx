@@ -123,7 +123,12 @@ export function App() {
   // Cupo de la IA gratuita: el servidor lo informa en cada respuesta que usa IA.
   useEffect(() => onSharedAIRemaining((n) => useAppStore.getState().updateSharedAIRemaining(n)), []);
 
+  // Carga inicial UNA sola vez. Antes dependía de `toast`, que cambia con cada aviso: cada aviso volvía a cargar
+  // todo desde el navegador y podía deshacer un cambio que aún se estaba guardando.
+  const didInit = useRef(false);
   useEffect(() => {
+    if (didInit.current) return;
+    didInit.current = true;
     const init = async () => {
       await initStore();
       const currentProfile = useAppStore.getState().profile;

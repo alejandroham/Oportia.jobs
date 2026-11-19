@@ -71,15 +71,39 @@ function openDB(): Promise<IDBDatabase> {
   });
 }
 
-export async function saveClientStore<T>(key: string, value: T): Promise<void> {
+// Las escrituras de una misma clave se encadenan: así una más antigua nunca pisa a una más nueva.
+const pendingWrites = new Map<string, Promise<void>>();
+
+export function saveClientStore<T>(key: string, value: T): Promise<void> {
+  const previous = pendingWrites.get(key) ?? Promise.resolve();
+  const next = previous.catch(() => undefined).then(() => writeClientStore(key, value));
+  pendingWrites.set(key, next);
+  void next.finally(() => {
+    if (pendingWrites.get(key) === next) pendingWrites.delete(key);
+  });
+  return next;
+}
+
+async function writeClientStore<T>(key: string, value: T): Promise<void> {
   try {
     const db = await openDB();
-    return new Promise((resolve, reject) => {
+    return await new Promise<void>((resolve, reject) => {
       const tx = db.transaction(STORE_NAME, 'readwrite');
-      const store = tx.objectStore(STORE_NAME);
-      const req = store.put(value, key);
-      req.onsuccess = () => resolve();
-      req.onerror = () => reject(req.error);
+      tx.objectStore(STORE_NAME).put(value, key);
+      // Se confirma cuando la transacción quedó escrita (no solo pedida): si la página se recarga justo
+      // después, el dato ya está guardado.
+      tx.oncomplete = () => {
+        db.close();
+        resolve();
+      };
+      tx.onerror = () => {
+        db.close();
+        reject(tx.error);
+      };
+      tx.onabort = () => {
+        db.close();
+        reject(tx.error);
+      };
     });
   } catch (e) {
     console.warn(`[Storage] Fallo al guardar en IndexedDB (${key}), usando localStorage fallback:`, e);

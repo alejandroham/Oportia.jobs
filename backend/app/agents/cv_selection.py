@@ -117,7 +117,7 @@ def ai_selection(profile: CandidateProfile, job: JobPosting, max_n: int) -> Opti
         logger.info(f"Selección de experiencias sin IA ({e.code}).")
         return None
     except Exception as e:  # noqa: BLE001
-        logger.warning(f"Selección de experiencias: la IA falló: {e}")
+        logger.warning(f"Selección de experiencias: la IA falló: {type(e).__name__}")
         return None
     valid = {exp.id for exp in profile.experiences}
     picked: Dict[str, str] = {}

@@ -414,6 +414,8 @@ export interface ApplicationDraft {
   /** Por qué Opi eligió cada experiencia (id -> frase). */
   selection_reasons?: Record<string, string>;
   selection_method?: 'manual' | 'todas' | 'ia' | 'reglas';
+  /** Lo que la IA agregó sin estar en tu perfil y Oportia quitó. */
+  fidelity_warnings?: string[];
 }
 
 export type CvLength = '1' | '2' | 'full';

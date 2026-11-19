@@ -202,5 +202,5 @@ def analyze_gaps(profile: CandidateProfile, jobs: List[JobPosting], prefs: Optio
         except LLMProviderError as e:
             logger.info(f"Brechas sin IA ({e.code}); se usan reglas.")
         except Exception as e:  # noqa: BLE001 - nunca dejar la pantalla sin resultado
-            logger.warning(f"Brechas con IA fallaron: {e}")
+            logger.warning(f"Brechas con IA fallaron: {type(e).__name__}")
     return GapAnalysis(items=_rule_based(profile, jobs), method="reglas", jobs_analyzed=len(jobs))
