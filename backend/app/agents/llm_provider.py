@@ -5,7 +5,7 @@ import re
 from typing import Optional, Dict, Any
 from app.config import settings
 from app.agents.models import DEFAULT_GEMINI_MODEL, DEFAULT_OPENAI_MODEL, DEFAULT_CLAUDE_MODEL
-from app.agents.llm_context import current_llm_credentials
+from app.agents.llm_context import current_llm_credentials, ai_seconds_left
 
 logger = logging.getLogger(__name__)
 
@@ -180,16 +180,23 @@ class UnifiedLLMProvider:
 
             last_err = None
             for candidate_model in models_to_try:
+                # Sin tiempo suficiente para otra consulta: se responde ya (la app usa el respaldo sin IA).
+                left = ai_seconds_left()
+                if left < 6:
+                    if using_shared:
+                        from app.agents.shared_ai import refund_current_request
+                        refund_current_request()
+                    raise LLMProviderError(code="timeout", message="La IA tardó demasiado en responder. Intenta nuevamente.", provider="gemini")
                 try:
                     contents = prompt
-                    config = {}
+                    config = {"http_options": {"timeout": int(min(left - 3, 40) * 1000)}}
                     if system_instruction:
                         config["system_instruction"] = system_instruction
 
                     response = client.models.generate_content(
                         model=candidate_model,
                         contents=contents,
-                        config=config if config else None
+                        config=config
                     )
                     if response and response.text:
                         return response.text
@@ -234,7 +241,8 @@ class UnifiedLLMProvider:
 
                     # Backoff on 503 unavailable
                     if "503" in err_str or "UNAVAILABLE" in err_str or "high demand" in err_str:
-                        time.sleep(1.0)
+                        if ai_seconds_left() > 10:
+                            time.sleep(1.0)
 
             # All models failed in fallback chain
             if using_shared:
@@ -275,7 +283,7 @@ class UnifiedLLMProvider:
                         "messages": messages,
                         "temperature": 0.3
                     },
-                    timeout=60.0
+                    timeout=max(5.0, min(40.0, ai_seconds_left() - 3)),
                 )
                 if resp.status_code == 200:
                     return resp.json()["choices"][0]["message"]["content"]
@@ -346,7 +354,7 @@ class UnifiedLLMProvider:
                     "https://api.anthropic.com/v1/messages",
                     headers=headers,
                     json=payload,
-                    timeout=60.0
+                    timeout=max(5.0, min(40.0, ai_seconds_left() - 3)),
                 )
                 if resp.status_code == 200:
                     return resp.json()["content"][0]["text"]

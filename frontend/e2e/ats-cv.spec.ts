@@ -38,7 +38,8 @@ test('pregunta por fechas distintas, muestra coincidencia con la oferta y revisi
 
   // Revisión ATS y coincidencia con la oferta.
   await expect(page.getByText(/Coincidencia con la oferta: 50 %/)).toBeVisible();
-  await page.getByRole('button', { name: /Revisión para sistemas ATS/ }).click();
+  const review = page.getByRole('button', { name: /Revisión para sistemas ATS/ });
+  if ((await review.getAttribute('aria-expanded')) !== 'true') await review.click();
   await expect(page.getByText('Te faltan:')).toBeVisible();
   await expect(page.getByText('Cada cargo con su fecha en una línea propia')).toBeVisible();
 

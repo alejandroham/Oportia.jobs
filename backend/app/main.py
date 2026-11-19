@@ -18,6 +18,8 @@ from fastapi.responses import FileResponse, JSONResponse
 from app.config import settings
 from app import telemetry
 from app.privacy.context import current_person
+from app.agents.llm_context import current_ai_deadline, REQUEST_AI_BUDGET_SECONDS
+import time
 from pydantic import BaseModel, Field
 from app.models.schemas import (
     CandidateProfile, UserPreferences, JobPosting, 
@@ -99,6 +101,7 @@ async def extract_llm_credentials_middleware(request: Request, call_next):
     )
     shared_token = current_shared_ai_request.set(shared_req)
     person_token = current_person.set(None)  # cada petición parte sin datos de nadie
+    deadline_token = current_ai_deadline.set(time.monotonic() + REQUEST_AI_BUDGET_SECONDS)
     if api_key:
         token = current_llm_credentials.set(
             LLMCredentials(
@@ -119,6 +122,7 @@ async def extract_llm_credentials_middleware(request: Request, call_next):
         current_llm_credentials.reset(token)
         current_shared_ai_request.reset(shared_token)
         current_person.reset(person_token)
+        current_ai_deadline.reset(deadline_token)
 
 
 # Rutas que se cuentan en el portal de administración (solo el tipo de acción, nunca el contenido).
@@ -258,18 +262,25 @@ def update_profile(profile: CandidateProfile):
     db.save_profile(profile)
     return profile
 
+MAX_CV_BYTES = 4 * 1024 * 1024
+CV_TOO_LARGE_MESSAGE = "Tu archivo pesa más de 4 MB. Guarda el PDF con menor tamaño (sin imágenes) o súbelo en Word."
+
+
 @app.post("/api/profile/upload", dependencies=[Depends(ai_rate_limiter)])
 async def upload_cv(file: UploadFile = File(...)):
     filename = file.filename or "cv.pdf"
     suffix = Path(filename).suffix.lower()
-    if suffix not in [".pdf", ".docx", ".doc"]:
+    if suffix not in [".pdf", ".docx", ".doc", ".txt"]:
         raise HTTPException(
             status_code=400,
-            detail="Formato no compatible. Por favor sube tu currículum exclusivamente en formato PDF (.pdf) o Word (.docx, .doc)."
+            detail="Formato no compatible. Sube tu CV en PDF, Word (.docx) o texto (.txt)."
         )
+    content = await file.read()
+    if len(content) > MAX_CV_BYTES:
+        # Vercel rechaza archivos de más de ~4,5 MB antes de llegar aquí; el límite propio da un mensaje claro.
+        raise HTTPException(status_code=413, detail=CV_TOO_LARGE_MESSAGE)
     with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmp:
         tmp_path = Path(tmp.name)
-        content = await file.read()
         tmp.write(content)
 
     try:
@@ -282,7 +293,9 @@ async def upload_cv(file: UploadFile = File(...)):
             logger.warning(f"Error unlinking temp file {tmp_path}: {e}")
 
     if not text:
-        raise HTTPException(status_code=400, detail="No se pudo extraer texto del archivo subido.")
+        detail = ("No pudimos leer un archivo .doc antiguo. Guárdalo como .docx o PDF y vuelve a subirlo." if suffix == ".doc"
+                  else "No encontramos texto en el archivo. Si es un PDF escaneado (una imagen), súbelo en Word o como PDF con texto seleccionable.")
+        raise HTTPException(status_code=400, detail=detail)
 
     # Sin estado: el perfil vuelve al navegador (IndexedDB); el servidor no lo guarda.
     # Usa la IA si la persona tiene su clave o aceptó la IA gratuita; si no, el lector por secciones.

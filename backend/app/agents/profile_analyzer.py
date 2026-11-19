@@ -315,7 +315,11 @@ def deterministic_cv_parser(text: str) -> CandidateProfile:
 
     # Nombre: primera línea con 2 a 5 palabras sin dígitos ni @.
     name = next((l for l in header_lines[:6] if 1 < len(l.split()) <= 5 and not re.search(r"[\d@:/]", l)), None)
-    name = name or (header_lines[0][:40] if header_lines else "Candidato")
+    if not name and header_lines:
+        # La primera línea puede traer el nombre junto al correo o teléfono: se corta antes de ellos.
+        first = re.split(r"\s+[\w.+-]+@|\s*[|•·,;]\s*|\s+\+?\d", header_lines[0])[0].strip()
+        name = first[:60] if len(first.split()) >= 2 else header_lines[0][:40]
+    name = name or "Candidato"
 
     email_match = re.search(r"[\w\.-]+@[\w\.-]+\.\w+", text)
     phone_match = re.search(r"(?:\+?56\s?)?(?:9[\s.-]?)\d{4}[\s.-]?\d{4}", text) or re.search(r"Tel[eé]fono:\s*([^\n|]+)", text, re.I)
@@ -590,7 +594,7 @@ def analyze_cv(raw_text: str) -> "tuple[CandidateProfile, str, Optional[str]]":
         try:
             # La IA no recibe correo, teléfono, RUT ni enlaces: no los necesita para ordenar el CV.
             from app.privacy.redact import redact_text
-            safe_text, found = redact_text(raw_text[:65000])
+            safe_text, found = redact_text(raw_text[:30000])
             result = llm.generate_json(CV_PROMPT.format(cv=safe_text), system_instruction=CV_SYSTEM_PROMPT)
             if isinstance(result, dict) and _name_in_text(result.get("name") or "", raw_text):
                 profile = _profile_from_ai(result, raw_text)

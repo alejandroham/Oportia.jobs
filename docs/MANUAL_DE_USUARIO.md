@@ -69,7 +69,7 @@ La guía tiene 3 pasos. Puedes cerrarla en cualquier momento (con la **X** o la 
 
 ![Guía de inicio, paso 1](manual/img/02-guia-paso1-ia.jpg)
 
-**Paso 2 — Sube tu CV.** Arrastra tu archivo PDF o Word (DOCX), de máximo 10 MB. Oportia lee tu experiencia, tus títulos y tus cursos **sin inventar datos**. Si la IA no está activa, verás un aviso: la lectura será básica y puede clasificar mal.
+**Paso 2 — Sube tu CV.** Arrastra tu archivo PDF, Word (DOCX) o TXT, de máximo 4 MB. Oportia lee tu experiencia, tus títulos y tus cursos **sin inventar datos**. Si la IA no está activa, verás un aviso: la lectura será básica y puede clasificar mal.
 
 ![Guía de inicio, paso 2](manual/img/03-guia-paso2-cv.jpg)
 

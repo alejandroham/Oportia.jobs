@@ -28,6 +28,12 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
 - **Coherencia:** si un mismo cargo aparece dos veces con fechas o títulos distintos, Oportia pregunta cuál usar antes de generar (o si son cargos distintos) y actualiza el perfil.
 
 ### 🛠️ Correcciones
+- **Subir el CV podía no cargar ningún dato** (guía de inicio y Mi perfil):
+  - Las consultas a Gemini no tenían tiempo límite y se probaban hasta 4 modelos seguidos; con la IA gratuita saturada se podía pasar el límite de 60 s de Vercel y la petición se cortaba sin respuesta. Ahora cada petición tiene un **presupuesto de 50 s**, cada consulta un tiempo máximo y, si la IA no alcanza, **se usa la lectura sin IA y los datos se cargan igual**. Al CV se le envían como máximo 30.000 caracteres.
+  - La guía decía "máximo 10 MB", pero Vercel rechaza archivos de más de ~4,5 MB: ahora el límite es **4 MB**, se revisa antes de enviar y el mensaje explica qué hacer.
+  - La guía aceptaba **.txt**, pero el servidor lo rechazaba: ahora se lee.
+  - Mensajes claros si un PDF es una imagen escaneada, si un .doc antiguo no se puede leer o si la conexión se corta por tiempo.
+  - Sin IA, el nombre ya no sale pegado al correo cuando están en la misma línea.
 - Al adaptar se usa siempre el perfil recién guardado.
 - **Control de versiones:** desde esta versión el número se sube en la rama `release/*`, antes de unirla a `main`.
 
