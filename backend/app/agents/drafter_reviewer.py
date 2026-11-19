@@ -1,6 +1,7 @@
 from typing import Optional, Tuple
 from app.models.schemas import CandidateProfile, JobPosting, ApplicationDraft, UserPreferences, CvOptions
 from app.agents import cv_selection
+from app.privacy.redact import NAME_TOKEN, apply_cv_header, profile_json_for_ai, redact_text, restore_tokens
 from app.agents.llm_provider import llm, LLMProviderError, AINotConnectedError, USER_FACING_LLM_ERRORS
 from app.storage.db import db
 import logging
@@ -46,11 +47,18 @@ class DrafterReviewerPipeline:
         focused, others = cv_selection.split_profile(profile, selected_ids, length)
 
         # Paso 1: el redactor genera CV y carta con las experiencias elegidas.
+        # La IA no recibe nombre, correo, teléfono, comuna ni enlaces: trabaja con marcadores.
         cv_markdown, cover_letter = self._draft_materials(job, focused, prefs, length)
         cv_markdown = cv_selection.insert_previous_experience(cv_markdown, others)
 
-        # Paso 2: el revisor audita (no bloqueante: si falla, igual se entregan los documentos)
+        # Paso 2: el revisor audita (no bloqueante) sobre los documentos aún sin datos de contacto.
         ats_score, ats_feedback, reviewer_critique = self._review_materials(job, profile, cv_markdown, cover_letter)
+
+        # Paso 3: Oportia pone los datos reales con reglas: encabezado exacto del perfil y firma de la carta.
+        cv_markdown = apply_cv_header(cv_markdown, profile)
+        cover_letter = restore_tokens(cover_letter, profile)
+        ats_feedback = [restore_tokens(x, profile) for x in ats_feedback]
+        reviewer_critique = restore_tokens(reviewer_critique or "", profile) or reviewer_critique
 
         cv_html = self._markdown_to_apple_html(cv_markdown, profile.name)
 
@@ -110,8 +118,8 @@ class DrafterReviewerPipeline:
 
     def _draft_materials(self, job: JobPosting, profile: CandidateProfile, prefs: Optional[UserPreferences],
                          length: str = "2") -> Tuple[str, str]:
-        memory_context = self._memory_context(prefs)
-        profile_json = json.dumps(profile.model_dump(), ensure_ascii=False, indent=2)
+        memory_context, _ = redact_text(self._memory_context(prefs))
+        profile_json = profile_json_for_ai(profile)
         length_rule = cv_selection.LENGTH_PROMPTS.get(length, "")
 
         prompt = f"""
@@ -123,7 +131,7 @@ PERFIL REAL Y VERIFICADO DEL CANDIDATO:
 {memory_context}
 INSTRUCCIONES DE REDACCIÓN:
 1. Adapta el Currículum en formato Markdown limpio, estructurado con:
-   - Encabezado con datos del candidato
+   - Encabezado: SOLO la línea "# {{{{NOMBRE}}}}". NO escribas correo, teléfono, dirección, comuna, RUT ni enlaces: Oportia agrega los datos de contacto exactos aparte.
    - Perfil profesional enfocado al cargo
    - Competencias y habilidades relevantes para la vacante primero
    - Experiencia laboral con viñetas de logros orientadas al impacto (resultados, métricas, responsabilidades clave, herramientas o técnicas usadas). REGLAS ESTRICTAS DE FORMATO: Usa SIEMPRE guiones '- ' para las viñetas, NUNCA asteriscos '* '. NO insertes separadores '---' entre secciones.
@@ -135,11 +143,11 @@ INSTRUCCIONES DE REDACCIÓN:
    - Prohibido usar clichés vacíos como "Me dirijo a ustedes para expresar mi entusiasmo...".
    - Apertura directa: por qué tu experiencia concreta responde a lo que busca la vacante.
    - Párrafos 2 y 3: dos ejemplos reales de tu trayectoria que lo demuestran.
-   - Cierre propositivo y profesional, firmado con el nombre del candidato.
+   - Cierre propositivo y profesional, firmado exactamente como {{{{NOMBRE}}}} (sin agregar correo ni teléfono).
 
 RESPONDE ÚNICAMENTE CON UN JSON:
 {{
-  "tailored_cv_markdown": "# Nombre\\n...",
+  "tailored_cv_markdown": "# {{{{NOMBRE}}}}\\n## Perfil profesional\\n...",
   "cover_letter": "Estimado equipo de selección de..."
 }}
 """
@@ -173,7 +181,8 @@ VACANTE OBJETIVO:
 PERFIL REAL Y VERIFICADO DEL CANDIDATO:
 {profile_json}
 {memory_context}
-Escribe el CURRÍCULUM ADAPTADO a esta vacante en Markdown limpio (# Nombre, ## secciones, viñetas con '- ').
+Escribe el CURRÍCULUM ADAPTADO a esta vacante en Markdown limpio ("# {{{{NOMBRE}}}}", ## secciones, viñetas con '- ').
+NO escribas correo, teléfono, dirección, comuna, RUT ni enlaces: Oportia agrega los datos de contacto aparte.
 Incluye SOLO las experiencias del perfil entregado; no agregues una sección "Experiencia anterior".
 Presenta la experiencia y la educación en el MISMO orden en que vienen en el perfil (no las reordenes).
 {length_rule}
@@ -196,7 +205,7 @@ PERFIL REAL Y VERIFICADO DEL CANDIDATO:
 {profile_json}
 {memory_context}
 Escribe una CARTA DE PRESENTACIÓN en español para esta vacante (3 a 4 párrafos, sin clichés,
-con dos ejemplos reales de la trayectoria del candidato) y fírmala como {profile.name or 'el candidato'}.
+con dos ejemplos reales de la trayectoria del candidato) y fírmala exactamente como {NAME_TOKEN} (sin correo ni teléfono).
 Responde SOLO con el texto de la carta, sin títulos, explicaciones ni Markdown.
 """
         try:

@@ -128,7 +128,7 @@ def parse_job_text(text: str, url: Optional[str] = None, use_ai: bool = True) ->
         except LLMProviderError as e:
             logger.info(f"Oferta pegada sin IA ({e.code}).")
         except Exception as e:  # noqa: BLE001
-            logger.warning(f"Oferta pegada: la IA falló: {e}")
+            logger.warning(f"Oferta pegada: la IA falló: {type(e).__name__}")
     if method == "reglas" and note is None:
         note = "Ordenada sin IA. Revisa el cargo y la empresa."
 

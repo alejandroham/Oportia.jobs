@@ -95,7 +95,7 @@ Responde ÚNICAMENTE en formato JSON con la siguiente estructura (sin texto ante
                 if len(recs) >= 3:
                     return recs
         except Exception as e:
-            logger.warning(f"Fallback a recomendador heurístico avanzado de roles: {e}")
+            logger.warning(f"Fallback a recomendador heurístico avanzado de roles: {type(e).__name__}")
 
         return self._heuristic_roles(profile, prefs)
 

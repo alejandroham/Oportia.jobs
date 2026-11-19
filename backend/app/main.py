@@ -17,6 +17,7 @@ from fastapi.responses import FileResponse, JSONResponse
 
 from app.config import settings
 from app import telemetry
+from app.privacy.context import current_person
 from pydantic import BaseModel, Field
 from app.models.schemas import (
     CandidateProfile, UserPreferences, JobPosting, 
@@ -97,6 +98,7 @@ async def extract_llm_credentials_middleware(request: Request, call_next):
         consent=request.headers.get("X-Oportia-Shared-AI-Consent") == "1",
     )
     shared_token = current_shared_ai_request.set(shared_req)
+    person_token = current_person.set(None)  # cada petición parte sin datos de nadie
     if api_key:
         token = current_llm_credentials.set(
             LLMCredentials(
@@ -116,6 +118,7 @@ async def extract_llm_credentials_middleware(request: Request, call_next):
     finally:
         current_llm_credentials.reset(token)
         current_shared_ai_request.reset(shared_token)
+        current_person.reset(person_token)
 
 
 # Rutas que se cuentan en el portal de administración (solo el tipo de acción, nunca el contenido).
@@ -1151,7 +1154,7 @@ def evaluate_interview_answer(data: dict):
     try:
         preference_learner.learn_from_star_answer(question, answer, eval_res, company=company)
     except Exception as e:
-        logger.warning(f"Error auto-learning from interview answer: {e}")
+        logger.warning(f"Error auto-learning from interview answer: {type(e).__name__}")
     return eval_res
 
 # --- Coach IA Endpoints (Desarrollo y Crecimiento Profesional) ---
@@ -1273,7 +1276,7 @@ def get_targeted_interview_prep(data: dict):
             profile = CandidateProfile(**profile_data)
             return career_coach.generate_targeted_interview_prep(job, profile, interviewer_role)
         except Exception as e:
-            logger.warning(f"Error in stateless interview prep: {e}")
+            logger.warning(f"Error in stateless interview prep: {type(e).__name__}")  # sin contenido del perfil
     job_id = data.get("job_id")
     job = db.get_job_by_id(job_id) if job_id else None
     if not job:

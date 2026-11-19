@@ -128,6 +128,15 @@ class UnifiedLLMProvider:
         return key
 
     def generate_text(self, prompt: str, system_instruction: Optional[str] = None, provider: Optional[str] = None) -> str:
+        """
+        Toda consulta a la IA pasa por aquí. Antes de enviarla, el nombre, correo, teléfono y enlaces de la persona
+        (y cualquier RUT) se reemplazan por marcadores; en la respuesta se vuelven a poner. Ver app/privacy/context.py.
+        """
+        from app.privacy.context import protected_pair, restore
+        safe_prompt, safe_system = protected_pair(prompt, system_instruction)
+        return restore(self._generate_text_raw(safe_prompt, safe_system, provider))
+
+    def _generate_text_raw(self, prompt: str, system_instruction: Optional[str] = None, provider: Optional[str] = None) -> str:
         creds = current_llm_credentials.get()
         # Sin clave propia, la única IA del servidor es la gratuita de Oportia (Gemini).
         prov = (creds.provider if creds else "gemini").lower()
@@ -411,7 +420,8 @@ class UnifiedLLMProvider:
                     return json.loads(cleaned[start:end+1])
                 except Exception:
                     pass
-            logger.warning(f"Could not parse JSON from LLM: Raw: {raw_text[:200]}")
+            # Sin el contenido: la respuesta puede traer datos del CV y los registros no deben guardarlos.
+            logger.warning(f"Could not parse JSON from LLM (largo {len(raw_text)} caracteres).")
             raise LLMProviderError(
                 code="invalid_json",
                 message="El modelo de IA devolvió una respuesta que no pudo ser interpretada como JSON."

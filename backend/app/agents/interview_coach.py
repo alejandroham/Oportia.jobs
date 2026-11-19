@@ -2,6 +2,7 @@ from typing import Dict, Any, List
 from app.models.schemas import CandidateProfile, JobPosting
 from app.agents.llm_provider import llm, LLMProviderError
 import json
+from app.privacy.redact import profile_json_for_ai
 
 class InterviewCoach:
     def generate_prep_kit(self, job: JobPosting, profile: CandidateProfile) -> Dict[str, Any]:
@@ -17,7 +18,7 @@ DESCRIPCIÓN DE LA OFERTA:
 {job.description[:3500]}
 
 PERFIL DEL CANDIDATO:
-{json.dumps(profile.model_dump(), ensure_ascii=False, indent=2)}
+{profile_json_for_ai(profile)}
 
 Genera un kit de preparación para la entrevista con:
 1. Resumen de lo que la empresa valora más para este puesto.

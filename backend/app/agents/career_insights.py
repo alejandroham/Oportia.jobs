@@ -185,7 +185,7 @@ def career_insights(profile: CandidateProfile, prefs: Optional[UserPreferences] 
         except LLMProviderError as e:
             logger.info(f"Cargos y logros sin IA ({e.code}).")
         except Exception as e:  # noqa: BLE001
-            logger.warning(f"Cargos y logros con IA fallaron: {e}")
+            logger.warning(f"Cargos y logros con IA fallaron: {type(e).__name__}")
     roles, achievements = _rule_based(profile, current)
     return CareerInsights(roles=roles, achievements=achievements, method="reglas",
                           note="Sugerencias básicas sin IA. Activa la IA para cargos afines con su resumen y logros STAR desde tu CV.")
