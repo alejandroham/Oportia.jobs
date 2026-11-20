@@ -21,6 +21,9 @@ Segunda corrección de la auditoría QA del 19-nov-2026.
 ### ♿ Accesibilidad
 - "Más filtros" con `aria-expanded` y `aria-controls`; los filtros rápidos tienen `aria-label` y "Región de Chile" su `<label for>`.
 
+### 📖 Documentación
+- README al día con la 1.6.2: insignia de versión, búsqueda inicial, "En mi región", avisos de IA con Reintentar y número de pruebas (218 de backend y 183 de frontend). Incluye la actualización de README, manual y seguridad de la 1.6.0 (rama `docs/1.6.0`).
+
 ### 🧪 Pruebas
 - `test_daily_index.py`: 30 coincidencias en el índice → 30 resultados; el titular literal da 0 y el cargo normalizado + perfil encuentra todas.
 - `initialSearch.test.ts` (cargos iniciales) y `regionFilter.test.ts` (Valparaíso → Biobío, comuna sin región, nombres corto y completo).

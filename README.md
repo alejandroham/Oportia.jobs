@@ -3,7 +3,7 @@
 <div align="center">
 
 [![CI — Integración Continua](https://github.com/alejandroham/Oportia.jobs/actions/workflows/ci.yml/badge.svg)](https://github.com/alejandroham/Oportia.jobs/actions/workflows/ci.yml)
-[![Version](https://img.shields.io/badge/Versi%C3%B3n-1.6.0-blue.svg?style=for-the-badge)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/Versi%C3%B3n-1.6.2-blue.svg?style=for-the-badge)](CHANGELOG.md)
 [![Privacy: Ley 21.719](https://img.shields.io/badge/Privacidad-Ley%2021.719%20Chile-emerald.svg?style=for-the-badge)](PRIVACY.md)
 [![Security Policy](https://img.shields.io/badge/Seguridad-Security%20Policy-blueviolet.svg?style=for-the-badge)](SECURITY.md)
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Falejandroham%2FOportia.jobs)
@@ -30,9 +30,10 @@
 
 - **Tú manejas tu información; Oportia te trae las ofertas.** Tu CV, tu perfil y tus postulaciones se guardan en tu navegador: sin cuenta y sin base de datos de candidatos. Descargas un respaldo cifrado o lo borras todo cuando quieras.
 - **Para todas las áreas, no solo tecnología:** salud, educación, comercio, construcción, logística, administración, sector público y oficios. La búsqueda reconoce sinónimos y equivalentes en inglés (enfermera ↔ TENS ↔ nurse; técnico en construcción ↔ supervisor de obra ↔ capataz).
+- **Tu primera búsqueda trae ofertas de verdad:** al terminar la guía, Oportia busca con tu profesión y sus nombres equivalentes (por ejemplo, TENS y Técnico en Enfermería) más las palabras clave de tu CV, no con el titular literal.
 - **Índice diario de ofertas:**
   - Cada mañana, a las 08:00 de Chile, se reúnen cientos de ofertas, y la búsqueda las consulta al instante.
-  - Fuentes: Empleos Públicos, GetOnBoard, **portales de empleo de las empresas** (Greenhouse, Lever, Ashby, SmartRecruiters) y ChileTrabajos. Solo se usan fuentes que permiten este uso.
+  - Fuentes: Empleos Públicos, Get on Board, **portales de empleo de las empresas** (Greenhouse, Lever, Ashby, SmartRecruiters) y ChileTrabajos. Solo se usan fuentes que permiten este uso.
   - Cada oferta muestra **cuándo vence**: la fecha de cierre o una estimación. Las vencidas se ocultan.
   - Opcionalmente, un correo diario con las ofertas nuevas. Ver [docs/INDICE_DIARIO.md](docs/INDICE_DIARIO.md).
 - **Tu CV, analizado con IA:**
@@ -44,6 +45,8 @@
   - Con la IA activa, cada oferta muestra tu porcentaje sin que lo pidas.
   - Si cambias tu experiencia o lo que Opi sabe de ti, Oportia te avisa para recalcularlo.
   - "Calza con tu perfil" muestra, sin IA, qué palabras tuyas aparecen en la oferta.
+  - **"En mi región"** usa siempre la región actual de tu perfil, y el filtro rápido y el de "Más filtros" muestran la misma región.
+- **Resultados honestos:** Oportia nunca muestra un puntaje que la IA no calculó ("Sin evaluar"). Si la IA está con mucha demanda, te avisa con un botón **Reintentar** y no descuenta tu cupo; lo que se leyó sin IA lleva la etiqueta "Lectura básica (sin IA)".
 - **CV compatible con sistemas ATS, sin datos inventados:**
   - Oportia arma el CV con tus datos: "Cargo — Empresa", "Mes Año – Mes Año | Ciudad", logros y tecnologías respaldadas por tu perfil; títulos de sección estándar; PDF con Arial, sin palabras partidas.
   - Se ajusta solo a **1 o 2 hojas** (los cargos de hace más de 10 años van en "Experiencia anterior").
@@ -79,7 +82,7 @@ flowchart TD
 
     subgraph Externo ["🌐 Proveedores Externos y Fuentes"]
         LLM["🤖 Proveedores de IA<br>• IA gratuita de Oportia (Gemini, con cupo)<br>• BYOK: Gemini, Claude u OpenAI"]
-        Scrapers["🔎 Búsqueda en vivo, tiempo máximo 7s<br>• Empleos Públicos, GetOnBoard, ChileTrabajos<br>• LinkedIn Chile y tableros remotos"]
+        Scrapers["🔎 Búsqueda en vivo, tiempo máximo 7s<br>• Empleos Públicos, Get on Board, ChileTrabajos<br>• LinkedIn Chile y tableros remotos"]
         Supa[("🗂️ Supabase<br>• Índice diario de ofertas públicas<br>• Opiniones: solo se pueden agregar")]
         GHA["⏰ GitHub Actions 08:00 Chile<br>Arma el índice y envía el correo"]
     end
@@ -187,10 +190,10 @@ El lanzador valida dependencias, compila el frontend y levanta la aplicación en
 El proyecto cuenta con una suite integral de pruebas con **100% de ejecución offline** y cero dependencias de red externa:
 
 ```bash
-# 1. Pruebas de Backend (Pytest — 216 pruebas unitarias y de integración offline)
+# 1. Pruebas de Backend (Pytest — 218 pruebas unitarias y de integración offline)
 pytest backend/tests -v
 
-# 2. Pruebas de Frontend (Vitest — 111 pruebas unitarias en entorno happy-dom)
+# 2. Pruebas de Frontend (Vitest — 183 pruebas unitarias en entorno happy-dom)
 cd frontend && npm test
 
 # 3. Flujos End-to-End (Playwright — 16 pruebas en Chromium headless, incluye el PDF del CV)
