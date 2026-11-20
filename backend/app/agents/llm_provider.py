@@ -307,7 +307,9 @@ class UnifiedLLMProvider:
                     last_err = e
                     err_str = str(e)
                     kind = classify_gemini_error(err_str)
-                    logger.warning(f"Error calling Gemini model '{candidate_model}' ({kind}): {err_str[:300]}")
+                    # Los 429 de Google dicen qué límite se agotó (por minuto o por día) y no traen datos de la
+                    # persona: se registran completos para saber cuál es (1.6.7).
+                    logger.warning(f"Error calling Gemini model '{candidate_model}' ({kind}): {err_str[:1200 if kind == 'quota' else 300]}")
 
                     if kind == "invalid_key":
                         if using_shared:
@@ -323,7 +325,11 @@ class UnifiedLLMProvider:
                         )
 
                     if kind == "quota":
-                        # Sin cuota: probar otro modelo solo consume tiempo (DT-15).
+                        # 1.6.7: Google no documenta si el límite del plan gratuito es por modelo; se prueba una
+                        # vez el modelo rápido (si el cupo es común, falla en ~0,1 s). Medido en la vista previa:
+                        # el 429 llegó tras ~7 consultas en 1,5 minutos.
+                        if candidate_model != FAST_GEMINI_MODEL and FAST_GEMINI_MODEL in models_to_try[index + 1:]:
+                            continue
                         if using_shared:
                             from app.agents.shared_ai import RESTING_MESSAGE
                             shared_failed()

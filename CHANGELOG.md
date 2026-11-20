@@ -5,6 +5,29 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
 
 ---
 
+## [1.6.7] - 2026-11-20 — *IA más rápida*
+
+### ⚡ Menos espera con la IA gratuita
+- **Gemini "piensa" menos antes de responder:** cada consulta pide `thinking_level: "low"` (Gemini 3.6 Flash usaba el nivel medio por omisión). Medido en la vista previa con el SDK de producción (`google-genai` 3.6.1) y la clave real, con el mismo mensaje a Opi:
+  - **Antes (producción 1.6.6):** 31 y 35 s.
+  - **Ahora:** 2,4 · 4,8 · 12,4 · 15,2 · 19,5 s (mediana 12,4 s). En una consulta el modelo principal no alcanzó y **Flash-Lite respondió en 0,8 s**.
+- **Red de seguridad:** si el SDK o Google rechazan el campo, la misma consulta se repite sin él y ya no se envía; la IA nunca queda caída por esta optimización.
+- **`GEMINI_THINKING_LEVEL`** (variable de Vercel) cambia el nivel (`minimal`, `low`, `medium`, `high`) o lo desactiva (`off`) sin tocar el código.
+- **Registro de latencia** por consulta: modelo, segundos y nivel (sin contenido).
+
+### 🚦 Límite del plan gratuito de Google
+- En la vista previa, Google respondió **429 "You exceeded your current quota"** tras ~7 consultas en un minuto y medio: es el límite del plan gratuito de la clave del servidor, no un error de Oportia. Google no publica los números para estos modelos fuera de AI Studio, y no documenta si el límite es por modelo.
+  - Ante un 429 ahora **se prueba una vez Gemini 3.5 Flash-Lite** (si el cupo es por modelo, responde; si es común, falla en ~0,1 s) y luego se avisa "con mucha demanda" sin descontar cupo.
+  - El mensaje completo del 429 queda en el registro (no trae datos de la persona) para saber si el límite es por minuto o por día. La cuota diaria se reinicia a medianoche, hora del Pacífico.
+
+### 🧪 Pruebas
+- `test_ai_reliability.py`: nivel bajo por omisión, configurable u off desde Vercel, reintento sin el campo si Google lo rechaza (y no se vuelve a enviar), otros errores no se ocultan, 429 del modelo principal respondido por Flash-Lite y un solo intento extra antes de descansar.
+
+### 🗺️ Roadmap
+- El plan de la auditoría se corre otra vez en uno: Calidad de datos del CV pasa a 1.6.8, Formularios a 1.6.9, Seguridad del frontend a 1.6.10, Accesibilidad a 1.6.11 y Contenido y deuda técnica a 1.6.12.
+
+---
+
 ## [1.6.6] - 2026-11-20 — *Opi vuelve a responder con la IA*
 
 Corrección encontrada al revisar los registros de producción justo después de publicar la 1.6.5.

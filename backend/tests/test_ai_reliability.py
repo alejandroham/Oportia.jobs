@@ -113,15 +113,16 @@ def test_slow_primary_falls_back_to_fast_model(gemini):
     assert t1 <= 34_000 and t2 >= 10_000
 
 
-def test_quota_error_does_not_try_another_model_and_refunds(gemini):
+def test_quota_error_tries_fast_model_once_then_rests_and_refunds(gemini):
     req = shared_ai.SharedAIRequest(client_id="c1", ip="1.1.1.1", consent=True)
     token = shared_ai.current_shared_ai_request.set(req)
     try:
         before = shared_ai.quota.remaining("c1", "1.1.1.1")
-        _Script.plan = {DEFAULT_GEMINI_MODEL: LOG_429}
+        _Script.plan = {DEFAULT_GEMINI_MODEL: LOG_429, FAST_GEMINI_MODEL: LOG_429}
         with pytest.raises(AIRestingError):
             _call()
-        assert len(_Script.calls) == 1
+        # 1.6.7: se prueba una sola vez el modelo rápido (por si el cupo es por modelo) y se descansa.
+        assert [m for m, _ in _Script.calls] == [DEFAULT_GEMINI_MODEL, FAST_GEMINI_MODEL]
         assert shared_ai.quota.remaining("c1", "1.1.1.1") == before
     finally:
         shared_ai.current_shared_ai_request.reset(token)
@@ -154,8 +155,13 @@ def test_no_call_when_less_than_google_minimum_is_left(gemini):
 
 # ---------- DT-17: cortacircuitos ----------
 
-def test_breaker_opens_after_three_failures_and_answers_instantly(gemini):
+def test_quota_on_main_model_is_answered_by_fast_model(gemini):
     _Script.plan = {DEFAULT_GEMINI_MODEL: LOG_429}
+    assert _call() == f"respuesta de {FAST_GEMINI_MODEL}"
+
+
+def test_breaker_opens_after_three_failures_and_answers_instantly(gemini):
+    _Script.plan = {DEFAULT_GEMINI_MODEL: LOG_429, FAST_GEMINI_MODEL: LOG_429}
     for _ in range(3):
         with pytest.raises(AIRestingError):
             _call()
