@@ -248,3 +248,69 @@ def test_normalize_keeps_lists_and_drops_nulls():
     from app.agents.llm_provider import normalize_llm_json
     assert normalize_llm_json({"a": None, "b": [1, None], "c": {"d": None}}) == {"b": [1], "c": {}}
     assert normalize_llm_json([{"id": "x", "fit_score": None}]) == [{"id": "x"}]
+
+
+# ---------- 1.6.7: menos "pensamiento" para bajar la latencia ----------
+
+class _ThinkModels:
+    seen: list = []
+    reject_thinking = False
+
+    def generate_content(self, model, contents, config=None):
+        _ThinkModels.seen.append(dict(config))
+        if _ThinkModels.reject_thinking and "thinking_config" in config:
+            raise Exception("400 INVALID_ARGUMENT: Unknown field thinking_level in thinking_config")
+        return _Resp("ok")
+
+
+class _ThinkClient:
+    def __init__(self, api_key):
+        self.models = _ThinkModels()
+
+
+@pytest.fixture
+def thinking(gemini, monkeypatch):
+    from google import genai
+    from app.agents import llm_provider
+    monkeypatch.setattr(genai, "Client", _ThinkClient)
+    monkeypatch.setitem(llm_provider._thinking_state, "supported", True)
+    monkeypatch.delenv("GEMINI_THINKING_LEVEL", raising=False)
+    _ThinkModels.seen, _ThinkModels.reject_thinking = [], False
+    yield llm_provider
+
+
+def test_asks_for_low_thinking_by_default(thinking):
+    assert _call() == "ok"
+    assert _ThinkModels.seen[0]["thinking_config"] == {"thinking_level": "low"}
+
+
+def test_level_can_be_changed_or_disabled_from_env(thinking, monkeypatch):
+    monkeypatch.setenv("GEMINI_THINKING_LEVEL", "minimal")
+    _call()
+    monkeypatch.setenv("GEMINI_THINKING_LEVEL", "off")
+    _call()
+    assert _ThinkModels.seen[0]["thinking_config"] == {"thinking_level": "minimal"}
+    assert "thinking_config" not in _ThinkModels.seen[1]
+
+
+def test_if_google_rejects_thinking_it_retries_without_it_and_stops_sending_it(thinking):
+    _ThinkModels.reject_thinking = True
+    assert _call() == "ok"                     # la IA no se cae
+    assert "thinking_config" in _ThinkModels.seen[0]
+    assert "thinking_config" not in _ThinkModels.seen[1]
+    assert thinking._thinking_state["supported"] is False
+    _call()
+    assert "thinking_config" not in _ThinkModels.seen[2]  # no se vuelve a intentar
+
+
+def test_other_errors_are_not_hidden_by_the_thinking_retry(thinking):
+    from app.agents.llm_provider import generate_with_thinking
+
+    class _Boom:
+        class models:
+            @staticmethod
+            def generate_content(model, contents, config=None):
+                raise Exception("503 UNAVAILABLE")
+
+    with pytest.raises(Exception, match="503"):
+        generate_with_thinking(_Boom, "gemini-3.6-flash", "hola", {})

@@ -122,6 +122,37 @@ def normalize_llm_json(data: Any) -> Any:
     return _drop_nulls(data)
 
 
+
+# 1.6.7: Gemini 3.x "piensa" antes de responder (3.6 Flash, nivel medio por omisión): un mensaje corto a Opi
+# tardaba 31–35 s en producción. Se pide un nivel bajo. Si el SDK o Google no aceptan el campo, se repite la
+# misma consulta sin él y no se vuelve a enviar (la IA nunca queda caída por esta optimización).
+# GEMINI_THINKING_LEVEL en Vercel permite cambiar el nivel ("minimal", "low", "medium", "high") o
+# desactivarlo ("off").
+_thinking_state = {"supported": True}
+
+
+def gemini_thinking_level() -> str:
+    level = (os.getenv("GEMINI_THINKING_LEVEL") or "low").strip().lower()
+    return "" if level in ("", "off", "none", "default") else level
+
+
+def generate_with_thinking(client, model: str, prompt: str, config: Dict[str, Any]):
+    level = gemini_thinking_level()
+    if not level or not _thinking_state["supported"]:
+        return client.models.generate_content(model=model, contents=prompt, config=config)
+    try:
+        return client.models.generate_content(
+            model=model, contents=prompt, config={**config, "thinking_config": {"thinking_level": level}}
+        )
+    except Exception as e:
+        msg = str(e).lower()
+        if "thinking" not in msg:
+            raise
+        _thinking_state["supported"] = False
+        logger.warning(f"Gemini no aceptó thinking_level={level!r}; se sigue sin él: {str(e)[:200]}")
+        return client.models.generate_content(model=model, contents=prompt, config=config)
+
+
 class UnifiedLLMProvider:
     def __init__(self):
         self._gemini_client = None
@@ -260,8 +291,14 @@ class UnifiedLLMProvider:
                     config = {"http_options": {"timeout": int(timeout_s * 1000)}}
                     if system_instruction:
                         config["system_instruction"] = system_instruction
-                    response = client.models.generate_content(model=candidate_model, contents=prompt, config=config)
+                    started = time.monotonic()
+                    response = generate_with_thinking(client, candidate_model, prompt, config)
                     if response and response.text:
+                        # Medición de latencia (DT de la 1.6.7): sin contenido, solo modelo, tiempo y nivel.
+                        logger.info(
+                            f"Gemini {candidate_model} respondió en {time.monotonic() - started:.1f} s "
+                            f"(thinking={gemini_thinking_level() if _thinking_state['supported'] else 'sin soporte'})"
+                        )
                         if using_shared:
                             from app.agents import shared_ai
                             shared_ai.breaker.record_success()
