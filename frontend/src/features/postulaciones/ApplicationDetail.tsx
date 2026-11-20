@@ -25,6 +25,19 @@ interface ApplicationDetailProps {
   isAdapting: boolean;
 }
 
+
+/**
+ * Texto del historial al cambiar el estado. Lo marca la persona: Oportia no envía postulaciones
+ * (1.6.1, DT-04: antes decía "Candidatura enviada formalmente").
+ */
+export const STATUS_EVENT_TITLES: Record<string, string> = {
+  applied: 'Marcaste esta postulación como enviada',
+  contact_received: 'Contacto recibido por el reclutador',
+  interview_scheduled: 'Entrevista agendada',
+  offer: '🎉 ¡Oferta de empleo recibida!',
+  ready_to_send: 'Documentación lista para enviar'
+};
+
 export const ApplicationDetail: React.FC<ApplicationDetailProps> = ({
   job,
   application,
@@ -53,20 +66,12 @@ export const ApplicationDetail: React.FC<ApplicationDetailProps> = ({
       applied_date: newStatus === 'applied' && !job.applied_date ? new Date().toISOString() : job.applied_date
     };
 
-    const eventTitles: Record<string, string> = {
-      applied: 'Candidatura enviada formalmente',
-      contact_received: 'Contacto recibido por el reclutador',
-      interview_scheduled: 'Entrevista agendada',
-      offer: '🎉 ¡Oferta de empleo recibida!',
-      ready_to_send: 'Documentación lista para enviar'
-    };
-
-    if (eventTitles[newStatus]) {
+    if (STATUS_EVENT_TITLES[newStatus]) {
       const historyEvent: TrackingHistoryEvent = {
         id: 'evt_' + Date.now(),
         timestamp: new Date().toISOString(),
         event_type: newStatus === 'offer' ? 'offer' : 'note',
-        title: eventTitles[newStatus],
+        title: STATUS_EVENT_TITLES[newStatus],
         date: new Date().toISOString().substring(0, 10)
       };
       updatedJob.history = [historyEvent, ...(job.history || [])];

@@ -9,6 +9,13 @@ export interface ToastItem {
   type?: ToastType;
   title?: string;
   duration?: number;
+  /** Botón opcional dentro del aviso (por ejemplo, "Reintentar"). */
+  action?: ToastAction;
+}
+
+export interface ToastAction {
+  label: string;
+  onClick: () => void;
 }
 
 interface ToastContextType {
@@ -17,6 +24,8 @@ interface ToastContextType {
   error: (message: string, title?: string) => void;
   info: (message: string, title?: string) => void;
   warning: (message: string, title?: string) => void;
+  /** Aviso con un botón de acción; dura más para dar tiempo a pulsarlo. */
+  withAction: (message: string, action: ToastAction, type?: ToastType, title?: string) => void;
 }
 
 const ToastContext = createContext<ToastContextType | undefined>(undefined);
@@ -28,9 +37,9 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setToasts(prev => prev.filter(t => t.id !== id));
   }, []);
 
-  const showToast = useCallback((message: string, type: ToastType = 'info', title?: string, duration = 3800) => {
+  const showToast = useCallback((message: string, type: ToastType = 'info', title?: string, duration = 3800, action?: ToastAction) => {
     const id = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    const newToast: ToastItem = { id, message, type, title, duration };
+    const newToast: ToastItem = { id, message, type, title, duration, action };
 
     setToasts(prev => [...prev.slice(-3), newToast]); // Keep max 4 visible
 
@@ -45,15 +54,19 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const error = useCallback((msg: string, title?: string) => showToast(msg, 'error', title, 5000), [showToast]);
   const info = useCallback((msg: string, title?: string) => showToast(msg, 'info', title), [showToast]);
   const warning = useCallback((msg: string, title?: string) => showToast(msg, 'warning', title), [showToast]);
+  const withAction = useCallback(
+    (msg: string, action: ToastAction, type: ToastType = 'warning', title?: string) => showToast(msg, type, title, 9000, action),
+    [showToast]
+  );
   // Objeto estable: mostrar un aviso no debe hacer que se vuelvan a ejecutar los efectos que usan useToast().
-  const api = useMemo(() => ({ showToast, success, error, info, warning }), [showToast, success, error, info, warning]);
+  const api = useMemo(() => ({ showToast, success, error, info, warning, withAction }), [showToast, success, error, info, warning, withAction]);
 
   return (
     <ToastContext.Provider value={api}>
       {children}
 
       {/* Floating Apple-style Pill Toasts Container */}
-      <div className="fixed bottom-6 inset-x-0 z-50 flex flex-col items-center pointer-events-none space-y-2 px-4">
+      <div role="status" aria-live="polite" className="fixed bottom-6 inset-x-0 z-50 flex flex-col items-center pointer-events-none space-y-2 px-4">
         {toasts.map(toast => {
           const icon = {
             success: <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />,
@@ -82,6 +95,18 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
                 )}
                 <p className="text-xs leading-snug">{toast.message}</p>
               </div>
+              {toast.action && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    removeToast(toast.id);
+                    toast.action?.onClick();
+                  }}
+                  className="shrink-0 min-h-[36px] px-3 rounded-full text-xs font-semibold text-brand-700 dark:text-brand-300 bg-brand-500/10 hover:bg-brand-500/20 transition cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
+                >
+                  {toast.action.label}
+                </button>
+              )}
               <button
                 type="button"
                 onClick={() => removeToast(toast.id)}

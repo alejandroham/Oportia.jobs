@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import type { JobPosting, CandidateProfile, FitEvaluation } from '../../types';
 import { useAppStore } from '../../state/useAppStore';
-import { api, isAINotConnectedError, getHumanErrorMessage } from '../../api';
+import { api, isAINotConnectedError, getHumanErrorMessage, isAIBusyError, AI_BUSY_MESSAGE } from '../../api';
 import { useToast } from '../../components/Toast';
 import { JobSearchBar } from './JobSearchBar';
 import { JobAdvancedFilters } from './JobAdvancedFilters';
@@ -169,7 +169,9 @@ export const JobSearchPage: React.FC<JobSearchPageProps> = ({
       setSelectedJobForDetail(updatedJob);
       toast.success(`Compatibilidad evaluada: ${evaluation.overall_score}%`);
     } catch (e: any) {
-      if (isAINotConnectedError(e)) {
+      if (isAIBusyError(e)) {
+        toast.withAction(AI_BUSY_MESSAGE, { label: 'Reintentar', onClick: () => void handleEvaluate(job) });
+      } else if (isAINotConnectedError(e)) {
         toast.info('Para evaluar compatibilidad con IA, activa la IA gratuita o conecta tu clave en Ajustes.');
         onOpenSettings?.();
       } else {
@@ -203,7 +205,9 @@ export const JobSearchPage: React.FC<JobSearchPageProps> = ({
       setSortBy('fit_desc');
       toast.success(`${n} ofertas ordenadas por compatibilidad`, pending.length > RANK_BATCH ? 'Vuelve a pulsar para ordenar las siguientes.' : undefined);
     } catch (e: any) {
-      if (isAINotConnectedError(e)) {
+      if (isAIBusyError(e)) {
+        toast.withAction(AI_BUSY_MESSAGE, { label: 'Reintentar', onClick: () => void handleBatchRank() });
+      } else if (isAINotConnectedError(e)) {
         toast.info('Para ordenar con IA, activa la IA gratuita o conecta tu clave en Ajustes.');
         onOpenSettings?.();
       } else {
@@ -226,7 +230,8 @@ export const JobSearchPage: React.FC<JobSearchPageProps> = ({
       const left = ordered.length - n;
       toast.success(`${n} porcentajes actualizados con tu perfil actual`, left > 0 ? `Quedan ${left}; vuelve a pulsar para seguir.` : undefined);
     } catch (e: any) {
-      toast.error('No se pudieron actualizar: ' + getHumanErrorMessage(e));
+      if (isAIBusyError(e)) toast.withAction(AI_BUSY_MESSAGE, { label: 'Reintentar', onClick: () => void handleRefreshStale() });
+      else toast.error('No se pudieron actualizar: ' + getHumanErrorMessage(e));
     } finally {
       setIsBatchRanking(false);
     }
@@ -304,15 +309,21 @@ export const JobSearchPage: React.FC<JobSearchPageProps> = ({
     rank(batch)
       .catch((e) => {
         autoPaused.current = true;
+        // Las tarjetas vuelven a "Sin evaluar" (no quedan en "Calculando…") y el aviso ofrece reintentar.
+        const retry = () => {
+          window.clearTimeout(retryTimer);
+          batch.forEach((j) => autoTried.current.delete(j.id));
+          autoCallsThisSearch.current = Math.max(0, autoCallsThisSearch.current - 1);
+          autoPaused.current = false;
+          setRetryTick((t) => t + 1);
+        };
+        let retryTimer = 0;
         if (e?.code === 'ai_busy') {
-          // Google con mucha demanda: se reintenta solo en 3 minutos (sin gastar cupo extra).
-          toast.info(getHumanErrorMessage(e));
-          window.setTimeout(() => {
-            batch.forEach((j) => autoTried.current.delete(j.id));
-            autoCallsThisSearch.current = Math.max(0, autoCallsThisSearch.current - 1);
-            autoPaused.current = false;
-            setRetryTick((t) => t + 1);
-          }, 180_000);
+          // Google con mucha demanda: además se reintenta solo en 3 minutos (sin gastar cupo extra).
+          retryTimer = window.setTimeout(retry, 180_000);
+        }
+        if (isAIBusyError(e)) {
+          toast.withAction(AI_BUSY_MESSAGE, { label: 'Reintentar', onClick: retry });
           return;
         }
         // Sin cupo o IA no disponible: se pausa el orden automático hasta recargar la página.

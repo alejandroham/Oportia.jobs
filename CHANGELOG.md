@@ -5,6 +5,26 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
 
 ---
 
+## [1.6.1] - 2026-11-19 — *Honestidad de resultados*
+
+Primera corrección de la auditoría QA del 19-nov-2026: Oportia ya no muestra datos que no calculó y avisa cuando la IA falla.
+
+### 🛠️ Correcciones
+- **Puntaje STAR inventado (QA-026):** si la IA fallaba (por ejemplo, 429), el simulador de entrevista mostraba **85 %** y "Respuesta evaluada con éxito". Ahora solo muestra el puntaje que entregó la IA; si no lo entregó, dice **"Sin evaluar"**, y si la IA no está disponible, muestra un aviso con **Reintentar**.
+- **Errores del servidor tratados como datos (QA-028):** 28 funciones de `api.ts` hacían `return res.json()` sin revisar si la respuesta era un error. Ahora todas pasan por `handleResponse`, que lanza el error con su código. Una regla de ESLint impide volver a escribir `return res.json()` en `api.ts`.
+- **"IA no disponible" sin aviso (QA-004):** cuando la IA está saturada o sin cupo (`ai_resting`, `ai_busy`, 429), estas funciones muestran el mismo aviso, *"La IA está con mucha demanda en este momento. No se descontó de tu cupo…"*, con el botón **Reintentar**: evaluar compatibilidad, ordenar y actualizar porcentajes del Radar (también el orden automático), chat con Opi, importar oferta, crear ruta de aprendizaje, adaptar CV, Tutor IA y simulador de entrevista.
+- **Lectura sin IA visible:** la guía de inicio muestra la insignia **"Lectura básica (sin IA)"** junto a los datos detectados (antes solo había un aviso pasajero), e "Importar oferta" avisa siempre cuando la oferta se leyó sin IA.
+- **El historial afirmaba envíos que Oportia no hace (QA-045):** al marcar una postulación como enviada, el historial decía "Candidatura enviada formalmente". Ahora dice **"Marcaste esta postulación como enviada"**.
+
+### ♿ Accesibilidad
+- Los avisos emergentes se anuncian a lectores de pantalla (`role="status"`, `aria-live="polite"`) y pueden traer un botón de acción.
+
+### 🧪 Pruebas
+- `apiErrors.test.ts`: cada función de la API rechaza con `ApiError` ante un 500, un 429 conserva el código `ai_resting` y `api.ts` no contiene `return res.json()`.
+- `interviewScore.test.tsx`: simulador con 429 (sin porcentaje y con Reintentar), 200 sin puntaje ("Sin evaluar") y 200 con `score: 62` (62 %), más `isAIBusyError` y el texto del historial.
+
+---
+
 ## [1.6.0] - 2026-11-19 — *CV compatible con sistemas ATS*
 
 ### 📄 Formato que leen bien los ATS

@@ -1,5 +1,6 @@
 import React from 'react';
-import { Upload, CheckCircle2 } from 'lucide-react';
+import { Upload, CheckCircle2, Info } from 'lucide-react';
+import { BASIC_READING_LABEL } from '../../api';
 
 export interface OnboardingStep1CVProps {
   isUploading: boolean;
@@ -10,6 +11,8 @@ export interface OnboardingStep1CVProps {
   setTempTitle: (val: string) => void;
   tempSkills: string[];
   setTempSkills: (val: string[]) => void;
+  /** Si el CV se leyó sin IA: el aviso del servidor (se muestra fijo, no solo en un aviso pasajero). */
+  basicReadingNote?: string | null;
 }
 
 export const OnboardingStep1CV: React.FC<OnboardingStep1CVProps> = ({
@@ -20,7 +23,8 @@ export const OnboardingStep1CV: React.FC<OnboardingStep1CVProps> = ({
   tempTitle,
   setTempTitle,
   tempSkills,
-  setTempSkills
+  setTempSkills,
+  basicReadingNote
 }) => {
   return (
     <div className="space-y-4 animate-fade-in text-xs">
@@ -58,6 +62,15 @@ export const OnboardingStep1CV: React.FC<OnboardingStep1CVProps> = ({
             <CheckCircle2 className="w-3.5 h-3.5" />
             Información detectada en tu currículum
           </span>
+          {basicReadingNote != null && (
+            <div className="flex items-start gap-2 p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200/70 dark:border-amber-800/40 text-amber-900 dark:text-amber-200">
+              <Info className="w-3.5 h-3.5 mt-0.5 shrink-0" aria-hidden="true" />
+              <p className="text-xs leading-snug">
+                <span className="font-semibold">{BASIC_READING_LABEL}.</span>{' '}
+                {basicReadingNote || 'Revisa los datos: puede que algunos cargos o empresas no estén bien separados.'}
+              </p>
+            </div>
+          )}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <div>
               <label htmlFor="temp-name-input" className="text-xs text-ink-muted font-semibold uppercase">Tu Nombre</label>

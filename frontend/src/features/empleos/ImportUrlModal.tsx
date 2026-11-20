@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { ArrowRight, ClipboardPaste, Link2 } from 'lucide-react';
 import type { JobPosting } from '../../types';
-import { api, getHumanErrorMessage } from '../../api';
+import { api, getHumanErrorMessage, isAIBusyError, AI_BUSY_MESSAGE, BASIC_READING_LABEL } from '../../api';
 import { useToast } from '../../components/Toast';
 import { Dialog } from '../../components/ui/Dialog';
 import { Button } from '../../components/ui/Button';
@@ -40,6 +40,7 @@ export const ImportUrlModal: React.FC<ImportUrlModalProps> = ({ isOpen, onClose,
   const [url, setUrl] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const toast = useToast();
+  const formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
     if (isOpen) setIsLoading(false);
@@ -49,7 +50,9 @@ export const ImportUrlModal: React.FC<ImportUrlModalProps> = ({ isOpen, onClose,
 
   const finish = async (job: JobPosting, note?: string | null) => {
     await onImportSuccess(job);
-    toast.success(`«${job.title}» quedó guardada en Mis postulaciones.${note ? ' ' + note : ''}`, 'Oferta importada');
+    const msg = `«${job.title}» quedó guardada en Mis postulaciones.`;
+    if (note) toast.showToast(`${msg} ${note}`, 'warning', 'Oferta importada', 7000);
+    else toast.success(msg, 'Oferta importada');
     setText('');
     setUrl('');
     onClose();
@@ -61,13 +64,15 @@ export const ImportUrlModal: React.FC<ImportUrlModalProps> = ({ isOpen, onClose,
     try {
       if (mode === 'text') {
         const res = await api.jobFromText(text.trim(), url.trim() || undefined);
-        await finish(res.job, res.method === 'ia' ? null : res.note);
+        // Sin IA se avisa siempre (antes, si el servidor no mandaba nota, no se decía nada).
+        await finish(res.job, res.method === 'ia' ? null : `${BASIC_READING_LABEL}: ${res.note || 'revisa los datos de la oferta.'}`);
       } else {
         const res = await api.importJobUrl(url.trim());
         await finish(res.job);
       }
     } catch (err) {
-      toast.error('No se pudo importar la oferta: ' + getHumanErrorMessage(err));
+      if (isAIBusyError(err)) toast.withAction(AI_BUSY_MESSAGE, { label: 'Reintentar', onClick: () => formRef.current?.requestSubmit() });
+      else toast.error('No se pudo importar la oferta: ' + getHumanErrorMessage(err));
     } finally {
       setIsLoading(false);
     }
@@ -95,7 +100,7 @@ export const ImportUrlModal: React.FC<ImportUrlModalProps> = ({ isOpen, onClose,
       description="¿Encontraste una oferta en otro sitio? Tráela a Oportia para evaluar tu compatibilidad, adaptar tu CV y seguir tu postulación. Queda solo para ti."
       maxWidth="lg"
     >
-      <form onSubmit={handleSubmit} className="space-y-4 text-xs">
+      <form ref={formRef} onSubmit={handleSubmit} className="space-y-4 text-xs">
         <div role="tablist" aria-label="Cómo importar" className="flex gap-1 p-1 rounded-2xl bg-gray-100 dark:bg-ink-raised">
           {tab('text', 'Pegar texto', ClipboardPaste)}
           {tab('url', 'Enlace', Link2)}

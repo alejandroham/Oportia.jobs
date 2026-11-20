@@ -101,6 +101,20 @@ export function isAIRestingError(error: any): boolean {
   return Boolean(error && error.code === 'ai_resting');
 }
 
+/**
+ * 1.6.1 (DT-03): la IA no está disponible ahora (cupo, demanda o 429 del proveedor).
+ * El servidor devuelve la consulta al cupo cuando la falla es del proveedor, así que se puede reintentar.
+ */
+export function isAIBusyError(error: any): boolean {
+  if (!error) return false;
+  return ['ai_resting', 'ai_busy', 'quota_exceeded'].includes(error.code) || error.status === 429;
+}
+
+export const AI_BUSY_MESSAGE = 'La IA está con mucha demanda en este momento. No se descontó de tu cupo; intenta de nuevo en unos minutos.';
+
+/** Etiqueta para lo que se leyó sin IA (method = "reglas"). */
+export const BASIC_READING_LABEL = 'Lectura básica (sin IA)';
+
 export function isAINotConnectedError(error: any): boolean {
   if (!error) return false;
   if (error.code === 'ai_not_connected' || error.code === 'shared_ai_consent_required') return true;
@@ -238,7 +252,7 @@ export const api = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(profile)
     });
-    return res.json();
+    return handleResponse(res, 'No se pudo guardar el perfil');
   },
   /**
    * Sube el CV y lo analiza. Envía la clave propia o la aceptación de la IA gratuita: sin esto el servidor
@@ -288,11 +302,7 @@ export const api = {
       headers: { ...llmHeaders },
       body: formData
     });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.detail || 'Error al extraer información del documento');
-    }
-    return res.json();
+    return handleResponse(res, 'Error al extraer información del documento');
   },
   aiAssistProfile: async (data: { section: string; action: string; current_text: string; target_role?: string }): Promise<{ original: string; suggestion: string; reasoning: string }> => {
     const llmHeaders = await getLLMHeaders();
@@ -301,10 +311,7 @@ export const api = {
       headers: { 'Content-Type': 'application/json', ...llmHeaders },
       body: JSON.stringify(data)
     });
-    if (!res.ok) {
-      throw new Error('Error en la asistencia de IA');
-    }
-    return res.json();
+    return handleResponse(res, 'Error en la asistencia de IA');
   },
 
   suggestRoles: async (profile?: CandidateProfile): Promise<Array<{
@@ -321,8 +328,7 @@ export const api = {
       headers: profile ? { 'Content-Type': 'application/json', ...llmHeaders } : { ...llmHeaders },
       body: profile ? JSON.stringify({ profile }) : undefined
     });
-    if (!res.ok) return [];
-    return res.json();
+    return handleResponse(res, 'No se pudieron sugerir cargos');
   },
 
   tailorVersion: async (data: {
@@ -356,7 +362,7 @@ export const api = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(prefs)
     });
-    return res.json();
+    return handleResponse(res, 'No se pudieron guardar tus preferencias');
   },
   consolidateMemory: async (): Promise<UserPreferences> => {
     const llmHeaders = await getLLMHeaders();
@@ -364,22 +370,19 @@ export const api = {
       method: 'POST',
       headers: { ...llmHeaders }
     });
-    if (!res.ok) throw new Error('Error al consolidar la memoria con IA');
-    return res.json();
+    return handleResponse(res, 'Error al consolidar la memoria con IA');
   },
   deleteLearnedStarStory: async (storyId: string): Promise<UserPreferences> => {
     const res = await fetch(`${API_BASE}/memory/stories/${storyId}`, {
       method: 'DELETE'
     });
-    if (!res.ok) throw new Error('Error al eliminar la historia de la memoria');
-    return res.json();
+    return handleResponse(res, 'Error al eliminar la historia de la memoria');
   },
   resetMemory: async (): Promise<UserPreferences> => {
     const res = await fetch(`${API_BASE}/memory/reset`, {
       method: 'POST'
     });
-    if (!res.ok) throw new Error('Error al reiniciar la memoria IA');
-    return res.json();
+    return handleResponse(res, 'Error al reiniciar la memoria IA');
   },
   chatMemory: async (message: string, history?: Array<{ role: 'user' | 'assistant'; content: string }>, profile?: CandidateProfile, preferences?: UserPreferences): Promise<{
     reply: string;
@@ -405,7 +408,7 @@ export const api = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ job_id, action, notes })
     });
-    return res.json();
+    return handleResponse(res, 'No se pudo registrar tu reacción');
   },
 
   // Jobs
@@ -417,7 +420,7 @@ export const api = {
     const res = await fetch(`${API_BASE}/jobs/${job_id}/track`, {
       method: 'POST'
     });
-    return res.json();
+    return handleResponse(res, 'No se pudo guardar la oferta');
   },
   updateJob: async (job_id: string, data: Partial<JobPosting>): Promise<JobPosting> => {
     const res = await fetch(`${API_BASE}/jobs/${job_id}`, {
@@ -425,7 +428,7 @@ export const api = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
     });
-    return res.json();
+    return handleResponse(res, 'No se pudo actualizar la oferta');
   },
   classifyJob: async (job_id: string, data: { status: string; reason?: string; feedback?: string }): Promise<JobPosting> => {
     const res = await fetch(`${API_BASE}/jobs/${job_id}/classify`, {
@@ -433,7 +436,7 @@ export const api = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
     });
-    return res.json();
+    return handleResponse(res, 'No se pudo clasificar la oferta');
   },
   addJobHistory: async (job_id: string, data: { event_type: string; title: string; date?: string; notes?: string }): Promise<JobPosting> => {
     const res = await fetch(`${API_BASE}/jobs/${job_id}/history`, {
@@ -441,21 +444,21 @@ export const api = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
     });
-    return res.json();
+    return handleResponse(res, 'No se pudo agregar el evento');
   },
   deleteJobHistory: async (job_id: string, event_id: string): Promise<JobPosting> => {
     const res = await fetch(`${API_BASE}/jobs/${job_id}/history/${event_id}`, {
       method: 'DELETE'
     });
-    return res.json();
+    return handleResponse(res, 'No se pudo borrar el evento');
   },
   deleteJob: async (job_id: string, from_section: 'radar' | 'tracker' = 'radar'): Promise<{ message: string }> => {
     const res = await fetch(`${API_BASE}/jobs/${job_id}?from_section=${from_section}`, { method: 'DELETE' });
-    return res.json();
+    return handleResponse(res, 'No se pudo quitar la oferta');
   },
   clearAllJobs: async (): Promise<{ message: string }> => {
     const res = await fetch(`${API_BASE}/jobs`, { method: 'DELETE' });
-    return res.json();
+    return handleResponse(res, 'No se pudieron vaciar las ofertas');
   },
   updateJobStatus: async (job_id: string, status: string): Promise<{ message: string }> => {
     const res = await fetch(`${API_BASE}/jobs/${job_id}/status`, {
@@ -463,7 +466,7 @@ export const api = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status })
     });
-    return res.json();
+    return handleResponse(res, 'No se pudo cambiar el estado');
   },
   /** Registrar el resultado de una postulación (sin estado: todo viaja desde el navegador). */
   submitOutcome: async (
@@ -482,7 +485,7 @@ export const api = {
   },
   getRegions: async (): Promise<Array<{ id: string; name: string; short_name: string; communes: string[] }>> => {
     const res = await fetch(`${API_BASE}/regions`);
-    return res.json();
+    return handleResponse(res, 'No se pudieron cargar las regiones');
   },
   searchJobs: async (req: {
     keywords?: string;
@@ -533,11 +536,7 @@ export const api = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ url })
     });
-    if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.detail || 'Error al importar la URL');
-    }
-    return res.json();
+    return handleResponse(res, 'Error al importar la URL');
   },
   evaluateJob: async (jobOrId: string | JobPosting, profile?: CandidateProfile, preferences?: UserPreferences): Promise<FitEvaluation> => {
     const llmHeaders = await getLLMHeaders();
@@ -556,13 +555,10 @@ export const api = {
     return handleResponse<FitEvaluation>(res, 'Error al evaluar compatibilidad');
   },
   getJobEvaluation: async (job_id: string): Promise<FitEvaluation | null> => {
-    try {
-      const res = await fetch(`${API_BASE}/jobs/${job_id}/evaluation`);
-      if (!res.ok) return null;
-      return res.json();
-    } catch {
-      return null;
-    }
+    const res = await fetch(`${API_BASE}/jobs/${job_id}/evaluation`);
+    // 404 = todavía no hay evaluación (no es un error); cualquier otro fallo se informa.
+    if (res.status === 404) return null;
+    return handleResponse<FitEvaluation>(res, 'No se pudo cargar la evaluación');
   },
   /**
    * "Ordenar ofertas con IA": una sola consulta para hasta 15 ofertas.
@@ -589,11 +585,11 @@ export const api = {
     if (country) params.set('country', country);
     if (industry) params.set('industry', industry);
     const res = await fetch(`${API_BASE}/companies?${params.toString()}`);
-    return res.json();
+    return handleResponse(res, 'No se pudieron cargar las empresas');
   },
   getRoleRecommendations: async (forceRefresh: boolean = false): Promise<RoleRecommendation[]> => {
     const res = await fetch(`${API_BASE}/roles/recommendations?force_refresh=${forceRefresh}`);
-    return res.json();
+    return handleResponse(res, 'No se pudieron cargar los cargos sugeridos');
   },
   updateRoleRecStatus: async (recId: string, approved: boolean): Promise<RoleRecommendation> => {
     const res = await fetch(`${API_BASE}/roles/recommendations/${recId}/status`, {
@@ -601,11 +597,11 @@ export const api = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ approved })
     });
-    return res.json();
+    return handleResponse(res, 'No se pudo actualizar el cargo sugerido');
   },
   getATSQueries: async (): Promise<GeneratedATSQuery[]> => {
     const res = await fetch(`${API_BASE}/roles/ats-queries`);
-    return res.json();
+    return handleResponse(res, 'No se pudieron cargar las búsquedas');
   },
   scrapeCustomATSQuery: async (query: string): Promise<any> => {
     const res = await fetch(`${API_BASE}/jobs/scrape-query`, {
@@ -613,7 +609,7 @@ export const api = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ query })
     });
-    return res.json();
+    return handleResponse(res, 'No se pudo ejecutar la búsqueda');
   },
 
   // Applications
@@ -639,11 +635,11 @@ export const api = {
   getApplicationByJob: async (job_id: string): Promise<ApplicationDraft | null> => {
     const res = await fetch(`${API_BASE}/applications/${job_id}`);
     if (res.status === 404) return null;
-    return res.json();
+    return handleResponse(res, 'No se pudo cargar la postulación');
   },
   deleteApplication: async (job_id: string): Promise<{ message: string }> => {
     const res = await fetch(`${API_BASE}/applications/${job_id}`, { method: 'DELETE' });
-    return res.json();
+    return handleResponse(res, 'No se pudo quitar la postulación');
   },
 
   // Interview
@@ -671,7 +667,7 @@ export const api = {
       headers: { 'Content-Type': 'application/json', ...llmHeaders },
       body: JSON.stringify({ question, answer, company, job, profile })
     });
-    return res.json();
+    return handleResponse(res, 'No pudimos evaluar tu respuesta');
   },
 
   // Coach IA (Desarrollo y Crecimiento Profesional)
