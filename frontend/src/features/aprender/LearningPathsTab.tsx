@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useAppStore } from '../../state/useAppStore';
 import type { LearningPath } from '../../types';
 import { Route, Sparkles, CheckCircle2, Circle, Clock, Loader2, ArrowRight } from 'lucide-react';
-import { api } from '../../api';
+import { api, isAIBusyError, AI_BUSY_MESSAGE, getHumanErrorMessage } from '../../api';
 import { useToast } from '../../components/Toast';
 
 interface LearningPathsTabProps {
@@ -31,7 +31,8 @@ export const LearningPathsTab: React.FC<LearningPathsTabProps> = ({
       toast.success('Ruta de aprendizaje generada con IA');
       onPathsUpdated();
     } catch (e: any) {
-      toast.error('Error al generar ruta: ' + (e?.message || e));
+      if (isAIBusyError(e)) toast.withAction(AI_BUSY_MESSAGE, { label: 'Reintentar', onClick: () => void handleGeneratePath() });
+      else toast.error('No se pudo generar la ruta: ' + getHumanErrorMessage(e));
     } finally {
       setIsGenerating(false);
     }

@@ -38,6 +38,8 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const careerInsights = useCareerInsights();
   const [isUploading, setIsUploading] = useState(false);
+  /** null = el CV se leyó con IA (o aún no se sube); texto = lectura básica sin IA. */
+  const [basicReadingNote, setBasicReadingNote] = useState<string | null>(null);
 
   // Step 1: Editable summary state
   const [tempName, setTempName] = useState(profile?.name || '');
@@ -73,6 +75,7 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
     setIsUploading(true);
     try {
       const res = await api.uploadCV(file);
+      setBasicReadingNote(res.method === 'ia' ? null : res.note || '');
       res.profile = withDetectedKeywords(res.profile);
       await setProfile(res.profile);
       setTempName(res.profile.name || '');
@@ -260,6 +263,7 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
                 setTempTitle={setTempTitle}
                 tempSkills={tempSkills}
                 setTempSkills={setTempSkills}
+                basicReadingNote={basicReadingNote}
               />
             </>
           )}

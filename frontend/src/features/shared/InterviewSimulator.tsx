@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { api, isAINotConnectedError, getHumanErrorMessage } from '../../api';
+import { api, isAINotConnectedError, isAIBusyError, getHumanErrorMessage, AI_BUSY_MESSAGE } from '../../api';
 import { useToast } from '../../components/Toast';
 import { AINotConnectedBanner } from './AINotConnectedBanner';
 import { Mic, MicOff, Send, Sparkles, RotateCcw, CheckCircle2, AlertCircle, HelpCircle } from 'lucide-react';
@@ -87,9 +87,13 @@ export const InterviewSimulator: React.FC<InterviewSimulatorProps> = ({
       setEvaluationResult(res);
       setAiNotConnected(false);
       if (onAnswerEvaluated) onAnswerEvaluated(res);
-      toast.success('Respuesta evaluada con éxito');
+      // Solo se celebra si de verdad hay un puntaje (antes se mostraba 85 % inventado).
+      if (typeof starScore(res) === 'number') toast.success('Respuesta evaluada');
+      else toast.info('La IA comentó tu respuesta, pero no entregó un puntaje.');
     } catch (e: any) {
-      if (isAINotConnectedError(e)) {
+      if (isAIBusyError(e)) {
+        toast.withAction(AI_BUSY_MESSAGE, { label: 'Reintentar', onClick: () => void handleEvaluate() });
+      } else if (isAINotConnectedError(e)) {
         setAiNotConnected(true);
         toast.info('Para evaluar tus respuestas con IA, activa la IA gratuita o conecta tu clave en Ajustes.');
       } else {
@@ -203,7 +207,7 @@ export const InterviewSimulator: React.FC<InterviewSimulatorProps> = ({
           <div className="flex items-center justify-between p-3 rounded-xl bg-teal-50 dark:bg-teal-950/40 border border-teal-200/60 dark:border-teal-800/40">
             <div className="flex items-center gap-2">
               <span className="text-xl font-bold text-brand-700 dark:text-brand-300">
-                {evaluationResult.score ?? evaluationResult.star_score ?? 85}%
+                {typeof starScore(evaluationResult) === 'number' ? `${starScore(evaluationResult)}%` : 'Sin evaluar'}
               </span>
               <span className="text-xs font-medium text-teal-900 dark:text-teal-200">
                 Puntaje de impacto STAR
@@ -252,3 +256,10 @@ export const InterviewSimulator: React.FC<InterviewSimulatorProps> = ({
     </div>
   );
 };
+
+/** Puntaje STAR que entregó la IA, o undefined si no lo entregó (nunca un valor de relleno). */
+export function starScore(result: { score?: unknown; star_score?: unknown } | null | undefined): number | undefined {
+  const v = result?.score ?? result?.star_score;
+  const n = typeof v === 'string' && v.trim() !== '' ? Number(v) : v;
+  return typeof n === 'number' && Number.isFinite(n) ? Math.round(n) : undefined;
+}

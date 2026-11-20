@@ -18,7 +18,7 @@ import {
   ChevronDown
 } from 'lucide-react';
 import type { UserPreferences, LLMSettings } from '../types';
-import { api, getHumanErrorMessage } from '../api';
+import { api, getHumanErrorMessage, isAIBusyError, AI_BUSY_MESSAGE } from '../api';
 import { useToast } from './Toast';
 import { OpiAvatar } from './ui/OpiAvatar';
 import { useAppStore, DEFAULT_EMPTY_PREFERENCES } from '../state/useAppStore';
@@ -295,17 +295,20 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
         toast.success('Preferencia registrada en tu memoria IA');
       }
     } catch (e: any) {
-      if (e?.code === 'ai_resting') {
+      if (isAIBusyError(e)) {
         // Opi responde en el chat, durmiendo, en vez de un error genérico.
         setMessages((prev) => [
           ...prev,
           {
             id: `resting-${Date.now()}`,
             role: 'assistant',
-            content: getHumanErrorMessage(e),
-            timestamp: new Date().toISOString()
+            content: AI_BUSY_MESSAGE,
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
           } as ChatMessage
         ]);
+        // Reintentar con el mismo texto: este handleSend conserva la conversación previa, así que
+        // el mensaje fallido y el aviso se reemplazan en vez de duplicarse.
+        toast.withAction('Opi no pudo responder ahora.', { label: 'Reintentar', onClick: () => void handleSend(text) });
       } else {
         toast.error('Error al comunicarse con Opi: ' + getHumanErrorMessage(e));
       }

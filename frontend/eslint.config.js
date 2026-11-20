@@ -22,5 +22,18 @@ export default tseslint.config(
       'no-undef': 'off',
       'no-unused-vars': 'off'
     }
+  },
+  {
+    // 1.6.1 (DT-02): toda respuesta de la API pasa por handleResponse, que lanza el error en 4xx/5xx.
+    files: ['src/api.ts'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: "ReturnStatement > CallExpression[callee.object.name='res'][callee.property.name='json']",
+          message: 'Usa handleResponse(res, mensaje): "return res.json()" no revisa res.ok y deja pasar los errores como datos.'
+        }
+      ]
+    }
   }
 );

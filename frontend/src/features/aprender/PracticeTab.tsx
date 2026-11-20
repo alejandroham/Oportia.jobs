@@ -3,7 +3,7 @@ import type { CandidateProfile, TutorPracticeChallenge, TutorEvaluationResult } 
 import { InterviewSimulator } from '../shared/InterviewSimulator';
 import { AINotConnectedBanner } from '../shared/AINotConnectedBanner';
 import { Sparkles, Terminal, Send, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
-import { api, isAINotConnectedError, getHumanErrorMessage } from '../../api';
+import { api, isAINotConnectedError, isAIBusyError, getHumanErrorMessage, AI_BUSY_MESSAGE } from '../../api';
 import { useToast } from '../../components/Toast';
 
 interface PracticeTabProps {
@@ -32,7 +32,9 @@ export const PracticeTab: React.FC<PracticeTabProps> = ({ profile }) => {
       setAiNotConnected(false);
       toast.success('Desafío práctico generado con éxito');
     } catch (e: any) {
-      if (isAINotConnectedError(e)) {
+      if (isAIBusyError(e)) {
+        toast.withAction(AI_BUSY_MESSAGE, { label: 'Reintentar', onClick: () => void handleGenerateChallenge() });
+      } else if (isAINotConnectedError(e)) {
         setAiNotConnected(true);
         toast.info('Para generar desafíos con el Tutor IA, activa la IA gratuita o conecta tu clave en Ajustes.');
       } else {
@@ -52,7 +54,9 @@ export const PracticeTab: React.FC<PracticeTabProps> = ({ profile }) => {
       setAiNotConnected(false);
       toast.success('Solución evaluada por el Tutor IA');
     } catch (e: any) {
-      if (isAINotConnectedError(e)) {
+      if (isAIBusyError(e)) {
+        toast.withAction(AI_BUSY_MESSAGE, { label: 'Reintentar', onClick: () => void handleEvaluateSolution() });
+      } else if (isAINotConnectedError(e)) {
         setAiNotConnected(true);
         toast.info('Para evaluar tu solución con el Tutor IA, activa la IA gratuita o conecta tu clave en Ajustes.');
       } else {

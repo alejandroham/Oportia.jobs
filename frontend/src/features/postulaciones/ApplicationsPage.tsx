@@ -7,7 +7,7 @@ import { ApplicationDetail } from './ApplicationDetail';
 import { EmptyState } from '../../components/common/EmptyState';
 import { Briefcase, Plus, Send } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { api, isAINotConnectedError, getHumanErrorMessage } from '../../api';
+import { api, isAINotConnectedError, isAIBusyError, getHumanErrorMessage, AI_BUSY_MESSAGE } from '../../api';
 import { useToast } from '../../components/Toast';
 import { useFitRanking } from '../../state/useFitRanking';
 import { StaleFitBanner } from '../../components/ui/StaleFitBanner';
@@ -124,7 +124,9 @@ export const ApplicationsPage: React.FC<ApplicationsPageProps> = ({
       await addOrUpdateJob(updatedJob);
       toast.success('CV y carta adaptados con IA', 'Revísalos en Documentos y descárgalos en PDF.');
     } catch (e: any) {
-      if (isAINotConnectedError(e)) {
+      if (isAIBusyError(e)) {
+        toast.withAction(AI_BUSY_MESSAGE, { label: 'Reintentar', onClick: () => void handleAdaptCv(job, cvOptions) });
+      } else if (isAINotConnectedError(e)) {
         toast.info('Para adaptar tu CV con IA, activa la IA gratuita o conecta tu clave en Ajustes.');
       } else {
         toast.error('Error al adaptar documentos: ' + getHumanErrorMessage(e));
