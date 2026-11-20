@@ -33,7 +33,7 @@ export const FeedbackCard: React.FC<FeedbackCardProps> = ({ onClose }) => {
   return (
     <aside
       aria-label="Tu opinión sobre Oportia"
-      className="no-print fixed bottom-20 left-4 sm:bottom-6 sm:left-6 z-40 w-[min(20rem,calc(100vw-6.5rem))] p-3.5 rounded-2xl bg-white dark:bg-ink-surface border border-gray-200 dark:border-ink-line shadow-xl text-xs"
+      className="no-print fixed bottom-20 left-4 lg:bottom-6 lg:left-6 z-40 w-[min(20rem,calc(100vw-6.5rem))] p-3.5 rounded-2xl bg-white dark:bg-ink-surface border border-gray-200 dark:border-ink-line shadow-xl text-xs"
     >
       <button
         type="button"

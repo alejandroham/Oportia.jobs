@@ -69,7 +69,7 @@ export const Navbar: React.FC<NavbarProps> = ({ llmSettings }) => {
           {/* Clean Apple Segmented Navigation without icons (Desktop / Tablet) */}
           <nav
             aria-label="Navegación principal"
-            className="hidden md:flex items-center bg-gray-200/50 dark:bg-ink-raised/60 p-1 rounded-full border border-black/5 dark:border-white/5 space-x-1"
+            className="hidden lg:flex items-center bg-gray-200/50 dark:bg-ink-raised/60 p-1 rounded-full border border-black/5 dark:border-white/5 space-x-1"
           >
             {tabs.map((tab) => (
               <NavLink
@@ -93,26 +93,27 @@ export const Navbar: React.FC<NavbarProps> = ({ llmSettings }) => {
             ))}
           </nav>
 
-          {/* Right Actions */}
-          <div className="flex items-center space-x-2">
+          {/* Right Actions (DT-12: más juntas en celular para no desbordar en 360–375 px) */}
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             
             {/* Simplified AI Status Dot (navigates to /ajustes) */}
             <button
               type="button"
               onClick={() => navigate('/ajustes')}
               aria-label={`Estado de IA: ${statusLabel}. Ir a ajustes.`}
-              className="flex items-center space-x-2 min-h-[44px] px-3.5 py-1.5 rounded-full text-xs font-medium bg-gray-100/90 dark:bg-ink-raised/90 hover:bg-gray-200 dark:hover:bg-ink-hover text-ink dark:text-gray-200 border border-black/[0.06] dark:border-ink-border transition shadow-xs cursor-pointer active:scale-95 focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
+              className="flex items-center justify-center gap-2 min-h-[44px] min-w-[44px] px-3 sm:px-3.5 py-1.5 rounded-full text-xs font-medium bg-gray-100/90 dark:bg-ink-raised/90 hover:bg-gray-200 dark:hover:bg-ink-hover text-ink dark:text-gray-200 border border-black/[0.06] dark:border-ink-border transition shadow-xs cursor-pointer active:scale-95 focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
               title="Configuración de Inteligencia Artificial (Ajustes)"
             >
               <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${dotColor} ${!hasKey ? 'opacity-70' : ''}`} />
-              <span className="font-medium truncate">{statusLabel}</span>
+              {/* En celular solo el punto de color; el estado completo va en aria-label y title. */}
+              <span className="hidden sm:inline font-medium truncate">{statusLabel}</span>
             </button>
 
             {/* Opinión: siempre a mano, sin interrumpir */}
             <button
               type="button"
               onClick={() => useFeedbackStore.getState().open('manual', 'menu')}
-              className="min-h-[44px] px-3 flex items-center gap-1.5 justify-center rounded-full text-xs font-medium text-ink-muted hover:text-ink dark:hover:text-white hover:bg-gray-100 dark:hover:bg-ink-raised border border-black/5 dark:border-white/5 transition shrink-0 cursor-pointer active:scale-95 focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
+              className="min-h-[44px] min-w-[44px] px-2.5 sm:px-3 flex items-center gap-1.5 justify-center rounded-full text-xs font-medium text-ink-muted hover:text-ink dark:hover:text-white hover:bg-gray-100 dark:hover:bg-ink-raised border border-black/5 dark:border-white/5 transition shrink-0 cursor-pointer active:scale-95 focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
               title="Danos tu opinión"
               aria-label="Danos tu opinión sobre Oportia"
             >
@@ -137,7 +138,7 @@ export const Navbar: React.FC<NavbarProps> = ({ llmSettings }) => {
       {/* Mobile Bottom Navigation Bar (Apple iOS Cupertino Tab Bar — >= 48px touch target, >= 12px text) */}
       <nav
         aria-label="Navegación móvil"
-        className="md:hidden fixed bottom-0 left-0 right-0 z-50 apple-glass border-t border-black/[0.08] dark:border-ink-border px-1 pt-1 flex items-center justify-around shadow-2xl bg-white/95 dark:bg-ink-surface/95"
+        className="lg:hidden fixed bottom-0 left-0 right-0 z-50 apple-glass border-t border-black/[0.08] dark:border-ink-border px-1 pt-1 flex items-center justify-around shadow-2xl bg-white/95 dark:bg-ink-surface/95"
         style={{ paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 8px)' }}
       >
         {tabs.map((tab) => {

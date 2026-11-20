@@ -5,6 +5,25 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
 
 ---
 
+## [1.6.4] - 2026-11-20 — *Responsive y navegación*
+
+Cuarta corrección de la auditoría QA del 19-nov-2026.
+
+### 📱 Responsive
+- **Navegación entre 768 y 1023 px (QA-008):** la barra superior con las 5 secciones no cabía en tablets: la página desbordaba y Ajustes y Opinión quedaban fuera de la pantalla. Ahora la barra inferior se usa **hasta 1023 px** y la superior **desde 1024 px**.
+- **Desborde en 360–375 px (QA-009):** en celular el indicador de IA muestra solo el punto de color (el estado completo va en la etiqueta accesible) y las acciones de la derecha están más juntas. Medido: sin scroll horizontal en 360, 375, 768, 820, 900, 1024 y 1366 px (antes 417 px de ancho en 375).
+- **Opi tapaba botones (QA-010):** bajo 1024 px, el botón de Opi es solo el ícono (48 px). El contenido y el pie tienen espacio abajo para que la barra inferior y Opi no tapen "Ver detalle", "Danos tu opinión", "Privacidad" ni "Términos". No se oculta Opi cuando se ve el pie: en páginas cortas el pie siempre está a la vista y Opi habría desaparecido.
+- Los avisos emergentes y la tarjeta de opinión aparecen por encima de la barra inferior hasta 1023 px. Antes los avisos quedaban a la altura de la barra en celular, y la tarjeta de opinión y Opi bajaban sobre ella entre 640 y 767 px.
+
+### 🧭 Navegación
+- **Página 404 (QA-018):** una dirección que no existe muestra *"No encontramos esta página"* con enlaces a Inicio y Buscar empleo, y la URL no cambia (antes se redirigía a Inicio sin avisar).
+- El título de la pestaña vuelve a "Oportia Jobs IA…" al salir de la 404, de la Política de privacidad o de los Términos (antes se quedaba con el título de esas páginas).
+
+### 🧪 Pruebas
+- `responsive-nav.spec.ts` (Playwright): sin scroll horizontal y con Ajustes y Opinión a la vista en los 7 anchos, barra inferior o superior según el ancho, enlaces del pie libres en 375 px y la página 404.
+
+---
+
 ## [1.6.3] - 2026-11-20 — *Privacidad, legal y comunicación*
 
 Tercera corrección de la auditoría QA del 19-nov-2026.

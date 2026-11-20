@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
+import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { Navbar } from './components/Navbar';
 import { JobSearchPage } from './features/empleos/JobSearchPage';
 import { ApplicationsPage } from './features/postulaciones/ApplicationsPage';
@@ -7,6 +7,7 @@ import { LearnPage } from './features/aprender/LearnPage';
 import { ProfilePage } from './features/perfil/ProfilePage';
 import { SettingsView } from './components/SettingsView';
 import { LegalPage } from './features/legal/LegalPage';
+import { NotFoundPage } from './components/NotFoundPage';
 import { WelcomeHub } from './components/WelcomeHub';
 import { LandingPage } from './components/landing/LandingPage';
 import { OnboardingWizard } from './components/onboarding/OnboardingWizard';
@@ -194,7 +195,7 @@ export function App() {
         <Navbar llmSettings={settings} />
 
         {/* Main Routed Content Area */}
-        <main className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8 pb-24 md:pb-8">
+        <main className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8 pb-28 lg:pb-8">
           {isLoading ? (
             <div className="flex flex-col items-center justify-center min-h-[50vh] space-y-4">
               <img
@@ -310,8 +311,8 @@ export function App() {
                   <Route path="/privacidad" element={<LegalPage kind="privacidad" />} />
                   <Route path="/terminos" element={<LegalPage kind="terminos" />} />
 
-                  {/* Catch-all redirect to Inicio */}
-                  <Route path="*" element={<Navigate to="/" replace />} />
+                  {/* 1.6.4 (DT-13): dirección desconocida → página 404 (la URL no cambia) */}
+                  <Route path="*" element={<NotFoundPage />} />
                 </Routes>
               </div>
             </ErrorBoundary>
@@ -324,7 +325,7 @@ export function App() {
         {/* Floating Opi Copilot Button (Ergonomic placement above bottom tab bar on mobile).
             Se oculta en la portada: ahí Opi ya está presente y el botón tapaba los llamados a la acción en celular. */}
         <div
-          className={`no-print fixed bottom-20 right-4 sm:bottom-6 sm:right-6 z-40 ${
+          className={`no-print fixed bottom-20 right-4 lg:bottom-6 lg:right-6 z-40 ${
             isLandingVisible ? 'hidden' : ''
           }`}
         >
@@ -332,11 +333,12 @@ export function App() {
             type="button"
             onClick={() => setIsOpiChatOpen(!isOpiChatOpen)}
             aria-label={isOpiChatOpen ? 'Cerrar chat con Opi' : 'Abrir chat con Opi, tu copiloto profesional'}
-            className="flex items-center space-x-2.5 px-4 py-2.5 min-h-[44px] rounded-full bg-gradient-to-tr from-ink via-ink-surface to-brand hover:opacity-95 text-white font-semibold text-xs shadow-xl hover:shadow-2xl hover:scale-105 active:scale-95 transition duration-200 border border-white/20 cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
+            className="flex items-center justify-center gap-2.5 p-2 lg:px-4 lg:py-2.5 min-h-[48px] min-w-[48px] lg:min-h-[44px] rounded-full bg-gradient-to-tr from-ink via-ink-surface to-brand hover:opacity-95 text-white font-semibold text-xs shadow-xl hover:shadow-2xl hover:scale-105 active:scale-95 transition duration-200 border border-white/20 cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
             title="Abrir chat con Opi, tu copiloto profesional"
           >
             <OpiAvatar expression="saludando" size={26} decorative className="-my-1" />
-            <span>Opi Copiloto</span>
+            {/* DT-12: en celular y tablet solo el ícono (antes tapaba "Ver detalle" y "Danos tu opinión"). */}
+            <span className="hidden lg:inline">Opi Copiloto</span>
           </button>
         </div>
 

@@ -66,7 +66,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       {children}
 
       {/* Floating Apple-style Pill Toasts Container */}
-      <div role="status" aria-live="polite" className="fixed bottom-6 inset-x-0 z-50 flex flex-col items-center pointer-events-none space-y-2 px-4">
+      <div role="status" aria-live="polite" className="fixed bottom-24 lg:bottom-6 inset-x-0 z-50 flex flex-col items-center pointer-events-none space-y-2 px-4">
         {toasts.map(toast => {
           const icon = {
             success: <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />,

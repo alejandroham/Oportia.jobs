@@ -11,7 +11,8 @@ interface FooterProps {
 export const Footer: React.FC<FooterProps> = ({ onNavigateToTab }) => {
   return (
     <footer className="no-print mt-12 border-t border-black/[0.08] dark:border-ink-border bg-white/60 dark:bg-ink-surface/60 backdrop-blur-md text-xs text-gray-500 dark:text-ink-200">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+      {/* DT-12: bajo 1024 px, espacio extra abajo para que la barra inferior y el botón de Opi no tapen los enlaces. */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-40 lg:pb-8 space-y-6">
         
         {/* Top row: Brand & Sponsor / Instagram actions */}
         <div className="flex flex-col md:flex-row items-center justify-between gap-4 border-b border-black/5 dark:border-white/5 pb-6">
@@ -27,7 +28,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigateToTab }) => {
                   Oportia Jobs IA
                 </span>
                 <span className="text-xs font-mono font-bold px-2 py-0.5 rounded-full bg-[#20A88A]/10 dark:bg-[#20A88A]/20 text-brand-700 dark:text-[#8AD9C4] border border-[#20A88A]/30">
-                  v1.6.3
+                  v1.6.4
                 </span>
               </div>
               <p className="text-xs text-gray-500 dark:text-ink-200">

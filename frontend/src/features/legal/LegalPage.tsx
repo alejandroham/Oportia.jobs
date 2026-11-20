@@ -20,7 +20,12 @@ export const LegalPage: React.FC<{ kind: LegalDocKind }> = ({ kind }) => {
   const { hash } = useLocation();
 
   useEffect(() => {
+    const previous = document.title;
     document.title = `${doc.title} — Oportia Jobs IA`;
+    // Al salir se devuelve el título anterior (si no, quedaba "Política de privacidad" en toda la app).
+    return () => {
+      document.title = previous;
+    };
   }, [doc.title]);
 
   // Ir a la sección pedida (#9-opiniones-y-contacto-voluntario) o al inicio del documento.
