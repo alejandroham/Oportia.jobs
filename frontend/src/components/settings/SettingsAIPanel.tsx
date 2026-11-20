@@ -88,9 +88,9 @@ export const SettingsAIPanel: React.FC = () => {
         active_model_name: selectedModel,
         status_label: hasKey ? 'IA conectada' : 'IA no conectada',
         status_color: hasKey ? 'green' : 'yellow',
-        gemini_model: provider === 'gemini' ? selectedModel : (localStorage.getItem('job_search_llm_model_gemini') || 'gemini-2.0-flash'),
-        openai_model: provider === 'openai' ? selectedModel : (localStorage.getItem('job_search_llm_model_openai') || 'gpt-4o'),
-        claude_model: provider === 'claude' ? selectedModel : (localStorage.getItem('job_search_llm_model_claude') || 'claude-3-5-sonnet-latest')
+        gemini_model: provider === 'gemini' ? selectedModel : (localStorage.getItem('job_search_llm_model_gemini') || 'gemini-3.6-flash'),
+        openai_model: provider === 'openai' ? selectedModel : (localStorage.getItem('job_search_llm_model_openai') || 'gpt-6.2-sol'),
+        claude_model: provider === 'claude' ? selectedModel : (localStorage.getItem('job_search_llm_model_claude') || 'claude-sonnet-5-5')
       };
 
       await setSettings(updatedSettings);

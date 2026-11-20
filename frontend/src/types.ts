@@ -461,6 +461,11 @@ export interface LLMSettings {
 
 export interface SharedAIStatus {
   available: boolean;
+  /** 1.6.5 (DT-17): "busy" = Google viene fallando; el servidor no consulta durante retry_after segundos. */
+  state?: 'ok' | 'busy' | 'off';
+  retry_after?: number;
+  /** Momento (ms, reloj del navegador) hasta el que la IA gratuita está "con demanda". */
+  busy_until?: number;
   provider: 'gemini';
   daily_limit: number;
   remaining: number;

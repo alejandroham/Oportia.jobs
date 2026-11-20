@@ -4,7 +4,7 @@ import os
 import re
 from typing import Optional, Dict, Any
 from app.config import settings
-from app.agents.models import DEFAULT_GEMINI_MODEL, DEFAULT_OPENAI_MODEL, DEFAULT_CLAUDE_MODEL
+from app.agents.models import DEFAULT_GEMINI_MODEL, DEFAULT_OPENAI_MODEL, DEFAULT_CLAUDE_MODEL, FAST_GEMINI_MODEL, current_model
 from app.agents.llm_context import current_llm_credentials, ai_seconds_left
 
 logger = logging.getLogger(__name__)
@@ -56,6 +56,51 @@ class SharedAIConsentRequired(AINotConnectedError):
 # Errores que NO deben convertirse en una respuesta de respaldo silenciosa: la persona debe
 # ver que falta su clave/consentimiento o que la IA gratuita está descansando.
 USER_FACING_LLM_ERRORS = (AINotConnectedError, AIRestingError)
+
+
+
+# Google rechaza (400 INVALID_ARGUMENT) los plazos menores a 10 s: antes se pedían 7–8 s cuando quedaba poco
+# tiempo y la consulta fallaba al instante. Se deja 3 s de margen para responder a la app.
+GEMINI_MIN_DEADLINE_SECONDS = 10
+GEMINI_MAX_DEADLINE_SECONDS = 40
+RESPONSE_MARGIN_SECONDS = 3
+# Si hay modelo de respaldo, el principal no puede usar todo el tiempo: se reserva lo mínimo para el respaldo.
+FALLBACK_RESERVE_SECONDS = GEMINI_MIN_DEADLINE_SECONDS + RESPONSE_MARGIN_SECONDS
+
+
+def gemini_models_to_try(requested: Optional[str]) -> list:
+    """1.6.5 (DT-15): modelo pedido (si sigue vigente), el por omisión y el rápido; sin modelos retirados."""
+    out = []
+    for m in (current_model("gemini", requested), DEFAULT_GEMINI_MODEL, FAST_GEMINI_MODEL):
+        if m not in out:
+            out.append(m)
+    return out
+
+
+def gemini_timeout_seconds(left: float, has_fallback: bool) -> Optional[float]:
+    """Plazo para una consulta, o None si ya no alcanza el mínimo de Google."""
+    usable = left - RESPONSE_MARGIN_SECONDS
+    if usable < GEMINI_MIN_DEADLINE_SECONDS:
+        return None
+    if has_fallback and usable - FALLBACK_RESERVE_SECONDS >= GEMINI_MIN_DEADLINE_SECONDS:
+        usable -= FALLBACK_RESERVE_SECONDS
+    return float(min(usable, GEMINI_MAX_DEADLINE_SECONDS))
+
+
+def classify_gemini_error(err: str) -> str:
+    """invalid_key | quota | timeout | not_found | unavailable | other (DT-14: así se leen los registros)."""
+    low = err.lower()
+    if "401" in err or "403" in err or "api_key_invalid" in low or "invalid api key" in low:
+        return "invalid_key"
+    if "429" in err or "resource_exhausted" in low or "quota" in low:
+        return "quota"
+    if "deadline" in low or "timeout" in low or "timed out" in low or "504" in err:
+        return "timeout"
+    if "404" in err or "not_found" in low:
+        return "not_found"
+    if "503" in err or "unavailable" in low or "high demand" in low or "500" in err:
+        return "unavailable"
+    return "other"
 
 
 class UnifiedLLMProvider:
@@ -124,6 +169,9 @@ class UnifiedLLMProvider:
         req = shared_ai.current_shared_ai_request.get()
         if req is not None and not req.consent:
             raise SharedAIConsentRequired()
+        # DT-17: si Google viene fallando, se avisa al instante y sin descontar cupo.
+        if shared_ai.breaker.is_open():
+            raise AIRestingError(shared_ai.BUSY_MESSAGE)
         shared_ai.charge_current_request()
         return key
 
@@ -170,48 +218,47 @@ class UnifiedLLMProvider:
                     provider="gemini"
                 )
 
-            primary_model = (creds.model_name if creds and creds.model_name else None) or settings.GEMINI_MODEL or DEFAULT_GEMINI_MODEL
+            requested = (creds.model_name if creds and creds.model_name else None) or settings.GEMINI_MODEL
+            models_to_try = gemini_models_to_try(requested)
 
-            # Resilience chain with active models
-            models_to_try = [primary_model]
-            for candidate in [DEFAULT_GEMINI_MODEL, "gemini-1.5-flash", "gemini-2.5-flash", "gemini-3.5-flash"]:
-                if candidate not in models_to_try:
-                    models_to_try.append(candidate)
+            def shared_failed() -> None:
+                """La falla fue de Google: se devuelve el cupo y cuenta para el cortacircuitos (DT-17)."""
+                if using_shared:
+                    from app.agents import shared_ai
+                    shared_ai.refund_current_request()
+                    shared_ai.breaker.record_failure()
 
             last_err = None
-            for candidate_model in models_to_try:
-                # Sin tiempo suficiente para otra consulta: se responde ya (la app usa el respaldo sin IA).
+            for index, candidate_model in enumerate(models_to_try):
+                has_fallback = index < len(models_to_try) - 1
                 left = ai_seconds_left()
-                if left < 6:
-                    if using_shared:
-                        from app.agents.shared_ai import refund_current_request
-                        refund_current_request()
+                timeout_s = gemini_timeout_seconds(left, has_fallback)
+                if timeout_s is None:
+                    # Sin tiempo para otra consulta (Google exige al menos 10 s): se responde ya.
+                    shared_failed()
                     raise LLMProviderError(code="timeout", message="La IA tardó demasiado en responder. Intenta nuevamente.", provider="gemini")
                 try:
-                    contents = prompt
-                    config = {"http_options": {"timeout": int(min(left - 3, 40) * 1000)}}
+                    config = {"http_options": {"timeout": int(timeout_s * 1000)}}
                     if system_instruction:
                         config["system_instruction"] = system_instruction
-
-                    response = client.models.generate_content(
-                        model=candidate_model,
-                        contents=contents,
-                        config=config
-                    )
+                    response = client.models.generate_content(model=candidate_model, contents=prompt, config=config)
                     if response and response.text:
+                        if using_shared:
+                            from app.agents import shared_ai
+                            shared_ai.breaker.record_success()
                         return response.text
                 except Exception as e:
                     last_err = e
                     err_str = str(e)
-                    logger.warning(f"Error calling Gemini model '{candidate_model}': {err_str}")
+                    kind = classify_gemini_error(err_str)
+                    logger.warning(f"Error calling Gemini model '{candidate_model}' ({kind}): {err_str[:300]}")
 
-                    # Immediate key validation failure
-                    if "401" in err_str or "403" in err_str or "API_KEY_INVALID" in err_str or "invalid api key" in err_str.lower():
+                    if kind == "invalid_key":
                         if using_shared:
                             # La clave del servidor falló: no es culpa de la persona.
                             logger.error("La clave GEMINI_API_KEY del servidor (IA gratuita) fue rechazada por Google.")
-                            from app.agents.shared_ai import RESTING_MESSAGE, refund_current_request
-                            refund_current_request()  # la falla fue de Google, no se cobra a la persona
+                            from app.agents.shared_ai import RESTING_MESSAGE
+                            shared_failed()
                             raise AIRestingError(RESTING_MESSAGE)
                         raise LLMProviderError(
                             code="invalid_key",
@@ -219,11 +266,11 @@ class UnifiedLLMProvider:
                             provider="gemini"
                         )
 
-                    # Quota exhaustion failure
-                    if "429" in err_str or "RESOURCE_EXHAUSTED" in err_str or "quota" in err_str.lower():
+                    if kind == "quota":
+                        # Sin cuota: probar otro modelo solo consume tiempo (DT-15).
                         if using_shared:
-                            from app.agents.shared_ai import RESTING_MESSAGE, refund_current_request
-                            refund_current_request()  # la falla fue de Google, no se cobra a la persona
+                            from app.agents.shared_ai import RESTING_MESSAGE
+                            shared_failed()
                             raise AIRestingError(RESTING_MESSAGE)
                         raise LLMProviderError(
                             code="quota_exceeded",
@@ -231,23 +278,23 @@ class UnifiedLLMProvider:
                             provider="gemini"
                         )
 
-                    # Timeout / Deadline
-                    if "timeout" in err_str.lower() or "deadline" in err_str.lower():
+                    if kind == "timeout":
+                        # El modelo principal no alcanzó: se intenta con el rápido si queda tiempo.
+                        if has_fallback and gemini_timeout_seconds(ai_seconds_left(), False) is not None:
+                            continue
+                        shared_failed()
                         raise LLMProviderError(
                             code="timeout",
                             message="Tiempo de espera agotado al conectar con Google Gemini. Intenta nuevamente.",
                             provider="gemini"
                         )
 
-                    # Backoff on 503 unavailable
-                    if "503" in err_str or "UNAVAILABLE" in err_str or "high demand" in err_str:
-                        if ai_seconds_left() > 10:
-                            time.sleep(1.0)
+                    if kind == "unavailable" and ai_seconds_left() > 15:
+                        time.sleep(1.0)
+                    # not_found (modelo retirado) y otros errores: siguiente modelo de la cadena.
 
-            # All models failed in fallback chain
-            if using_shared:
-                from app.agents.shared_ai import refund_current_request
-                refund_current_request()
+            # Todos los modelos de la cadena fallaron.
+            shared_failed()
             raise LLMProviderError(
                 code="service_unavailable",
                 message=f"No se pudo completar la llamada con Google Gemini: {last_err}",
@@ -265,7 +312,7 @@ class UnifiedLLMProvider:
 
             try:
                 import httpx
-                model = (creds.model_name if creds and creds.model_name else None) or settings.OPENAI_MODEL or DEFAULT_OPENAI_MODEL
+                model = current_model("openai", (creds.model_name if creds and creds.model_name else None) or settings.OPENAI_MODEL)
                 headers = {
                     "Authorization": f"Bearer {api_key}",
                     "Content-Type": "application/json"
@@ -337,7 +384,7 @@ class UnifiedLLMProvider:
 
             try:
                 import httpx
-                model = (creds.model_name if creds and creds.model_name else None) or settings.CLAUDE_MODEL or DEFAULT_CLAUDE_MODEL
+                model = current_model("claude", (creds.model_name if creds and creds.model_name else None) or settings.CLAUDE_MODEL)
                 headers = {
                     "x-api-key": api_key,
                     "anthropic-version": "2023-06-01",

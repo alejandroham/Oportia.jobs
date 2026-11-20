@@ -39,7 +39,8 @@ export const Navbar: React.FC<NavbarProps> = ({ llmSettings }) => {
   const hasKey = Boolean(llmSettings?.has_active_key);
   const aiStatus = getAIStatus(llmSettings);
   const statusLabel = aiStatus.short;
-  const dotColor = hasKey ? 'bg-emerald-500' : aiStatus.kind === 'shared_available' ? 'bg-amber-400' : 'bg-gray-400';
+  // Verde: lista · Ámbar: con demanda o por activar · Gris: sin IA (DT-17).
+  const dotColor = aiStatus.busy ? 'bg-amber-500' : hasKey ? 'bg-emerald-500' : aiStatus.kind === 'shared_available' ? 'bg-amber-400' : 'bg-gray-400';
 
   return (
     <>

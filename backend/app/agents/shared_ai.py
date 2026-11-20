@@ -160,6 +160,65 @@ class SharedAIQuota:
 quota = SharedAIQuota()
 
 
+# 1.6.5 (DT-17): "cortacircuitos" de la IA gratuita. Si Google falla varias veces seguidas (sin cuota, sin
+# responder a tiempo o caído), se deja de consultar unos minutos: la app avisa al instante ("con mucha
+# demanda") en vez de hacer esperar 40 segundos para fallar igual. Vive en la memoria de cada instancia.
+BREAKER_FAILURES = 3          # fallas seguidas...
+BREAKER_WINDOW_SECONDS = 300  # ...dentro de 5 minutos
+BREAKER_COOLDOWN_SECONDS = 120  # pausa antes de volver a intentar
+
+BUSY_MESSAGE = (
+    "La IA gratuita está con mucha demanda en este momento. No se descontó de tu cupo; "
+    "intenta de nuevo en unos minutos o conecta tu propia clave en Ajustes."
+)
+
+
+class SharedAIBreaker:
+    def __init__(self, clock=None) -> None:
+        import time
+        self._clock = clock or time.monotonic
+        self._lock = threading.Lock()
+        self._failures: list = []
+        self._open_until = 0.0
+
+    def record_failure(self) -> None:
+        now = self._clock()
+        with self._lock:
+            self._failures = [t for t in self._failures if now - t < BREAKER_WINDOW_SECONDS] + [now]
+            if len(self._failures) >= BREAKER_FAILURES:
+                self._open_until = now + BREAKER_COOLDOWN_SECONDS
+                self._failures = []
+
+    def record_success(self) -> None:
+        with self._lock:
+            self._failures = []
+            self._open_until = 0.0
+
+    def retry_after(self) -> int:
+        """Segundos que faltan para volver a intentar (0 = disponible)."""
+        with self._lock:
+            return max(0, int(round(self._open_until - self._clock())))
+
+    def is_open(self) -> bool:
+        return self.retry_after() > 0
+
+    def reset(self) -> None:
+        with self._lock:
+            self._failures = []
+            self._open_until = 0.0
+
+
+breaker = SharedAIBreaker()
+
+
+def status() -> Dict[str, object]:
+    """Estado público de la IA gratuita: "ok", "busy" (con demanda, con retry_after) u "off"."""
+    if not is_enabled():
+        return {"state": "off", "retry_after": 0}
+    wait = breaker.retry_after()
+    return {"state": "busy" if wait else "ok", "retry_after": wait}
+
+
 def charge_current_request() -> None:
     """Descuenta el cupo una sola vez por petición HTTP."""
     req = current_shared_ai_request.get()

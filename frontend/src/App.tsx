@@ -25,7 +25,7 @@ import { OpiAvatar } from './components/ui/OpiAvatar';
 import { X } from 'lucide-react';
 import { useToast } from './components/Toast';
 import { api } from './api';
-import { onSharedAIRemaining } from './utils/sharedAI';
+import { onSharedAIRemaining, onSharedAIBusy } from './utils/sharedAI';
 import type { JobPosting } from './types';
 import {
   useAppStore,
@@ -124,6 +124,14 @@ export function App() {
 
   // Cupo de la IA gratuita: el servidor lo informa en cada respuesta que usa IA.
   useEffect(() => onSharedAIRemaining((n) => useAppStore.getState().updateSharedAIRemaining(n)), []);
+  useEffect(() => onSharedAIBusy((s) => useAppStore.getState().markSharedAIBusy(s)), []);
+  // Cuando termina la espera, el indicador vuelve a verde solo (DT-17).
+  const sharedBusyUntil = settings?.shared_ai?.busy_until;
+  useEffect(() => {
+    if (!sharedBusyUntil) return;
+    const id = window.setTimeout(() => useAppStore.getState().clearSharedAIBusy(), Math.max(0, sharedBusyUntil - Date.now()));
+    return () => window.clearTimeout(id);
+  }, [sharedBusyUntil]);
 
   // Carga inicial UNA sola vez. Antes dependía de `toast`, que cambia con cada aviso: cada aviso volvía a cargar
   // todo desde el navegador y podía deshacer un cambio que aún se estaba guardando.

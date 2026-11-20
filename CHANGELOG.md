@@ -5,6 +5,42 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
 
 ---
 
+## [1.6.5] - 2026-11-20 — *Confiabilidad de la IA gratuita*
+
+Quinta corrección de la auditoría QA del 19-nov-2026 (QA-003, QA-023, QA-029 parcial).
+
+### 🔎 Diagnóstico con los registros de Vercel (DT-14)
+Registros de producción de la última hora y resumen de errores de 7 días (el plan Hobby guarda 1 hora de registros individuales):
+- **404 en cada consulta:** el modelo por omisión era `gemini-2.0-flash`, que Google apagó el 1-jun-2026. Cada consulta probaba 3 modelos retirados (`gemini-2.0-flash`, `gemini-1.5-flash`, `gemini-2.5-flash`) antes de llegar a `gemini-3.5-flash`.
+- **504 (no alcanzó a responder):** "Ordenar por compatibilidad" con `gemini-3.5-flash` superó los 40 s en 4 de 5 intentos.
+- **400 por un error nuestro:** con poco tiempo restante se pedía a Google un plazo de 7–8 s y Google exige mínimo 10 s; el CV adaptado salía sin IA.
+- **Sin errores 429 (cuota) ni 401/403 (clave).** En 7 días, 11 cortes de Vercel a los 60 s (16–19 nov, antes del presupuesto de 50 s de la 1.6.0).
+
+### 🤖 Modelos vigentes y cadena de respaldo (DT-15)
+- Modelos verificados el 20-nov-2026 en la documentación de cada proveedor:
+  - **Gemini:** `gemini-3.6-flash` (principal) y `gemini-3.5-flash-lite` (respaldo rápido).
+  - **OpenAI:** `gpt-6.2-sol`, `gpt-6.2-astra`, `gpt-6.1-terra` y `gpt-6-luna` (antes `gpt-4o`, que se apaga el 14-ene-2027, y `o1` y `o3-mini`, apagados el 23-oct-2026).
+  - **Claude:** `claude-sonnet-5-5`, `claude-opus-5-5` y `claude-haiku-5-5` (antes la familia 3.x).
+- Si un navegador tiene guardado un modelo retirado, se usa el vigente sin consultar al proveedor.
+- **Plazo mínimo de Google:** nunca se piden menos de 10 s; si no alcanza, se responde de inmediato con la lectura sin IA.
+- **Respaldo rápido:** si el modelo principal no alcanza a responder, se intenta con Flash-Lite en el tiempo que queda (se reserva un mínimo para él).
+- Ante un 429 no se prueba otro modelo (solo consumía tiempo).
+- **El cupo también se devuelve si Google no responde a tiempo** (antes solo con 429 o clave rechazada).
+
+### 🚦 Estado real de la IA y cortacircuitos (DT-17)
+- Tras **3 fallas de Google en 5 minutos**, la IA gratuita deja de consultar durante 2 minutos y responde al instante (menos de 1 s) con *"La IA gratuita está con mucha demanda… No se descontó de tu cupo"*, en vez de hacer esperar 40 s.
+- `/api/status` y `/api/settings` informan `state` (`ok`, `busy` u `off`) y `retry_after`; las respuestas 429 incluyen `X-Oportia-AI-State` y `Retry-After`.
+- El indicador de la barra superior se pone **ámbar ("IA con demanda")**, dice en cuántos minutos reintentar y vuelve solo a verde; mientras tanto el orden automático de ofertas no llama a la IA.
+
+### ⏭️ Pendiente
+- **DT-16 (cupo en un almacén compartido, Redis/KV):** queda para más adelante por decisión del propietario. Mientras tanto, el cupo diario y el cortacircuitos viven en la memoria de cada instancia de Vercel: con varias instancias, el límite por persona y el total diario no son exactos.
+
+### 🧪 Pruebas
+- `test_ai_reliability.py` (13): catálogo sin modelos retirados, reemplazo de modelos guardados, plazo mínimo de 10 s, errores reales de los registros, respaldo rápido, sin reintento ante 429, devolución del cupo y cortacircuitos (apertura, cierre, ventana y respuesta en menos de 1 s).
+- `aiBusy.test.ts`: indicador "IA con demanda" y lectura de las cabeceras del servidor.
+
+---
+
 ## [1.6.4] - 2026-11-20 — *Responsive y navegación*
 
 Cuarta corrección de la auditoría QA del 19-nov-2026.

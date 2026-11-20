@@ -50,7 +50,23 @@ export const onSharedAIRemaining = (fn: RemainingListener): (() => void) => {
   return () => listeners.delete(fn);
 };
 
+/** 1.6.5 (DT-17): "con demanda". El servidor lo informa con X-Oportia-AI-State y Retry-After. */
+type BusyListener = (retryAfterSeconds: number) => void;
+const busyListeners = new Set<BusyListener>();
+
+export const onSharedAIBusy = (fn: BusyListener): (() => void) => {
+  busyListeners.add(fn);
+  return () => busyListeners.delete(fn);
+};
+
+export const reportSharedAIState = (res: Response): void => {
+  if (res.headers?.get?.('X-Oportia-AI-State') !== 'busy') return;
+  const wait = Number(res.headers.get('Retry-After') || '60');
+  busyListeners.forEach((fn) => fn(Number.isFinite(wait) && wait > 0 ? wait : 60));
+};
+
 export const reportSharedAIRemaining = (res: Response): void => {
+  reportSharedAIState(res);
   const raw = res.headers?.get?.('X-Shared-AI-Remaining');
   if (raw === null || raw === undefined || raw === '') return;
   const n = Number(raw);

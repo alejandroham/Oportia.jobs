@@ -790,9 +790,9 @@ export const api = {
       has_gemini_key: false,
       has_openai_key: false,
       has_claude_key: false,
-      gemini_model: 'gemini-2.0-flash',
-      openai_model: 'gpt-4o',
-      claude_model: 'claude-3-5-sonnet-latest'
+      gemini_model: 'gemini-3.6-flash',
+      openai_model: 'gpt-6.2-sol',
+      claude_model: 'claude-sonnet-5-5'
     });
   },
   updateSettings: async (payload: { provider: string; api_key?: string; model_name?: string }) => {

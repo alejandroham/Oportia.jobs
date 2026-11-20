@@ -235,9 +235,17 @@ async def llm_provider_exception_handler(request: Request, exc: LLMProviderError
         status_code = 504
     elif exc.code == "service_unavailable":
         status_code = 503
+    headers = {}
+    if exc.code == "ai_resting":
+        # DT-17: la app muestra "con demanda" y sabe cuándo reintentar.
+        st = shared_ai.status()
+        headers["X-Oportia-AI-State"] = str(st["state"])
+        if st["retry_after"]:
+            headers["Retry-After"] = str(st["retry_after"])
     return JSONResponse(
         status_code=status_code,
-        content=exc.to_dict()
+        content=exc.to_dict(),
+        headers=headers
     )
 
 @app.get("/health")
@@ -704,7 +712,8 @@ def public_status():
             "sources": (index or {}).get("sources", {}),
             "areas": (index or {}).get("areas", {}),
         },
-        "shared_ai": {"available": shared_ai.is_enabled(), "daily_limit": shared_ai.per_user_limit()},
+        # DT-17: "state" ok | busy (con demanda; retry_after en segundos) | off.
+        "shared_ai": {"available": shared_ai.is_enabled(), "daily_limit": shared_ai.per_user_limit(), **shared_ai.status()},
     }
     return JSONResponse(body, headers={"Access-Control-Allow-Origin": "*", "Cache-Control": "no-store"})
 
@@ -1374,6 +1383,7 @@ def get_current_settings(request: Request):
             "remaining": shared_ai.quota.remaining(
                 _clean_client_id(request.headers.get("X-Oportia-Client")), _client_ip(request)
             ) if shared_ai.is_enabled() else 0,
+            **shared_ai.status(),
         },
     }
 

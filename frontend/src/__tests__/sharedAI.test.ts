@@ -7,13 +7,13 @@ import type { LLMSettings } from '../types';
 const base: LLMSettings = {
   provider: 'gemini',
   has_active_key: false,
-  active_model_name: 'gemini-2.0-flash',
+  active_model_name: 'gemini-3.6-flash',
   status_label: '',
   status_color: 'yellow',
   has_gemini_key: false,
   has_openai_key: false,
   has_claude_key: false,
-  gemini_model: 'gemini-2.0-flash',
+  gemini_model: 'gemini-3.6-flash',
   openai_model: 'gpt-4o',
   claude_model: 'claude',
   shared_ai: { available: true, provider: 'gemini', daily_limit: 15, remaining: 15 }

@@ -16,6 +16,14 @@ export interface AIStatus {
   detail: string;
   /** Hay IA lista para usar ahora mismo. */
   ready: boolean;
+  /** DT-17: la IA gratuita está con mucha demanda (indicador ámbar); las funciones avisan sin llamar a la API. */
+  busy?: boolean;
+}
+
+/** Minutos (redondeados hacia arriba) que faltan para que la IA gratuita vuelva a estar disponible. */
+export function sharedAIBusyMinutes(settings?: LLMSettings | null, now = Date.now()): number {
+  const until = settings?.shared_ai?.busy_until || 0;
+  return until > now ? Math.ceil((until - now) / 60000) : 0;
 }
 
 export function getAIStatus(settings?: LLMSettings | null): AIStatus {
@@ -25,6 +33,17 @@ export function getAIStatus(settings?: LLMSettings | null): AIStatus {
     return { kind: 'own_key', short: 'IA conectada', title: `Tu clave de ${provider}`, detail: 'Sin límite diario', ready: true };
   }
   if (shared?.active) {
+    const busyMin = sharedAIBusyMinutes(settings);
+    if (busyMin > 0) {
+      return {
+        kind: 'shared_active',
+        short: 'IA con demanda',
+        title: 'IA gratuita con mucha demanda',
+        detail: `Vuelve a intentarlo en ${busyMin} ${busyMin === 1 ? 'minuto' : 'minutos'}. No se descontó tu cupo.`,
+        ready: false,
+        busy: true
+      };
+    }
     return {
       kind: 'shared_active',
       short: 'IA gratuita',

@@ -33,7 +33,18 @@ export function deriveAISettings(s: LLMSettings): LLMSettings {
     has_active_key: ownKey || sharedActive,
     status_label: ownKey ? `${providerName} · tu clave` : sharedActive ? 'IA gratuita de Oportia' : 'IA no conectada',
     status_color: ownKey || sharedActive ? 'green' : 'yellow',
-    shared_ai: s.shared_ai ? { ...s.shared_ai, consented, active: sharedActive } : s.shared_ai
+    shared_ai: s.shared_ai
+      ? {
+          ...s.shared_ai,
+          consented,
+          active: sharedActive,
+          // Desde el servidor llega retry_after (segundos); aquí se convierte a una hora límite del navegador.
+          busy_until:
+            s.shared_ai.state === 'busy' && s.shared_ai.retry_after && !s.shared_ai.busy_until
+              ? Date.now() + s.shared_ai.retry_after * 1000
+              : s.shared_ai.busy_until
+        }
+      : s.shared_ai
   };
 }
 
@@ -77,9 +88,9 @@ export const DEFAULT_LLM_SETTINGS: LLMSettings = {
   has_gemini_key: false,
   has_openai_key: false,
   has_claude_key: false,
-  gemini_model: 'gemini-2.0-flash',
-  openai_model: 'gpt-4o',
-  claude_model: 'claude-3-5-sonnet-latest'
+  gemini_model: 'gemini-3.6-flash',
+  openai_model: 'gpt-6.2-sol',
+  claude_model: 'claude-sonnet-5-5'
 };
 
 interface AppState {
@@ -115,6 +126,10 @@ interface AppState {
   setSharedAIConsent: (accepted: boolean) => void;
   /** Actualiza el cupo restante informado por el servidor. */
   updateSharedAIRemaining: (remaining: number) => void;
+  /** DT-17: la IA gratuita está con demanda durante `seconds` segundos. */
+  markSharedAIBusy: (seconds: number) => void;
+  /** Vuelve a "disponible" cuando pasa el tiempo de espera. */
+  clearSharedAIBusy: () => void;
   /** Vuelve a consultar al servidor si hay IA gratuita y cuánto cupo queda. */
   refreshSharedAI: () => Promise<void>;
   setActiveTab: (tab: string) => void;
@@ -179,9 +194,9 @@ export const useAppStore = create<AppState>((set, get) => ({
       const provider = (localStorage.getItem('job_search_default_provider') || savedSettings?.provider || 'gemini') as 'gemini' | 'openai' | 'claude';
       const hasKey = Boolean(localStorage.getItem(`job_search_llm_key_${provider}`));
       const activeModel = localStorage.getItem(`job_search_llm_model_${provider}`) ||
-        (provider === 'gemini' ? (savedSettings?.gemini_model || 'gemini-2.0-flash') :
-         provider === 'openai' ? (savedSettings?.openai_model || 'gpt-4o') :
-         (savedSettings?.claude_model || 'claude-3-5-sonnet-latest'));
+        (provider === 'gemini' ? (savedSettings?.gemini_model || 'gemini-3.6-flash') :
+         provider === 'openai' ? (savedSettings?.openai_model || 'gpt-6.2-sol') :
+         (savedSettings?.claude_model || 'claude-sonnet-5-5'));
 
       const initialSettings: LLMSettings = deriveAISettings({
         provider,
@@ -192,9 +207,9 @@ export const useAppStore = create<AppState>((set, get) => ({
         has_gemini_key: Boolean(localStorage.getItem('job_search_llm_key_gemini')),
         has_openai_key: Boolean(localStorage.getItem('job_search_llm_key_openai')),
         has_claude_key: Boolean(localStorage.getItem('job_search_llm_key_claude')),
-        gemini_model: localStorage.getItem('job_search_llm_model_gemini') || savedSettings?.gemini_model || 'gemini-2.0-flash',
-        openai_model: localStorage.getItem('job_search_llm_model_openai') || savedSettings?.openai_model || 'gpt-4o',
-        claude_model: localStorage.getItem('job_search_llm_model_claude') || savedSettings?.claude_model || 'claude-3-5-sonnet-latest',
+        gemini_model: localStorage.getItem('job_search_llm_model_gemini') || savedSettings?.gemini_model || 'gemini-3.6-flash',
+        openai_model: localStorage.getItem('job_search_llm_model_openai') || savedSettings?.openai_model || 'gpt-6.2-sol',
+        claude_model: localStorage.getItem('job_search_llm_model_claude') || savedSettings?.claude_model || 'claude-sonnet-5-5',
         available_models: savedSettings?.available_models,
         shared_ai: undefined
       });
@@ -326,6 +341,22 @@ export const useAppStore = create<AppState>((set, get) => ({
   setSharedAIConsent: (accepted) => {
     persistSharedAIConsent(accepted);
     set((state) => ({ settings: deriveAISettings(state.settings) }));
+  },
+
+  markSharedAIBusy: (seconds) => {
+    set((state) =>
+      state.settings.shared_ai
+        ? { settings: deriveAISettings({ ...state.settings, shared_ai: { ...state.settings.shared_ai, state: 'busy', retry_after: seconds, busy_until: Date.now() + seconds * 1000 } }) }
+        : {}
+    );
+  },
+
+  clearSharedAIBusy: () => {
+    set((state) =>
+      state.settings.shared_ai
+        ? { settings: deriveAISettings({ ...state.settings, shared_ai: { ...state.settings.shared_ai, state: 'ok', retry_after: 0, busy_until: undefined } }) }
+        : {}
+    );
   },
 
   updateSharedAIRemaining: (remaining) => {

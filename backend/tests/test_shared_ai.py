@@ -48,10 +48,12 @@ def shared(monkeypatch):
     monkeypatch.setattr(genai, "Client", _FakeClient)
     _FakeModels.calls, _FakeModels.error, _FakeClient.keys = 0, None, []
     shared_ai.quota.reset()
+    shared_ai.breaker.reset()
     from app.utils.rate_limiter import ai_rate_limiter
     ai_rate_limiter.clear()
     yield
     shared_ai.quota.reset()
+    shared_ai.breaker.reset()
 
 
 @pytest.fixture
@@ -76,7 +78,7 @@ def _shared_headers(client_id=CLIENT, consent=True):
 
 def test_settings_reports_shared_ai(shared, client):
     data = client.get("/api/settings", headers={"X-Oportia-Client": CLIENT}).json()
-    assert data["shared_ai"] == {"available": True, "provider": "gemini", "daily_limit": 2, "remaining": 2}
+    assert data["shared_ai"] == {"available": True, "provider": "gemini", "daily_limit": 2, "remaining": 2, "state": "ok", "retry_after": 0}
 
 
 def test_settings_without_server_key(client, monkeypatch):
