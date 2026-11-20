@@ -5,6 +5,27 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
 
 ---
 
+## [1.6.6] - 2026-11-20 — *Opi vuelve a responder con la IA*
+
+Corrección encontrada al revisar los registros de producción justo después de publicar la 1.6.5.
+
+### 🛠️ Correcciones
+- **Opi respondía con un texto fijo aunque la IA había contestado:** `gemini-3.6-flash` respondía bien (200 OK), pero los modelos Gemini 3.x envían los campos vacíos como `null` (por ejemplo `"new_insights": null`). El código recorría esas listas y fallaba con `TypeError`, así que Opi mostraba la respuesta de respaldo ("He registrado tu mensaje…").
+  - `generate_json`, que usan todas las funciones con IA, ahora quita los `null` de la respuesta: cada función aplica su valor por omisión. Las respuestas que son listas (ordenar ofertas, cargos sugeridos) se mantienen como listas.
+  - Revisado: ningún lector usa una clave de la respuesta sin comprobarla antes.
+
+### ⏭️ Pendiente
+- **Latencia:** un mensaje corto a Opi tardó 31 s, porque Gemini 3.6 Flash "piensa" en nivel medio por omisión. Google documenta `thinking_level: "minimal"`, pero solo para la Interactions API, y el SDK local (1.47) no lo admite en `generate_content`: queda para una versión propia con medición. Mientras tanto, si el modelo principal no alcanza, responde Gemini 3.5 Flash-Lite.
+- DT-16 (cupo compartido en Redis/KV) sigue pendiente.
+
+### 🧪 Pruebas
+- `test_ai_reliability.py`: chat de Opi con la forma real de la respuesta (campos `null`) y normalización que conserva las listas.
+
+### 🗺️ Roadmap
+- Por esta versión, el resto del plan de la auditoría se corre en uno: Calidad de datos del CV pasa a 1.6.7, Formularios a 1.6.8, Seguridad del frontend a 1.6.9, Accesibilidad a 1.6.10 y Contenido y deuda técnica a 1.6.11.
+
+---
+
 ## [1.6.5] - 2026-11-20 — *Confiabilidad de la IA gratuita*
 
 Quinta corrección de la auditoría QA del 19-nov-2026 (QA-003, QA-023, QA-029 parcial).

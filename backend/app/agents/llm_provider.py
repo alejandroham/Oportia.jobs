@@ -103,6 +103,25 @@ def classify_gemini_error(err: str) -> str:
     return "other"
 
 
+
+def _drop_nulls(value: Any) -> Any:
+    if isinstance(value, dict):
+        return {k: _drop_nulls(v) for k, v in value.items() if v is not None}
+    if isinstance(value, list):
+        return [_drop_nulls(v) for v in value if v is not None]
+    return value
+
+
+def normalize_llm_json(data: Any) -> Any:
+    """
+    1.6.5: los modelos Gemini 3.x devuelven `null` en los campos vacíos ("new_insights": null). El código
+    hace `for x in res.get("new_insights", [])` y fallaba con TypeError: Opi respondía con un texto fijo
+    aunque la IA había contestado bien. Se quitan los null, así aplica el valor por omisión de cada .get.
+    Las listas se mantienen (ordenar ofertas y cargos sugeridos aceptan una lista).
+    """
+    return _drop_nulls(data)
+
+
 class UnifiedLLMProvider:
     def __init__(self):
         self._gemini_client = None
@@ -465,14 +484,14 @@ class UnifiedLLMProvider:
         cleaned = cleaned.strip()
 
         try:
-            return json.loads(cleaned)
+            return normalize_llm_json(json.loads(cleaned))
         except Exception:
             # Try to find JSON substring
             start = cleaned.find("{")
             end = cleaned.rfind("}")
             if start != -1 and end != -1:
                 try:
-                    return json.loads(cleaned[start:end+1])
+                    return normalize_llm_json(json.loads(cleaned[start:end+1]))
                 except Exception:
                     pass
             # Sin el contenido: la respuesta puede traer datos del CV y los registros no deben guardarlos.

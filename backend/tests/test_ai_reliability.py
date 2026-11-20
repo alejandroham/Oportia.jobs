@@ -207,3 +207,44 @@ def test_status_endpoints_and_headers_report_busy(gemini):
     assert r.status_code == 429
     assert r.headers["X-Oportia-AI-State"] == "busy"
     assert int(r.headers["Retry-After"]) > 0
+
+
+# ---------- 1.6.5: respuestas con null de Gemini 3.x (visto en producción tras publicar) ----------
+
+def test_null_fields_from_gemini_3_do_not_break_opi_chat(gemini):
+    import json
+    from app.agents.preference_learner import PreferenceLearner
+    from app.models.schemas import CandidateProfile, UserPreferences
+    _Script.plan = {}
+    reply = {
+        "assistant_reply": "¡Hola! Puedo ayudarte a ordenar tus logros.",
+        "updated_value_proposition": None, "updated_core_strengths": None, "star_story": None,
+        "new_insights": None, "deal_breakers": None, "preferred_technologies": None,
+        "target_roles": None, "quick_replies": None,
+    }
+
+    class _JsonModels(_Models):
+        def generate_content(self, model, contents, config=None):
+            _Script.calls.append((model, config["http_options"]["timeout"]))
+            return _Resp(json.dumps(reply))
+
+    class _JsonClient:
+        def __init__(self, api_key):
+            self.models = _JsonModels()
+
+    from google import genai
+    import pytest as _p
+    mp = _p.MonkeyPatch()
+    mp.setattr(genai, "Client", _JsonClient)
+    try:
+        out = PreferenceLearner().chat_and_learn("Hola Opi", [], CandidateProfile(name="Paula"), UserPreferences(), save_to_db=False)
+    finally:
+        mp.undo()
+    assert out["reply"] == "¡Hola! Puedo ayudarte a ordenar tus logros."
+    assert out["new_insights"] == [] and out["quick_replies"]
+
+
+def test_normalize_keeps_lists_and_drops_nulls():
+    from app.agents.llm_provider import normalize_llm_json
+    assert normalize_llm_json({"a": None, "b": [1, None], "c": {"d": None}}) == {"b": [1], "c": {}}
+    assert normalize_llm_json([{"id": "x", "fit_score": None}]) == [{"id": "x"}]
