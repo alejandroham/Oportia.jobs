@@ -44,10 +44,16 @@
   - Con la IA activa, cada oferta muestra tu porcentaje sin que lo pidas.
   - Si cambias tu experiencia o lo que Opi sabe de ti, Oportia te avisa para recalcularlo.
   - "Calza con tu perfil" muestra, sin IA, qué palabras tuyas aparecen en la oferta.
-- **Postulas con documentos a la medida:** CV y carta adaptados a cada oferta, en PDF, más preparación de entrevista y brechas con cursos de cualquier área (SENCE, ChileValora, Coursera y edX). Tú postulas en el enlace oficial: Oportia no envía postulaciones automáticas.
-- **IA gratuita o tu propia clave:** la IA gratuita de Oportia tiene cupo diario y un aviso de privacidad; con tu clave de Gemini, OpenAI o Claude la usas sin límite. Buscar ofertas y armar tu CV funciona también sin IA.
+- **CV compatible con sistemas ATS, sin datos inventados:**
+  - Oportia arma el CV con tus datos: "Cargo — Empresa", "Mes Año – Mes Año | Ciudad", logros y tecnologías respaldadas por tu perfil; títulos de sección estándar; PDF con Arial, sin palabras partidas.
+  - Se ajusta solo a **1 o 2 hojas** (los cargos de hace más de 10 años van en "Experiencia anterior").
+  - Muestra tu **% de coincidencia** con la oferta y las palabras clave que te faltan, y una revisión ATS antes de descargar.
+  - Lo que la IA agregue sin estar en tu perfil se quita y se te avisa. Si un cargo aparece con fechas distintas, Oportia te pregunta.
+- **Postulas con documentos a la medida:** CV y carta adaptados a cada oferta, en PDF, con el resumen de la oferta y el correo o enlace para postular, más preparación de entrevista y brechas con cursos de cualquier área (SENCE, ChileValora, Coursera y edX). Tú postulas en el enlace oficial: Oportia no envía postulaciones automáticas.
+- **IA gratuita o tu propia clave:** la IA gratuita de Oportia tiene cupo diario, **doble confirmación** y un comprobante descargable; **tu nombre, correo, teléfono y RUT nunca se envían a la IA**. Con tu clave de Gemini, OpenAI o Claude la usas sin límite. Buscar ofertas y armar tu CV funciona también sin IA.
+- **Cambiar de equipo:** "Recupera tus datos" en la portada restaura tu respaldo `.oportia`.
 - **Ofertas de otros portales:** botones "Buscar también en" abren tu búsqueda en Indeed, Computrabajo, Laborum, LinkedIn y la Bolsa Nacional de Empleo; si te gusta una oferta, pegas su texto y Oportia la ordena y la guarda en tus postulaciones (solo para ti).
-- **Tu opinión cuenta:** "¿Qué te parece Oportia?" recoge opiniones y, solo con tu autorización, un contacto para entrevistas de usuario.
+- **Tu opinión cuenta:** 👍/👎 de un toque, una tarjeta pequeña y el botón **Opinión** del menú; contacto solo con tu autorización.
 
 <p align="center"><img src="docs/manual/img/01-portada.jpg" alt="Portada de Oportia Jobs IA" width="820"></p>
 
@@ -106,12 +112,12 @@ flowchart TD
 | **Conoce Oportia** | `/conoce-oportia` | ✨ | Portada de presentación (se muestra en la primera visita): qué es Oportia, cómo funciona en 3 pasos, áreas, fuentes, privacidad e IA. |
 | **Inicio** | `/` | 🏠 | Panel de control con tarjeta inteligente de *Siguiente paso recomendado*, checklist de avance del candidato y métricas en tiempo real. |
 | **Buscar empleo** | `/empleos` | 🛰️ | Índice diario y búsqueda en vivo; "Para ti" con tus palabras clave; compatibilidad con IA automática y aviso si tu perfil cambió; "Calza con tu perfil"; vencimiento de cada oferta; filtros por modalidad, región y fuente (incluye portales de empresas). |
-| **Mis postulaciones** | `/postulaciones` | 🎯 | Postulaciones por estado, con su porcentaje y su vencimiento. Cada ficha tiene 3 pestañas: *Documentos* (CV y carta adaptados en PDF), *Preparar entrevista* e *Historial y notas*. |
-| **Aprender** | `/aprender` | 🎓 | *Mis brechas*: requisitos de tus ofertas frente a tu CV, con evidencia. *Cursos* de SENCE, ChileValora, Coursera y edX. *Mi ruta* y *Practicar*. |
-| **Mi perfil** | `/perfil` | 👤 | *Mi CV*: análisis con IA, "Reanalizar con IA" y edición de experiencia, títulos, cursos, enlaces, idiomas y palabras clave. *Qué busco*: cargos sugeridos con su resumen. *Mis logros* en formato STAR. *Lo que Opi sabe de mí*. |
-| **Ajustes** | `/ajustes` | ⚙️ | IA gratuita de Oportia (aviso de privacidad y cupo diario) o clave propia; apariencia clara u oscura; respaldo cifrado `.oportia`; "Borrar todos mis datos" con doble confirmación. |
+| **Mis postulaciones** | `/postulaciones` | 🎯 | Postulaciones por estado, con su porcentaje y su vencimiento. *Resumen de la oferta* con el correo o enlace para postular. Pestañas: *Documentos* (CV ATS y carta en PDF, largo y experiencias, ajuste a 1–2 hojas, revisión ATS y % de coincidencia), *Preparar entrevista* e *Historial y notas*. Se activa al subir el CV. |
+| **Aprender** | `/aprender` | 🎓 | *Mis brechas*: requisitos de tus ofertas frente a tu CV, con evidencia. *Cursos* de SENCE, ChileValora, Coursera y edX. *Mi ruta* y *Practicar*. Se activa al subir el CV. |
+| **Mi perfil** | `/perfil` | 👤 | *Mi CV*: análisis con IA, "Reanalizar con IA", datos personales con región y comuna, y edición de experiencia, títulos, cursos, enlaces, idiomas y palabras clave, ordenados por fecha o a mano. *Qué busco*: cargos sugeridos con su resumen. *Mis logros* en formato STAR. *Lo que Opi sabe de mí*. |
+| **Ajustes** | `/ajustes` | ⚙️ | IA gratuita de Oportia (doble confirmación, aviso de exclusión de responsabilidad, comprobante y cupo diario) o clave propia; apariencia clara u oscura; respaldo cifrado `.oportia`; "Borrar todos mis datos" con doble confirmación. |
 | **Copiloto Opi** | Flotante | 💬 | Asistente que conversa, te orienta y actualiza tu perfil, lo que buscas y tus logros (siempre con tu confirmación). |
-| **Danos tu opinión** | Pie de página | 💬 | Calificación y comentarios, contacto voluntario con autorización y enlace de donación. Aparece una vez tras 30 a 60 minutos de uso. |
+| **Opinión** | Menú, pie y página | 💬 | 👍/👎 de un toque, tarjeta de cinco caras tras unos minutos de uso y formulario con contacto voluntario y enlace de donación. |
 
 ---
 
@@ -181,13 +187,13 @@ El lanzador valida dependencias, compila el frontend y levanta la aplicación en
 El proyecto cuenta con una suite integral de pruebas con **100% de ejecución offline** y cero dependencias de red externa:
 
 ```bash
-# 1. Pruebas de Backend (Pytest — 178 pruebas unitarias y de integración offline)
+# 1. Pruebas de Backend (Pytest — 216 pruebas unitarias y de integración offline)
 pytest backend/tests -v
 
-# 2. Pruebas de Frontend (Vitest — 92 pruebas unitarias en entorno happy-dom)
+# 2. Pruebas de Frontend (Vitest — 111 pruebas unitarias en entorno happy-dom)
 cd frontend && npm test
 
-# 3. Flujo Crítico End-to-End (Playwright — Chromium headless)
+# 3. Flujos End-to-End (Playwright — 16 pruebas en Chromium headless, incluye el PDF del CV)
 cd frontend && npm run test:e2e
 
 # 4. Verificación de Tipos TypeScript y Build de Producción

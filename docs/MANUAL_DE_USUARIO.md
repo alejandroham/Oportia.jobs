@@ -4,6 +4,16 @@
 >
 > Las capturas muestran a **Paula Rojas**, una persona de demostración **ficticia** (Técnico en Enfermería). Las empresas que aparecen también son ficticias.
 
+### Novedades de las versiones 1.4 a 1.6
+
+- **CV compatible con sistemas ATS** (1.6): formato que leen bien los programas de selección, ajuste automático a 1 o 2 hojas, % de coincidencia con la oferta y revisión antes de descargar el PDF ([sección 7](#7-mis-postulaciones-cv-carta-y-entrevista)).
+- **Nada inventado y tus datos exactos** (1.5): la IA no recibe tu nombre, correo, teléfono ni RUT; el encabezado del CV lo pone Oportia con los datos de tu perfil; lo que la IA agregue sin estar en tu perfil se quita y se te avisa.
+- **IA gratuita con doble confirmación** y comprobante descargable (1.5) ([sección 10](#10-ia-gratuita-o-tu-propia-clave)).
+- **Mi perfil:** región y comuna, orden por fecha o manual, y una lectura del CV que separa títulos, cursos, habilidades e idiomas (1.4–1.6) ([sección 4](#4-mi-perfil-tu-cv)).
+- **Mis postulaciones:** resumen de la oferta con correo o enlace para postular, y largo y experiencias del CV (1.4) ([sección 7](#7-mis-postulaciones-cv-carta-y-entrevista)).
+- **Recupera tus datos** desde la portada si cambias de equipo, y secciones que se activan con tu CV (1.4.6) ([sección 2](#2-primeros-pasos-la-guía-de-inicio)).
+- **Opinar en un toque:** 👍/👎, tarjeta pequeña y botón Opinión en el menú (1.4.2) ([sección 12](#12-danos-tu-opinión)).
+
 ### Novedades de la versión 1.3
 
 - **Ofertas cada mañana:** un índice diario de ofertas de Chile, con la fecha de vencimiento de cada una. Las vencidas se ocultan ([sección 6](#6-buscar-empleo)).
