@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Shield, Download, UploadCloud, Trash2 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { useAppStore } from '../../state/useAppStore';
 import { useToast } from '../Toast';
 import { api } from '../../api';
@@ -72,9 +73,16 @@ export const SettingsPrivacyPanel: React.FC = () => {
           </div>
           <div>
             <h2 className="text-sm font-bold text-gray-900 dark:text-white">Respaldo y Soberanía de Datos</h2>
-            <p className="text-xs text-gray-500">Tus datos viven exclusivamente en este navegador (IndexedDB).</p>
+            <p className="text-xs text-gray-500">Tus datos se guardan en este navegador (IndexedDB).</p>
           </div>
         </div>
+        {/* 1.6.3 (DT-08): la política y los términos, siempre a mano */}
+        <p className="text-xs text-ink-muted">
+          Qué se envía al servidor, qué se guarda y tus derechos:{' '}
+          <Link to="/privacidad" className="underline font-semibold text-brand-700 dark:text-brand-300">Política de privacidad</Link>
+          {' · '}
+          <Link to="/terminos" className="underline font-semibold text-brand-700 dark:text-brand-300">Términos de uso</Link>
+        </p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
           {/* Download backup card */}

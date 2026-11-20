@@ -144,7 +144,7 @@ export const SettingsAIPanel: React.FC = () => {
             </div>
             <div>
               <h2 className="text-sm font-bold text-ink dark:text-white">Tu propia clave de IA (opcional, sin límite)</h2>
-              <p className="text-xs text-ink-muted">Tus claves se guardan cifradas exclusivamente en tu navegador.</p>
+              <p className="text-xs text-ink-muted">Tu clave se guarda en este navegador y solo viaja cuando usas la IA. No la uses en equipos compartidos.</p>
             </div>
           </div>
           <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${settings.has_own_key ? 'bg-emerald-100 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-300' : 'bg-amber-100 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border border-amber-300'}`}>

@@ -5,6 +5,33 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
 
 ---
 
+## [1.6.3] - 2026-11-20 — *Privacidad, legal y comunicación*
+
+Tercera corrección de la auditoría QA del 19-nov-2026.
+
+### 🛡️ Privacidad y documentos legales
+- **Política y términos dentro de la app (QA-002):** nuevas rutas **`/privacidad`** y **`/terminos`**. Antes el único enlace a la política estaba en el formulario de Opinión y llevaba a GitHub. Ahora hay enlaces en el **pie de página**, en **Ajustes > Privacidad** y en el **paso 2 de la guía, antes de subir el CV**; Opinión lleva a la sección 9 de la política dentro de la app.
+  - Los documentos se leen de `PRIVACY.md` y `TERMINOS.md` (una sola fuente para GitHub y la app) con un visor propio sin `innerHTML`: títulos con ancla, listas, tablas y enlaces (solo `https://`, `mailto:` y anclas).
+  - Van dentro de la app, así que se pueden abrir sin conexión desde la app. Abrir la dirección directamente sin conexión sigue mostrando la página "sin conexión", porque el service worker no guarda la app a propósito.
+- **Nuevo `TERMINOS.md` (versión 1.0):** qué es Oportia, ofertas, IA, uso aceptable, responsabilidad, cambios y contacto.
+
+### 🗣️ Textos honestos
+- **Dónde se procesa el CV (QA-001):** la guía decía "Extraemos tu experiencia… en tu navegador" y la portada "Tu CV y tus datos se quedan contigo, en tu navegador". El CV se lee en el servidor. Ahora:
+  - Guía: *"Leemos tu CV en nuestro servidor solo para extraer tus datos y lo descartamos al instante. Lo que guardas queda en este navegador."*
+  - Portada: *"Tu perfil y tus postulaciones se guardan en tu navegador, no en nuestros servidores."*
+  - Pie de página: "Tus datos se guardan en tu navegador · Ley N° 21.719 (Chile)" (antes "Soberanía Digital 100% Local-First").
+  - Ajustes > Acerca de: el servidor recibe tu CV y tu clave solo cuando usas una función que los necesita.
+- **Claves de API (QA-032, comunicación):** *"Tu clave se guarda en este navegador y solo viaja cuando usas la IA. No la uses en equipos compartidos."* en Ajustes y en la guía. La protección técnica de la clave queda para la 1.6.8 (DT-28).
+- "Get on Board" también en la política de privacidad.
+
+### 📖 Documentación
+- README: enlace a los Términos de uso, versión 1.6.3, el CV se lee en el servidor y se descarta, y 190 pruebas de frontend.
+
+### 🧪 Pruebas
+- `legalPages.test.tsx`: anclas iguales a las de GitHub, tabla de derechos ARCO, enlaces seguros, las dos rutas, enlaces en pie, Ajustes, guía y Opinión, y que ningún texto diga que el CV se procesa en el navegador.
+
+---
+
 ## [1.6.2] - 2026-11-19 — *Búsqueda y Radar*
 
 Segunda corrección de la auditoría QA del 19-nov-2026.

@@ -44,7 +44,7 @@ El servidor backend de Oportia Jobs IA funciona estrictamente como un **motor de
 ---
 
 ### 3.1 Índice diario de ofertas y correo de avisos (versión 1.3)
-- **El índice diario solo contiene ofertas de empleo públicas.** Viene de Empleos Públicos, GetOnBoard, portales de empleo de empresas y ChileTrabajos, y se publica en Supabase Storage. **No contiene búsquedas, perfiles ni datos de personas.** El servidor lo guarda en memoria hasta 30 minutos.
+- **El índice diario solo contiene ofertas de empleo públicas.** Viene de Empleos Públicos, Get on Board, portales de empleo de empresas y ChileTrabajos, y se publica en Supabase Storage. **No contiene búsquedas, perfiles ni datos de personas.** El servidor lo guarda en memoria hasta 30 minutos.
 - **Las búsquedas al índice** envían al servidor el término y, si buscas sin escribir nada, tus palabras clave del perfil. Se usan solo para responder esa búsqueda y no se guardan; es lo mismo que ocurre con cualquier búsqueda.
 - **La afinidad "Calza con tu perfil" se calcula en tu navegador**, sin IA y sin enviar tu perfil.
 - **El correo diario de avisos** lo configura quien despliega Oportia, con secretos de GitHub (`NOTIFY_EMAIL`, `RESEND_API_KEY`). La dirección nunca queda en el código ni en los registros, y se oculta si un error del servicio de correo la incluye. Se envía con Resend.

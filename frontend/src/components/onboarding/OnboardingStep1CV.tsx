@@ -33,7 +33,11 @@ export const OnboardingStep1CV: React.FC<OnboardingStep1CVProps> = ({
           Sube tu CV para empezar
         </h2>
         <p className="text-xs text-gray-500 dark:text-ink-200">
-          Extraemos tu experiencia y habilidades de forma segura en tu navegador sin inventar datos.
+          Leemos tu CV en nuestro servidor solo para extraer tus datos y lo descartamos al instante. Lo que guardas queda
+          en este navegador. No inventamos datos.{' '}
+          <a href="/privacidad" target="_blank" rel="noopener noreferrer" className="underline font-semibold text-brand-700 dark:text-brand-300">
+            Política de privacidad
+          </a>
         </p>
       </div>
 

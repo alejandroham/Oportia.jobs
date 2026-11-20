@@ -27,7 +27,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigateToTab }) => {
                   Oportia Jobs IA
                 </span>
                 <span className="text-xs font-mono font-bold px-2 py-0.5 rounded-full bg-[#20A88A]/10 dark:bg-[#20A88A]/20 text-brand-700 dark:text-[#8AD9C4] border border-[#20A88A]/30">
-                  v1.6.2
+                  v1.6.3
                 </span>
               </div>
               <p className="text-xs text-gray-500 dark:text-ink-200">
@@ -138,9 +138,15 @@ export const Footer: React.FC<FooterProps> = ({ onNavigateToTab }) => {
             <span>• Código abierto bajo <a href="https://github.com/alejandroham/Oportia.jobs/blob/main/LICENSE" target="_blank" rel="noreferrer" className="underline hover:text-brand-700 dark:hover:text-brand-300">Licencia Apache 2.0</a></span>
           </div>
 
-          <div className="flex items-center space-x-2 text-xs">
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-            <span>Soberanía Digital 100% Local-First & Cumplimiento Ley N° 21.719 (Chile)</span>
+          <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-xs">
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" aria-hidden="true" />
+            <span>Tus datos se guardan en tu navegador · Ley N° 21.719 (Chile)</span>
+            <Link to="/privacidad" className="inline-flex items-center min-h-[24px] underline font-semibold hover:text-brand-700 dark:hover:text-brand-300">
+              Privacidad
+            </Link>
+            <Link to="/terminos" className="inline-flex items-center min-h-[24px] underline font-semibold hover:text-brand-700 dark:hover:text-brand-300">
+              Términos
+            </Link>
           </div>
         </div>
 

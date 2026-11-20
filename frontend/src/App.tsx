@@ -6,6 +6,7 @@ import { ApplicationsPage } from './features/postulaciones/ApplicationsPage';
 import { LearnPage } from './features/aprender/LearnPage';
 import { ProfilePage } from './features/perfil/ProfilePage';
 import { SettingsView } from './components/SettingsView';
+import { LegalPage } from './features/legal/LegalPage';
 import { WelcomeHub } from './components/WelcomeHub';
 import { LandingPage } from './components/landing/LandingPage';
 import { OnboardingWizard } from './components/onboarding/OnboardingWizard';
@@ -304,6 +305,10 @@ export function App() {
                   />
 
                   <Route path="/ajustes" element={<SettingsView />} />
+
+                  {/* 1.6.3 (DT-08): documentos legales dentro de la app */}
+                  <Route path="/privacidad" element={<LegalPage kind="privacidad" />} />
+                  <Route path="/terminos" element={<LegalPage kind="terminos" />} />
 
                   {/* Catch-all redirect to Inicio */}
                   <Route path="*" element={<Navigate to="/" replace />} />

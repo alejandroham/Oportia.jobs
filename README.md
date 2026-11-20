@@ -3,7 +3,7 @@
 <div align="center">
 
 [![CI — Integración Continua](https://github.com/alejandroham/Oportia.jobs/actions/workflows/ci.yml/badge.svg)](https://github.com/alejandroham/Oportia.jobs/actions/workflows/ci.yml)
-[![Version](https://img.shields.io/badge/Versi%C3%B3n-1.6.2-blue.svg?style=for-the-badge)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/Versi%C3%B3n-1.6.3-blue.svg?style=for-the-badge)](CHANGELOG.md)
 [![Privacy: Ley 21.719](https://img.shields.io/badge/Privacidad-Ley%2021.719%20Chile-emerald.svg?style=for-the-badge)](PRIVACY.md)
 [![Security Policy](https://img.shields.io/badge/Seguridad-Security%20Policy-blueviolet.svg?style=for-the-badge)](SECURITY.md)
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Falejandroham%2FOportia.jobs)
@@ -13,10 +13,10 @@
 
 <p align="center">
   <strong>Tú manejas tu información. Nosotros te traemos las ofertas.</strong><br>
-  Ofertas de empleo de todo Chile cada mañana, compatibilidad con IA, CV y carta a la medida, y el copiloto <strong>Opi</strong>. Tu CV y tus datos viven en tu navegador (arquitectura <strong>Local-First sin estado</strong>, <strong>Ley N° 21.719 de Chile</strong>).
+  Ofertas de empleo de todo Chile cada mañana, compatibilidad con IA, CV y carta a la medida, y el copiloto <strong>Opi</strong>. Tu perfil y tus postulaciones se guardan en tu navegador; el CV se lee en el servidor y se descarta al instante (arquitectura <strong>Local-First sin estado</strong>, <strong>Ley N° 21.719 de Chile</strong>).
 </p>
 
-[**📖 Leer el Manual de Usuario »**](docs/MANUAL_DE_USUARIO.md) · [**🛡️ Política de Privacidad »**](PRIVACY.md) · [**🔒 Política de Seguridad »**](SECURITY.md) · [**📝 Registro de Cambios »**](CHANGELOG.md)
+[**📖 Leer el Manual de Usuario »**](docs/MANUAL_DE_USUARIO.md) · [**🛡️ Política de Privacidad »**](PRIVACY.md) · [**📜 Términos de Uso »**](TERMINOS.md) · [**🔒 Política de Seguridad »**](SECURITY.md) · [**📝 Registro de Cambios »**](CHANGELOG.md)
 
 </div>
 
@@ -56,6 +56,7 @@
 - **IA gratuita o tu propia clave:** la IA gratuita de Oportia tiene cupo diario, **doble confirmación** y un comprobante descargable; **tu nombre, correo, teléfono y RUT nunca se envían a la IA**. Con tu clave de Gemini, OpenAI o Claude la usas sin límite. Buscar ofertas y armar tu CV funciona también sin IA.
 - **Cambiar de equipo:** "Recupera tus datos" en la portada restaura tu respaldo `.oportia`.
 - **Ofertas de otros portales:** botones "Buscar también en" abren tu búsqueda en Indeed, Computrabajo, Laborum, LinkedIn y la Bolsa Nacional de Empleo; si te gusta una oferta, pegas su texto y Oportia la ordena y la guarda en tus postulaciones (solo para ti).
+- **Privacidad a la vista:** la Política de privacidad y los Términos de uso se leen dentro de la app (`/privacidad` y `/terminos`), desde el pie de página, Ajustes y la guía de inicio, antes de subir tu CV.
 - **Tu opinión cuenta:** 👍/👎 de un toque, una tarjeta pequeña y el botón **Opinión** del menú; contacto solo con tu autorización.
 
 <p align="center"><img src="docs/manual/img/01-portada.jpg" alt="Portada de Oportia Jobs IA" width="820"></p>
@@ -193,7 +194,7 @@ El proyecto cuenta con una suite integral de pruebas con **100% de ejecución of
 # 1. Pruebas de Backend (Pytest — 218 pruebas unitarias y de integración offline)
 pytest backend/tests -v
 
-# 2. Pruebas de Frontend (Vitest — 183 pruebas unitarias en entorno happy-dom)
+# 2. Pruebas de Frontend (Vitest — 190 pruebas unitarias en entorno happy-dom)
 cd frontend && npm test
 
 # 3. Flujos End-to-End (Playwright — 16 pruebas en Chromium headless, incluye el PDF del CV)

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Heart, Star, ExternalLink, Send } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { Dialog } from '../ui/Dialog';
 import { OpiAvatar } from '../ui/OpiAvatar';
 import { api, getHumanErrorMessage } from '../../api';
@@ -168,9 +169,9 @@ export const FeedbackDialog: React.FC = () => {
               <span>
                 <span className="font-semibold">Autorizo a Oportia a usar mi correo o teléfono</span> solo para contactarme sobre mejoras de la app o para
                 invitarme a una entrevista. No se usarán para publicidad ni se compartirán con terceros, y puedo pedir que los borren cuando quiera.{' '}
-                <a href="https://github.com/alejandroham/Oportia.jobs/blob/main/PRIVACY.md#9-opiniones-y-contacto-voluntario" target="_blank" rel="noopener noreferrer" className="underline">
+                <Link to="/privacidad#9-opiniones-y-contacto-voluntario" onClick={close} className="underline">
                   Política de privacidad
-                </a>
+                </Link>
               </span>
             </label>
             {hasContact && !consent && (

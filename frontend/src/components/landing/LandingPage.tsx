@@ -79,7 +79,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart, onExplore }) 
             Tú manejas tu información. Nosotros te traemos las ofertas.
           </h1>
           <p className="text-base sm:text-lg text-ink-muted dark:text-ink-200 leading-relaxed max-w-2xl mx-auto md:mx-0">
-            Tu CV y tus datos se quedan contigo, en tu navegador. Oportia reúne cada mañana ofertas de empleo de todo
+            Tu perfil y tus postulaciones se guardan en tu navegador, no en nuestros servidores. Oportia reúne cada mañana ofertas de empleo de todo
             Chile, te muestra qué tan compatible eres con cada una y te ayuda a postular con un CV y una carta a la medida.
             Para cualquier profesión u oficio.
           </p>

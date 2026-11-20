@@ -133,13 +133,13 @@ export const SettingsView: React.FC = () => {
               </div>
               <div>
                 <h2 className="text-sm font-bold text-ink dark:text-white">Acerca de Oportia Jobs IA</h2>
-                <p className="text-xs text-ink-muted">Versión 1.6.2 — Ecosistema inteligente de empleabilidad y desarrollo profesional.</p>
+                <p className="text-xs text-ink-muted">Versión 1.6.3 — Ecosistema inteligente de empleabilidad y desarrollo profesional.</p>
               </div>
             </div>
 
             <div className="p-4 rounded-xl bg-gray-50 dark:bg-ink-raised/50 border border-black/5 dark:border-white/5 space-y-2 text-xs text-gray-600 dark:text-gray-300 leading-relaxed">
               <p>
-                <strong className="text-gray-900 dark:text-white">Arquitectura sin Estado (Opción A):</strong> Tus datos, postulaciones y claves se custodian únicamente en tu navegador (IndexedDB). El backend procesa cómputos en memoria y no guarda información en disco.
+                <strong className="text-gray-900 dark:text-white">Arquitectura sin Estado (Opción A):</strong> Tus datos, postulaciones y claves se guardan en tu navegador (IndexedDB). El servidor recibe tu CV y tu clave solo cuando usas una función que los necesita, los procesa en memoria y no los guarda.
               </p>
               <p>
                 <strong className="text-gray-900 dark:text-white">Aviso de Responsabilidad:</strong> La Inteligencia Artificial puede cometer errores o alucinar datos. Revisa y aprueba siempre tus antecedentes y cartas de presentación antes de postular.
