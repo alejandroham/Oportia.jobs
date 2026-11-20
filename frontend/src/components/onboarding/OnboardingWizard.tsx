@@ -3,7 +3,7 @@ import { ArrowRight, X, Sparkles } from 'lucide-react';
 import { OpiAvatar } from '../ui/OpiAvatar';
 import { useAppStore, DEFAULT_EMPTY_PREFERENCES } from '../../state/useAppStore';
 import { api } from '../../api';
-import { withDetectedKeywords } from '../../utils/profileKeywords';
+import { withDetectedKeywords, initialSearchRoles, profileSearchTerms } from '../../utils/profileKeywords';
 import { useToast } from '../Toast';
 import { encryptApiKeyLocally } from '../../utils/crypto';
 import type { CandidateProfile, LLMSettings } from '../../types';
@@ -82,8 +82,10 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
       const detectedTitle = res.profile.headline || res.profile.primary_profession || '';
       setTempTitle(detectedTitle);
       setTempSkills(res.profile.technical_skills?.slice(0, 6) || []);
-      if (detectedTitle && targetRoles.length === 0) {
-        setTargetRoles([detectedTitle]);
+      // Cargos normalizados ("TENS", "Técnico en Enfermería"), no el titular literal del CV.
+      const roles = initialSearchRoles(res.profile);
+      if (roles.length && targetRoles.length === 0) {
+        setTargetRoles(roles);
       }
       if (res.method === 'ia') {
         toast.success('La IA ordenó tu experiencia, tus títulos y tus cursos.', 'CV analizado');
@@ -158,12 +160,19 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
       toast.success('¡Bienvenido a Oportia Jobs IA!', 'Buscando primeras oportunidades para ti...');
 
       // Initial search
-      const query = targetRoles[0] || tempTitle || '';
+      // Primera búsqueda: el primer cargo + los demás cargos y las palabras clave del perfil
+      // (una oferta basta con que calce con alguno). Antes se buscaba solo el titular literal y
+      // un CV de TENS podía no traer ninguna oferta.
+      const currentProfile = useAppStore.getState().profile;
+      const roles = targetRoles.length ? targetRoles : initialSearchRoles(currentProfile);
+      const query = roles[0] || tempTitle || '';
+      const extraTerms = Array.from(new Set([...roles.slice(1), ...profileSearchTerms(currentProfile)])).slice(0, 15);
       try {
         const searchRes = await api.searchJobs({
           keywords: query,
           region: isRemoteOnly ? undefined : preferredRegion,
-          remote_only: isRemoteOnly
+          remote_only: isRemoteOnly,
+          profile_keywords: extraTerms
         });
         const foundJobs = Array.isArray(searchRes) ? searchRes : (searchRes?.jobs || []);
         if (foundJobs.length > 0) {

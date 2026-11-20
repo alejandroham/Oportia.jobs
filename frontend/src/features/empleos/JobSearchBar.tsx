@@ -8,8 +8,13 @@ interface JobSearchBarProps {
   isScanning: boolean;
   modalityFilter: string;
   onModalityChange: (val: string) => void;
+  /** 'all' | 'user_region' | 'other' (otra región elegida en Más filtros). Deriva de la región elegida. */
   regionFilter: string;
   onRegionChange: (val: string) => void;
+  /** Nombre corto de la región elegida cuando no es la tuya (para la opción 'other'). */
+  otherRegionLabel?: string;
+  /** Sin región en el perfil, "En mi región" no se puede usar. */
+  hasUserRegion?: boolean;
   sortBy: string;
   onSortChange: (val: string) => void;
   isAdvancedOpen: boolean;
@@ -30,6 +35,8 @@ export const JobSearchBar: React.FC<JobSearchBarProps> = ({
   onModalityChange,
   regionFilter,
   onRegionChange,
+  otherRegionLabel,
+  hasUserRegion = true,
   sortBy,
   onSortChange,
   isAdvancedOpen,
@@ -163,6 +170,7 @@ export const JobSearchBar: React.FC<JobSearchBarProps> = ({
         <div className="flex flex-wrap items-center gap-2">
           {/* 1. Modalidad */}
           <select
+            aria-label="Modalidad"
             value={modalityFilter}
             onChange={(e) => onModalityChange(e.target.value)}
             className="px-3 py-1.5 rounded-xl bg-white dark:bg-ink-surface border border-gray-200 dark:border-ink-border text-gray-700 dark:text-gray-300 font-medium focus:outline-none shadow-xs"
@@ -175,16 +183,21 @@ export const JobSearchBar: React.FC<JobSearchBarProps> = ({
 
           {/* 2. Ubicación rápida */}
           <select
+            aria-label="Ubicación"
             value={regionFilter}
             onChange={(e) => onRegionChange(e.target.value)}
             className="px-3 py-1.5 rounded-xl bg-white dark:bg-ink-surface border border-gray-200 dark:border-ink-border text-gray-700 dark:text-gray-300 font-medium focus:outline-none shadow-xs"
           >
             <option value="all">Todo Chile</option>
-            <option value="user_region">En mi región</option>
+            <option value="user_region" disabled={!hasUserRegion}>
+              {hasUserRegion ? 'En mi región' : 'En mi región (agrega tu región en Mi perfil)'}
+            </option>
+            {regionFilter === 'other' && otherRegionLabel && <option value="other">{otherRegionLabel}</option>}
           </select>
 
           {/* 3. Ordenar por */}
           <select
+            aria-label="Ordenar por"
             value={sortBy}
             onChange={(e) => onSortChange(e.target.value)}
             className="px-3 py-1.5 rounded-xl bg-white dark:bg-ink-surface border border-gray-200 dark:border-ink-border text-gray-700 dark:text-gray-300 font-medium focus:outline-none shadow-xs"
@@ -199,6 +212,8 @@ export const JobSearchBar: React.FC<JobSearchBarProps> = ({
         <button
           type="button"
           onClick={onToggleAdvanced}
+          aria-expanded={isAdvancedOpen}
+          aria-controls="job-advanced-filters"
           className={`inline-flex items-center gap-1.5 px-3 py-1.5 min-h-[38px] rounded-xl border text-xs font-semibold transition cursor-pointer active:scale-95 focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none ${
             isAdvancedOpen
               ? 'bg-brand-50 dark:bg-brand-950/50 border-brand text-brand-700 dark:text-brand-300'

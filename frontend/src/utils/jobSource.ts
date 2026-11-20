@@ -6,7 +6,7 @@ const SOURCE_LABELS: Record<string, string> = {
   chiletrabajos: 'ChileTrabajos',
   laborum: 'Laborum',
   empleospublicos: 'Empleos Públicos',
-  getonbrd: 'GetOnBoard',
+  getonbrd: 'Get on Board',
   arbeitnow: 'Arbeitnow',
   remotive: 'Remotive',
   remoteok: 'RemoteOK',

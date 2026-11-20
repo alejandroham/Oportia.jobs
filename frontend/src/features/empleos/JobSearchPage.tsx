@@ -9,6 +9,7 @@ import { JobResultsFeed } from './JobResultsFeed';
 import { IndexResultsBanner } from './IndexResultsBanner';
 import { profileMatcher, type ProfileMatch } from '../../utils/profileMatch';
 import { profileSearchTerms } from '../../utils/profileKeywords';
+import { isJobInRegion, canonicalRegion, CHILE_REGIONS } from '../../utils/chileRegions';
 import { FailedSourcesBanner } from './FailedSourcesBanner';
 import { JobDetailModal } from './JobDetailModal';
 import { FitEvaluationModal } from './FitEvaluationModal';
@@ -50,7 +51,6 @@ export const JobSearchPage: React.FC<JobSearchPageProps> = ({
   // Search and filter states
   const [searchTerm, setSearchTerm] = useState('');
   const [modalityFilter, setModalityFilter] = useState('all');
-  const [regionFilter, setRegionFilter] = useState('all');
   const [sortBy, setSortBy] = useState('fit_desc');
   const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
   const [selectedRegion, setSelectedRegion] = useState('');
@@ -88,7 +88,21 @@ export const JobSearchPage: React.FC<JobSearchPageProps> = ({
   const [isImportUrlOpen, setIsImportUrlOpen] = useState(false);
   const [isCompanyPortalsOpen, setIsCompanyPortalsOpen] = useState(false);
 
-  const userRegion = profile?.region || '';
+  const userRegion = profile?.region || preferences?.preferred_region || '';
+  const userRegionCanonical = canonicalRegion(userRegion);
+
+  // 1.6.2 (DT-07): "Todo Chile / En mi región" y "Región de Chile" comparten un solo estado
+  // (selectedRegion), así nunca se combinan dos regiones contradictorias.
+  const selectedCanonical = canonicalRegion(selectedRegion);
+  const regionFilter = !selectedRegion ? 'all' : selectedCanonical && selectedCanonical === userRegionCanonical ? 'user_region' : 'other';
+  const otherRegionLabel = regionFilter === 'other'
+    ? CHILE_REGIONS.find((r) => r.id === selectedCanonical)?.shortName || selectedRegion
+    : undefined;
+  const handleQuickRegion = (value: string) => {
+    if (value === 'other') return;
+    setSelectedRegion(value === 'user_region' && userRegionCanonical ? userRegionCanonical : '');
+    setSelectedCommune('');
+  };
 
   // Scan / Search jobs
   const runSearch = async (live: boolean) => {
@@ -99,7 +113,7 @@ export const JobSearchPage: React.FC<JobSearchPageProps> = ({
       const searchRes = await api.searchJobs({
         keywords: searchKw,
         remote_only: modalityFilter === 'Remoto',
-        search_scope: regionFilter === 'user_region' ? 'chile' : 'all',
+        search_scope: selectedRegion ? 'chile' : 'all',
         region: selectedRegion || undefined,
         commune: selectedCommune || undefined,
         live,
@@ -247,7 +261,7 @@ export const JobSearchPage: React.FC<JobSearchPageProps> = ({
 
   const handleResetFilters = () => {
     setSelectedRegion(''); setSelectedCommune(''); setMinSalary(undefined);
-    setSelectedSource('all'); setModalityFilter('all'); setRegionFilter('all');
+    setSelectedSource('all'); setModalityFilter('all');
   };
 
   // Afinidad con el perfil (sin IA), memorizada por oferta.
@@ -278,8 +292,8 @@ export const JobSearchPage: React.FC<JobSearchPageProps> = ({
       }
       if (modalityFilter === 'Remoto' && !j.is_remote) return false;
       if (modalityFilter === 'Presencial' && j.is_remote) return false;
-      if (regionFilter === 'user_region' && userRegion && !normalizeText(j.location || '').includes(normalizeText(userRegion)) && !j.is_user_region) return false;
-      if (selectedRegion && !normalizeText(j.location || '').includes(normalizeText(selectedRegion)) && j.region !== selectedRegion) return false;
+      // Un solo filtro de región (DT-07): "En mi región" es la región elegida = la tuya.
+      if (selectedRegion && !isJobInRegion(j, selectedRegion)) return false;
       if (selectedSource === 'empresa') {
         if (!isCompanyBoardSource(j.source)) return false;
       } else if (selectedSource !== 'all' && !(j.source || '').toLowerCase().startsWith(selectedSource.toLowerCase())) return false;
@@ -290,7 +304,7 @@ export const JobSearchPage: React.FC<JobSearchPageProps> = ({
       if (sortBy === 'recent') return (parseDay(b.posted_at || b.discovered_at)?.getTime() ?? 0) - (parseDay(a.posted_at || a.discovered_at)?.getTime() ?? 0);
       return 0;
     });
-  }, [jobs, searchTerm, lastSearch, modalityFilter, regionFilter, selectedRegion, selectedSource, sortBy, userRegion, matchOf]);
+  }, [jobs, searchTerm, lastSearch, modalityFilter, selectedRegion, selectedSource, sortBy, matchOf]);
 
   const totalPages = Math.ceil(filteredJobs.length / pageSize) || 1;
   const paginatedJobs = filteredJobs.slice((page - 1) * pageSize, page * pageSize);
@@ -345,7 +359,7 @@ export const JobSearchPage: React.FC<JobSearchPageProps> = ({
             <div className="group relative">
               <HelpCircle className="w-4 h-4 text-gray-400 hover:text-[#20A88A] cursor-pointer" />
               <div className="absolute left-0 bottom-full mb-2 hidden group-hover:block w-72 p-3 bg-gray-900 text-white text-xs rounded-xl shadow-xl z-30 leading-relaxed">
-                El radar busca vacantes reales en Chile (índice diario de Empleos Públicos, GetOnBoard, portales de empresas y ChileTrabajos) y calcula con IA tu compatibilidad con cada oferta, sin que tengas que pedirlo.
+                El radar busca vacantes reales en Chile (índice diario de Empleos Públicos, Get on Board, portales de empresas y ChileTrabajos) y calcula con IA tu compatibilidad con cada oferta, sin que tengas que pedirlo.
               </div>
             </div>
           </div>
@@ -364,7 +378,9 @@ export const JobSearchPage: React.FC<JobSearchPageProps> = ({
         modalityFilter={modalityFilter}
         onModalityChange={setModalityFilter}
         regionFilter={regionFilter}
-        onRegionChange={setRegionFilter}
+        onRegionChange={handleQuickRegion}
+        otherRegionLabel={otherRegionLabel}
+        hasUserRegion={Boolean(userRegionCanonical)}
         sortBy={sortBy}
         onSortChange={setSortBy}
         isAdvancedOpen={isAdvancedOpen}

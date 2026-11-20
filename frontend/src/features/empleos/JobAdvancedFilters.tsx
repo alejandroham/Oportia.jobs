@@ -31,7 +31,7 @@ export const JobAdvancedFilters: React.FC<JobAdvancedFiltersProps> = ({
   const communes = currentRegionObj ? currentRegionObj.communes : [];
 
   return (
-    <div className={`p-4 rounded-2xl bg-white dark:bg-ink-surface border border-gray-200/90 dark:border-ink-border shadow-sm space-y-4 animate-fade-in ${className}`}>
+    <div id="job-advanced-filters" className={`p-4 rounded-2xl bg-white dark:bg-ink-surface border border-gray-200/90 dark:border-ink-border shadow-sm space-y-4 animate-fade-in ${className}`}>
       <div className="flex items-center justify-between border-b border-gray-100 dark:border-ink-border pb-2.5">
         <h4 className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-ink-200">
           Filtros de Búsqueda Avanzada
@@ -49,11 +49,12 @@ export const JobAdvancedFilters: React.FC<JobAdvancedFiltersProps> = ({
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-xs">
         {/* Región */}
         <div className="space-y-1">
-          <label className="block text-gray-600 dark:text-ink-200 font-medium flex items-center gap-1">
+          <label htmlFor="adv-region" className="block text-gray-600 dark:text-ink-200 font-medium flex items-center gap-1">
             <MapPin className="w-3 h-3 text-brand-700 dark:text-brand-300" />
             Región de Chile
           </label>
           <select
+            id="adv-region"
             value={selectedRegion}
             onChange={(e) => {
               const reg = e.target.value;

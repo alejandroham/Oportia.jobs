@@ -265,3 +265,37 @@ def test_public_status_is_readable_from_any_origin():
     data = res.json()
     assert data["version"] and data["index"]["count"] == 3 and "jobs" not in data["index"]
     assert "available" in data["shared_ai"]
+
+
+def _no_live():
+    return (
+        patch("app.main.ChilePortalsScraper.search_with_status", side_effect=AssertionError("no en vivo")),
+        patch("app.main.RemoteBoardsScraper.search_with_status", side_effect=AssertionError("no en vivo")),
+        patch("app.main.ats_scraper.search", side_effect=AssertionError("no en vivo")),
+    )
+
+
+def test_search_returns_every_index_match_no_fixed_cap():
+    """1.6.2 (DT-05): INDEX_MIN_RESULTS (8) es el mínimo para no buscar en vivo, nunca un tope."""
+    index_cache.set(build_index(
+        [mk(f"Desarrollador Frontend {i}", company=f"E{i}", url=f"https://x.cl/f{i}") for i in range(30)]
+        + [mk("Contador auditor", url="https://x.cl/c1")], {}, None, NOW))
+    a, b, c = _no_live()
+    with a, b, c:
+        data = TestClient(app).post("/api/jobs/search", json={"keywords": "frontend"}).json()
+    assert data["from_index"] is True
+    assert data["total"] == 30 and len(data["jobs"]) == 30
+
+
+def test_literal_headline_finds_nothing_but_normalized_roles_do():
+    """1.6.2 (DT-05): el titular literal del CV no calza; el cargo normalizado + perfil sí (caso de la auditoría)."""
+    jobs = [mk(f"TENS {i}", company=f"Clínica {i}", url=f"https://x.cl/t{i}") for i in range(12)] + \
+           [mk(f"Técnico en Enfermería {i}", company=f"Hospital {i}", url=f"https://x.cl/e{i}") for i in range(10)]
+    index_cache.set(build_index(jobs, {}, None, NOW))
+    assert search_index(index_cache.get(), "TENS Servicio de Urgencia") == []
+    a, b, c = _no_live()
+    with a, b, c:
+        data = TestClient(app).post("/api/jobs/search", json={
+            "keywords": "TENS", "profile_keywords": ["Técnico en Enfermería", "Signos vitales"]}).json()
+    assert data["from_index"] is True
+    assert data["total"] == 22

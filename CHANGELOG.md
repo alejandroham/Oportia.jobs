@@ -5,6 +5,28 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
 
 ---
 
+## [1.6.2] - 2026-11-19 — *Búsqueda y Radar*
+
+Segunda corrección de la auditoría QA del 19-nov-2026.
+
+### 🛠️ Correcciones
+- **La primera búsqueda traía pocas o ninguna oferta (QA-027):** la guía de inicio buscaba el titular literal del CV ("TENS Servicio de Urgencia | Atención de pacientes"), que casi nunca calza completo con una oferta. Con el índice del 19-nov ese titular daba **0** ofertas, mientras que "TENS" da 64 y "TENS" + perfil, 106.
+  - Los cargos de "Qué buscas" se precargan con la **profesión normalizada y sus nombres equivalentes** ("TENS", "Técnico en Enfermería"…); el titular, recortado, solo como último recurso.
+  - La primera búsqueda envía también los demás cargos y las **palabras clave del perfil** (basta con que la oferta calce con alguno).
+  - **El "tope de 8 resultados" no existe:** `INDEX_MIN_RESULTS = 8` es el mínimo para responder desde el índice sin buscar en vivo. Las búsquedas que daban 8 tenían exactamente 8 coincidencias en el índice ("frontend": 8 de 2.028 ofertas). Queda documentado con una prueba de 30 coincidencias → 30 resultados.
+- **"En mi región" usaba la región del perfil anterior (QA-042):** el filtro y la insignia "Tu región" leían la marca `is_user_region` que el servidor guardó al buscar. Ahora se calcula al mostrar, con la región actual del perfil (o la preferida en la guía), por región o por comuna. También reconoce los nombres oficiales largos que usan el servidor y el índice ("Región del Libertador General Bernardo O'Higgins", "Región de Aysén del General Carlos Ibáñez del Campo", "Región de Magallanes y de la Antártica Chilena").
+- **Filtros de región duplicados (QA-048):** "Todo Chile / En mi región" y "Región de Chile" comparten un solo estado, así que no se pueden combinar dos regiones contradictorias. Si eliges otra región en Más filtros, el filtro rápido la muestra. Sin región en el perfil, "En mi región" se desactiva con una explicación.
+- El portal se llama siempre **"Get on Board"** (antes también "GetOnBoard").
+
+### ♿ Accesibilidad
+- "Más filtros" con `aria-expanded` y `aria-controls`; los filtros rápidos tienen `aria-label` y "Región de Chile" su `<label for>`.
+
+### 🧪 Pruebas
+- `test_daily_index.py`: 30 coincidencias en el índice → 30 resultados; el titular literal da 0 y el cargo normalizado + perfil encuentra todas.
+- `initialSearch.test.ts` (cargos iniciales) y `regionFilter.test.ts` (Valparaíso → Biobío, comuna sin región, nombres corto y completo).
+
+---
+
 ## [1.6.1] - 2026-11-19 — *Honestidad de resultados*
 
 Primera corrección de la auditoría QA del 19-nov-2026: Oportia ya no muestra datos que no calculó y avisa cuando la IA falla.

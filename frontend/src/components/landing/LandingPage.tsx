@@ -48,7 +48,7 @@ const AREAS = [
   'Oficios y servicios'
 ];
 
-const SOURCES = ['Empleos Públicos', 'GetOnBoard', 'portales de empleo de empresas', 'ChileTrabajos'];
+const SOURCES = ['Empleos Públicos', 'Get on Board', 'portales de empleo de empresas', 'ChileTrabajos'];
 
 const YOU_CONTROL = [
   'Tu CV, tu perfil y tus postulaciones se guardan en tu navegador, no en nuestros servidores.',

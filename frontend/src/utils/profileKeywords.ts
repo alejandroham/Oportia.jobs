@@ -153,3 +153,27 @@ export function getProfileLinks(profile: CandidateProfile | null | undefined): P
   if (profile.portfolio_url && !has(profile.portfolio_url)) links.push({ label: 'Portafolio', url: profile.portfolio_url });
   return links;
 }
+
+const GENERIC_ROLES = new Set(['profesional', 'candidato', 'candidata', 'trabajador', 'trabajadora']);
+
+/**
+ * 1.6.2 (DT-05): cargos para la primera búsqueda y los chips de "Qué buscas".
+ * Usa la profesión normalizada y sus nombres equivalentes en portales ("TENS", "Técnico en Enfermería"),
+ * no el titular literal del CV ("TENS Servicio de Urgencia | Atención de pacientes"), que casi
+ * nunca calza completo con una oferta. El titular (recortado) queda solo como último recurso.
+ */
+export function initialSearchRoles(profile: CandidateProfile | null | undefined, max = 4): string[] {
+  if (!profile) return [];
+  const headlineCore = (profile.headline || '').split(/\s*[|·•,;]\s*|\s+[—–-]\s+/)[0]?.trim() || '';
+  const out: string[] = [];
+  const seen = new Set<string>();
+  for (const r of [profile.primary_profession || '', ...(profile.equivalent_roles || []).slice(0, 3), headlineCore]) {
+    const t = r.trim();
+    const n = normalizeText(t);
+    if (t.length < 2 || GENERIC_ROLES.has(n) || seen.has(n)) continue;
+    seen.add(n);
+    out.push(t);
+    if (out.length >= max) break;
+  }
+  return out;
+}

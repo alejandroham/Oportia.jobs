@@ -4,6 +4,7 @@ import { FitScoreBadge } from '../shared/FitScoreBadge';
 import { getSourceLabel, safeExternalUrl } from '../../utils/jobSource';
 import { ExpiryBadge } from '../../components/ui/ExpiryBadge';
 import { parseDay } from '../../utils/jobExpiry';
+import { isJobInRegion } from '../../utils/chileRegions';
 import { Bookmark, BookmarkCheck, ExternalLink, X, MapPin, Building2, DollarSign } from 'lucide-react';
 
 interface JobCardProps {
@@ -31,7 +32,8 @@ export const JobCard: React.FC<JobCardProps> = ({
   isRanking = false
 }) => {
   const isTracked = job.status && job.status !== 'discovered';
-  const isRegional = job.is_user_region || (userRegion && job.location?.toLowerCase().includes(userRegion.toLowerCase()));
+  // Con la región actual del perfil (no la marca guardada al buscar).
+  const isRegional = isJobInRegion(job, userRegion);
 
   // Formato de fecha relativo simple
   const formatRelativeDate = (dateStr?: string) => {

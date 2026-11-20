@@ -261,3 +261,33 @@ export function getGeographicBadge(
     detectedCommune: null
   };
 }
+
+/** Nombre oficial de una región ("Valparaíso" o "Región de Valparaíso" → "Región de Valparaíso"). */
+export function canonicalRegion(name?: string | null): string | null {
+  if (!name) return null;
+  const n = normalize(name);
+  const reg =
+    CHILE_REGIONS.find((r) => normalize(r.name) === n || normalize(r.shortName) === n || normalize(r.id) === n) ||
+    // Nombres oficiales largos del servidor y del índice ("Región del Libertador General Bernardo O'Higgins",
+    // "Región de Aysén del General Carlos Ibáñez del Campo", "Región de Magallanes y de la Antártica Chilena").
+    (/^region\b/.test(n)
+      ? CHILE_REGIONS.find((r) => new RegExp(`(^|\\s)${escapeRegExp(normalize(r.shortName))}(\\s|$)`).test(n))
+      : undefined);
+  return reg ? reg.id : null;
+}
+
+/**
+ * 1.6.2 (DT-06): ¿la oferta está en esta región? Se calcula al mostrar, con la región ACTUAL del perfil.
+ * No usa `is_user_region`, que el servidor marcó con la región que tenía el perfil al buscar
+ * (al cambiar de Valparaíso a Biobío seguía mostrando ofertas de Valparaíso como "tu región").
+ */
+export function isJobInRegion(job: { region?: string | null; location?: string | null }, region?: string | null): boolean {
+  const target = canonicalRegion(region);
+  if (!target) return false;
+  const jobRegion = canonicalRegion(job.region) || detectJobRegionAndCommune(job.location).region;
+  return jobRegion === target;
+}
+
+function escapeRegExp(t: string): string {
+  return t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
