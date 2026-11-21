@@ -5,6 +5,39 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
 
 ---
 
+## [1.6.11] - 2026-11-20 — *Accesibilidad WCAG 2.2 AA*
+
+Novena corrección de la auditoría QA del 19-nov-2026 (QA-013, QA-024, QA-036, QA-047 y parte de QA-048).
+
+### ♿ Revisión automática con axe-core
+- Nueva prueba de Playwright con **axe-core** (reglas WCAG 2.0, 2.1 y 2.2 A/AA) en **Inicio, Buscar empleo, Mis postulaciones, Aprender, Mi perfil y Ajustes, en modo claro y oscuro**, y con el panel de una oferta abierto. Resultado: **0 violaciones serias o críticas** (antes, 3 problemas repetidos en todas las rutas):
+  - **Contraste** de "Conviértete en Sponsor" en el pie: la píldora latía (`animate-pulse`) y a ratos quedaba semitransparente. Se quitó el latido.
+  - **Nombre accesible distinto al texto visible** (WCAG 2.5.3): el botón de Opi decía "Opi Copiloto" pero se llamaba "Abrir chat con Opi, tu copiloto profesional", y "Ver oferta original" se llamaba "Ver la oferta original de…". Ahora el nombre empieza con el texto visible ("Opi Copiloto: abrir el chat", "Ver oferta original: …"), así funciona el control por voz.
+
+### 🪟 Diálogos y foco (QA-013, DT-29)
+- El **panel lateral de una oferta** es un diálogo (`role="dialog"`, `aria-modal`, título asociado): al abrir, el foco va a "Cerrar detalle"; Tab y Mayús+Tab quedan dentro; Esc lo cierra y el foco vuelve a "Ver detalle".
+- Lo mismo para **todos los diálogos** que usan el componente `Dialog` (Opinión, cambios sin guardar, borrar datos, aviso de la IA…), con un solo gancho `useFocusTrap`. Los ids del título y la descripción ahora son únicos.
+
+### 🏷️ Etiquetas y ARIA (DT-30)
+- **Pestañas** de Mi perfil, Ajustes y Aprender con `role="tablist"`, `role="tab"` y `aria-selected`. Las de Ajustes miden al menos 44 px de alto.
+- **Enlace "Saltar al contenido"**: es lo primero al usar Tab y lleva al contenido principal.
+- **Mis logros (QA-047):** cada campo tiene su `<label for>`, y los ejemplos ya no son de tecnología ("arquitectura cloud", "AWS"): ahora son de bodega y atención (aplica a cualquier oficio).
+- Los acordeones de Mi perfil ya indican si están abiertos (`aria-expanded`).
+
+### 🎞️ Movimiento, contraste y tamaño (QA-024, QA-036, DT-31)
+- Con **"reducir movimiento"** activado en el sistema no hay animaciones ni transiciones (WCAG 2.3.3).
+- **"Actualizar porcentajes"**: blanco sobre ámbar más oscuro (≈ 7:1; antes ≈ 3,2:1).
+- **Enlaces del pie** con al menos 24 px de alto (WCAG 2.5.8).
+
+### ⏭️ Pendiente
+- **Prueba con lector de pantalla** (NVDA en Windows y VoiceOver en Mac/iPhone): requiere una persona; axe-core no la reemplaza.
+
+### 🧪 Pruebas
+- `a11y.spec.ts` (Playwright, 16): axe en 6 rutas × 2 modos, foco del panel de oferta (con axe dentro del panel), pestañas, "Saltar al contenido" y movimiento reducido.
+- `profile-forms.spec.ts`: "Qué busco" se busca ahora como pestaña (`role="tab"`).
+
+---
+
 ## [1.6.10] - 2026-11-20 — *Seguridad del frontend*
 
 Octava corrección de la auditoría QA del 19-nov-2026 (QA-014, QA-032).

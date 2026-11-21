@@ -26,7 +26,7 @@ export const StaleFitBanner: React.FC<StaleFitBannerProps> = ({ count, isUpdatin
           type="button"
           onClick={onUpdate}
           disabled={isUpdating}
-          className="inline-flex items-center gap-1.5 shrink-0 min-h-[40px] px-3 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-semibold cursor-pointer disabled:opacity-60 focus-visible:ring-2 focus-visible:ring-amber-500/40 focus-visible:outline-none"
+          className="inline-flex items-center gap-1.5 shrink-0 min-h-[40px] px-3 rounded-xl bg-amber-800 hover:bg-amber-900 text-white font-semibold cursor-pointer disabled:opacity-60 focus-visible:ring-2 focus-visible:ring-amber-500/40 focus-visible:outline-none"
         >
           <RefreshCw className={`w-3.5 h-3.5 ${isUpdating ? 'animate-spin' : ''}`} aria-hidden="true" />
           {isUpdating ? 'Actualizando…' : 'Actualizar porcentajes'}

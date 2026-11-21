@@ -109,15 +109,16 @@ export const AchievementsTab: React.FC<AchievementsTabProps> = ({
           </h3>
 
           <div>
-            <label className="block text-gray-600 dark:text-ink-200 font-medium mb-1">
+            <label htmlFor="star-title" className="block text-gray-600 dark:text-ink-200 font-medium mb-1">
               Título del logro o proyecto
             </label>
             <input
+                id="star-title"
               type="text"
               required
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="Ej. Rediseño de arquitectura cloud para reducir costos operativos"
+              placeholder="Ej. Reduje los errores de despacho en la bodega"
               className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-ink-line bg-gray-50 dark:bg-ink-raised text-gray-900 dark:text-gray-100 focus:outline-none"
             />
           </div>
@@ -125,28 +126,30 @@ export const AchievementsTab: React.FC<AchievementsTabProps> = ({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {/* Situación */}
             <div>
-              <label className="block text-brand-700 dark:text-brand-400 font-bold mb-1">
-                S — Situación (Contexto y desafío inicial)
+              <label htmlFor="star-s" className="block text-brand-700 dark:text-brand-400 font-bold mb-1">
+                S — Situación (contexto y desafío)
               </label>
               <textarea
+                id="star-s"
                 rows={2}
                 value={situation}
                 onChange={(e) => setSituation(e.target.value)}
-                placeholder="La plataforma enfrentaba caídas por sobrecarga de tráfico durante promociones..."
+                placeholder="En temporada alta, 1 de cada 10 pedidos salía con errores y los clientes reclamaban..."
                 className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-ink-line bg-gray-50 dark:bg-ink-raised text-gray-900 dark:text-gray-100 resize-none focus:outline-none"
               />
             </div>
 
             {/* Tarea */}
             <div>
-              <label className="block text-indigo-700 dark:text-indigo-400 font-bold mb-1">
-                T — Tarea (Tu rol y responsabilidad)
+              <label htmlFor="star-t" className="block text-indigo-700 dark:text-indigo-400 font-bold mb-1">
+                T — Tarea (tu rol y responsabilidad)
               </label>
               <textarea
+                id="star-t"
                 rows={2}
                 value={task}
                 onChange={(e) => setTask(e.target.value)}
-                placeholder="Fui asignado como líder técnico para rediseñar la infraestructura en 2 meses..."
+                placeholder="Mi jefatura me pidió ordenar la preparación de pedidos en un mes..."
                 className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-ink-line bg-gray-50 dark:bg-ink-raised text-gray-900 dark:text-gray-100 resize-none focus:outline-none"
               />
             </div>
@@ -155,44 +158,47 @@ export const AchievementsTab: React.FC<AchievementsTabProps> = ({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {/* Acción */}
             <div>
-              <label className="block text-teal-700 dark:text-teal-400 font-bold mb-1">
-                A — Acción (Decisiones e iniciativas técnicas)
+              <label htmlFor="star-a" className="block text-teal-700 dark:text-teal-400 font-bold mb-1">
+                A — Acción (lo que hiciste tú)
               </label>
               <textarea
+                id="star-a"
                 rows={2}
                 required
                 value={action}
                 onChange={(e) => setAction(e.target.value)}
-                placeholder="Migré servicios monolíticos a contenedores, implementé auto-scaling y caché distribuida..."
+                placeholder="Reorganicé la bodega por rotación, creé una lista de control y capacité a 4 compañeros..."
                 className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-ink-line bg-gray-50 dark:bg-ink-raised text-gray-900 dark:text-gray-100 resize-none focus:outline-none"
               />
             </div>
 
             {/* Resultado */}
             <div>
-              <label className="block text-emerald-700 dark:text-emerald-400 font-bold mb-1">
-                R — Resultado (Impacto y métricas comprobables)
+              <label htmlFor="star-r" className="block text-emerald-700 dark:text-emerald-400 font-bold mb-1">
+                R — Resultado (impacto, con cifras si las tienes)
               </label>
               <textarea
+                id="star-r"
                 rows={2}
                 required
                 value={result}
                 onChange={(e) => setResult(e.target.value)}
-                placeholder="Disponibilidad subió al 99.98% y redujimos el gasto de servidores en un 32%..."
+                placeholder="Los errores bajaron a 1 de cada 50 pedidos y despachamos un 20 % más por turno..."
                 className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-ink-line bg-gray-50 dark:bg-ink-raised text-gray-900 dark:text-gray-100 resize-none focus:outline-none"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-gray-600 dark:text-ink-200 font-medium mb-1">
+            <label htmlFor="star-skills" className="block text-gray-600 dark:text-ink-200 font-medium mb-1">
               Habilidades clave asociadas (separadas por coma)
             </label>
             <input
+                id="star-skills"
               type="text"
               value={skills}
               onChange={(e) => setSkills(e.target.value)}
-              placeholder="AWS, Docker, Resiliencia, Liderazgo técnico..."
+              placeholder="Control de inventario, trabajo en equipo, organización..."
               className="w-full p-2 rounded-xl border border-gray-200 dark:border-ink-line bg-gray-50 dark:bg-ink-raised text-gray-900 dark:text-gray-100 focus:outline-none"
             />
           </div>

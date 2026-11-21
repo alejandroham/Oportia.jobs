@@ -77,7 +77,7 @@ test('avisa de cambios sin guardar: seguir editando, descartar o guardar y salir
   await expect(page.getByLabel('Teléfono')).toHaveValue('+56 9 9999 8888');
 
   // Otra pestaña de Mi perfil también pregunta (antes la pestaña cambiaba y se perdían los cambios).
-  await page.getByRole('button', { name: /Qué busco/ }).first().click();
+  await page.getByRole('tab', { name: /Qué busco/ }).click();
   await expect(dialog).toBeVisible();
   await dialog.getByRole('button', { name: 'Guardar y salir' }).click();
   await expect(page).toHaveURL(/tab=busqueda/);

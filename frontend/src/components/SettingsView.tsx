@@ -21,14 +21,17 @@ export const SettingsView: React.FC = () => {
             Configura tu motor de IA, privacidad, apariencia y respaldos locales.
           </p>
         </div>
-        <nav
+        <div
+          role="tablist"
           aria-label="Pestañas de ajustes"
           className="flex items-center gap-1.5 p-1 rounded-2xl bg-gray-100 dark:bg-ink-raised border border-black/5 dark:border-white/5 overflow-x-auto no-scrollbar"
         >
           <button
             type="button"
+            role="tab"
+            aria-selected={activeSubTab === 'ai'}
             onClick={() => setActiveSubTab('ai')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition whitespace-nowrap cursor-pointer ${
+            className={`px-3 py-1.5 min-h-[44px] rounded-xl text-xs font-semibold transition whitespace-nowrap cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none ${
               activeSubTab === 'ai'
                 ? 'bg-white dark:bg-ink-hover text-gray-900 dark:text-white shadow-xs'
                 : 'text-gray-600 hover:text-gray-900 dark:hover:text-white'
@@ -38,8 +41,10 @@ export const SettingsView: React.FC = () => {
           </button>
           <button
             type="button"
+            role="tab"
+            aria-selected={activeSubTab === 'privacy'}
             onClick={() => setActiveSubTab('privacy')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition whitespace-nowrap cursor-pointer ${
+            className={`px-3 py-1.5 min-h-[44px] rounded-xl text-xs font-semibold transition whitespace-nowrap cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none ${
               activeSubTab === 'privacy'
                 ? 'bg-white dark:bg-ink-hover text-gray-900 dark:text-white shadow-xs'
                 : 'text-gray-600 hover:text-gray-900 dark:hover:text-white'
@@ -49,8 +54,10 @@ export const SettingsView: React.FC = () => {
           </button>
           <button
             type="button"
+            role="tab"
+            aria-selected={activeSubTab === 'appearance'}
             onClick={() => setActiveSubTab('appearance')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition whitespace-nowrap cursor-pointer ${
+            className={`px-3 py-1.5 min-h-[44px] rounded-xl text-xs font-semibold transition whitespace-nowrap cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none ${
               activeSubTab === 'appearance'
                 ? 'bg-white dark:bg-ink-hover text-gray-900 dark:text-white shadow-xs'
                 : 'text-gray-600 hover:text-gray-900 dark:hover:text-white'
@@ -60,8 +67,10 @@ export const SettingsView: React.FC = () => {
           </button>
           <button
             type="button"
+            role="tab"
+            aria-selected={activeSubTab === 'about'}
             onClick={() => setActiveSubTab('about')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition whitespace-nowrap cursor-pointer ${
+            className={`px-3 py-1.5 min-h-[44px] rounded-xl text-xs font-semibold transition whitespace-nowrap cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none ${
               activeSubTab === 'about'
                 ? 'bg-white dark:bg-ink-hover text-gray-900 dark:text-white shadow-xs'
                 : 'text-gray-600 hover:text-gray-900 dark:hover:text-white'
@@ -69,7 +78,7 @@ export const SettingsView: React.FC = () => {
           >
             Acerca de
           </button>
-        </nav>
+        </div>
       </div>
 
       {/* Subtab Content Panels */}
@@ -133,7 +142,7 @@ export const SettingsView: React.FC = () => {
               </div>
               <div>
                 <h2 className="text-sm font-bold text-ink dark:text-white">Acerca de Oportia Jobs IA</h2>
-                <p className="text-xs text-ink-muted">Versión 1.6.10 — Ecosistema inteligente de empleabilidad y desarrollo profesional.</p>
+                <p className="text-xs text-ink-muted">Versión 1.6.11 — Ecosistema inteligente de empleabilidad y desarrollo profesional.</p>
               </div>
             </div>
 

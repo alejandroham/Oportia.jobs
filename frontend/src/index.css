@@ -249,3 +249,16 @@
 }
 .printable-cv :where(p, li, span, h1, h2, h3, strong, em) { font-family: inherit; }
 .printable-cv :where(.font-light, .font-extralight, .font-thin) { font-weight: 400 !important; }
+
+/* 1.6.11 (DT-31): quien pide menos movimiento en su sistema no ve animaciones ni transiciones
+   (WCAG 2.3.3). Los indicadores de carga siguen visibles, pero sin girar. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -171,7 +171,7 @@ export const JobCard: React.FC<JobCardProps> = ({
               target="_blank"
               rel="noopener noreferrer"
               onClick={(e) => e.stopPropagation()}
-              aria-label={`Ver la oferta original de ${job.title} en ${getSourceLabel(job.source)} (se abre en una pestaña nueva)`}
+              aria-label={`Ver oferta original: ${job.title} en ${getSourceLabel(job.source)} (se abre en una pestaña nueva)`}
               className="inline-flex items-center gap-1 min-h-[32px] text-xs font-semibold text-brand-700 dark:text-brand-300 hover:underline focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none rounded"
             >
               Ver oferta original

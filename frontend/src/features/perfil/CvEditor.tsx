@@ -258,6 +258,7 @@ export const CvEditor: React.FC<CvEditorProps> = ({ profile, onProfileUpdated })
           <button
             type="button"
             onClick={() => toggleSection('personal')}
+            aria-expanded={Boolean(openSections.personal)}
             className="w-full p-4 flex items-center justify-between text-left hover:bg-gray-50/50 dark:hover:bg-ink-raised/40 transition"
           >
             <div className="flex items-center gap-2.5">
@@ -347,6 +348,7 @@ export const CvEditor: React.FC<CvEditorProps> = ({ profile, onProfileUpdated })
           <button
             type="button"
             onClick={() => toggleSection('summary')}
+            aria-expanded={Boolean(openSections.summary)}
             className="w-full p-4 flex items-center justify-between text-left hover:bg-gray-50/50 dark:hover:bg-ink-raised/40 transition"
           >
             <div className="flex items-center gap-2.5">
@@ -416,6 +418,7 @@ export const CvEditor: React.FC<CvEditorProps> = ({ profile, onProfileUpdated })
           <button
             type="button"
             onClick={() => toggleSection('experience')}
+            aria-expanded={Boolean(openSections.experience)}
             className="w-full p-4 flex items-center justify-between text-left hover:bg-gray-50/50 dark:hover:bg-ink-raised/40 transition"
           >
             <div className="flex items-center gap-2.5">
@@ -494,6 +497,7 @@ export const CvEditor: React.FC<CvEditorProps> = ({ profile, onProfileUpdated })
           <button
             type="button"
             onClick={() => toggleSection('skills')}
+            aria-expanded={Boolean(openSections.skills)}
             className="w-full p-4 flex items-center justify-between text-left hover:bg-gray-50/50 dark:hover:bg-ink-raised/40 transition"
           >
             <div className="flex items-center gap-2.5">

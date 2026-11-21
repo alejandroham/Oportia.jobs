@@ -28,7 +28,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigateToTab }) => {
                   Oportia Jobs IA
                 </span>
                 <span className="text-xs font-mono font-bold px-2 py-0.5 rounded-full bg-[#20A88A]/10 dark:bg-[#20A88A]/20 text-brand-700 dark:text-[#8AD9C4] border border-[#20A88A]/30">
-                  v1.6.10
+                  v1.6.11
                 </span>
               </div>
               <p className="text-xs text-gray-500 dark:text-ink-200">
@@ -57,7 +57,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigateToTab }) => {
               href="https://github.com/sponsors/alejandroham"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center space-x-1.5 px-4 py-2 rounded-full bg-rose-50 dark:bg-rose-950/50 hover:bg-rose-100 dark:hover:bg-rose-900/50 text-rose-700 dark:text-rose-300 border border-rose-300/60 dark:border-rose-800/60 transition shadow-xs active:scale-95 font-semibold animate-pulse hover:animate-none"
+              className="inline-flex items-center space-x-1.5 px-4 py-2 rounded-full bg-rose-50 dark:bg-rose-950/50 hover:bg-rose-100 dark:hover:bg-rose-900/50 text-rose-700 dark:text-rose-300 border border-rose-300/60 dark:border-rose-800/60 transition shadow-xs active:scale-95 font-semibold"
               title="Apoya el desarrollo continuo de Oportia Jobs IA en GitHub Sponsors"
             >
               <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500" />
@@ -71,53 +71,53 @@ export const Footer: React.FC<FooterProps> = ({ onNavigateToTab }) => {
         <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-6 gap-y-2 text-xs font-medium">
           <Link
             to="/"
-            className="hover:text-brand-700 dark:hover:text-brand-300 transition"
+            className="inline-flex items-center min-h-[24px] hover:text-brand-700 dark:hover:text-brand-300 transition"
           >
             Inicio
           </Link>
           <InstallAppButton variant="link" label="Instalar en tu celular" />
           <Link
             to="/conoce-oportia"
-            className="hover:text-brand-700 dark:hover:text-brand-300 transition"
+            className="inline-flex items-center min-h-[24px] hover:text-brand-700 dark:hover:text-brand-300 transition"
           >
             Conoce Oportia
           </Link>
           <Link
             to="/empleos"
-            className="hover:text-brand-700 dark:hover:text-brand-300 transition"
+            className="inline-flex items-center min-h-[24px] hover:text-brand-700 dark:hover:text-brand-300 transition"
           >
             Buscar empleo
           </Link>
           <Link
             to="/postulaciones"
-            className="hover:text-brand-700 dark:hover:text-brand-300 transition"
+            className="inline-flex items-center min-h-[24px] hover:text-brand-700 dark:hover:text-brand-300 transition"
           >
             Mis postulaciones
           </Link>
           <Link
             to="/aprender"
-            className="hover:text-brand-700 dark:hover:text-brand-300 transition flex items-center space-x-1 text-brand-700 dark:text-[#8AD9C4] font-semibold"
+            className="min-h-[24px] hover:text-brand-700 dark:hover:text-brand-300 transition flex items-center space-x-1 text-brand-700 dark:text-[#8AD9C4] font-semibold"
           >
             <GraduationCap className="w-3 h-3" />
             <span>Aprender</span>
           </Link>
           <Link
             to="/perfil"
-            className="hover:text-brand-700 dark:hover:text-brand-300 transition"
+            className="inline-flex items-center min-h-[24px] hover:text-brand-700 dark:hover:text-brand-300 transition"
           >
             Mi perfil
           </Link>
           <button
             type="button"
             onClick={() => useFeedbackStore.getState().open('manual', 'pie')}
-            className="hover:text-brand-700 dark:hover:text-brand-300 transition flex items-center space-x-1 cursor-pointer"
+            className="min-h-[24px] hover:text-brand-700 dark:hover:text-brand-300 transition flex items-center space-x-1 cursor-pointer"
           >
             <MessageSquareHeart className="w-3 h-3" aria-hidden="true" />
             <span>Danos tu opinión</span>
           </button>
           <Link
             to="/ajustes"
-            className="hover:text-brand-700 dark:hover:text-brand-300 transition flex items-center space-x-1"
+            className="min-h-[24px] hover:text-brand-700 dark:hover:text-brand-300 transition flex items-center space-x-1"
           >
             <SettingsIcon className="w-3 h-3" />
             <span>Ajustes</span>

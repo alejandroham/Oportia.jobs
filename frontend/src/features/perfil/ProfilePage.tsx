@@ -48,10 +48,12 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
           </p>
         </div>
 
-        {/* 4 pestañas accesibles */}
-        <div className="flex flex-wrap items-center gap-1.5 p-1 rounded-2xl bg-gray-100 dark:bg-ink-raised text-xs font-semibold">
+        {/* 4 pestañas accesibles (DT-30: role="tablist" y aria-selected) */}
+        <div role="tablist" aria-label="Secciones de Mi perfil" className="flex flex-wrap items-center gap-1.5 p-1 rounded-2xl bg-gray-100 dark:bg-ink-raised text-xs font-semibold">
           <button
             type="button"
+            role="tab"
+            aria-selected={activeTab === 'cv'}
             onClick={() => handleTabChange('cv')}
             className={`inline-flex items-center gap-1.5 px-3.5 py-2 min-h-[44px] rounded-xl transition cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none ${
               activeTab === 'cv'
@@ -65,6 +67,8 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
 
           <button
             type="button"
+            role="tab"
+            aria-selected={activeTab === 'busqueda'}
             onClick={() => handleTabChange('busqueda')}
             className={`inline-flex items-center gap-1.5 px-3.5 py-2 min-h-[44px] rounded-xl transition cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none ${
               activeTab === 'busqueda'
@@ -78,6 +82,8 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
 
           <button
             type="button"
+            role="tab"
+            aria-selected={activeTab === 'logros'}
             onClick={() => handleTabChange('logros')}
             className={`inline-flex items-center gap-1.5 px-3.5 py-2 min-h-[44px] rounded-xl transition cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none ${
               activeTab === 'logros'
@@ -91,6 +97,8 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
 
           <button
             type="button"
+            role="tab"
+            aria-selected={activeTab === 'memoria'}
             onClick={() => handleTabChange('memoria')}
             className={`inline-flex items-center gap-1.5 px-3.5 py-2 min-h-[44px] rounded-xl transition cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none ${
               activeTab === 'memoria'

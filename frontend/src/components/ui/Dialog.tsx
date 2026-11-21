@@ -1,4 +1,5 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useId } from 'react';
+import { useFocusTrap } from '../../hooks/useFocusTrap';
 import { X } from 'lucide-react';
 
 export interface DialogProps {
@@ -21,6 +22,11 @@ export const Dialog: React.FC<DialogProps> = ({
   showCloseButton = true
 }) => {
   const dialogRef = useRef<HTMLDivElement>(null);
+  // DT-29: foco atrapado dentro y de vuelta al cerrar. Ids únicos por si hay dos diálogos abiertos.
+  useFocusTrap(dialogRef, isOpen);
+  const uid = useId();
+  const titleId = `dialog-title-${uid}`;
+  const descId = `dialog-description-${uid}`;
 
   useEffect(() => {
     if (!isOpen) return;
@@ -57,8 +63,8 @@ export const Dialog: React.FC<DialogProps> = ({
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-ink/60 backdrop-blur-xs animate-fade-in"
       role="dialog"
       aria-modal="true"
-      aria-labelledby={title ? 'dialog-title' : undefined}
-      aria-describedby={description ? 'dialog-description' : undefined}
+      aria-labelledby={title ? titleId : undefined}
+      aria-describedby={description ? descId : undefined}
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
@@ -72,7 +78,7 @@ export const Dialog: React.FC<DialogProps> = ({
             <div>
               {title && (
                 <h3
-                  id="dialog-title"
+                  id={titleId}
                   className="text-base font-bold text-ink dark:text-white"
                 >
                   {title}
@@ -80,7 +86,7 @@ export const Dialog: React.FC<DialogProps> = ({
               )}
               {description && (
                 <p
-                  id="dialog-description"
+                  id={descId}
                   className="text-xs text-ink-muted dark:text-ink-200 mt-0.5"
                 >
                   {description}

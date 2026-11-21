@@ -202,11 +202,18 @@ export function App() {
   return (
     <ErrorBoundary>
       <div className="min-h-screen bg-[#FBFBFD] dark:bg-ink-dark text-[#1D1D1F] dark:text-gray-100 transition-colors duration-300">
+        {/* DT-30: primer elemento enfocable; solo se ve al llegar con el teclado. */}
+        <a
+          href="#contenido"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[60] focus:px-4 focus:py-2.5 focus:rounded-xl focus:bg-brand-700 focus:text-white focus:text-sm focus:font-semibold focus:shadow-lg"
+        >
+          Saltar al contenido
+        </a>
         {/* Apple Frosted Navbar with 5 semantic tabs + AI status indicator */}
         <Navbar llmSettings={settings} />
 
         {/* Main Routed Content Area */}
-        <main className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8 pb-28 lg:pb-8">
+        <main id="contenido" tabIndex={-1} className="focus:outline-none max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8 pb-28 lg:pb-8">
           {isLoading ? (
             <div className="flex flex-col items-center justify-center min-h-[50vh] space-y-4">
               <img
@@ -343,9 +350,9 @@ export function App() {
           <button
             type="button"
             onClick={() => setIsOpiChatOpen(!isOpiChatOpen)}
-            aria-label={isOpiChatOpen ? 'Cerrar chat con Opi' : 'Abrir chat con Opi, tu copiloto profesional'}
+            aria-label={isOpiChatOpen ? 'Opi Copiloto: cerrar el chat' : 'Opi Copiloto: abrir el chat'}
             className="flex items-center justify-center gap-2.5 p-2 lg:px-4 lg:py-2.5 min-h-[48px] min-w-[48px] lg:min-h-[44px] rounded-full bg-gradient-to-tr from-ink via-ink-surface to-brand hover:opacity-95 text-white font-semibold text-xs shadow-xl hover:shadow-2xl hover:scale-105 active:scale-95 transition duration-200 border border-white/20 cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
-            title="Abrir chat con Opi, tu copiloto profesional"
+            title="Opi Copiloto: abrir el chat"
           >
             <OpiAvatar expression="saludando" size={26} decorative className="-my-1" />
             {/* DT-12: en celular y tablet solo el ícono (antes tapaba "Ver detalle" y "Danos tu opinión"). */}

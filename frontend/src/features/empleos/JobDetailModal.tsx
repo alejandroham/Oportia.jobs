@@ -1,5 +1,6 @@
 import { getSourceLabel, safeExternalUrl } from '../../utils/jobSource';
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
+import { useFocusTrap } from '../../hooks/useFocusTrap';
 import type { JobPosting, FitEvaluation } from '../../types';
 import { FitEvaluationSummary } from '../shared/FitEvaluationSummary';
 import { AINotConnectedBanner } from '../shared/AINotConnectedBanner';
@@ -38,6 +39,10 @@ export const JobDetailModal: React.FC<JobDetailModalProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [onClose]);
 
+  // DT-29: el panel lateral es un diálogo: foco al abrir, atrapado dentro y de vuelta al cerrar.
+  const panelRef = useRef<HTMLDivElement>(null);
+  useFocusTrap(panelRef, Boolean(job));
+
   if (!job) return null;
 
   const isTracked = job.status && job.status !== 'discovered';
@@ -51,7 +56,13 @@ export const JobDetailModal: React.FC<JobDetailModalProps> = ({
       />
 
       <div className="fixed inset-y-0 right-0 max-w-full flex pl-0 sm:pl-10">
-        <div className="w-screen max-w-xl bg-white dark:bg-ink-surface border-l border-gray-200 dark:border-ink-border shadow-2xl flex flex-col justify-between animate-slide-left">
+        <div
+          ref={panelRef}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="job-detail-title"
+          className="w-screen max-w-xl bg-white dark:bg-ink-surface border-l border-gray-200 dark:border-ink-border shadow-2xl flex flex-col justify-between animate-slide-left"
+        >
           {/* Header con botón cerrar */}
           <div className="p-5 border-b border-gray-100 dark:border-ink-border flex items-start justify-between gap-3 bg-white/80 dark:bg-ink-surface/80 backdrop-blur-md sticky top-0 z-10">
             <div className="space-y-1 pr-2">
@@ -63,7 +74,7 @@ export const JobDetailModal: React.FC<JobDetailModalProps> = ({
                   {job.modality || (job.is_remote ? 'Remoto' : 'Presencial')}
                 </span>
               </div>
-              <h2 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-gray-100 leading-tight">
+              <h2 id="job-detail-title" className="text-lg sm:text-xl font-bold text-gray-900 dark:text-gray-100 leading-tight">
                 {job.title}
               </h2>
             </div>
@@ -71,7 +82,8 @@ export const JobDetailModal: React.FC<JobDetailModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="p-2 rounded-xl text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-ink-raised transition"
+              data-autofocus
+              className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl text-gray-500 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-ink-raised transition focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
               aria-label="Cerrar detalle"
             >
               <X className="w-5 h-5" />

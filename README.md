@@ -3,7 +3,7 @@
 <div align="center">
 
 [![CI — Integración Continua](https://github.com/alejandroham/Oportia.jobs/actions/workflows/ci.yml/badge.svg)](https://github.com/alejandroham/Oportia.jobs/actions/workflows/ci.yml)
-[![Version](https://img.shields.io/badge/Versi%C3%B3n-1.6.10-blue.svg?style=for-the-badge)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/Versi%C3%B3n-1.6.11-blue.svg?style=for-the-badge)](CHANGELOG.md)
 [![Privacy: Ley 21.719](https://img.shields.io/badge/Privacidad-Ley%2021.719%20Chile-emerald.svg?style=for-the-badge)](PRIVACY.md)
 [![Security Policy](https://img.shields.io/badge/Seguridad-Security%20Policy-blueviolet.svg?style=for-the-badge)](SECURITY.md)
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Falejandroham%2FOportia.jobs)
@@ -58,6 +58,7 @@
 - **Cambiar de equipo:** "Recupera tus datos" en la portada restaura tu respaldo `.oportia`.
 - **Ofertas de otros portales:** botones "Buscar también en" abren tu búsqueda en Indeed, Computrabajo, Laborum, LinkedIn y la Bolsa Nacional de Empleo; si te gusta una oferta, pegas su texto y Oportia la ordena y la guarda en tus postulaciones (solo para ti).
 - **En celular, tablet y computador:** bajo 1024 px la navegación va en la barra inferior y Opi es un botón redondo que no tapa los botones; sin desplazamiento horizontal entre 360 y 1366 px. Una dirección que no existe muestra "No encontramos esta página".
+- **Accesible (WCAG 2.2 AA):** sin violaciones serias ni críticas de axe-core en las 6 secciones principales, en modo claro y oscuro; diálogos con el foco atrapado, pestañas con roles ARIA, enlace "Saltar al contenido" y sin animaciones si tu sistema pide reducir el movimiento.
 - **Privacidad a la vista:** la Política de privacidad y los Términos de uso se leen dentro de la app (`/privacidad` y `/terminos`), desde el pie de página, Ajustes y la guía de inicio, antes de subir tu CV.
 - **Tu opinión cuenta:** 👍/👎 de un toque, una tarjeta pequeña y el botón **Opinión** del menú; contacto solo con tu autorización.
 
@@ -199,7 +200,7 @@ pytest backend/tests -v
 # 2. Pruebas de Frontend (Vitest — 207 pruebas unitarias en entorno happy-dom)
 cd frontend && npm test
 
-# 3. Flujos End-to-End (Playwright — 29 pruebas en Chromium headless, incluye el PDF del CV y anchos de 360 a 1366 px)
+# 3. Flujos End-to-End (Playwright — 45 pruebas en Chromium headless, incluye el PDF del CV, anchos de 360 a 1366 px y accesibilidad con axe-core)
 cd frontend && npm run test:e2e
 
 # 4. Verificación de Tipos TypeScript y Build de Producción

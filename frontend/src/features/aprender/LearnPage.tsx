@@ -136,9 +136,11 @@ export const LearnPage: React.FC<LearnPageProps> = ({ profile }) => {
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-1.5 p-1 rounded-2xl bg-gray-100 dark:bg-ink-raised text-xs font-semibold">
+        <div role="tablist" aria-label="Secciones de Aprender" className="flex flex-wrap items-center gap-1.5 p-1 rounded-2xl bg-gray-100 dark:bg-ink-raised text-xs font-semibold">
           <button
             type="button"
+            role="tab"
+            aria-selected={activeTab === 'gaps'}
             onClick={() => setActiveTab('gaps')}
             className={`inline-flex items-center gap-1.5 px-3.5 py-2 min-h-[44px] rounded-xl transition cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none ${
               activeTab === 'gaps' ? 'bg-white dark:bg-ink-surface text-ink dark:text-white shadow-xs font-bold' : 'text-ink-muted hover:text-ink dark:hover:text-white'
@@ -150,6 +152,8 @@ export const LearnPage: React.FC<LearnPageProps> = ({ profile }) => {
 
           <button
             type="button"
+            role="tab"
+            aria-selected={activeTab === 'courses'}
             onClick={() => setActiveTab('courses')}
             className={`inline-flex items-center gap-1.5 px-3.5 py-2 min-h-[44px] rounded-xl transition cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none ${
               activeTab === 'courses' ? 'bg-white dark:bg-ink-surface text-ink dark:text-white shadow-xs font-bold' : 'text-ink-muted hover:text-ink dark:hover:text-white'
@@ -161,6 +165,8 @@ export const LearnPage: React.FC<LearnPageProps> = ({ profile }) => {
 
           <button
             type="button"
+            role="tab"
+            aria-selected={activeTab === 'paths'}
             onClick={() => setActiveTab('paths')}
             className={`inline-flex items-center gap-1.5 px-3.5 py-2 min-h-[44px] rounded-xl transition cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none ${
               activeTab === 'paths' ? 'bg-white dark:bg-ink-surface text-ink dark:text-white shadow-xs font-bold' : 'text-ink-muted hover:text-ink dark:hover:text-white'
@@ -172,6 +178,8 @@ export const LearnPage: React.FC<LearnPageProps> = ({ profile }) => {
 
           <button
             type="button"
+            role="tab"
+            aria-selected={activeTab === 'practice'}
             onClick={() => setActiveTab('practice')}
             className={`inline-flex items-center gap-1.5 px-3.5 py-2 min-h-[44px] rounded-xl transition cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none ${
               activeTab === 'practice' ? 'bg-white dark:bg-ink-surface text-ink dark:text-white shadow-xs font-bold' : 'text-ink-muted hover:text-ink dark:hover:text-white'
