@@ -49,7 +49,7 @@ export function atsChecks(markdown: string, pages: number | null, removedCount =
   const fewBullets = recent.filter((j) => j.bullets < 3);
   const tooMuchTech = jobs.filter((j) => j.tech > 12);
   return [
-    { label: 'Sin palabras partidas con guion', ok: !/[­‐]/.test(md), detail: 'La partición de palabras está desactivada en el CV.' },
+    { label: 'Sin palabras partidas con guion', ok: !/[\u00AD\u2010]/.test(md), detail: 'La partición de palabras está desactivada en el CV.' },
     { label: 'Fuente estándar (Arial, TrueType)', ok: true, detail: 'Nunca Type 3 ni pesos ExtraLight.' },
     {
       label: 'Cada cargo con su fecha en una línea propia',

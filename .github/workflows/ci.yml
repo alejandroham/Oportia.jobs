@@ -6,6 +6,8 @@ on:
       - main
       - master
       - 'fase-*'
+      # Cada versión se revisa en su rama antes de llegar a main (desde la 1.6.10).
+      - 'release/**'
   pull_request:
     branches:
       - main

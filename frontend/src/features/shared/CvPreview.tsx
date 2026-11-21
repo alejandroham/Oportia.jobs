@@ -65,6 +65,9 @@ export const CvPreview: React.FC<CvPreviewProps> = ({
   const autoActive = autoFit && !showFull && viewSource === 'tailored' && Boolean(tailoredMarkdown) && targetPages !== undefined;
   const shownMarkdown = tailoredMarkdown ? trimMarkdown(withProfileHeader(tailoredMarkdown, profile), autoActive ? trimLevel : 0) : '';
 
+  // La función de aviso puede cambiar en cada render del padre: se guarda en un ref para no volver a medir por eso.
+  const onPagesChangeRef = useRef(onPagesChange);
+  onPagesChangeRef.current = onPagesChange;
   const measure = useCallback((s: number) => (printableRef.current ? measurePrintHeight(printableRef.current, s) : 0), []);
 
   // Cada vez que cambia el contenido, la plantilla o la escala, se vuelve a medir (en el próximo cuadro).
@@ -73,7 +76,7 @@ export const CvPreview: React.FC<CvPreviewProps> = ({
       const h = measure(scale);
       const p = h > 0 ? pagesFor(h) : null;
       setPages(p);
-      onPagesChange?.(viewSource === 'tailored' ? p : null);
+      onPagesChangeRef.current?.(viewSource === 'tailored' ? p : null);
     });
     return () => cancelAnimationFrame(id);
   }, [measure, scale, template, viewSource, tailoredMarkdown, profile, trimLevel, showFull]);

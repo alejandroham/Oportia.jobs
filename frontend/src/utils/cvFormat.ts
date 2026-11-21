@@ -8,7 +8,7 @@ const KEYS: Record<string, number> = { ene: 1, jan: 1, feb: 2, mar: 3, abr: 4, a
 const CURRENT = /\b(actual|actualidad|presente|present|current|a la fecha|hoy|vigente)\b/i;
 
 /** Quita guiones blandos (U+00AD) y espacios de ancho cero; el guion U+2010 pasa a guion normal. */
-export const cleanText = (t: string) => (t || '').replace(/[­​]/g, '').replace(/‐/g, '-');
+export const cleanText = (t: string) => (t || '').replace(/[\u00AD\u200B]/g, '').replace(/\u2010/g, '-');
 
 function parseDate(text: string): [number, number] | null {
   const t = normalizeText(text || '');

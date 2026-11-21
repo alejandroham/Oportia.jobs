@@ -20,6 +20,11 @@ Octava corrección de la auditoría QA del 19-nov-2026 (QA-014, QA-032).
 - Sin HTTPS (por ejemplo, desde el celular en la red local) se mantiene el método anterior.
 - **Política de privacidad** actualizada (sección 4, versión 1.6.10) con este cambio.
 
+### 🔧 Integración continua (GitHub Actions)
+- **CI fallaba desde la 1.6.0** en el paso de lint del frontend por un solo error: `cvFormat.ts` tenía escritos literalmente un guion blando (U+00AD) y un espacio de ancho cero (U+200B) (`no-irregular-whitespace`). Como el lint corta el trabajo, **GitHub no corría el typecheck, las pruebas ni la compilación del frontend** desde entonces (sí se corrían en cada versión antes de publicar). Ahora esos caracteres van escritos como `\u00AD`, `\u200B` y `\u2010` (también en `atsCheck.ts` y en su prueba).
+- `CvPreview` guarda el aviso de páginas en un `ref` (quita la advertencia de dependencias de `useEffect` y evita volver a medir por eso).
+- **CI corre también en las ramas `release/**`**, para ver el resultado antes de publicar en `main`.
+
 ### 🧪 Pruebas
 - `crypto.test.ts` (4 nuevas): formato v2 sin semilla, llave no exportable, migración de dos claves antiguas (paquete AES y XOR) y migración que no toca nada si una clave no se puede leer.
 - `test_security_headers.py` (3): cabeceras en todas las rutas, CSP solo informe que cubre lo que carga la app, y permisos.

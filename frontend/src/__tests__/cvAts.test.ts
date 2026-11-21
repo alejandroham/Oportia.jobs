@@ -15,7 +15,7 @@ describe('formato ATS', () => {
     expect(formatPeriod({ start_date: '03/2023', end_date: '11/2024' })).toBe('Marzo 2023 – Noviembre 2024');
     expect(formatPeriod({ start_date: 'Oct 2026', end_date: 'Actual' })).toBe('Octubre 2026 – Actual');
     expect(formatEducation({ degree: 'Ingeniero en Informática', field_of_study: 'Informática', institution: 'U. X', graduation_year: '2015' })).toBe('Ingeniero en Informática – U. X (2015)');
-    expect(cleanText('trans­formación')).toBe('transformación');
+    expect(cleanText('trans\u00ADformación')).toBe('transformación');
   });
 
   it('pregunta cuando el mismo cargo tiene fechas distintas, y recuerda si son cargos distintos', () => {
