@@ -4,9 +4,8 @@ import { CvExperienceSection } from './CvExperienceSection';
 import { CvOrderBar } from './CvOrderBar';
 import { CHILE_REGIONS } from '../../utils/chileRegions';
 
-const EMAIL_OK = /^[^@\s]{1,64}@[^@\s]+\.[^@\s]{2,}$/;
-// Chile (+56 9 1234 5678, 9 1234 5678, fijo +56 2 2345 6789) u otro país con +código.
-const PHONE_OK = /^\+?[\d\s().-]{8,20}$/;
+import { contactErrors, MAX_LENGTH } from '../../utils/validation';
+import { UnsavedChangesGuard } from '../../components/common/UnsavedChangesDialog';
 import { isOutOfOrder, sortEducation, sortExperiences, withChronologicalOrder } from '../../utils/cvOrder';
 import { CvSkillsSection } from './CvSkillsSection';
 import { CvPreviewModal } from './CvPreviewModal';
@@ -65,7 +64,24 @@ export const CvEditor: React.FC<CvEditorProps> = ({ profile, onProfileUpdated })
     if (isOutOfOrder(formData) || formData.cv_order === 'manual') toast.info('Ordené tu experiencia y tus estudios por fecha. Recuerda guardar.');
   };
 
-  const handleSave = () => {
+  // DT-23: nombre vacío, correo o teléfono inválidos bloquean el guardado (antes se guardaban igual).
+  const errors = contactErrors(formData);
+  const hasErrors = Object.keys(errors).length > 0;
+  const [showErrors, setShowErrors] = useState(false);
+
+  // DT-25: hay cambios sin guardar si el formulario difiere del perfil guardado.
+  const isDirty = JSON.stringify(formData) !== JSON.stringify(withLinks(profile));
+
+  const handleSave = (): boolean => {
+    if (hasErrors) {
+      setShowErrors(true);
+      setOpenSections((prev) => ({ ...prev, personal: true }));
+      toast.error('Revisa los datos marcados en rojo antes de guardar.', 'No se guardó');
+      const first = (['name', 'email', 'phone'] as const).find((k) => errors[k]);
+      window.setTimeout(() => document.getElementById(`cv-${first}`)?.focus(), 50);
+      return false;
+    }
+    setShowErrors(false);
     const links = (formData.links || []).filter((l) => l.url.trim());
     onProfileUpdated({
       ...formData,
@@ -76,6 +92,7 @@ export const CvEditor: React.FC<CvEditorProps> = ({ profile, onProfileUpdated })
       updated_at: new Date().toISOString()
     });
     toast.success('Perfil y CV guardados en tu navegador');
+    return true;
   };
 
   const applyAnalysis = (res: { profile: CandidateProfile; method?: 'ia' | 'reglas'; note?: string | null }, keepFrom?: CandidateProfile) => {
@@ -152,6 +169,7 @@ export const CvEditor: React.FC<CvEditorProps> = ({ profile, onProfileUpdated })
 
   return (
     <div className="space-y-6">
+      <UnsavedChangesGuard isDirty={isDirty} onSave={handleSave} />
       {/* Barra superior de acciones */}
       <div className="flex flex-wrap items-center justify-between gap-3 p-4 bg-white dark:bg-ink-surface rounded-2xl border border-gray-200/80 dark:border-ink-border shadow-sm">
         <div>
@@ -257,42 +275,39 @@ export const CvEditor: React.FC<CvEditorProps> = ({ profile, onProfileUpdated })
 
           {openSections.personal && (
             <div className="p-4 pt-0 border-t border-gray-100 dark:border-ink-border grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs animate-fade-in">
-              <div>
-                <label className="block text-gray-600 dark:text-ink-200 font-medium mb-1">Nombre Completo</label>
-                <input
-                  type="text"
-                  value={formData.name || ''}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full p-2 rounded-xl border border-gray-200 dark:border-ink-line bg-gray-50 dark:bg-ink-raised text-gray-900 dark:text-gray-100"
-                />
-              </div>
-              <div>
-                <label className="block text-gray-600 dark:text-ink-200 font-medium mb-1">Correo Electrónico</label>
-                <input
-                  type="email"
-                  value={formData.email || ''}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  aria-invalid={Boolean(formData.email && !EMAIL_OK.test(formData.email))}
-                  className="w-full p-2 rounded-xl border border-gray-200 dark:border-ink-line bg-gray-50 dark:bg-ink-raised text-gray-900 dark:text-gray-100"
-                />
-                {formData.email && !EMAIL_OK.test(formData.email) && (
-                  <p className="mt-1 text-xs text-amber-700 dark:text-amber-300">Revisa el correo: por ejemplo nombre@correo.cl.</p>
-                )}
-              </div>
-              <div>
-                <label className="block text-gray-600 dark:text-ink-200 font-medium mb-1">Teléfono</label>
-                <input
-                  type="tel"
-                  value={formData.phone || ''}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  placeholder="+56 9 1234 5678"
-                  aria-invalid={Boolean(formData.phone && !PHONE_OK.test(formData.phone))}
-                  className="w-full p-2 rounded-xl border border-gray-200 dark:border-ink-line bg-gray-50 dark:bg-ink-raised text-gray-900 dark:text-gray-100"
-                />
-                {formData.phone && !PHONE_OK.test(formData.phone) && (
-                  <p className="mt-1 text-xs text-amber-700 dark:text-amber-300">Revisa el número: por ejemplo +56 9 1234 5678.</p>
-                )}
-              </div>
+              {(
+                [
+                  { key: 'name', label: 'Nombre completo', type: 'text', autoComplete: 'name', max: MAX_LENGTH.name, placeholder: '' },
+                  { key: 'email', label: 'Correo electrónico', type: 'email', autoComplete: 'email', max: MAX_LENGTH.email, placeholder: 'nombre@correo.cl' },
+                  { key: 'phone', label: 'Teléfono', type: 'tel', autoComplete: 'tel', max: MAX_LENGTH.phone, placeholder: '+56 9 1234 5678' }
+                ] as const
+              ).map((f) => {
+                // El error se ve al escribir algo inválido o al intentar guardar (un nombre vacío solo al guardar).
+                const err = errors[f.key] && (showErrors || (f.key !== 'name' && formData[f.key])) ? errors[f.key] : undefined;
+                return (
+                  <div key={f.key}>
+                    <label htmlFor={`cv-${f.key}`} className="block text-gray-600 dark:text-ink-200 font-medium mb-1">
+                      {f.label}{f.key === 'name' && <span aria-hidden="true"> *</span>}
+                    </label>
+                    <input
+                      id={`cv-${f.key}`}
+                      type={f.type}
+                      autoComplete={f.autoComplete}
+                      maxLength={f.max}
+                      placeholder={f.placeholder || undefined}
+                      required={f.key === 'name'}
+                      value={formData[f.key] || ''}
+                      onChange={(e) => setFormData({ ...formData, [f.key]: e.target.value })}
+                      aria-invalid={Boolean(err)}
+                      aria-describedby={err ? `cv-${f.key}-error` : undefined}
+                      className={`w-full p-2 rounded-xl border bg-gray-50 dark:bg-ink-raised text-gray-900 dark:text-gray-100 ${err ? 'border-rose-500 dark:border-rose-400' : 'border-gray-200 dark:border-ink-line'}`}
+                    />
+                    {err && (
+                      <p id={`cv-${f.key}-error`} role="alert" className="mt-1 text-xs font-medium text-rose-700 dark:text-rose-300">{err}</p>
+                    )}
+                  </div>
+                );
+              })}
               <div>
                 <label htmlFor="cv-region" className="block text-gray-600 dark:text-ink-200 font-medium mb-1">Región</label>
                 <select
@@ -351,9 +366,11 @@ export const CvEditor: React.FC<CvEditorProps> = ({ profile, onProfileUpdated })
             <div className="p-4 pt-0 border-t border-gray-100 dark:border-ink-border space-y-3 text-xs animate-fade-in">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-gray-600 dark:text-ink-200 font-medium mb-1">Titular Profesional / Cargo Actual</label>
+                  <label htmlFor="cv-headline" className="block text-gray-600 dark:text-ink-200 font-medium mb-1">Titular profesional / cargo actual</label>
                   <input
+                    id="cv-headline"
                     type="text"
+                    maxLength={MAX_LENGTH.headline}
                     value={formData.headline || formData.primary_profession || ''}
                     onChange={(e) => setFormData({ ...formData, headline: e.target.value, primary_profession: e.target.value })}
                     placeholder="Ej. Técnico en Enfermería, Jefe de Obra, Ingeniero Comercial"

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useSearchParams } from 'react-router-dom';
 import type { CandidateProfile, UserPreferences, LLMSettings } from '../../types';
 import { CvEditor } from './CvEditor';
@@ -27,18 +27,11 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   const [searchParams, setSearchParams] = useSearchParams();
   const queryTab = searchParams.get('tab') as TabKey | null;
 
-  const [activeTab, setActiveTab] = useState<TabKey>(
-    queryTab && ['cv', 'busqueda', 'logros', 'memoria'].includes(queryTab) ? queryTab : 'cv'
-  );
-
-  useEffect(() => {
-    if (queryTab && ['cv', 'busqueda', 'logros', 'memoria'].includes(queryTab)) {
-      setActiveTab(queryTab);
-    }
-  }, [queryTab]);
+  // 1.6.9 (DT-25): la pestaña sale solo de la URL. Así, si hay cambios sin guardar en Mi CV y la
+  // navegación se detiene para preguntar, la pestaña no cambia por adelantado (y no se pierden los cambios).
+  const activeTab: TabKey = queryTab && ['cv', 'busqueda', 'logros', 'memoria'].includes(queryTab) ? queryTab : 'cv';
 
   const handleTabChange = (newTab: TabKey) => {
-    setActiveTab(newTab);
     setSearchParams(newTab === 'cv' ? {} : { tab: newTab });
   };
 

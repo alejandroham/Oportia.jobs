@@ -9,8 +9,7 @@ import { markFeedbackDone } from '../../utils/feedbackPrompt';
 
 export const SPONSOR_URL = 'https://github.com/sponsors/alejandroham';
 const RATING_LABELS = ['', 'No me sirvió', 'Poco útil', 'Útil', 'Muy útil', '¡Me encanta!'];
-const EMAIL_RE = /^[^@\s]{1,64}@[^@\s]+\.[^@\s]{2,}$/;
-const PHONE_RE = /^\+?[\d\s()-]{8,20}$/;
+import { isValidEmail, isValidPhone, MAX_LENGTH } from '../../utils/validation';
 
 const inputCls =
   'w-full p-2.5 rounded-xl border border-gray-200 dark:border-ink-line bg-gray-50 dark:bg-ink-raised text-sm text-gray-900 dark:text-gray-100 focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none';
@@ -42,8 +41,8 @@ export const FeedbackDialog: React.FC = () => {
   }, [isOpen, initialRating]);
 
   const hasContact = Boolean(email.trim() || phone.trim());
-  const emailOk = !email.trim() || EMAIL_RE.test(email.trim());
-  const phoneOk = !phone.trim() || PHONE_RE.test(phone.trim());
+  const emailOk = isValidEmail(email);
+  const phoneOk = isValidPhone(phone);
   const canSend = rating > 0 && emailOk && phoneOk && (!hasContact || consent) && !sending;
 
   const submit = async (e: React.FormEvent) => {
@@ -156,11 +155,11 @@ export const FeedbackDialog: React.FC = () => {
             <div className="grid sm:grid-cols-2 gap-2">
               <label className="block space-y-1">
                 <span className="text-xs font-semibold">Correo</span>
-                <input type="email" autoComplete="email" className={inputCls} value={email} onChange={(e) => setEmail(e.target.value)} placeholder="tu@correo.cl" aria-invalid={!emailOk} />
+                <input type="email" autoComplete="email" maxLength={MAX_LENGTH.email} className={inputCls} value={email} onChange={(e) => setEmail(e.target.value)} placeholder="tu@correo.cl" aria-invalid={!emailOk} />
               </label>
               <label className="block space-y-1">
                 <span className="text-xs font-semibold">Teléfono</span>
-                <input type="tel" autoComplete="tel" className={inputCls} value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+56 9 1234 5678" aria-invalid={!phoneOk} />
+                <input type="tel" autoComplete="tel" maxLength={MAX_LENGTH.phone} className={inputCls} value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+56 9 1234 5678" aria-invalid={!phoneOk} />
               </label>
             </div>
             {(!emailOk || !phoneOk) && <p className="text-xs text-rose-700 dark:text-rose-300">Revisa el {!emailOk ? 'correo' : 'teléfono'}.</p>}

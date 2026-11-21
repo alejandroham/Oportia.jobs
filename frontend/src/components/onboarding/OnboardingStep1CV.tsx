@@ -2,6 +2,7 @@ import React from 'react';
 import { Upload, CheckCircle2, Info, ArrowLeftRight } from 'lucide-react';
 import type { WorkExperience } from '../../types';
 import { BASIC_READING_LABEL } from '../../api';
+import { MAX_LENGTH } from '../../utils/validation';
 
 export interface OnboardingStep1CVProps {
   isUploading: boolean;
@@ -89,6 +90,7 @@ export const OnboardingStep1CV: React.FC<OnboardingStep1CVProps> = ({
               <label htmlFor="temp-name-input" className="text-xs text-ink-muted font-semibold uppercase">Tu Nombre</label>
               <input
                 id="temp-name-input"
+                maxLength={MAX_LENGTH.name}
                 type="text"
                 value={tempName}
                 onChange={(e) => setTempName(e.target.value)}
@@ -99,6 +101,7 @@ export const OnboardingStep1CV: React.FC<OnboardingStep1CVProps> = ({
               <label htmlFor="temp-title-input" className="text-xs text-ink-muted font-semibold uppercase">Titular / Cargo</label>
               <input
                 id="temp-title-input"
+                maxLength={MAX_LENGTH.headline}
                 type="text"
                 value={tempTitle}
                 onChange={(e) => setTempTitle(e.target.value)}

@@ -9,6 +9,7 @@ import { LearningPathsTab } from './LearningPathsTab';
 import { PracticeTab } from './PracticeTab';
 import { Target, BookOpen, Route, Dumbbell } from 'lucide-react';
 import { api } from '../../api';
+import { hasCvLoaded } from '../../utils/profileState';
 
 interface LearnPageProps {
   profile: CandidateProfile | null;
@@ -28,7 +29,7 @@ export const LearnPage: React.FC<LearnPageProps> = ({ profile }) => {
   // Brechas reales (requisitos de tus ofertas vs. tu CV)
   const [gapAnalysis, setGapAnalysis] = useState<GapAnalysis | null>(null);
   const [isLoadingDiagnostic, setIsLoadingDiagnostic] = useState(false);
-  const hasCv = Boolean(profile && profile.name?.trim().toLowerCase() !== 'candidato' && (profile.experiences?.length || profile.technical_skills?.length || profile.headline));
+  const hasCv = hasCvLoaded(profile);
 
   // Courses state
   const [courses, setCourses] = useState<LearningCourseResource[]>([]);

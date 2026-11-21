@@ -4,6 +4,7 @@ import { api, ApiError } from '../api';
 import { useAppStore } from './useAppStore';
 import { getAIStatus } from '../utils/aiStatus';
 import { isFitStale, profileFingerprint, withFreshFit } from '../utils/fitFreshness';
+import { hasCvLoaded } from '../utils/profileState';
 
 /** Ofertas por consulta a la IA (igual que RANK_MAX_JOBS en el servidor). */
 export const RANK_BATCH = 15;
@@ -22,9 +23,7 @@ export function useFitRanking() {
 
   const fingerprint = useMemo(() => profileFingerprint(profile, preferences), [profile, preferences]);
   const ai = getAIStatus(settings);
-  const hasCv = Boolean(
-    profile && profile.name?.trim().toLowerCase() !== 'candidato' && (profile.experiences?.length || profile.technical_skills?.length || profile.headline)
-  );
+  const hasCv = hasCvLoaded(profile);
   /** IA lista: clave propia, o IA gratuita aceptada y con cupo. */
   const aiReady = Boolean(settings.has_active_key) && ai.ready;
   /** La IA gratuita tiene cupo diario: el orden automático se modera. */

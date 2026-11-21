@@ -7,6 +7,7 @@ import { SuggestedRolesPanel } from './SuggestedRolesPanel';
 import { useCareerInsights } from '../../state/useCareerInsights';
 import { useAppStore } from '../../state/useAppStore';
 import { normalizeText } from '../../utils/searchText';
+import { hasCvLoaded } from '../../utils/profileState';
 
 interface SearchPreferencesTabProps {
   preferences: UserPreferences;
@@ -21,7 +22,7 @@ export const SearchPreferencesTab: React.FC<SearchPreferencesTabProps> = ({
   const toast = useToast();
   const { run, isRunning } = useCareerInsights();
   const profile = useAppStore((st) => st.profile);
-  const hasCv = Boolean(profile && profile.name?.trim().toLowerCase() !== 'candidato' && (profile.experiences?.length || profile.headline));
+  const hasCv = hasCvLoaded(profile);
   // Si Opi o la IA actualizan lo que buscas, refrescar el formulario.
   useEffect(() => {
     setFormData(preferences);

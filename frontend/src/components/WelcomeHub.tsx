@@ -91,7 +91,8 @@ export const WelcomeHub: React.FC<WelcomeHubProps> = ({
       {/* Saludo personalizado */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-black/5 dark:border-white/5 pb-4">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white tracking-tight">
+          {/* DT-26: un nombre muy largo se corta en 2 líneas en vez de desbordar el saludo. */}
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white tracking-tight min-w-0 break-words [overflow-wrap:anywhere] line-clamp-2">
             {candidateName ? `Hola, ${candidateName}` : 'Bienvenido a Oportia Jobs IA'}
           </h1>
           <p className="text-xs text-gray-500 dark:text-ink-200 mt-0.5">

@@ -5,6 +5,27 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
 
 ---
 
+## [1.6.9] - 2026-11-20 — *Formularios y estado del perfil*
+
+Séptima corrección de la auditoría QA del 19-nov-2026 (QA-039, QA-040, QA-041, QA-043).
+
+### 📝 Mi perfil
+- **No se guardan datos inválidos (QA-039, DT-23):** antes se guardaban un nombre vacío, `correo-invalido@@x` y `abc123!!` con solo una advertencia amarilla y el aviso "Perfil y CV guardados". Ahora "Guardar cambios" no guarda, avisa "No se guardó", marca los campos en rojo con su mensaje (`aria-invalid` y `aria-describedby`, anunciado a lectores de pantalla) y lleva el foco al primero. El formulario de Opinión usa el mismo validador (`utils/validation.ts`).
+- **Cambios sin guardar (QA-041, DT-25):** al ir a otra sección o a otra pestaña de Mi perfil con cambios pendientes, aparece un aviso propio con **Guardar y salir / Descartar cambios / Seguir editando**. Al cerrar o recargar la pestaña del navegador, el navegador pide confirmación.
+  - Para esto la app usa ahora un *data router* de React Router (`createBrowserRouter`), con toda la app en una sola ruta: las rutas de siempre no cambian.
+  - La pestaña activa de Mi perfil sale de la dirección (`?tab=`): así no cambia antes de confirmar.
+- **Largos máximos (QA-043, DT-26):** nombre 120, titular 150, correo 254 y teléfono 20 caracteres (también en la guía y en Opinión). Un nombre muy largo se corta en 2 líneas en el saludo de Inicio en vez de desbordarlo.
+
+### 🧭 "Tiene CV" (QA-040, DT-24)
+- Había **cinco versiones distintas** de la regla (barra superior, Inicio, Aprender, Qué busco, orden por compatibilidad y siguiente paso), y varias exigían el nombre: al borrarlo se bloqueaba Aprender aunque el CV estuviera cargado. Ahora hay una sola, `hasCvLoaded`, basada en el contenido del CV (texto analizado, experiencias o habilidades).
+
+### 🧪 Pruebas
+- `profile-forms.spec.ts` (Playwright, 4): datos inválidos no se guardan, largo máximo, Aprender sin nombre y los tres caminos del aviso de cambios sin guardar (incluido cambiar de pestaña).
+- `profileForms.test.ts` (8): `hasCvLoaded` con 5 perfiles, siguiente paso y validación de contacto.
+- Las 22 pruebas de Playwright anteriores pasan con el nuevo router.
+
+---
+
 ## [1.6.8] - 2026-11-20 — *Calidad de datos del CV*
 
 Sexta corrección de la auditoría QA del 19-nov-2026 (QA-005, QA-006, QA-007, QA-011, QA-030, QA-037). Probado con dos CV ficticios con la forma de los de la auditoría (`tests/fixtures/cv_tens_hospital.txt` y `cv_bodega_sin_vinetas.txt`).

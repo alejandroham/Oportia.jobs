@@ -1,4 +1,5 @@
 import type { CandidateProfile, UserPreferences, JobPosting, ApplicationDraft, LLMSettings } from '../types';
+import { hasCvLoaded } from './profileState';
 
 export interface NextStepAction {
   title: string;
@@ -17,11 +18,7 @@ export function computeNextStep(params: {
 }): NextStepAction {
   const { profile, preferences, jobs = [], applications = [] } = params;
 
-  const hasCV = Boolean(
-    profile?.name &&
-    profile.name.trim().toLowerCase() !== 'candidato' &&
-    ((profile.technical_skills?.length || 0) > 0 || (profile.experiences?.length || 0) > 0)
-  );
+  const hasCV = hasCvLoaded(profile);
   const hasPrefs = Boolean(preferences?.target_roles && preferences.target_roles.length > 0);
   const hasJobs = jobs.length > 0;
   const hasApplications = applications.length > 0;

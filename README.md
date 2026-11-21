@@ -3,7 +3,7 @@
 <div align="center">
 
 [![CI — Integración Continua](https://github.com/alejandroham/Oportia.jobs/actions/workflows/ci.yml/badge.svg)](https://github.com/alejandroham/Oportia.jobs/actions/workflows/ci.yml)
-[![Version](https://img.shields.io/badge/Versi%C3%B3n-1.6.8-blue.svg?style=for-the-badge)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/Versi%C3%B3n-1.6.9-blue.svg?style=for-the-badge)](CHANGELOG.md)
 [![Privacy: Ley 21.719](https://img.shields.io/badge/Privacidad-Ley%2021.719%20Chile-emerald.svg?style=for-the-badge)](PRIVACY.md)
 [![Security Policy](https://img.shields.io/badge/Seguridad-Security%20Policy-blueviolet.svg?style=for-the-badge)](SECURITY.md)
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Falejandroham%2FOportia.jobs)
@@ -196,10 +196,10 @@ El proyecto cuenta con una suite integral de pruebas con **100% de ejecución of
 # 1. Pruebas de Backend (Pytest — 258 pruebas unitarias y de integración offline)
 pytest backend/tests -v
 
-# 2. Pruebas de Frontend (Vitest — 195 pruebas unitarias en entorno happy-dom)
+# 2. Pruebas de Frontend (Vitest — 203 pruebas unitarias en entorno happy-dom)
 cd frontend && npm test
 
-# 3. Flujos End-to-End (Playwright — 25 pruebas en Chromium headless, incluye el PDF del CV y anchos de 360 a 1366 px)
+# 3. Flujos End-to-End (Playwright — 29 pruebas en Chromium headless, incluye el PDF del CV y anchos de 360 a 1366 px)
 cd frontend && npm run test:e2e
 
 # 4. Verificación de Tipos TypeScript y Build de Producción
