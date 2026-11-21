@@ -38,11 +38,25 @@ DATA_DIR.mkdir(parents=True, exist_ok=True)
 
 load_dotenv(BASE_DIR / ".env")
 
+def _read_app_version() -> str:
+    """
+    1.6.12 (DT-37): la versión vive en un solo lugar, frontend/package.json (se cambia con `npm version`).
+    En Vercel ese archivo viaja con la función de la API (vercel.json → includeFiles).
+    """
+    try:
+        return json.loads((BASE_DIR / "frontend" / "package.json").read_text(encoding="utf-8"))["version"]
+    except Exception:  # noqa: BLE001 - sin el archivo, la app sigue funcionando
+        return os.getenv("APP_VERSION", "desconocida")
+
+
+APP_VERSION = _read_app_version()
+
+
 class Settings:
     BASE_DIR: Path = BASE_DIR
     DATA_DIR: Path = DATA_DIR
     PROJECT_NAME: str = "Oportia Jobs IA - Tu talento. Tus decisiones. Tus oportunidades."
-    VERSION: str = "1.6.11"
+    VERSION: str = APP_VERSION
     
     # Storage Paths
     PROFILE_FILE: Path = DATA_DIR / "profile.json"

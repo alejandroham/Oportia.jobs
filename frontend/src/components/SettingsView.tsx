@@ -4,6 +4,7 @@ import { Cpu, Shield, Sun, Moon, Info } from 'lucide-react';
 import { useAppStore } from '../state/useAppStore';
 import { SettingsAIPanel } from './settings/SettingsAIPanel';
 import { SettingsPrivacyPanel } from './settings/SettingsPrivacyPanel';
+import { APP_VERSION } from '../utils/appVersion';
 
 export const SettingsView: React.FC = () => {
   const { darkMode, setDarkMode } = useAppStore();
@@ -142,19 +143,19 @@ export const SettingsView: React.FC = () => {
               </div>
               <div>
                 <h2 className="text-sm font-bold text-ink dark:text-white">Acerca de Oportia Jobs IA</h2>
-                <p className="text-xs text-ink-muted">Versión 1.6.11 — Ecosistema inteligente de empleabilidad y desarrollo profesional.</p>
+                <p className="text-xs text-ink-muted">Versión {APP_VERSION} — Ecosistema inteligente de empleabilidad y desarrollo profesional.</p>
               </div>
             </div>
 
             <div className="p-4 rounded-xl bg-gray-50 dark:bg-ink-raised/50 border border-black/5 dark:border-white/5 space-y-2 text-xs text-gray-600 dark:text-gray-300 leading-relaxed">
               <p>
-                <strong className="text-gray-900 dark:text-white">Arquitectura sin Estado (Opción A):</strong> Tus datos, postulaciones y claves se guardan en tu navegador (IndexedDB). El servidor recibe tu CV y tu clave solo cuando usas una función que los necesita, los procesa en memoria y no los guarda.
+                <strong className="text-gray-900 dark:text-white">Dónde están tus datos:</strong> tu perfil, tus postulaciones y tus claves se guardan en este navegador. El servidor recibe tu CV y tu clave solo cuando usas una función que los necesita, los procesa en memoria y no los guarda.
               </p>
               <p>
-                <strong className="text-gray-900 dark:text-white">Aviso de Responsabilidad:</strong> La Inteligencia Artificial puede cometer errores o alucinar datos. Revisa y aprueba siempre tus antecedentes y cartas de presentación antes de postular.
+                <strong className="text-gray-900 dark:text-white">La IA puede equivocarse:</strong> a veces se confunde o inventa datos. Revisa siempre tu CV y tu carta antes de postular.
               </p>
               <p>
-                <strong className="text-gray-900 dark:text-white">Stack Oficial:</strong> React 18, Vite, TypeScript, Tailwind CSS, FastAPI, Pydantic.
+                <strong className="text-gray-900 dark:text-white">Hecho con:</strong> React, Vite, TypeScript, Tailwind CSS, FastAPI y Pydantic. Código abierto en GitHub.
               </p>
             </div>
           </div>

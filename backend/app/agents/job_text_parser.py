@@ -65,6 +65,19 @@ def _find_deadline(text: str) -> Optional[str]:
     return None
 
 
+# 1.6.12 (DT-33): correo para postular escrito en el texto de la oferta (antes quedaba contact_email = null).
+_EMAIL_RE = re.compile(r"(?<![\w.+-])[\w.+-]+@[\w-]+(?:\.[\w-]+)*\.[a-z]{2,}(?![\w-])", re.I)
+
+
+def find_contact_email(text: str) -> Optional[str]:
+    """Primer correo de la oferta, saltando los de "no responder"."""
+    for m in _EMAIL_RE.finditer(text or ""):
+        email = m.group(0).strip(".").lower()
+        if not re.match(r"(?i)no-?reply|noresponder|no-responder", email):
+            return email
+    return None
+
+
 def _rule_based(text: str) -> Dict[str, Any]:
     lines = [l.strip() for l in text.splitlines() if l.strip()]
     title = next((l for l in lines[:5] if 3 < len(l) < 90), "Oferta pegada")
@@ -80,7 +93,7 @@ def _rule_based(text: str) -> Dict[str, Any]:
     return {
         "title": title, "company": company, "salary_range": salary.group(0) if salary else None,
         "modality": "Remoto" if remote else ("Híbrido" if hybrid else "Presencial"), "is_remote": remote,
-        "deadline": _find_deadline(text), "requirements": [],
+        "deadline": _find_deadline(text), "requirements": [], "contact_email": find_contact_email(text),
     }
 
 
@@ -146,6 +159,7 @@ def parse_job_text(text: str, url: Optional[str] = None, use_ai: bool = True) ->
         is_remote=bool(data.get("is_remote") or loc_remote), modality=data.get("modality") or "Presencial",
         salary_range=data.get("salary_range"), contract_type=data.get("contract_type"),
         deadline=data.get("deadline"), description=description[:8000], url=url or None,
+        contact_email=data.get("contact_email"),
         source="pegada", tags=["Pegada por ti"] + ([portal] if portal else []),
     )
     if suspicious:

@@ -3,6 +3,7 @@ import { InstallAppButton } from './InstallApp';
 import { useFeedbackStore } from '../state/useFeedbackStore';
 import { Link } from 'react-router-dom';
 import { Heart, Instagram, ExternalLink, ShieldCheck, GraduationCap, Settings as SettingsIcon, MessageSquareHeart } from 'lucide-react';
+import { APP_VERSION } from '../utils/appVersion';
 
 interface FooterProps {
   onNavigateToTab?: (tab: string) => void;
@@ -28,7 +29,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigateToTab }) => {
                   Oportia Jobs IA
                 </span>
                 <span className="text-xs font-mono font-bold px-2 py-0.5 rounded-full bg-[#20A88A]/10 dark:bg-[#20A88A]/20 text-brand-700 dark:text-[#8AD9C4] border border-[#20A88A]/30">
-                  v1.6.11
+                  v{APP_VERSION}
                 </span>
               </div>
               <p className="text-xs text-gray-500 dark:text-ink-200">

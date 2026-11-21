@@ -154,7 +154,7 @@ export const JobDetailModal: React.FC<JobDetailModalProps> = ({
             {job.tags && job.tags.length > 0 && (
               <div className="space-y-2">
                 <h4 className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-ink-200">
-                  Tecnologías y Palabras Clave
+                  Herramientas y competencias
                 </h4>
                 <div className="flex flex-wrap gap-1.5">
                   {job.tags.map((tag, i) => (

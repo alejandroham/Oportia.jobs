@@ -4,6 +4,7 @@ from typing import Any, Dict, List, Optional
 
 from app.models.schemas import JobPosting
 from app.utils.keywords import relevance_score
+from app.indexer.text import clean_description, clean_location_modality
 
 NO_KEYWORD_LIMIT = 60
 
@@ -14,6 +15,10 @@ def index_jobs(index: Dict[str, Any]) -> List[JobPosting]:
         if not isinstance(raw, dict) or not raw.get("title"):
             continue
         data = {"description": "", "company": "", **raw}
+        # DT-32: el índice ya publicado se limpia al leerlo (el de mañana ya viene limpio).
+        data["location"], data["modality"], data["is_remote"] = clean_location_modality(
+            data.get("location"), data.get("modality"), bool(data.get("is_remote")))
+        data["description"] = clean_description(data.get("description"))
         try:
             out.append(JobPosting(**data))
         except Exception:  # noqa: BLE001 - un registro dañado no rompe la búsqueda

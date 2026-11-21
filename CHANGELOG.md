@@ -5,6 +5,49 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
 
 ---
 
+## [1.6.12] - 2026-11-20 — *Contenido, datos del índice y deuda técnica*
+
+Décima y última versión del plan de la auditoría QA del 19-nov-2026 (QA-017, QA-019, QA-020, QA-021, QA-022, QA-025, QA-033, QA-034, QA-035, QA-038, QA-044, QA-046, QA-049).
+
+### 🗂️ Ofertas del índice (DT-32)
+Medido en el índice real (2.028 ofertas):
+- **Descripciones cortadas a media palabra** (467 en exactamente 500 caracteres, por ejemplo "…Postulación oficial a "): ahora se cortan en la última palabra completa y terminan en "…".
+- **Palabras pegadas y restos del portal:** "convpostularavisoTrabajo" (34 veces) y palabras unidas como "PrimariaAtención" se separan o quitan. Las que se escriben juntas a propósito (TypeScript, JavaScript, WordPress, LinkedIn…) se respetan.
+- **Ubicación y modalidad mezcladas:** "Chile — Híbrido", "Remote — Remote_local" o "Chile — No_remote" pasan a ubicación "Chile" o "Remoto" y modalidad Híbrido, Remoto o Presencial (antes se mostraba "Híbrido • Presencial"). Aparecen 41 ofertas híbridas que figuraban como presenciales.
+- La limpieza se aplica al armar el índice y **también al leerlo**, así el índice ya publicado se ve bien hoy.
+
+### 📨 Importar oferta (DT-33)
+- **El correo para postular escrito en el texto** se guarda en la oferta (antes `contact_email` quedaba vacío, con o sin IA). Se saltan los correos "no responder".
+
+### 🗣️ Textos y glosario (DT-34)
+- **Sin jerga:** Ajustes > Acerca de ya no dice "Arquitectura sin Estado (Opción A)", "IndexedDB" ni "Stack Oficial"; el chat dice "Tu privacidad" en vez de "Soberanía Digital & Privacidad por Diseño".
+- **"Herramientas y competencias"** en vez de "Tecnologías" en Mi perfil y en el detalle de la oferta (sirve para cualquier área).
+- **Un solo nombre para Opinión:** "Danos tu opinión" (la portada decía "Darnos tu opinión").
+- **Cursos (QA-046):** "Cursos y capacitaciones" en vez de "Cursos Gratuitos y Verificados" (son búsquedas en SENCE, Coursera, Platzi y edX), sin el contador "4 recursos disponibles" que no calzaba.
+- **Saludo** con el primer nombre y mayúscula inicial ("Hola, Paula").
+
+### 🧩 Detalles (DT-35)
+- **"1 oferta disponible"** (antes "1 ofertas disponibles"), también en los avisos de búsqueda y orden.
+- **Confirmaciones con el diálogo de Oportia** en vez de `window.confirm()`: vaciar el radar, quitar una postulación y reanalizar el CV.
+- **Hora del chat** siempre en formato de 24 horas ("21:05"), también en mensajes guardados con otro formato ("9:05 PM" o fecha ISO).
+- **Mismos formatos de CV** en la guía y en Mi perfil (Mi perfil no aceptaba `.txt`).
+
+### 🎤 Entrevista (DT-36)
+- **Preguntas tipo por área:** en vez de 3 preguntas fijas que hablaban de "habilidades técnicas" para cualquier cargo y se presentaban como "Preguntas probables", ahora hay preguntas frecuentes del área de la oferta (salud, educación, comercio, bodega, administración, construcción, gastronomía, sector público o informática) con la etiqueta **"Preguntas tipo"** y la aclaración de que son sin IA.
+
+### 🔢 Versión en un solo lugar (DT-37)
+- Estaba escrita a mano en 5 lugares. Ahora vive solo en **`frontend/package.json`** (se cambia con `npm version`): Vite la inyecta en la app (pie y Ajustes) y la API la lee del mismo archivo (que viaja con la función de Vercel por `includeFiles`). El `package.json` de la raíz ya no tiene versión.
+
+### 🧹 Calidad del código
+- **Lint sin errores ni advertencias** (se resolvió la última, en el chat de Opi).
+
+### 🧪 Pruebas
+- `test_content_cleanup.py` (12): versión única, correo de la oferta, corte de descripciones, palabras pegadas, ubicación y modalidad, e índice publicado limpio al leerlo.
+- `contentCleanup.test.ts` (6): versión, plurales, hora del chat, formatos de CV y preguntas tipo por área.
+- `profile-forms.spec.ts`: vaciar el radar usa el diálogo de Oportia (sin `confirm()`).
+
+---
+
 ## [1.6.11] - 2026-11-20 — *Accesibilidad WCAG 2.2 AA*
 
 Novena corrección de la auditoría QA del 19-nov-2026 (QA-013, QA-024, QA-036, QA-047 y parte de QA-048).

@@ -25,6 +25,8 @@ import { getJobExpiry, parseDay } from '../../utils/jobExpiry';
 import { useFitRanking, RANK_BATCH } from '../../state/useFitRanking';
 import { isFitStale, withFreshFit } from '../../utils/fitFreshness';
 import { StaleFitBanner } from '../../components/ui/StaleFitBanner';
+import { useConfirm } from '../../components/ui/useConfirm';
+import { plural } from '../../utils/format';
 
 interface JobSearchPageProps {
   jobs: JobPosting[];
@@ -46,6 +48,7 @@ export const JobSearchPage: React.FC<JobSearchPageProps> = ({
   onNavigateToTracker
 }) => {
   const toast = useToast();
+  const [confirm, confirmDialog] = useConfirm();
   const { setJobs, addOrUpdateJob, removeJob, preferences } = useAppStore();
 
   // Search and filter states
@@ -137,7 +140,7 @@ export const JobSearchPage: React.FC<JobSearchPageProps> = ({
         const existingIds = new Set(existingTracked.map((j) => j.id));
         const merged = [...existingTracked, ...found.filter((j) => !existingIds.has(j.id))];
         await store.setJobs(merged);
-        toast.success(`Búsqueda completada: ${found.length} ofertas encontradas`);
+        toast.success(`Búsqueda completada: ${plural(found.length, 'oferta encontrada', 'ofertas encontradas')}`);
       } else {
         toast.info('No se encontraron ofertas nuevas con esos términos');
       }
@@ -217,7 +220,7 @@ export const JobSearchPage: React.FC<JobSearchPageProps> = ({
     try {
       const n = await rank(batch);
       setSortBy('fit_desc');
-      toast.success(`${n} ofertas ordenadas por compatibilidad`, pending.length > RANK_BATCH ? 'Vuelve a pulsar para ordenar las siguientes.' : undefined);
+      toast.success(`${plural(n, 'oferta ordenada', 'ofertas ordenadas')} por compatibilidad`, pending.length > RANK_BATCH ? 'Vuelve a pulsar para ordenar las siguientes.' : undefined);
     } catch (e: any) {
       if (isAIBusyError(e)) {
         toast.withAction(AI_BUSY_MESSAGE, { label: 'Reintentar', onClick: () => void handleBatchRank() });
@@ -253,9 +256,15 @@ export const JobSearchPage: React.FC<JobSearchPageProps> = ({
 
   // Clear radar
   const handleClearRadar = async () => {
-    if (window.confirm('¿Seguro que deseas vaciar todas las ofertas no guardadas de tu radar?')) {
+    const ok = await confirm({
+      title: 'Vaciar el radar',
+      message: 'Se quitarán todas las ofertas que no guardaste. Las de Mis postulaciones se conservan.',
+      confirmLabel: 'Vaciar radar',
+      danger: true
+    });
+    if (ok) {
       await setJobs([]);
-      toast.info('Radar vaciado con éxito');
+      toast.info('Radar vaciado');
     }
   };
 
@@ -349,6 +358,7 @@ export const JobSearchPage: React.FC<JobSearchPageProps> = ({
 
   return (
     <div className="space-y-6">
+      {confirmDialog}
       {/* Cabecera y Tooltip informativo */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="space-y-1">
@@ -364,7 +374,7 @@ export const JobSearchPage: React.FC<JobSearchPageProps> = ({
             </div>
           </div>
           <p className="text-xs text-gray-500">
-            {filteredJobs.length} ofertas disponibles · Filtra por cargo, región o modalidad
+            {plural(filteredJobs.length, 'oferta disponible', 'ofertas disponibles')} · Filtra por cargo, región o modalidad
           </p>
         </div>
       </div>

@@ -18,6 +18,8 @@ import hashlib
 import logging
 import os
 import re
+
+from app.indexer.text import clean_description, clean_location_modality
 import sys
 import time
 from concurrent.futures import ThreadPoolExecutor
@@ -221,15 +223,16 @@ def is_current(job: JobPosting, now: datetime, first_seen: Optional[str] = None)
 
 def compact(job: JobPosting, first_seen: str, now: Optional[datetime] = None) -> Dict[str, object]:
     expires_at, estimated = compute_expiry(job, first_seen, now or datetime.now(timezone.utc))
+    location, modality, is_remote = clean_location_modality(job.location, job.modality, job.is_remote)
     record = {
         "id": stable_id(job),
         "title": job.title.strip(),
         "company": (job.company or "").strip(),
-        "location": job.location,
+        "location": location,
         "region": job.region,
         "commune": job.commune,
-        "modality": job.modality,
-        "is_remote": job.is_remote,
+        "modality": modality,
+        "is_remote": is_remote,
         "salary_range": job.salary_range,
         "contract_type": job.contract_type,
         "url": job.url,
@@ -237,7 +240,7 @@ def compact(job: JobPosting, first_seen: str, now: Optional[datetime] = None) ->
         "tags": (job.tags or [])[:6],
         "posted_at": job.posted_at,
         "deadline": job.deadline,
-        "description": re.sub(r"\s+", " ", job.description or "").strip()[:DESCRIPTION_CHARS],
+        "description": clean_description(job.description, DESCRIPTION_CHARS),
         "profession_category": job.profession_category or classify_area(job.title, f"{' '.join(job.tags or [])} {job.description or ''}"),
         "discovered_at": first_seen,
         "expires_at": expires_at,

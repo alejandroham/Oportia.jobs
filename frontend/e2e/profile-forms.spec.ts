@@ -90,3 +90,17 @@ test('avisa de cambios sin guardar: seguir editando, descartar o guardar y salir
   await expect(page).toHaveURL(/\/empleos$/);
   expect((await savedProfile(page)).phone).toBe('+56 9 9999 8888');
 });
+
+test('vaciar el radar pide confirmación con el diálogo de Oportia, no con confirm() (DT-35)', async ({ page }) => {
+  let nativeDialog = false;
+  page.on('dialog', async (d) => { nativeDialog = true; await d.dismiss(); });
+  await seed(page);
+  await page.goto('/empleos');
+  await page.getByRole('button', { name: 'Más opciones' }).click();
+  await page.getByRole('menuitem', { name: /Vaciar ofertas del radar/ }).or(page.getByRole('button', { name: /Vaciar ofertas del radar/ })).click();
+  const dialog = page.getByRole('dialog', { name: 'Vaciar el radar' });
+  await expect(dialog).toBeVisible();
+  await dialog.getByRole('button', { name: 'Cancelar' }).click();
+  await expect(dialog).toBeHidden();
+  expect(nativeDialog).toBe(false);
+});

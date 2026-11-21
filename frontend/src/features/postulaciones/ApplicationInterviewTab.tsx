@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import type { JobPosting, CandidateProfile } from '../../types';
 import { InterviewSimulator } from '../shared/InterviewSimulator';
+import { typicalInterviewQuestions } from '../../utils/interviewQuestions';
 import { HelpCircle, DollarSign, MessageSquare, ChevronDown, ChevronUp } from 'lucide-react';
 
 interface ApplicationInterviewTabProps {
@@ -14,11 +15,8 @@ export const ApplicationInterviewTab: React.FC<ApplicationInterviewTabProps> = (
 }) => {
   const [showTips, setShowTips] = useState(false);
 
-  const anticipatedQuestions = [
-    `¿Por qué te interesa el puesto de ${job.title} en ${job.company}?`,
-    `¿Qué experiencia previa tienes en las responsabilidades clave de esta vacante?`,
-    `Cuéntame sobre algún proyecto desafiante en el que hayas aplicado tus principales habilidades técnicas.`
-  ];
+  // DT-36: preguntas tipo del área de la oferta (sin IA), no 3 preguntas fijas "técnicas" para todos.
+  const { area, questions: anticipatedQuestions } = typicalInterviewQuestions(job);
 
   const questionsToAsk = [
     '¿Cuáles son los principales desafíos de este equipo durante los primeros 6 meses?',
@@ -40,8 +38,11 @@ export const ApplicationInterviewTab: React.FC<ApplicationInterviewTabProps> = (
       <div className="p-5 rounded-2xl bg-white dark:bg-ink-surface border border-gray-200/80 dark:border-ink-border shadow-sm space-y-3">
         <h4 className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-ink-200 flex items-center gap-1.5">
           <HelpCircle className="w-3.5 h-3.5 text-brand-700 dark:text-brand-300" />
-          Preguntas probables para {job.title}
+          Preguntas tipo{area ? ` · ${area}` : ''}
         </h4>
+        <p className="text-xs text-ink-muted dark:text-ink-200">
+          Preguntas frecuentes en entrevistas {area ? 'de esta área' : 'de cualquier área'}, sin IA. Practica la que quieras en el simulador.
+        </p>
 
         <div className="space-y-2">
           {anticipatedQuestions.map((q, idx) => (

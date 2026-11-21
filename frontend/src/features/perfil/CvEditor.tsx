@@ -23,6 +23,8 @@ import { Dialog } from '../../components/ui/Dialog';
 import { SharedAICard } from '../../components/settings/SharedAICard';
 import { useNavigate } from 'react-router-dom';
 import { useCareerInsights } from '../../state/useCareerInsights';
+import { useConfirm } from '../../components/ui/useConfirm';
+import { CV_ACCEPT } from '../../utils/format';
 
 interface CvEditorProps {
   profile: CandidateProfile;
@@ -43,6 +45,7 @@ export const CvEditor: React.FC<CvEditorProps> = ({ profile, onProfileUpdated })
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const toast = useToast();
+  const [confirm, confirmDialog] = useConfirm();
   const navigate = useNavigate();
   const settings = useAppStore((st) => st.settings);
   const aiReady = Boolean(settings.has_active_key) && getAIStatus(settings).ready;
@@ -147,7 +150,12 @@ export const CvEditor: React.FC<CvEditorProps> = ({ profile, onProfileUpdated })
       setIsAiGateForReanalyze(true);
       return;
     }
-    if (!window.confirm('La IA volverá a leer tu CV y reemplazará tu experiencia, títulos, cursos y habilidades. Se conservan tus palabras clave y tus enlaces. ¿Continuar?')) return;
+    const ok = await confirm({
+      title: 'Reanalizar tu CV con IA',
+      message: 'La IA volverá a leer tu CV y reemplazará tu experiencia, títulos, cursos y habilidades. Se conservan tus palabras clave y tus enlaces.',
+      confirmLabel: 'Reanalizar'
+    });
+    if (!ok) return;
     setIsReanalyzing(true);
     try {
       const res = await api.reanalyzeCV(rawCvText);
@@ -170,6 +178,7 @@ export const CvEditor: React.FC<CvEditorProps> = ({ profile, onProfileUpdated })
   return (
     <div className="space-y-6">
       <UnsavedChangesGuard isDirty={isDirty} onSave={handleSave} />
+      {confirmDialog}
       {/* Barra superior de acciones */}
       <div className="flex flex-wrap items-center justify-between gap-3 p-4 bg-white dark:bg-ink-surface rounded-2xl border border-gray-200/80 dark:border-ink-border shadow-sm">
         <div>
@@ -186,7 +195,7 @@ export const CvEditor: React.FC<CvEditorProps> = ({ profile, onProfileUpdated })
           <label className="inline-flex items-center gap-1.5 px-3 py-2 min-h-[44px] rounded-xl border border-gray-200 dark:border-ink-line bg-gray-50 dark:bg-ink-raised text-xs font-semibold text-ink dark:text-gray-300 hover:bg-gray-100 cursor-pointer transition">
             {isUploading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5 text-brand-700 dark:text-brand-300" />}
             <span>{isUploading ? 'Procesando...' : 'Subir CV (PDF/Word)'}</span>
-            <input type="file" accept=".pdf,.docx,.doc" onChange={handleFileUpload} className="hidden" />
+            <input type="file" accept={CV_ACCEPT} onChange={handleFileUpload} className="hidden" />
           </label>
 
           {/* Reanalizar con IA (el CV ya cargado) */}
@@ -524,7 +533,7 @@ export const CvEditor: React.FC<CvEditorProps> = ({ profile, onProfileUpdated })
               <div className="mt-4 space-y-4">
                 <CvLanguagesSection languages={formData.languages || {}} onChange={(languages) => setFormData({ ...formData, languages })} />
                 <TagInput
-                  label="Tecnologías y palabras clave"
+                  label="Herramientas y competencias"
                   values={formData.keywords || []}
                   onChange={(keywords) => setFormData({ ...formData, keywords })}
                   placeholder="Términos con los que te buscarían para un cargo (ej. Soporte TI, Curaciones, SAP)"

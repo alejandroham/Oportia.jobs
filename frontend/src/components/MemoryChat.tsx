@@ -25,6 +25,7 @@ import { useAppStore, DEFAULT_EMPTY_PREFERENCES } from '../state/useAppStore';
 import { SharedAICard } from './settings/SharedAICard';
 import { saveClientStore, getClientStore } from '../utils/storage';
 import { parseProfileCommand, describeChange, applyProfileChanges, applyPreferenceChanges, isPreferenceChange, type ProfileChange } from '../utils/profileCommands';
+import { formatChatTime, nowChatTime } from '../utils/format';
 
 interface ChatMessage {
   id: string;
@@ -95,7 +96,7 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
     role: 'assistant',
     content:
       '¡Hola! Soy Opi 👋\nPuedo ayudarte a encontrar oportunidades, analizar tu CV, preparar entrevistas y descubrir qué habilidades puedes desarrollar.\nTú decides qué hacer; yo te ayudo a organizar el camino.',
-    timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    timestamp: nowChatTime(),
     quickReplies: [
       '🎯 Extraer logros STAR de mi CV',
       '📈 ¿Cómo subir mi compatibilidad con ofertas?',
@@ -150,10 +151,13 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
     setShowScrollBottomBtn(isUp);
   };
 
+  // Se lee el valor actual sin volver a desplazar cada vez que cambia (1.6.12: sin la advertencia de dependencias).
+  const scrolledUpRef = useRef(showScrollBottomBtn);
+  scrolledUpRef.current = showScrollBottomBtn;
   useEffect(() => {
     if (isFirstLoadRef.current) return;
-    // Only auto-scroll to bottom if user is already near bottom (do not interrupt reading previous messages)
-    if (!showScrollBottomBtn) {
+    // Solo baja si la persona ya estaba cerca del final (no interrumpe la lectura de mensajes anteriores).
+    if (!scrolledUpRef.current) {
       scrollToBottom('smooth');
     }
   }, [messages, isLoading]);
@@ -198,7 +202,7 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
     const commandText = (textToSend || inputValue).trim();
     const changes = commandText ? parseProfileCommand(commandText) : [];
     if (changes.length && !isLoading) {
-      const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const now = nowChatTime();
       const next: ChatMessage[] = [
         ...messages,
         { id: Math.random().toString(36).substring(2, 9), role: 'user', content: commandText, timestamp: now },
@@ -231,7 +235,7 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
       id: Math.random().toString(36).substring(2, 9),
       role: 'user',
       content: text,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      timestamp: nowChatTime()
     };
 
     // Extract chronological conversation history excluding initial welcome greeting
@@ -260,7 +264,7 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
         id: Math.random().toString(36).substring(2, 9),
         role: 'assistant',
         content: res.reply,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        timestamp: nowChatTime(),
         quickReplies: res.quick_replies && res.quick_replies.length > 0 ? res.quick_replies : undefined,
         learnedStory: res.new_story
           ? {
@@ -303,7 +307,7 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
             id: `resting-${Date.now()}`,
             role: 'assistant',
             content: AI_BUSY_MESSAGE,
-            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            timestamp: nowChatTime()
           } as ChatMessage
         ]);
         // Reintentar con el mismo texto: este handleSend conserva la conversación previa, así que
@@ -408,7 +412,7 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
           <div className="w-full text-left p-4 rounded-2xl bg-brand-50/80 dark:bg-brand-950/40 border border-brand-200/80 dark:border-brand-900/60 space-y-2 text-xs text-brand-950 dark:text-brand-200">
             <div className="flex items-center space-x-2 font-bold text-brand-700 dark:text-brand-300">
               <ShieldCheck className="w-4 h-4 text-brand-700 dark:text-brand-400 shrink-0" />
-              <span>Soberanía Digital & Privacidad por Diseño</span>
+              <span>Tu privacidad</span>
             </div>
             <p className="text-xs text-brand-900/90 dark:text-brand-200/90 leading-relaxed">
               <strong>Tu clave de API no se guarda en nuestros servidores</strong> ni se comparte con terceros: queda cifrada en tu equipo, igual que tu CV y tus conversaciones con Opi. Puedes descargar o borrar tus datos en Ajustes → Privacidad & Datos.
@@ -467,7 +471,7 @@ export const MemoryChat: React.FC<MemoryChatProps> = ({
                         isUser ? 'text-brand-100' : 'text-ink-muted'
                       }`}
                     >
-                      {msg.timestamp}
+                      {formatChatTime(msg.timestamp)}
                     </div>
                   </div>
 

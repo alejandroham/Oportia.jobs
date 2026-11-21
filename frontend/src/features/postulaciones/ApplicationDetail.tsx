@@ -13,6 +13,7 @@ import { safeExternalUrl } from '../../utils/jobSource';
 import { useToast } from '../../components/Toast';
 import { Dialog } from '../../components/ui/Dialog';
 import { Button } from '../../components/ui/Button';
+import { useConfirm } from '../../components/ui/useConfirm';
 
 interface ApplicationDetailProps {
   job: JobPosting;
@@ -53,6 +54,7 @@ export const ApplicationDetail: React.FC<ApplicationDetailProps> = ({
   const [outcomeReason, setOutcomeReason] = useState('');
   const [outcomeFeedback, setOutcomeFeedback] = useState('');
   const toast = useToast();
+  const [confirm, confirmDialog] = useConfirm();
 
   const handleStatusChange = async (newStatus: string) => {
     if (newStatus === 'rejected') {
@@ -134,6 +136,7 @@ export const ApplicationDetail: React.FC<ApplicationDetailProps> = ({
 
   return (
     <div className="space-y-5">
+      {confirmDialog}
       {/* Barra superior: Volver (móvil), Título, Enlace y Eliminar */}
       <div className="p-5 rounded-2xl bg-white dark:bg-ink-surface border border-gray-200/80 dark:border-ink-border shadow-sm space-y-4">
         {onBackToList && (
@@ -180,10 +183,14 @@ export const ApplicationDetail: React.FC<ApplicationDetailProps> = ({
             )}
             <button
               type="button"
-              onClick={() => {
-                if (window.confirm('¿Seguro que deseas eliminar esta postulación?')) {
-                  onDeleteJob(job.id);
-                }
+              onClick={async () => {
+                const ok = await confirm({
+                  title: 'Quitar postulación',
+                  message: `Se quitará «${job.title}» de Mis postulaciones, con sus documentos y notas.`,
+                  confirmLabel: 'Quitar',
+                  danger: true
+                });
+                if (ok) onDeleteJob(job.id);
               }}
               aria-label="Quitar postulación"
               className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl text-ink-muted hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition cursor-pointer focus-visible:ring-2 focus-visible:ring-rose-500/40 focus-visible:outline-none"

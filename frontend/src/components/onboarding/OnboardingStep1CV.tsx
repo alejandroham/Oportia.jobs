@@ -3,6 +3,7 @@ import { Upload, CheckCircle2, Info, ArrowLeftRight } from 'lucide-react';
 import type { WorkExperience } from '../../types';
 import { BASIC_READING_LABEL } from '../../api';
 import { MAX_LENGTH } from '../../utils/validation';
+import { CV_ACCEPT, CV_FORMATS_LABEL } from '../../utils/format';
 
 export interface OnboardingStep1CVProps {
   isUploading: boolean;
@@ -59,10 +60,10 @@ export const OnboardingStep1CV: React.FC<OnboardingStep1CVProps> = ({
         <span className="font-semibold text-ink dark:text-gray-200">
           {isUploading ? 'Analizando CV...' : 'Selecciona o arrastra tu archivo PDF o Word'}
         </span>
-        <span className="text-xs text-ink-muted mt-0.5">PDF, Word (.docx) o TXT · máximo 4 MB</span>
+        <span className="text-xs text-ink-muted mt-0.5">{CV_FORMATS_LABEL}</span>
         <input
           type="file"
-          accept=".pdf,.docx,.doc,.txt"
+          accept={CV_ACCEPT}
           onChange={onFileUpload}
           disabled={isUploading}
           className="hidden"

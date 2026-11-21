@@ -33,10 +33,10 @@ export const CoursesTab: React.FC<CoursesTabProps> = ({
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h2 className="text-sm font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
             <BookOpen className="w-4 h-4 text-brand-700 dark:text-brand-300" />
-            Cursos Gratuitos y Verificados
+            Cursos y capacitaciones
           </h2>
           <span className="text-xs text-gray-500">
-            {courses.length} recursos disponibles (Sence, Coursera, Platzi, edX)
+            Búsquedas en SENCE, Coursera, Platzi y edX: revisa en cada sitio el costo y la certificación
           </span>
         </div>
 

@@ -59,7 +59,12 @@ export const WelcomeHub: React.FC<WelcomeHubProps> = ({
   };
 
   // State checks for next action & checklist
-  const candidateName = profile?.name && profile.name.trim().toLowerCase() !== 'candidato' ? profile.name : null;
+  // DT-34: saludo con el primer nombre y mayúscula inicial ("Hola, Paula" y no "Hola, paula ficticia rojas").
+  const firstName = (profile?.name || '').trim().split(/\s+/)[0] || '';
+  const candidateName =
+    firstName && firstName.toLowerCase() !== 'candidato'
+      ? firstName.charAt(0).toLocaleUpperCase('es-CL') + firstName.slice(1).toLocaleLowerCase('es-CL')
+      : null;
   const hasCV = Boolean(
     profile?.name &&
     profile.name.trim().toLowerCase() !== 'candidato' &&
