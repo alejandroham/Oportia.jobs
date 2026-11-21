@@ -28,7 +28,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigateToTab }) => {
                   Oportia Jobs IA
                 </span>
                 <span className="text-xs font-mono font-bold px-2 py-0.5 rounded-full bg-[#20A88A]/10 dark:bg-[#20A88A]/20 text-brand-700 dark:text-[#8AD9C4] border border-[#20A88A]/30">
-                  v1.6.7
+                  v1.6.8
                 </span>
               </div>
               <p className="text-xs text-gray-500 dark:text-ink-200">

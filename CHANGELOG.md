@@ -5,6 +5,31 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
 
 ---
 
+## [1.6.8] - 2026-11-20 — *Calidad de datos del CV*
+
+Sexta corrección de la auditoría QA del 19-nov-2026 (QA-005, QA-006, QA-007, QA-011, QA-030, QA-037). Probado con dos CV ficticios con la forma de los de la auditoría (`tests/fixtures/cv_tens_hospital.txt` y `cv_bodega_sin_vinetas.txt`).
+
+### 🧾 Lectura del CV sin IA
+- **Empresa y cargo al revés (QA-005, DT-18):** "Hospital Ficticio del Puerto — TENS Servicio de Urgencia" quedaba con cargo "Hospital…". Ahora se puntúa cada parte del encabezado (señales de empresa: hospital, clínica, municipalidad, S.A., SpA, Ltda.…; de cargo: TENS, técnico, jefe, analista, operador…) y se invierten si corresponde. También se reconocen encabezados en dos líneas ("Desarrollador Frontend" / "Banco Ficticio").
+- **El último logro de un cargo se pegaba a la empresa del siguiente** ("Apoyo en procedimientos… Clínica Ficticia Costa"): una línea con viñeta nunca se toma como encabezado.
+- **Viñetas perdidas al extraer el PDF (QA-030, DT-22):** si el carácter "•" se pierde, cada línea es un logro (las que empiezan en minúscula o siguen a una coma continúan la anterior). Las viñetas pegadas en una línea ("• A • B • C") se separan.
+- **"LICENCIAS Y CURSOS"** y variantes se reconocen completas (antes quedaba el resto "y cursos").
+- **Sin datos genéricos (QA-011):** si no se reconoce la profesión, ya no se completan "Consultor / Especialista", "Servicios Profesionales" ni el nivel "Profesional Especialista"; quedan vacíos para completar.
+- La guía de inicio **preselecciona la región detectada** en el CV.
+
+### 📄 CV adaptado
+- **Viñetas duplicadas (QA-006, DT-20):** la descripción del cargo ya no incluye las viñetas (antes salían dos veces, una con "- "). Se descartan las viñetas que comparten el 60 % o más de sus palabras entre sí o con la descripción, y se quitan los guiones iniciales.
+- **Contradicciones (QA-007, QA-037, DT-21):** Oportia avisa en "Revisión para ATS", sin cambiar el CV, cuando el resumen dice otros años de experiencia que las fechas (*"Tu resumen dice 4 años de experiencia; tus fechas suman ~7"*) y cuando hay más de 6 meses sin experiencia entre cargos. El revisor recibe la fecha de hoy para no describir como terminado un cargo "Actual".
+
+### 🧭 Guía de inicio
+- **Confirmar experiencias (DT-19):** después de subir el CV se ven las experiencias detectadas con cargo y empresa editables y un botón ⇄ para intercambiarlos.
+
+### 🧪 Pruebas
+- `test_cv_quality.py` (20): 12 casos de empresa/cargo, descripción sin viñetas, similitud de viñetas, contradicciones de años y vacíos, CV de bodega sin viñetas, viñetas en una línea y región detectada.
+- `onboardingExperiences.test.tsx`: intercambiar y editar cargo y empresa en la guía.
+
+---
+
 ## [1.6.7] - 2026-11-20 — *IA más rápida*
 
 ### ⚡ Menos espera con la IA gratuita

@@ -8,6 +8,7 @@ from app.agents.llm_provider import llm, LLMProviderError, AINotConnectedError, 
 from app.storage.db import db
 import logging
 import json
+from datetime import date
 
 logger = logging.getLogger(__name__)
 
@@ -80,6 +81,8 @@ class DrafterReviewerPipeline:
             ats_notes.append("El perfil profesional quedó en tercera persona: revísalo o vuelve a adaptar.")
         if not profile.languages:
             ats_notes.append("Agrega tus idiomas en Mi perfil para que el CV tenga la sección Idiomas.")
+        # DT-21: años del resumen distintos a las fechas y vacíos largos: se avisa, no se decide en silencio.
+        ats_notes += cv_builder.coherence_warnings(profile)
         cv_markdown = cv_selection.insert_previous_experience(cv_markdown, others if options.include_previous else [])
 
         # Paso 2: el revisor audita (no bloqueante) sobre los documentos aún sin datos de contacto.
@@ -347,6 +350,9 @@ Responde SOLO con el texto de la carta, sin títulos, explicaciones ni Markdown.
 
         prompt = f"""
 AUDITA ESTA POSTULACIÓN:
+
+FECHA DE HOY: {date.today().isoformat()}. "Actual" o "Actualidad" en una fecha de término significa que el cargo sigue
+vigente hasta hoy: no lo describas como terminado ni lo cuentes como si terminara en otro año.
 
 OFERTA:
 {job.title} en {job.company}

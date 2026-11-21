@@ -165,11 +165,13 @@ def _infer_profession_metadata(text: str) -> Dict[str, Any]:
     # Fallback to headline or first professional line
     first_lines = [l.strip() for l in text.splitlines() if len(l.strip()) > 4][:5]
     detected = first_lines[1] if len(first_lines) > 1 else "Profesional"
+    # 1.6.8 (DT-22): sin profesión reconocida no se inventan cargos afines ni sectores genéricos
+    # (antes "Consultor / Especialista" y "Servicios Profesionales" aparecían en CV de bodega u oficios).
     return {
         "primary": detected,
         "equivalents": [detected],
-        "related": ["Consultor / Especialista"],
-        "sectors": ["Servicios Profesionales"]
+        "related": [],
+        "sectors": []
     }
 
 _SECTION_HEADINGS = {
@@ -188,7 +190,11 @@ _SECTION_HEADINGS = {
                 "perfeccionamiento", "formacion complementaria", "diplomados y cursos", "licencias", "certificados",
                 "certificaciones y cursos", "cursos y certificados", "capacitaciones y cursos", "certifications",
                 "courses", "training", "licenses and certifications", "licencias y certificaciones",
-                "cursos realizados", "capacitacion", "bootcamps", "cursos y talleres", "otros cursos"],
+                "cursos realizados", "capacitacion", "bootcamps", "cursos y talleres", "otros cursos",
+                # 1.6.8 (DT-22): antes "LICENCIAS Y CURSOS" se leía como "licencias" + el resto "y cursos".
+                "licencias y cursos", "cursos y licencias", "licencias y capacitaciones", "capacitaciones y licencias",
+                "certificaciones y licencias", "licencias de conducir", "licencias y certificados",
+                "cursos licencias y certificaciones", "cursos y certificaciones y licencias"],
     "skills": ["habilidades", "competencias", "conocimientos", "habilidades tecnicas", "competencias tecnicas",
                "skills", "herramientas", "software", "conocimientos tecnicos", "aptitudes"],
     "experience_prev": ["experiencia anterior", "otras experiencias", "experiencia previa", "experiencia adicional",
@@ -323,11 +329,42 @@ def _join_header(lines: List[str]) -> List[str]:
     """Une encabezados partidos en dos líneas ('…de la Región del' + 'Biobío')."""
     out: List[str] = []
     for l in lines:
-        if out and (_CONNECTOR_END_RE.search(out[-1]) or (len(l.split()) <= 2 and not re.search(r"[—–|·]", l))):
+        # Una línea corta continúa la anterior ("Biobío"), salvo que sea claramente un cargo o una empresa
+        # ("Asistente Social", "Banco Ficticio"): entonces es la otra mitad del encabezado (1.6.8).
+        short_continuation = len(l.split()) <= 2 and not re.search(r"[—–|·]", l) and _company_score(l) == 0
+        if out and (_CONNECTOR_END_RE.search(out[-1]) or short_continuation):
             out[-1] = f"{out[-1]} {l}"
         else:
             out.append(l)
     return out
+
+
+# 1.6.8 (DT-18): señales para saber qué parte del encabezado es la empresa y cuál el cargo.
+# Antes "Hospital Ficticio del Puerto — TENS Servicio de Urgencia" quedaba con cargo = "Hospital…".
+_COMPANY_HINTS = re.compile(
+    r"(?i)\b(hospital|cl[ií]nica|cesfam|consultorio|municipalidad|servicio de salud|ministerio|gobierno|"
+    r"universidad|instituto|liceo|colegio|escuela|jard[ií]n infantil|fundaci[oó]n|corporaci[oó]n|"
+    r"empresa|compa[ñn][ií]a|constructora|inmobiliaria|supermercado|banco|"
+    r"s\.?\s?a\.?|spa|s\.?p\.?a\.?|ltda\.?|limitada|e\.?i\.?r\.?l\.?|inc\.?|llc|ltd\.?|corp\.?|group|grupo|holding)(?=\W|$)")
+_ROLE_HINTS = re.compile(
+    r"(?i)\b(tens|t[eé]cnic[oa]|jef[ea]|encargad[oa]|supervisor[a]?|coordinador[a]?|gerente|director[a]?|"
+    r"analista|asistente|auxiliar|operador[a]?|operari[oa]|ayudante|vendedor[a]?|cajer[oa]|ejecutiv[oa]|"
+    r"ingenier[oa]|desarrollador[a]?|programador[a]?|dise[ñn]ador[a]?|enfermer[oa]|param[eé]dic[oa]|"
+    r"docente|profesor[a]?|educador[a]?|contador[a]?|administrativ[oa]|secretari[oa]|recepcionista|"
+    r"conductor[a]?|chofer|bodeguer[oa]|guardia|maestr[oa]|soldador[a]?|electricista|cociner[oa]|garz[oó]n|"
+    r"practicante|pr[aá]ctica|developer|engineer|manager|lead)\b")
+
+
+def _company_score(text: str) -> int:
+    """Positivo si parece empresa, negativo si parece cargo."""
+    return len(_COMPANY_HINTS.findall(text or "")) - len(_ROLE_HINTS.findall(text or ""))
+
+
+def _order_role_company(a: str, b: str) -> "tuple[str, str]":
+    """Devuelve (cargo, empresa). Si la primera parte parece empresa y la segunda cargo, se invierten."""
+    if _company_score(a) > 0 and _company_score(b) < 0:
+        return b, a
+    return a, b
 
 
 def _role_company(header: List[str]) -> "tuple[str, str]":
@@ -336,14 +373,27 @@ def _role_company(header: List[str]) -> "tuple[str, str]":
     for sep in (r"\s—\s", r"\s\|\s", r"\s·\s", r"\s–\s", r"\s-\s", r",\s(?=[A-ZÁÉÍÓÚ])"):
         parts = re.split(sep, text, maxsplit=1)
         if len(parts) == 2 and parts[0].strip() and parts[1].strip():
-            return parts[0].strip(), parts[1].strip()
-    if len(joined) >= 2:  # cargo en una línea y empresa en la siguiente
-        return joined[0].strip(), " ".join(joined[1:]).strip()
+            return _order_role_company(parts[0].strip(), parts[1].strip())
+    if len(joined) >= 2:  # cargo en una línea y empresa en la siguiente (o al revés)
+        return _order_role_company(joined[0].strip(), " ".join(joined[1:]).strip())
     return (text or "Cargo"), ""
 
 
 def _sentences(text: str) -> List[str]:
     return [x.strip(" .") for x in re.split(r"(?<=[.;])\s+(?=[A-ZÁÉÍÓÚÑ¿])", text) if len(x.strip(" .")) > 3]
+
+
+def _lines_as_items(lines: List[str]) -> List[str]:
+    items: List[str] = []
+    for l in lines:
+        l = l.strip()
+        if not l:
+            continue
+        if items and (l[:1].islower() or re.search(r"(?i)(,|\by|\bde|\bdel|\ben|\bcon|\bpara|-)$", items[-1].rstrip())):
+            items[-1] = f"{items[-1]} {l}"
+        else:
+            items.append(l)
+    return items
 
 
 def _parse_experiences(lines: List[str], loc: str) -> List[WorkExperience]:
@@ -352,7 +402,17 @@ def _parse_experiences(lines: List[str], loc: str) -> List[WorkExperience]:
     (que puede traer también "| Ciudad, Región, Chile" y el inicio de la descripción), y el cuerpo.
     Una línea es encabezado si la siguiente (o la subsiguiente) trae un rango de fechas.
     """
-    rows = [l for l in lines if l]
+    # 1.6.8 (DT-22): viñetas pegadas en una línea ("• A • B • C") se separan.
+    rows: List[str] = []
+    for l in lines:
+        if not l:
+            continue
+        parts = [p.strip() for p in re.split(r"\s+[●•▪■◦]\s+", l) if p.strip()]
+        if len(parts) > 1:
+            rows.append(parts[0])
+            rows += [f"• {p}" for p in parts[1:]]
+        else:
+            rows.append(l)
     entries: List[Dict[str, Any]] = []
     pending: List[str] = []
     for i, line in enumerate(rows):
@@ -372,7 +432,10 @@ def _parse_experiences(lines: List[str], loc: str) -> List[WorkExperience]:
         next2_has_range = bool(_RANGE_RE.search(rows[i + 2])) if i + 2 < len(rows) else False
         prev_open = i > 0 and rows[i - 1].rstrip().endswith((",", ":", "-", "y"))
         ends_sentence = line.rstrip().endswith((".", ",")) and not re.search(r"(?i)\b(?:s\.a|ltda|spa|inc|ltd|e\.i\.r\.l|s\.p\.a|cía)\.$", line.rstrip())
-        is_header_like = len(line) < 140 and not ends_sentence and not _TOOLS_RE.match(line) and not prev_open
+        # 1.6.8: una línea con viñeta es un logro, nunca el encabezado del cargo siguiente (antes el último
+        # logro de un cargo quedaba pegado a la empresa del siguiente).
+        is_header_like = (len(line) < 140 and not ends_sentence and not _TOOLS_RE.match(line) and not prev_open
+                          and not (_BULLET_RE.match(line) and entries))
         if is_header_like and (next_has_range or (next2_has_range and len(rows[i + 1]) < 60 and not _RANGE_RE.search(line))):
             pending.append(_BULLET_RE.sub("", line))
         elif entries:
@@ -389,7 +452,23 @@ def _parse_experiences(lines: List[str], loc: str) -> List[WorkExperience]:
             tech = [t for t in _split_top(body[tm.end():]) if 1 < len(t) <= 40][:40]
             body = body[: tm.start()].strip()
         bullet_lines = [_BULLET_RE.sub("", b) for b in e["body"] if _BULLET_RE.match(b)]
-        sentences = _sentences(body)
+        if not bullet_lines and len(e["body"]) >= 2:
+            # DT-22: el PDF perdió el carácter de viñeta: cada línea es un logro (una que empieza en
+            # minúscula o sigue a una coma/conector continúa la anterior). Si la primera es una frase larga
+            # terminada en punto, es la descripción del cargo.
+            items = _lines_as_items([b for b in e["body"] if not (tm and tm.group(0) in b)])
+            if len(items) >= 2:
+                if items[0].rstrip().endswith(".") and len(items[0]) >= 60 and len(items) >= 3:
+                    e["body"] = [items[0]] + [f"• {x}" for x in items[1:]]
+                else:
+                    e["body"] = [f"• {x}" for x in items]
+                bullet_lines = [_BULLET_RE.sub("", b) for b in e["body"] if _BULLET_RE.match(b)]
+        # 1.6.8 (DT-20): la descripción sale solo de las líneas que no son viñetas. Antes incluía las viñetas
+        # (con su "- ") y luego se repetían como logros en el CV adaptado.
+        prose = " ".join(b for b in e["body"] if not _BULLET_RE.match(b)).strip()
+        if tm:
+            prose = prose[: prose.find(tm.group(0))].strip() if tm.group(0) in prose else prose
+        sentences = _sentences(prose if bullet_lines else body)
         description = " ".join(sentences[:2])[:400] if sentences else ""
         achievements = bullet_lines or sentences[2:] or sentences
         experiences.append(WorkExperience(
@@ -683,7 +762,8 @@ def deterministic_cv_parser(text: str) -> CandidateProfile:
         headline=headline, summary=summary, years_of_experience=years,
         primary_profession=primary_profession, secondary_professions=[],
         equivalent_roles=prof_meta["equivalents"], related_roles=prof_meta["related"], economic_sectors=prof_meta["sectors"],
-        seniority_level="Profesional Especialista" if years >= 4 else "Profesional",
+        # DT-22: sin IA no se adivina el nivel ("Profesional Especialista" aparecía en oficios); queda por completar.
+        seniority_level="",
         region=detected_reg, commune=detected_comm,
         technical_skills=technical_skills, soft_skills=soft_skills, languages=languages,
         experiences=experiences, education=education, certifications=certifications, raw_cv_text=text,

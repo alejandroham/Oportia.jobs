@@ -184,17 +184,47 @@ def _first_sentences(text: str, max_chars: int = 230) -> str:
     return cut[: stop + 1] if stop > max_chars * 0.4 else cut[: cut.rfind(" ")].rstrip(",;:") + "…"
 
 
-def _bullets_for(exp: WorkExperience, ai_bullets: List[str]) -> List[str]:
-    bullets = [clean_text(str(b)).strip(" -•*") for b in (ai_bullets or []) if str(b).strip()]
+# 1.6.8 (DT-20): dos viñetas son "la misma" si comparten al menos el 60 % de sus palabras (Jaccard de raíces).
+# Antes solo se descartaban las idénticas y el CV adaptado repetía logros con otras palabras.
+SIMILAR_BULLETS = 0.6
+
+
+def _word_set(text: str) -> set:
+    return {stem(t) for t in tokens(text) if len(t) > 2}
+
+
+def similar_bullets(a: str, b: str) -> bool:
+    wa, wb = _word_set(a), _word_set(b)
+    if not wa or not wb:
+        return normalize(a) == normalize(b)
+    return len(wa & wb) / len(wa | wb) >= SIMILAR_BULLETS
+
+
+def _strip_bullet(text: str) -> str:
+    return re.sub(r"^\s*[-–—•*·▪●]+\s*", "", clean_text(str(text))).strip()
+
+
+def dedupe_bullets(bullets: List[str], against: Optional[List[str]] = None) -> List[str]:
+    """Quita guiones iniciales y las viñetas parecidas entre sí o a `against` (por ejemplo, la descripción)."""
+    out: List[str] = []
+    for b in bullets:
+        b = _strip_bullet(b).rstrip(".").strip()
+        if len(b) < 4:
+            continue
+        if any(similar_bullets(b, x) for x in out + list(against or [])):
+            continue
+        out.append(b)
+    return out
+
+
+def _bullets_for(exp: WorkExperience, ai_bullets: List[str], description: str = "") -> List[str]:
+    desc_sentences = [x for x in re.split(r"(?<=[.;])\s+", _strip_bullet(description)) if x.strip()]
+    bullets = dedupe_bullets([str(b) for b in (ai_bullets or []) if str(b).strip()], desc_sentences)
     if len(bullets) < MIN_BULLETS:
         # Sin IA (o con pocas viñetas): se usan los logros reales y, si faltan, las frases de las funciones.
-        real = [clean_text(b).strip(" -•*") for b in exp.bullet_achievements if b.strip()]
-        sentences = [s.strip() for s in re.split(r"(?<=[.;])\s+", clean_text(exp.description or "")) if len(s.strip()) > 25]
-        for b in real + sentences:
-            if len(bullets) >= MAX_BULLETS:
-                break
-            if normalize(b) not in {normalize(x) for x in bullets}:
-                bullets.append(b.rstrip("."))
+        real = [b for b in exp.bullet_achievements if b.strip()]
+        sentences = [x.strip() for x in re.split(r"(?<=[.;])\s+", clean_text(exp.description or "")) if len(x.strip()) > 25]
+        bullets = dedupe_bullets(bullets + real + sentences, desc_sentences)
     return bullets[:MAX_BULLETS]
 
 
@@ -226,10 +256,11 @@ def build_cv_markdown(profile: CandidateProfile, ai: Dict[str, Any], job: JobPos
             if when:
                 lines.append(when)
                 lines.append("")
-            desc = clean_text(str(item.get("descripcion") or "")).strip() or _first_sentences(exp.description or "")
+            desc = _strip_bullet(str(item.get("descripcion") or "")) or _strip_bullet(_first_sentences(exp.description or ""))
             if desc:
-                lines += [_first_sentences(desc, 260), ""]
-            for b in _bullets_for(exp, item.get("logros") or []):
+                desc = _first_sentences(desc, 260)
+                lines += [desc, ""]
+            for b in _bullets_for(exp, item.get("logros") or [], desc):
                 lines.append(f"- {b}")
             tech = technologies_for(exp, item.get("tecnologias") or [], profile, job)
             if tech:
@@ -294,3 +325,45 @@ THIRD_PERSON_RE = re.compile(r"\b(cuenta (además )?con|posee|el candidato|la ca
 
 def is_third_person(text: str) -> bool:
     return bool(THIRD_PERSON_RE.search(text or ""))
+
+
+# 1.6.8 (DT-21): contradicciones que Oportia avisa en vez de decidir en silencio. Nunca modifica el CV.
+_SUMMARY_YEARS_RE = re.compile(r"(?i)(?:m[aá]s de\s+)?(\d{1,2})\s*\+?\s*a[ñn]os(?:\s+de)?\s+(?:de\s+)?experiencia")
+GAP_MONTHS = 6
+
+
+def _months(d: Optional[Tuple[int, int]], default_month: int) -> Optional[int]:
+    if not d:
+        return None
+    return d[0] * 12 + ((d[1] or default_month) - 1)
+
+
+def coherence_warnings(profile: CandidateProfile, today: Optional[date] = None) -> List[str]:
+    """Avisos para revisar: años del resumen distintos a los de las fechas y vacíos de más de 6 meses."""
+    today = today or date.today()
+    notes: List[str] = []
+    computed = years_of_experience(profile)
+    m = _SUMMARY_YEARS_RE.search(profile.summary or "")
+    if m and computed and abs(int(m.group(1)) - computed) > 1:
+        notes.append(
+            f"Tu resumen dice {m.group(1)} años de experiencia; tus fechas suman ~{computed}. "
+            "Revisa cuál es correcto en Mi perfil (el CV adaptado usa las fechas)."
+        )
+    spans = []
+    for exp in profile.experiences:
+        start, end = split_period(exp)
+        s = _months(_parse_date(start), 1)
+        e = today.year * 12 + today.month - 1 if CURRENT_RE.search(end or "") else _months(_parse_date(end), 12)
+        if s is not None and e is not None and e >= s:
+            spans.append((s, e, exp))
+    spans.sort(key=lambda x: x[0])
+    covered_until = None
+    for s, e, exp in spans:
+        if covered_until is not None and s - covered_until - 1 > GAP_MONTHS:
+            gap = s - covered_until - 1
+            notes.append(
+                f"Hay {gap} meses sin experiencia antes de «{exp.role.strip()}». Si estudiaste, trabajaste por tu cuenta "
+                "o cuidaste a alguien, puedes agregarlo en Mi perfil."
+            )
+        covered_until = e if covered_until is None else max(covered_until, e)
+    return notes

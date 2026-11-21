@@ -6,7 +6,8 @@ import { api } from '../../api';
 import { withDetectedKeywords, initialSearchRoles, profileSearchTerms } from '../../utils/profileKeywords';
 import { useToast } from '../Toast';
 import { encryptApiKeyLocally } from '../../utils/crypto';
-import type { CandidateProfile, LLMSettings } from '../../types';
+import type { CandidateProfile, LLMSettings, WorkExperience } from '../../types';
+import { CHILE_REGIONS, canonicalRegion } from '../../utils/chileRegions';
 import { OnboardingStep1CV } from './OnboardingStep1CV';
 import { OnboardingStep2Preferences } from './OnboardingStep2Preferences';
 import { OnboardingStep3AI } from './OnboardingStep3AI';
@@ -38,6 +39,8 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const careerInsights = useCareerInsights();
   const [isUploading, setIsUploading] = useState(false);
+  /** 1.6.8 (DT-19): experiencias detectadas, editables antes de continuar. */
+  const [tempExperiences, setTempExperiences] = useState<WorkExperience[]>(profile?.experiences || []);
   /** null = el CV se leyó con IA (o aún no se sube); texto = lectura básica sin IA. */
   const [basicReadingNote, setBasicReadingNote] = useState<string | null>(null);
 
@@ -82,6 +85,11 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
       const detectedTitle = res.profile.headline || res.profile.primary_profession || '';
       setTempTitle(detectedTitle);
       setTempSkills(res.profile.technical_skills?.slice(0, 6) || []);
+      setTempExperiences(res.profile.experiences || []);
+      // DT-22: la región detectada en el CV se preselecciona (si la persona aún no eligió una).
+      const detected = canonicalRegion(res.profile.region);
+      const detectedName = CHILE_REGIONS.find((r) => r.id === detected)?.name;
+      if (detectedName && !preferences?.preferred_region) setPreferredRegion(detectedName);
       // Cargos normalizados ("TENS", "Técnico en Enfermería"), no el titular literal del CV.
       const roles = initialSearchRoles(res.profile);
       if (roles.length && targetRoles.length === 0) {
@@ -133,6 +141,9 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
         ...profile,
         name: tempName.trim() || profile.name,
         headline: tempTitle.trim() || profile.headline,
+        experiences: tempExperiences.length
+          ? tempExperiences.map((e) => ({ ...e, role: e.role.trim(), company: e.company.trim() }))
+          : profile.experiences,
         technical_skills: Array.from(new Set([...tempSkills, ...(profile.technical_skills || [])]))
       };
       await setProfile(updatedProfile);
@@ -273,6 +284,8 @@ export const OnboardingWizard: React.FC<OnboardingWizardProps> = ({
                 tempSkills={tempSkills}
                 setTempSkills={setTempSkills}
                 basicReadingNote={basicReadingNote}
+                experiences={tempExperiences}
+                setExperiences={setTempExperiences}
               />
             </>
           )}

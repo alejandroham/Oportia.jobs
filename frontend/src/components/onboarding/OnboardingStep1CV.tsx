@@ -1,5 +1,6 @@
 import React from 'react';
-import { Upload, CheckCircle2, Info } from 'lucide-react';
+import { Upload, CheckCircle2, Info, ArrowLeftRight } from 'lucide-react';
+import type { WorkExperience } from '../../types';
 import { BASIC_READING_LABEL } from '../../api';
 
 export interface OnboardingStep1CVProps {
@@ -13,6 +14,9 @@ export interface OnboardingStep1CVProps {
   setTempSkills: (val: string[]) => void;
   /** Si el CV se leyó sin IA: el aviso del servidor (se muestra fijo, no solo en un aviso pasajero). */
   basicReadingNote?: string | null;
+  /** 1.6.8 (DT-19): experiencias detectadas, para confirmarlas o corregirlas antes de seguir. */
+  experiences?: WorkExperience[];
+  setExperiences?: (val: WorkExperience[]) => void;
 }
 
 export const OnboardingStep1CV: React.FC<OnboardingStep1CVProps> = ({
@@ -24,8 +28,13 @@ export const OnboardingStep1CV: React.FC<OnboardingStep1CVProps> = ({
   setTempTitle,
   tempSkills,
   setTempSkills,
-  basicReadingNote
+  basicReadingNote,
+  experiences = [],
+  setExperiences
 }) => {
+  const updateExp = (idx: number, patch: Partial<WorkExperience>) =>
+    setExperiences?.(experiences.map((e, i) => (i === idx ? { ...e, ...patch } : e)));
+
   return (
     <div className="space-y-4 animate-fade-in text-xs">
       <div className="space-y-1">
@@ -97,6 +106,55 @@ export const OnboardingStep1CV: React.FC<OnboardingStep1CVProps> = ({
               />
             </div>
           </div>
+
+          {experiences.length > 0 && setExperiences && (
+            <fieldset className="space-y-2">
+              <legend className="text-xs text-ink-muted font-semibold uppercase mb-1">
+                Tu experiencia ({experiences.length}) · revisa que el cargo y la empresa estén bien
+              </legend>
+              <ul className="space-y-2">
+                {experiences.slice(0, 8).map((exp, idx) => (
+                  <li key={exp.id || idx} className="p-2.5 rounded-xl bg-white dark:bg-ink-raised border border-black/5 dark:border-white/10 space-y-2">
+                    <div className="grid grid-cols-[1fr_auto_1fr] items-end gap-1.5">
+                      <div>
+                        <label htmlFor={`exp-role-${idx}`} className="text-[11px] text-ink-muted font-semibold">Cargo</label>
+                        <input
+                          id={`exp-role-${idx}`}
+                          type="text"
+                          value={exp.role}
+                          onChange={(e) => updateExp(idx, { role: e.target.value })}
+                          className="w-full text-xs min-h-[40px] px-2 rounded-lg bg-gray-50 dark:bg-ink-surface border border-black/10 dark:border-white/10 text-ink dark:text-white focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => updateExp(idx, { role: exp.company, company: exp.role })}
+                        aria-label={`Intercambiar cargo y empresa de «${exp.role || 'esta experiencia'}»`}
+                        title="Intercambiar cargo y empresa"
+                        className="min-h-[40px] min-w-[40px] flex items-center justify-center rounded-lg border border-black/10 dark:border-white/10 text-brand-700 dark:text-brand-300 hover:bg-brand-50 dark:hover:bg-brand-950/40 cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
+                      >
+                        <ArrowLeftRight className="w-4 h-4" aria-hidden="true" />
+                      </button>
+                      <div>
+                        <label htmlFor={`exp-company-${idx}`} className="text-[11px] text-ink-muted font-semibold">Empresa</label>
+                        <input
+                          id={`exp-company-${idx}`}
+                          type="text"
+                          value={exp.company}
+                          onChange={(e) => updateExp(idx, { company: e.target.value })}
+                          className="w-full text-xs min-h-[40px] px-2 rounded-lg bg-gray-50 dark:bg-ink-surface border border-black/10 dark:border-white/10 text-ink dark:text-white focus-visible:ring-2 focus-visible:ring-brand-500/40 focus-visible:outline-none"
+                        />
+                      </div>
+                    </div>
+                    <p className="text-[11px] text-ink-muted">{[exp.start_date, exp.end_date].filter(Boolean).join(' – ') || 'Sin fechas'}</p>
+                  </li>
+                ))}
+              </ul>
+              {experiences.length > 8 && (
+                <p className="text-[11px] text-ink-muted">Las demás experiencias las puedes revisar después en Mi perfil.</p>
+              )}
+            </fieldset>
+          )}
 
           <div>
             <label className="text-xs text-ink-muted font-semibold uppercase block mb-1">

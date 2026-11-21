@@ -3,7 +3,7 @@
 <div align="center">
 
 [![CI — Integración Continua](https://github.com/alejandroham/Oportia.jobs/actions/workflows/ci.yml/badge.svg)](https://github.com/alejandroham/Oportia.jobs/actions/workflows/ci.yml)
-[![Version](https://img.shields.io/badge/Versi%C3%B3n-1.6.7-blue.svg?style=for-the-badge)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/Versi%C3%B3n-1.6.8-blue.svg?style=for-the-badge)](CHANGELOG.md)
 [![Privacy: Ley 21.719](https://img.shields.io/badge/Privacidad-Ley%2021.719%20Chile-emerald.svg?style=for-the-badge)](PRIVACY.md)
 [![Security Policy](https://img.shields.io/badge/Seguridad-Security%20Policy-blueviolet.svg?style=for-the-badge)](SECURITY.md)
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Falejandroham%2FOportia.jobs)
@@ -38,6 +38,7 @@
   - Opcionalmente, un correo diario con las ofertas nuevas. Ver [docs/INDICE_DIARIO.md](docs/INDICE_DIARIO.md).
 - **Tu CV, analizado con IA:**
   - La IA separa tu experiencia laboral, tus títulos y tus cursos. "Reanalizar con IA" corrige tu perfil sin volver a subir el archivo.
+  - En la guía de inicio revisas cada experiencia (cargo, empresa y fechas) y con un botón intercambias cargo y empresa si quedaron al revés.
   - En **Qué busco** te propone **cargos afines a tu experiencia**, cada uno con un resumen de por qué calza.
   - En **Mis logros** extrae tus logros en formato STAR, sin inventar cifras.
   - Opi también actualiza tu perfil, lo que buscas y tus logros desde el chat.
@@ -192,10 +193,10 @@ El lanzador valida dependencias, compila el frontend y levanta la aplicación en
 El proyecto cuenta con una suite integral de pruebas con **100% de ejecución offline** y cero dependencias de red externa:
 
 ```bash
-# 1. Pruebas de Backend (Pytest — 238 pruebas unitarias y de integración offline)
+# 1. Pruebas de Backend (Pytest — 258 pruebas unitarias y de integración offline)
 pytest backend/tests -v
 
-# 2. Pruebas de Frontend (Vitest — 193 pruebas unitarias en entorno happy-dom)
+# 2. Pruebas de Frontend (Vitest — 195 pruebas unitarias en entorno happy-dom)
 cd frontend && npm test
 
 # 3. Flujos End-to-End (Playwright — 25 pruebas en Chromium headless, incluye el PDF del CV y anchos de 360 a 1366 px)
