@@ -1,7 +1,7 @@
 # Política de Privacidad y Soberanía Digital — Oportia Jobs IA
 
-**Última actualización:** 18 de noviembre de 2026  
-**Versión de política:** 1.5.0  
+**Última actualización:** 20 de noviembre de 2026  
+**Versión de política:** 1.6.10  
 **Marco normativo:** Ley N° 21.719 de Protección de Datos Personales (Chile) y principios de *Privacy by Design*.
 
 ---
@@ -53,7 +53,7 @@ El servidor backend de Oportia Jobs IA funciona estrictamente como un **motor de
 
 Oportia Jobs IA utiliza un modelo **BYOK (Trae tu propia clave)** para conectarte con proveedores líderes de modelos de lenguaje (Google Gemini, Anthropic Claude, OpenAI):
 
-1. **Cifrado local con WebCrypto API:** Tu clave de API se cifra en tu propio navegador antes de almacenarse en el almacenamiento local (`localStorage`), utilizando el estándar criptográfico de grado militar **AES-GCM de 256 bits** con derivación de clave **PBKDF2** (100.000 iteraciones de hash seguro con salt único).
+1. **Cifrado local con WebCrypto API:** Tu clave de API se cifra en tu propio navegador con **AES-GCM de 256 bits** antes de guardarse en el almacenamiento local (`localStorage`). Desde la versión 1.6.10, la llave que la cifra es una **llave no exportable** que el navegador guarda en `IndexedDB`: el navegador la puede usar para cifrar y descifrar tu clave, pero sus bytes no se pueden leer ni copiar, ni siquiera desde la propia página. Las claves guardadas antes se migran solas la primera vez que abres Oportia. Si usas Oportia sin HTTPS (por ejemplo, desde el celular en tu red local), se usa el método anterior. Aun así, **no guardes tu clave en equipos compartidos**: quien use tu navegador puede usar la IA con ella.
 2. **Transmisión efímera en memoria:** Tu clave solo viaja desde tu navegador hacia el backend cuando ejecutas activamente una función de IA (evaluación de compatibilidad, redacción de carta, práctica de entrevista, tutoría o chat con Opi). Se transmite protegida por HTTPS en los encabezados `X-LLM-Key` y `X-LLM-Provider`.
 3. **Destrucción inmediata en memoria:** El servidor backend recibe la clave en la memoria de la petición, llama a la API oficial del proveedor de IA correspondiente, devuelve el resultado a tu navegador y **destruye la credencial de la memoria**. La clave nunca se escribe en disco ni se almacena en base de datos alguna.
 

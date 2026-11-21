@@ -71,3 +71,56 @@ describe('Sovereign Cryptographic Engine (crypto.ts)', () => {
     expect(decrypted).toBe(testApiKey);
   });
 });
+
+describe('Claves de API con CryptoKey no exportable (1.6.10, DT-28)', () => {
+  const reset = async () => {
+    localStorage.clear();
+    clearDeviceCryptoSeed();
+    await new Promise((r) => setTimeout(r, 0));
+  };
+
+  it('cifra con el formato v2 sin crear la semilla en localStorage', async () => {
+    await reset();
+    const enc = await encryptApiKeyLocally('AIzaSy-clave-de-prueba');
+    expect(enc.startsWith('oportia_v2:')).toBe(true);
+    expect(enc).not.toContain('AIzaSy');
+    expect(localStorage.getItem('nexusjob_sec_seed_v1')).toBeNull();
+    expect(await decryptApiKeyLocally(enc)).toBe('AIzaSy-clave-de-prueba');
+  });
+
+  it('la clave del dispositivo no se puede exportar', async () => {
+    await reset();
+    const { getDeviceKey } = await import('../utils/crypto');
+    const key = await getDeviceKey();
+    expect(key.extractable).toBe(false);
+    await expect(crypto.subtle.exportKey('raw', key)).rejects.toBeTruthy();
+  });
+
+  it('migra las claves guardadas con la semilla y borra la semilla', async () => {
+    await reset();
+    // Clave guardada como en la 1.6.9: paquete AES con la semilla de localStorage.
+    const seed = 'semilla-antigua-de-prueba';
+    localStorage.setItem('nexusjob_sec_seed_v1', seed);
+    localStorage.setItem('job_search_llm_key_gemini', JSON.stringify(await encryptText('clave-gemini-antigua', seed)));
+    localStorage.setItem('job_search_llm_key_openai', `nexus_dev_v1:${xorObfuscate('clave-openai-antigua', seed)}`);
+
+    const { migrateApiKeysToDeviceKey } = await import('../utils/crypto');
+    expect(await migrateApiKeysToDeviceKey()).toBe(2);
+    expect(localStorage.getItem('nexusjob_sec_seed_v1')).toBeNull();
+    expect(localStorage.getItem('job_search_llm_key_gemini')!.startsWith('oportia_v2:')).toBe(true);
+    expect(await decryptApiKeyLocally(localStorage.getItem('job_search_llm_key_gemini')!)).toBe('clave-gemini-antigua');
+    expect(await decryptApiKeyLocally(localStorage.getItem('job_search_llm_key_openai')!)).toBe('clave-openai-antigua');
+    expect(await migrateApiKeysToDeviceKey()).toBe(0); // ya migradas
+  });
+
+  it('si una clave antigua no se puede leer, no toca nada', async () => {
+    await reset();
+    localStorage.setItem('nexusjob_sec_seed_v1', 'otra-semilla');
+    const broken = JSON.stringify(await encryptText('x', 'semilla-distinta'));
+    localStorage.setItem('job_search_llm_key_claude', broken);
+    const { migrateApiKeysToDeviceKey } = await import('../utils/crypto');
+    expect(await migrateApiKeysToDeviceKey()).toBe(0);
+    expect(localStorage.getItem('job_search_llm_key_claude')).toBe(broken);
+    expect(localStorage.getItem('nexusjob_sec_seed_v1')).toBe('otra-semilla');
+  });
+});

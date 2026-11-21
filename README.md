@@ -3,7 +3,7 @@
 <div align="center">
 
 [![CI — Integración Continua](https://github.com/alejandroham/Oportia.jobs/actions/workflows/ci.yml/badge.svg)](https://github.com/alejandroham/Oportia.jobs/actions/workflows/ci.yml)
-[![Version](https://img.shields.io/badge/Versi%C3%B3n-1.6.9-blue.svg?style=for-the-badge)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/Versi%C3%B3n-1.6.10-blue.svg?style=for-the-badge)](CHANGELOG.md)
 [![Privacy: Ley 21.719](https://img.shields.io/badge/Privacidad-Ley%2021.719%20Chile-emerald.svg?style=for-the-badge)](PRIVACY.md)
 [![Security Policy](https://img.shields.io/badge/Seguridad-Security%20Policy-blueviolet.svg?style=for-the-badge)](SECURITY.md)
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Falejandroham%2FOportia.jobs)
@@ -73,7 +73,7 @@ flowchart TD
         UI["⚛️ Interfaz React 18 + Vite + Tailwind<br>Cupertino HIG y Modo Día/Noche"]
         Store["📦 useAppStore - Zustand<br>Reactividad en memoria"]
         IDB[("🗄️ IndexedDB - oportia_jobs_db<br>• Perfil y CV Maestro<br>• Preferencias<br>• Radar y Postulaciones<br>• Memoria de Opi")]
-        Crypto["🔐 WebCrypto API<br>AES-GCM 256 bits y PBKDF2<br>Custodia local de claves"]
+        Crypto["🔐 WebCrypto API<br>AES-GCM 256 bits con llave no exportable<br>Custodia local de claves"]
     end
 
     subgraph Backend ["⚡ Servidor FastAPI sin Estado"]
@@ -106,7 +106,7 @@ flowchart TD
 ### Garantías Principales de la Arquitectura
 1. **Tus datos viven en tu navegador:** Tu perfil, experiencias, postulaciones y memoria se guardan en `IndexedDB`. La interfaz usa endpoints sin estado que reciben los datos en cada petición y no los guardan.
    > ⚠️ **Transición en curso:** el backend aún conserva endpoints heredados (por ejemplo `PUT /api/profile`, `PUT /api/preferences`, `POST /api/jobs/scrape`) y el servidor MCP, que leen y escriben archivos en `data/`. La interfaz web ya no los usa para el flujo principal; están pensados para la instalación local y se retirarán en una próxima versión.
-2. **Custodia de Claves de IA en el Cliente:** Tus claves de API se cifran localmente con `WebCrypto` (AES-GCM de 256 bits). Viajan protegidas en encabezados HTTPS solo al invocar funciones de IA y el backend las descarta de memoria inmediatamente tras recibir la respuesta del proveedor.
+2. **Custodia de Claves de IA en el Cliente:** Tus claves de API se cifran localmente con `WebCrypto` (AES-GCM de 256 bits) usando una llave **no exportable** guardada en IndexedDB. Viajan protegidas en encabezados HTTPS solo al invocar funciones de IA y el backend las descarta de memoria inmediatamente tras recibir la respuesta del proveedor.
 3. **Sin base de datos de candidatos:** El backend no tiene base de datos de usuarios. Los CV subidos se procesan en un archivo temporal que se elimina apenas se extrae el texto.
 
 ---
@@ -193,10 +193,10 @@ El lanzador valida dependencias, compila el frontend y levanta la aplicación en
 El proyecto cuenta con una suite integral de pruebas con **100% de ejecución offline** y cero dependencias de red externa:
 
 ```bash
-# 1. Pruebas de Backend (Pytest — 258 pruebas unitarias y de integración offline)
+# 1. Pruebas de Backend (Pytest — 261 pruebas unitarias y de integración offline)
 pytest backend/tests -v
 
-# 2. Pruebas de Frontend (Vitest — 203 pruebas unitarias en entorno happy-dom)
+# 2. Pruebas de Frontend (Vitest — 207 pruebas unitarias en entorno happy-dom)
 cd frontend && npm test
 
 # 3. Flujos End-to-End (Playwright — 29 pruebas en Chromium headless, incluye el PDF del CV y anchos de 360 a 1366 px)

@@ -26,6 +26,7 @@ import { X } from 'lucide-react';
 import { useToast } from './components/Toast';
 import { api } from './api';
 import { onSharedAIRemaining, onSharedAIBusy } from './utils/sharedAI';
+import { migrateApiKeysToDeviceKey } from './utils/crypto';
 import type { JobPosting } from './types';
 import {
   useAppStore,
@@ -140,6 +141,8 @@ export function App() {
     if (didInit.current) return;
     didInit.current = true;
     const init = async () => {
+      // 1.6.10 (DT-28): claves de API guardadas con la semilla anterior → CryptoKey no exportable.
+      await migrateApiKeysToDeviceKey();
       await initStore();
       const currentProfile = useAppStore.getState().profile;
       if (!currentProfile || !currentProfile.name || currentProfile.name.trim().toLowerCase() === 'candidato') {

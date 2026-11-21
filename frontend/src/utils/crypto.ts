@@ -226,9 +226,79 @@ export async function decryptPackage(pkg: EncryptedPackage, passphrase: string):
   }
 }
 
-// ── Local Storage Obfuscation & Encryption for API Keys ───────────────────
+// ── Claves de API guardadas en este navegador ─────────────────────────────
+//
+// 1.6.10 (DT-28): antes la clave de API se cifraba con una "semilla" guardada en localStorage
+// (nexusjob_sec_seed_v1): cualquier script que pudiera leer localStorage tenía la semilla y la clave cifrada,
+// así que el cifrado no protegía de nada. Ahora se usa una CryptoKey AES-GCM de 256 bits creada con
+// extractable = false y guardada en IndexedDB: el navegador la puede usar para cifrar y descifrar, pero sus
+// bytes no se pueden leer ni exportar. Formato: "oportia_v2:<iv base64>:<cifrado base64>".
+// Si no hay WebCrypto o IndexedDB (HTTP en la red local, desde el celular), se mantiene el método anterior.
 
 const DEVICE_KEY_STORAGE = 'nexusjob_sec_seed_v1';
+const V2_PREFIX = 'oportia_v2:';
+const KEYSTORE_DB = 'oportia_keystore';
+const KEYSTORE_STORE = 'keys';
+const DEVICE_KEY_ID = 'api-key-aes-gcm-v2';
+const PROVIDERS = ['gemini', 'openai', 'claude'] as const;
+
+let deviceKeyPromise: Promise<CryptoKey> | null = null;
+
+function isIndexedDBAvailable(): boolean {
+  return typeof indexedDB !== 'undefined';
+}
+
+function openKeystore(): Promise<IDBDatabase> {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(KEYSTORE_DB, 1);
+    req.onupgradeneeded = () => req.result.createObjectStore(KEYSTORE_STORE);
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+function idbGet<T>(db: IDBDatabase, key: string): Promise<T | undefined> {
+  return new Promise((resolve, reject) => {
+    const req = db.transaction(KEYSTORE_STORE, 'readonly').objectStore(KEYSTORE_STORE).get(key);
+    req.onsuccess = () => resolve(req.result as T | undefined);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+function idbPut(db: IDBDatabase, key: string, value: unknown): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(KEYSTORE_STORE, 'readwrite');
+    tx.objectStore(KEYSTORE_STORE).put(value, key);
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+/** La CryptoKey del dispositivo (no exportable). Se crea la primera vez y se reutiliza. */
+export function getDeviceKey(): Promise<CryptoKey> {
+  if (!deviceKeyPromise) {
+    deviceKeyPromise = (async () => {
+      const db = await openKeystore();
+      try {
+        const existing = await idbGet<CryptoKey>(db, DEVICE_KEY_ID);
+        if (existing) return existing;
+        const key = await window.crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
+        await idbPut(db, DEVICE_KEY_ID, key);
+        return key;
+      } finally {
+        db.close();
+      }
+    })().catch((e) => {
+      deviceKeyPromise = null;
+      throw e;
+    });
+  }
+  return deviceKeyPromise;
+}
+
+function canUseDeviceKey(): boolean {
+  return isSubtleCryptoAvailable() && isIndexedDBAvailable();
+}
 
 function getOrCreateDeviceSeed(): string {
   try {
@@ -246,57 +316,107 @@ function getOrCreateDeviceSeed(): string {
 
 export async function encryptApiKeyLocally(apiKey: string): Promise<string> {
   if (!apiKey) return '';
-  const seed = getOrCreateDeviceSeed();
 
-  // If WebCrypto Subtle is available, use military-grade AES-GCM 256-bit
-  if (isSubtleCryptoAvailable()) {
+  if (canUseDeviceKey()) {
     try {
-      const pkg = await encryptText(apiKey, seed);
-      return JSON.stringify(pkg);
+      const key = await getDeviceKey();
+      const iv = getSafeRandomBytes(12);
+      const ct = await window.crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv as BufferSource }, key, new TextEncoder().encode(apiKey));
+      return `${V2_PREFIX}${bufferToBase64(iv)}:${bufferToBase64(ct)}`;
     } catch {
-      // Fall through to resilient device XOR obfuscation
+      // Sigue con el método anterior (por ejemplo, IndexedDB bloqueado en navegación privada).
     }
   }
 
-  // Resilient device-seeded obfuscation (works flawlessly on iPhone Safari over HTTP)
+  // Contexto no seguro (HTTP en la red local): semilla del dispositivo.
+  const seed = getOrCreateDeviceSeed();
+  if (isSubtleCryptoAvailable()) {
+    try {
+      return JSON.stringify(await encryptText(apiKey, seed));
+    } catch {
+      // Fall through
+    }
+  }
   return `nexus_dev_v1:${xorObfuscate(apiKey, seed)}`;
+}
+
+/** Descifra con el formato anterior (semilla en localStorage). Solo lee la semilla si ya existe. */
+async function decryptLegacy(encryptedStr: string): Promise<string> {
+  if (encryptedStr.startsWith('nexus_dev_v1:')) {
+    return xorDeobfuscate(encryptedStr.slice('nexus_dev_v1:'.length), getOrCreateDeviceSeed());
+  }
+  // Texto plano (compatibilidad con versiones muy antiguas).
+  if (!encryptedStr.startsWith('{') || !encryptedStr.includes('ciphertext_b64')) {
+    return encryptedStr;
+  }
+  const pkg: EncryptedPackage = JSON.parse(encryptedStr);
+  const seed = getOrCreateDeviceSeed();
+  if (pkg.algorithm === 'DeviceSeed-XOR') return xorDeobfuscate(pkg.ciphertext_b64, seed);
+  if (isSubtleCryptoAvailable()) return decryptPackage(pkg, seed);
+  return '';
 }
 
 export async function decryptApiKeyLocally(encryptedStr: string): Promise<string> {
   if (!encryptedStr) return '';
   try {
-    const seed = getOrCreateDeviceSeed();
-
-    // 1. Resilient device-seeded obfuscation format
-    if (encryptedStr.startsWith('nexus_dev_v1:')) {
-      const raw = encryptedStr.slice('nexus_dev_v1:'.length);
-      return xorDeobfuscate(raw, seed);
+    if (encryptedStr.startsWith(V2_PREFIX)) {
+      if (!canUseDeviceKey()) return '';
+      const [ivB64, ctB64] = encryptedStr.slice(V2_PREFIX.length).split(':');
+      const key = await getDeviceKey();
+      const plain = await window.crypto.subtle.decrypt(
+        { name: 'AES-GCM', iv: new Uint8Array(base64ToBuffer(ivB64)) as BufferSource },
+        key,
+        base64ToBuffer(ctB64)
+      );
+      return new TextDecoder().decode(plain);
     }
-
-    // 2. If it's already plain text (backward compatibility), return it
-    if (!encryptedStr.startsWith('{') || !encryptedStr.includes('ciphertext_b64')) {
-      return encryptedStr;
-    }
-
-    // 3. Encrypted package format
-    const pkg: EncryptedPackage = JSON.parse(encryptedStr);
-    if (pkg.algorithm === 'DeviceSeed-XOR') {
-      return xorDeobfuscate(pkg.ciphertext_b64, seed);
-    }
-
-    if (isSubtleCryptoAvailable()) {
-      return await decryptPackage(pkg, seed);
-    }
-
-    return '';
+    return await decryptLegacy(encryptedStr);
   } catch {
     return '';
+  }
+}
+
+/**
+ * Migración (1.6.10): las claves guardadas con la semilla pasan a la CryptoKey no exportable y la semilla se
+ * borra de localStorage. Si algo falla, no se toca nada (la clave sigue funcionando con el formato anterior).
+ * Devuelve cuántas claves se migraron.
+ */
+export async function migrateApiKeysToDeviceKey(): Promise<number> {
+  if (typeof localStorage === 'undefined' || !canUseDeviceKey()) return 0;
+  const pending = PROVIDERS.map((p) => [`job_search_llm_key_${p}`, localStorage.getItem(`job_search_llm_key_${p}`)] as const)
+    .filter(([, v]) => v && !v.startsWith(V2_PREFIX)) as Array<readonly [string, string]>;
+  try {
+    const migrated: Array<[string, string]> = [];
+    for (const [storageKey, value] of pending) {
+      const plain = await decryptLegacy(value);
+      if (!plain) return 0; // no se pudo leer: se deja todo como estaba
+      const v2 = await encryptApiKeyLocally(plain);
+      if (!v2.startsWith(V2_PREFIX) || (await decryptApiKeyLocally(v2)) !== plain) return 0;
+      migrated.push([storageKey, v2]);
+    }
+    migrated.forEach(([k, v]) => localStorage.setItem(k, v));
+    // Sin claves en el formato anterior, la semilla ya no sirve: se borra.
+    const stillLegacy = PROVIDERS.some((p) => {
+      const v = localStorage.getItem(`job_search_llm_key_${p}`);
+      return v && !v.startsWith(V2_PREFIX);
+    });
+    if (!stillLegacy) localStorage.removeItem(DEVICE_KEY_STORAGE);
+    return migrated.length;
+  } catch {
+    return 0;
   }
 }
 
 export function clearDeviceCryptoSeed(): void {
   try {
     localStorage.removeItem(DEVICE_KEY_STORAGE);
+  } catch {
+    // ignore
+  }
+  // También la CryptoKey del dispositivo (al borrar todos los datos).
+  deviceKeyPromise = null;
+  try {
+    if (isIndexedDBAvailable()) indexedDB.deleteDatabase(KEYSTORE_DB);
   } catch {
     // ignore
   }

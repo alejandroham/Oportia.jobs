@@ -5,6 +5,27 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
 
 ---
 
+## [1.6.10] - 2026-11-20 — *Seguridad del frontend*
+
+Octava corrección de la auditoría QA del 19-nov-2026 (QA-014, QA-032).
+
+### 🛡️ Cabeceras de seguridad (QA-014, DT-27)
+- En `vercel.json`, para la app y la API: `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: strict-origin-when-cross-origin` y `Permissions-Policy` (sin cámara, ubicación, pagos ni USB; micrófono solo para "Dictar por voz").
+- **Content-Security-Policy en modo "solo informe"** (`Content-Security-Policy-Report-Only`) durante una semana: el navegador avisa en la consola lo que bloquearía, sin bloquear nada. Permite solo lo que la app usa: scripts propios, Google Fonts (estilos y fuentes), imágenes propias, `data:` y `blob:`, la API del mismo origen, sin `object` y sin ser incrustada en otros sitios (`frame-ancestors 'none'`). Si no aparecen avisos, se pasa a `Content-Security-Policy`.
+
+### 🔐 Claves de API protegidas de verdad (QA-032, DT-28)
+- Antes la clave se cifraba con una "semilla" guardada también en `localStorage` (`nexusjob_sec_seed_v1`): quien pudiera leer `localStorage` tenía la semilla y la clave cifrada, así que el cifrado no protegía. Ahora se usa una **`CryptoKey` AES-GCM de 256 bits no exportable** (`extractable: false`) guardada en IndexedDB (`oportia_keystore`): el navegador la usa para cifrar y descifrar, pero sus bytes no se pueden leer.
+- **Migración automática** al abrir Oportia: las claves guardadas con la semilla pasan al nuevo formato (`oportia_v2:`) y la semilla se borra. Si una clave antigua no se puede leer, no se toca nada.
+- "Borrar todos mis datos" también borra la llave del dispositivo.
+- Sin HTTPS (por ejemplo, desde el celular en la red local) se mantiene el método anterior.
+- **Política de privacidad** actualizada (sección 4, versión 1.6.10) con este cambio.
+
+### 🧪 Pruebas
+- `crypto.test.ts` (4 nuevas): formato v2 sin semilla, llave no exportable, migración de dos claves antiguas (paquete AES y XOR) y migración que no toca nada si una clave no se puede leer.
+- `test_security_headers.py` (3): cabeceras en todas las rutas, CSP solo informe que cubre lo que carga la app, y permisos.
+
+---
+
 ## [1.6.9] - 2026-11-20 — *Formularios y estado del perfil*
 
 Séptima corrección de la auditoría QA del 19-nov-2026 (QA-039, QA-040, QA-041, QA-043).
